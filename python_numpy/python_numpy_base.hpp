@@ -172,6 +172,10 @@ public:
   }
 
   /* Function */
+  auto create_dense(void) -> Matrix<DefDense, T, M, N> {
+    return Matrix<DefDense, T, M, N>(this->matrix.create_dense());
+  }
+
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }
