@@ -74,6 +74,16 @@ public:
     return Matrix<DefDense, T, N, M>(this->matrix.transpose());
   }
 
+  auto create_complex(void)
+      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, N> {
+
+    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix;
+
+    Base::Matrix::copy_matrix_real_to_complex(Complex_matrix.matrix,
+                                              this->matrix);
+    return Complex_matrix;
+  }
+
   /* Variable */
   Base::Matrix::Matrix<T, M, N> matrix;
 };
