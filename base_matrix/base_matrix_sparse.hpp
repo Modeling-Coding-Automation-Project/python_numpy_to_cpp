@@ -224,6 +224,10 @@ public:
     return Y;
   }
 
+  std::size_t rows() const { return N; }
+
+  std::size_t cols() const { return M; }
+
   /* Variable */
   std::vector<T> values;
   std::vector<std::size_t> row_indices;

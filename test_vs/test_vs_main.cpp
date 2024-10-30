@@ -49,7 +49,7 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
 
     T b_dot_answer = 14.0;
-    tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT,"check Vector dot.");
+    tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT, "check Vector dot.");
 
     /* 行列結合 */
     Matrix<T, 2, 2> Aa;
@@ -200,7 +200,7 @@ void check_base_matrix_calc(void) {
         { 1, 0, 0 },
         { 8, 1, 0 },
         { 6, 0.818182, 1 }
-    });
+        });
     tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition L.");
 
@@ -367,7 +367,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(D_2.data, D_2_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply Matrix.");
 
-    DiagMatrix<T, 3> D_3({4, 5, 6});
+    DiagMatrix<T, 3> D_3({ 4, 5, 6 });
     DiagMatrix<T, 3> D_4 = D - D_3;
 
     //std::cout << "D_4 = ";
@@ -389,8 +389,8 @@ void check_base_matrix_calc(void) {
 
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
-    SparseMatrix<T, 3, 3, 6> K_s({1, 8, 3, 3, 4}, {0, 1, 2, 1, 2}, {0, 1, 3, 5});
-    
+    SparseMatrix<T, 3, 3, 6> K_s({ 1, 8, 3, 3, 4 }, { 0, 1, 2, 1, 2 }, { 0, 1, 3, 5 });
+
     Matrix<T, 3, 3> K_ch;
     bool flag = false;
     K_ch = cholesky_decomposition(K, K_ch, flag);
@@ -454,7 +454,7 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<T, 3, 3> DenseC_answer({ 
+    Matrix<T, 3, 3> DenseC_answer({
         {1, 2, 3},
         {75, 70, 65},
         {46, 40, 40}
@@ -527,7 +527,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(DenseI.data, DenseI_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
 
-    DiagMatrix<T, 3> DiagJ({10, 20, 30});
+    DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
     Matrix<T, 3, 3> DenseK = DiagJ * SA;
 
     //std::cout << "DenseK = " << std::endl;
@@ -651,7 +651,7 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<T, 4, 3> SB_dense_answer({ 
+    Matrix<T, 4, 3> SB_dense_answer({
         {1, 3, 0},
         {0, 0, 2},
         {0, 8, 4},
@@ -661,7 +661,7 @@ void check_base_matrix_calc(void) {
         "check SparseMatrix create dense.");
 
     Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SA, static_cast<T>(0.0), static_cast<T>(1.0e-10), X_temp);
-        
+
     //std::cout << "S_inv = " << std::endl;
     //for (size_t j = 0; j < S_inv.cols(); ++j) {
     //    for (size_t i = 0; i < S_inv.rows(); ++i) {
@@ -884,7 +884,7 @@ void check_base_matrix_calc(void) {
 
     tester.expect_near(eigen_values, eigen_values_answer, NEAR_LIMIT_SOFT,
         "check EigenSolverReal eigen values.");
-    
+
     eigen_solver.continue_solving_eigen_values();
     eigen_solver.continue_solving_eigen_values();
     eigen_solver.continue_solving_eigen_values();
@@ -955,7 +955,7 @@ void check_base_matrix_calc(void) {
 
     eigen_solver_comp.solve_eigen_vectors(A1);
     Matrix<Complex<T>, 3, 3> eigen_vectors_comp = eigen_solver_comp.get_eigen_vectors();
- 
+
     //std::cout << "eigen_vectors_comp = " << std::endl;
     //for (size_t j = 0; j < eigen_vectors_comp.cols(); ++j) {
     //    for (size_t i = 0; i < eigen_vectors_comp.rows(); ++i) {
@@ -1177,7 +1177,7 @@ void check_python_numpy_calc(void) {
     //std::cout << std::endl;
 
     Matrix<DefDense, T, 4, 6> A_A_answer({
-        {1, 3, 0, 1, 3, 0}, 
+        {1, 3, 0, 1, 3, 0},
         {0, 0, 2, 0, 0, 2},
         {0, 8, 4, 0, 8, 4},
         {0, 1, 0, 0, 1, 0} });
@@ -1255,7 +1255,7 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<DefDense, T, 3, 3> A_ch_answer({ 
+    Matrix<DefDense, T, 3, 3> A_ch_answer({
         {3.16228, 0.316228, 0.632456},
         {0, 4.46094, 0.851838},
         {0, 0, 5.37349}
