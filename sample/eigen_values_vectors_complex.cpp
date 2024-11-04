@@ -37,7 +37,7 @@ int main() {
 
   auto A_c_comp = A_c.create_complex();
   auto eigen_values_matrix =
-      Matrix<DefDiag, Base::Matrix::Complex<double>, 3>(eigen_values_c.matrix);
+      Matrix<DefDiag, Complex<double>, 3>(eigen_values_c.matrix);
   auto result =
       A_c_comp * eigen_vectors_c - eigen_vectors_c * eigen_values_matrix;
 
