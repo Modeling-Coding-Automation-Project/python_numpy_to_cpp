@@ -1356,7 +1356,7 @@ void check_python_numpy_calc(void) {
 
     /* 複素数固有値 */
     Matrix<DefDense, T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
-    Matrix<DefDense, Base::Matrix::Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
+    Matrix<DefDense, Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
 
     static auto eig_solver_comp = make_LinalgSolverEig(A1);
     auto eigen_values_comp = eig_solver_comp.get_eigen_values();
@@ -1404,10 +1404,10 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    std::vector<Base::Matrix::Complex<T>> eigen_values_answer_comp(3);
-    eigen_values_answer_comp[0] = Base::Matrix::Complex<T>(6, 0);
-    eigen_values_answer_comp[1] = Base::Matrix::Complex<T>(-1.5, -0.8660254);
-    eigen_values_answer_comp[2] = Base::Matrix::Complex<T>(-1.5, 0.8660254);
+    std::vector<Complex<T>> eigen_values_answer_comp(3);
+    eigen_values_answer_comp[0] = Complex<T>(6, 0);
+    eigen_values_answer_comp[1] = Complex<T>(-1.5, -0.8660254);
+    eigen_values_answer_comp[2] = Complex<T>(-1.5, 0.8660254);
 
     eig_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
@@ -1417,7 +1417,7 @@ void check_python_numpy_calc(void) {
     auto A_mul_V_comp = A1_comp * eigen_vectors_comp;
     Matrix<DefDense, T, 3, 3> V_mul_D_real;
     Matrix<DefDense, T, 3, 3> V_mul_D_imag;
-    auto V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Base::Matrix::Complex<T>, 3>(eigen_values_comp.matrix);
+    auto V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Complex<T>, 3>(eigen_values_comp.matrix);
 
     Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_real.matrix, A_mul_V_comp.matrix);
     Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_real.matrix, V_mul_D_comp.matrix);
@@ -1432,7 +1432,7 @@ void check_python_numpy_calc(void) {
     eig_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
     A_mul_V_comp = A1_comp * eigen_vectors_comp;
-    V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Base::Matrix::Complex<T>, 3>(eigen_values_comp.matrix);
+    V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Complex<T>, 3>(eigen_values_comp.matrix);
 
     Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_real.matrix, A_mul_V_comp.matrix);
     Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_real.matrix, V_mul_D_comp.matrix);
