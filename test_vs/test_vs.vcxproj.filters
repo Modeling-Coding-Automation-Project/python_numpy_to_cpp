@@ -95,5 +95,8 @@
     <ClInclude Include="MCAP_tester\include\MCAP_tester.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\python_numpy\python_numpy_complex.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -148,6 +148,7 @@
     <ClInclude Include="..\base_matrix\base_matrix_vector.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_complex.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_concatenate.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_cholesky.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_eig.hpp" />
