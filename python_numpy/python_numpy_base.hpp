@@ -77,10 +77,9 @@ public:
   auto create_complex(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, N> {
 
-    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix;
+    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
 
-    Base::Matrix::copy_matrix_real_to_complex(Complex_matrix.matrix,
-                                              this->matrix);
     return Complex_matrix;
   }
 

@@ -975,20 +975,16 @@ void check_base_matrix_calc(void) {
     eigen_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eigen_solver_comp.get_eigen_vectors();
 
-    Matrix<T, 3, 3> A_mul_V_real;
-    Matrix<T, 3, 3> A_mul_V_imag;
     Matrix<Complex<T>, 3, 3> A_mul_V_comp = A1_comp * eigen_vectors_comp;
-    Matrix<T, 3, 3> V_mul_D_real;
-    Matrix<T, 3, 3> V_mul_D_imag;
     Matrix<Complex<T>, 3, 3> V_mul_D_comp = eigen_vectors_comp * DiagMatrix<Complex<T>, 3>(eigen_values_comp);
 
-    get_real_matrix_from_complex_matrix(A_mul_V_real, A_mul_V_comp);
-    get_real_matrix_from_complex_matrix(V_mul_D_real, V_mul_D_comp);
+    Matrix<T, 3, 3> A_mul_V_real = get_real_matrix_from_complex_matrix(A_mul_V_comp);
+    Matrix<T, 3, 3> V_mul_D_real = get_real_matrix_from_complex_matrix(V_mul_D_comp);
     tester.expect_near(A_mul_V_real.data, V_mul_D_real.data, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex real eigen vectors.");
 
-    get_imag_matrix_from_complex_matrix(A_mul_V_imag, A_mul_V_comp);
-    get_imag_matrix_from_complex_matrix(V_mul_D_imag, V_mul_D_comp);
+    Matrix<T, 3, 3> A_mul_V_imag = get_imag_matrix_from_complex_matrix(A_mul_V_comp);
+    Matrix<T, 3, 3> V_mul_D_imag = get_imag_matrix_from_complex_matrix(V_mul_D_comp);
     tester.expect_near(A_mul_V_imag.data, V_mul_D_imag.data, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex imag eigen vectors.");
 
@@ -997,13 +993,13 @@ void check_base_matrix_calc(void) {
     A_mul_V_comp = A1_comp * eigen_vectors_comp;
     V_mul_D_comp = eigen_vectors_comp * DiagMatrix<Complex<T>, 3>(eigen_values_comp);
 
-    get_real_matrix_from_complex_matrix(A_mul_V_real, A_mul_V_comp);
-    get_real_matrix_from_complex_matrix(V_mul_D_real, V_mul_D_comp);
+    A_mul_V_real = get_real_matrix_from_complex_matrix(A_mul_V_comp);
+    V_mul_D_real = get_real_matrix_from_complex_matrix(V_mul_D_comp);
     tester.expect_near(A_mul_V_real.data, V_mul_D_real.data, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex real eigen vectors, strict.");
 
-    get_imag_matrix_from_complex_matrix(A_mul_V_imag, A_mul_V_comp);
-    get_imag_matrix_from_complex_matrix(V_mul_D_imag, V_mul_D_comp);
+    A_mul_V_imag = get_imag_matrix_from_complex_matrix(A_mul_V_comp);
+    V_mul_D_imag = get_imag_matrix_from_complex_matrix(V_mul_D_comp);
     tester.expect_near(A_mul_V_imag.data, V_mul_D_imag.data, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex imag eigen vectors, strict.");
 
@@ -1380,13 +1376,13 @@ void check_python_numpy_calc(void) {
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {6}, {-1.5F}, {-1.5F} });
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {-0.8660254F}, {0.8660254F} });
 
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_real;
-    Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_real.matrix, eigen_values_comp.matrix);
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_real(
+        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp.matrix));
     tester.expect_near(eigen_values_comp_real.matrix.data, eigen_values_comp_answer_real.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values real.");
 
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_imag;
-    Base::Matrix::get_imag_matrix_from_complex_matrix(eigen_values_comp_imag.matrix, eigen_values_comp.matrix);
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_imag(
+        Base::Matrix::get_imag_matrix_from_complex_matrix(eigen_values_comp.matrix));
     tester.expect_near(eigen_values_comp_imag.matrix.data, eigen_values_comp_answer_imag.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values imag.");
 
@@ -1415,20 +1411,16 @@ void check_python_numpy_calc(void) {
     eig_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
 
-    Matrix<DefDense, T, 3, 3> A_mul_V_real;
-    Matrix<DefDense, T, 3, 3> A_mul_V_imag;
     auto A_mul_V_comp = A1_comp * eigen_vectors_comp;
-    Matrix<DefDense, T, 3, 3> V_mul_D_real;
-    Matrix<DefDense, T, 3, 3> V_mul_D_imag;
     auto V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Complex<T>, 3>(eigen_values_comp.matrix);
 
-    Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_real.matrix, A_mul_V_comp.matrix);
-    Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_real.matrix, V_mul_D_comp.matrix);
+    Matrix<DefDense, T, 3, 3> A_mul_V_real(Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_comp.matrix));
+    Matrix<DefDense, T, 3, 3> V_mul_D_real(Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_comp.matrix));
     tester.expect_near(A_mul_V_real.matrix.data, V_mul_D_real.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen vectors real.");
 
-    Base::Matrix::get_imag_matrix_from_complex_matrix(A_mul_V_imag.matrix, A_mul_V_comp.matrix);
-    Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_imag.matrix, V_mul_D_comp.matrix);
+    Matrix<DefDense, T, 3, 3> A_mul_V_imag(Base::Matrix::get_imag_matrix_from_complex_matrix(A_mul_V_comp.matrix));
+    Matrix<DefDense, T, 3, 3> V_mul_D_imag(Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp.matrix));
     tester.expect_near(A_mul_V_imag.matrix.data, V_mul_D_imag.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen vectors imag.");
 
@@ -1437,13 +1429,13 @@ void check_python_numpy_calc(void) {
     A_mul_V_comp = A1_comp * eigen_vectors_comp;
     V_mul_D_comp = eigen_vectors_comp * Matrix<DefDiag, Complex<T>, 3>(eigen_values_comp.matrix);
 
-    Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_real.matrix, A_mul_V_comp.matrix);
-    Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_real.matrix, V_mul_D_comp.matrix);
+    A_mul_V_real.matrix = Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_comp.matrix);
+    V_mul_D_real.matrix = Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_comp.matrix);
     tester.expect_near(A_mul_V_real.matrix.data, V_mul_D_real.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen vectors real, strict.");
 
-    Base::Matrix::get_imag_matrix_from_complex_matrix(A_mul_V_imag.matrix, A_mul_V_comp.matrix);
-    Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_imag.matrix, V_mul_D_comp.matrix);
+    A_mul_V_imag.matrix = Base::Matrix::get_imag_matrix_from_complex_matrix(A_mul_V_comp.matrix);
+    V_mul_D_imag.matrix = Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp.matrix);
     tester.expect_near(A_mul_V_imag.matrix.data, V_mul_D_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen vectors imag, strict.");
 

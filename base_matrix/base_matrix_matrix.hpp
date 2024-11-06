@@ -409,36 +409,48 @@ Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void copy_matrix_real_to_complex(Matrix<Complex<T>, M, N> &To_matrix,
-                                 const Matrix<T, M, N> &From_matrix) {
+Matrix<Complex<T>, M, N>
+convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
+
+  Matrix<Complex<T>, M, N> To_matrix;
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       To_matrix(i, j) = From_matrix(i, j);
     }
   }
+
+  return To_matrix;
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void get_real_matrix_from_complex_matrix(
-    Matrix<T, M, N> &To_matrix, const Matrix<Complex<T>, M, N> &From_matrix) {
+Matrix<T, M, N> get_real_matrix_from_complex_matrix(
+    const Matrix<Complex<T>, M, N> &From_matrix) {
+
+  Matrix<T, M, N> To_matrix;
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       To_matrix(i, j) = From_matrix(i, j).real;
     }
   }
+
+  return To_matrix;
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void get_imag_matrix_from_complex_matrix(
-    Matrix<T, M, N> &To_matrix, const Matrix<Complex<T>, M, N> &From_matrix) {
+Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
+    const Matrix<Complex<T>, M, N> &From_matrix) {
+
+  Matrix<T, M, N> To_matrix;
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       To_matrix(i, j) = From_matrix(i, j).imag;
     }
   }
+
+  return To_matrix;
 }
 
 } // namespace Matrix

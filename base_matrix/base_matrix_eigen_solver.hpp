@@ -539,7 +539,7 @@ private:
       R = this->_House * R * this->_House;
     }
 
-    copy_matrix_real_to_complex(this->_Hessen, R);
+    this->_Hessen = convert_matrix_real_to_complex(R);
   }
 
   void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
@@ -671,8 +671,7 @@ private:
 
     for (std::size_t k = 0; k < M; ++k) {
       // A - mu * I
-      Matrix<Complex<T>, M, M> A;
-      copy_matrix_real_to_complex(A, matrix);
+      Matrix<Complex<T>, M, M> A = convert_matrix_real_to_complex(matrix);
 
       Complex<T> mu = this->_eigen_values[k] + this->_small_value;
       for (std::size_t i = 0; i < M; ++i) {
