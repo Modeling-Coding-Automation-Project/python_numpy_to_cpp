@@ -19,19 +19,20 @@ public:
   }
 
   LUDecomposition(const DiagMatrix<T, M> &matrix) {
-    this->_L = Matrix<T, M, M>::identity();
-    this->_U = matrix.create_dense();
+    this->_Lower = Matrix<T, M, M>::identity();
+    this->_Upper = matrix.create_dense();
   }
 
   /* Copy Constructor */
   LUDecomposition(const LUDecomposition<T, M> &other)
-      : _L(other._L), _U(other._U), _pivot_index_vec(other._pivot_index_vec),
+      : _Lower(other._Lower), _Upper(other._Upper),
+        _pivot_index_vec(other._pivot_index_vec),
         _division_min(other._division_min) {}
 
   LUDecomposition<T, M> &operator=(const LUDecomposition<T, M> &other) {
     if (this != &other) {
-      this->_L = other._L;
-      this->_U = other._U;
+      this->_Lower = other._Lower;
+      this->_Upper = other._Upper;
       this->_pivot_index_vec = other._pivot_index_vec;
       this->_division_min = other._division_min;
     }
@@ -40,14 +41,14 @@ public:
 
   /* Move Constructor */
   LUDecomposition(LUDecomposition<T, M> &&other) noexcept
-      : _L(std::move(other._L)), _U(std::move(other._U)),
+      : _Lower(std::move(other._Lower)), _Upper(std::move(other._Upper)),
         _pivot_index_vec(std::move(other._pivot_index_vec)),
         _division_min(std::move(other._division_min)) {}
 
   LUDecomposition<T, M> &operator=(LUDecomposition<T, M> &&other) noexcept {
     if (this != &other) {
-      this->_L = std::move(other._L);
-      this->_U = std::move(other._U);
+      this->_Lower = std::move(other._Lower);
+      this->_Upper = std::move(other._Upper);
       this->_pivot_index_vec = std::move(other._pivot_index_vec);
       this->_division_min = std::move(other._division_min);
     }
@@ -55,9 +56,9 @@ public:
   }
 
   /* Function */
-  Matrix<T, M, M> get_L() const { return _L; }
+  Matrix<T, M, M> get_L() const { return _Lower; }
 
-  Matrix<T, M, M> get_U() const { return _U; }
+  Matrix<T, M, M> get_U() const { return _Upper; }
 
   Vector<T, M> solve(const Vector<T, M> &b) const {
     Vector<T, M> b_p;
@@ -73,7 +74,7 @@ public:
     T det = static_cast<T>(1);
 
     for (std::size_t i = 0; i < M; i++) {
-      det *= this->_L(i, i) * this->_U(i, i);
+      det *= this->_Lower(i, i) * this->_Upper(i, i);
     }
 
     return det;
@@ -81,29 +82,29 @@ public:
 
 private:
   /* Variable */
-  Matrix<T, M, M> _L;
-  Matrix<T, M, M> _U;
+  Matrix<T, M, M> _Lower;
+  Matrix<T, M, M> _Upper;
   Vector<std::size_t, M> _pivot_index_vec;
   T _division_min;
 
   /* Function */
   void _decompose(const Matrix<T, M, M> &matrix) {
-    this->_L = Matrix<T, M, M>();
-    this->_U = matrix;
+    this->_Lower = Matrix<T, M, M>();
+    this->_Upper = matrix;
 
     for (std::size_t i = 0; i < M; ++i) {
       this->_pivot_index_vec[i] = i;
     }
 
     for (std::size_t i = 0; i < M; ++i) {
-      this->_L(i, i) = 1;
+      this->_Lower(i, i) = 1;
 
       // Pivoting
-      if (near_zero(this->_U(i, i), this->_division_min)) {
+      if (near_zero(this->_Upper(i, i), this->_division_min)) {
         std::size_t maxRow = i;
-        T maxVal = std::abs(this->_U(i, i));
+        T maxVal = std::abs(this->_Upper(i, i));
         for (std::size_t k = i + 1; k < M; ++k) {
-          T absVal = std::abs(this->_U(k, i));
+          T absVal = std::abs(this->_Upper(k, i));
           if (absVal > maxVal) {
             maxVal = absVal;
             maxRow = k;
@@ -111,17 +112,17 @@ private:
         }
         if (maxRow != i) {
           swap_value(this->_pivot_index_vec[i], this->_pivot_index_vec[maxRow]);
-          matrix_col_swap(i, maxRow, this->_U);
-          matrix_col_swap(i, maxRow, this->_L);
+          matrix_col_swap(i, maxRow, this->_Upper);
+          matrix_col_swap(i, maxRow, this->_Lower);
         }
       }
 
       for (std::size_t j = i + 1; j < M; ++j) {
-        T factor = this->_U(j, i) /
-                   avoid_zero_divide(this->_U(i, i), this->_division_min);
-        this->_L(j, i) = factor;
+        T factor = this->_Upper(j, i) /
+                   avoid_zero_divide(this->_Upper(i, i), this->_division_min);
+        this->_Lower(j, i) = factor;
         for (std::size_t k = i; k < M; ++k) {
-          this->_U(j, k) -= factor * this->_U(i, k);
+          this->_Upper(j, k) -= factor * this->_Upper(i, k);
         }
       }
     }
@@ -132,7 +133,7 @@ private:
     for (std::size_t i = 0; i < M; ++i) {
       T sum = b[i];
       for (std::size_t j = 0; j < i; ++j) {
-        sum -= this->_L(i, j) * y[j];
+        sum -= this->_Lower(i, j) * y[j];
       }
       y[i] = sum;
     }
@@ -144,9 +145,9 @@ private:
     for (std::size_t i = M; i-- > 0;) {
       T sum = y[i];
       for (std::size_t j = i + 1; j < M; ++j) {
-        sum -= this->_U(i, j) * x[j];
+        sum -= this->_Upper(i, j) * x[j];
       }
-      x[i] = sum / avoid_zero_divide(this->_U(i, i), this->_division_min);
+      x[i] = sum / avoid_zero_divide(this->_Upper(i, i), this->_division_min);
     }
     return x;
   }
