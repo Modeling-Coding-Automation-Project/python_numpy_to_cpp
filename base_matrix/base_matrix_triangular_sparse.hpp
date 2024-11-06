@@ -31,12 +31,22 @@ public:
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
 
     std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
         CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
         static_cast<std::size_t>(0));
     std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
+#else
+    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
+        {};
+    std::array<std::size_t,
+               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+        row_indices = {};
+    std::array<std::size_t, M + 1> row_pointers = {};
+#endif
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = i; j < N; j++) {
@@ -57,12 +67,22 @@ public:
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
 
     std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
         CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
         static_cast<std::size_t>(0));
     std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
+#else
+    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
+        {};
+    std::array<std::size_t,
+               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+        row_indices = {};
+    std::array<std::size_t, M + 1> row_pointers = {};
+#endif
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = i; j < N; j++) {
@@ -99,12 +119,22 @@ public:
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
 
     std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
         CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
         static_cast<std::size_t>(0));
     std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
+#else
+    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
+        {};
+    std::array<std::size_t,
+               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+        row_indices = {};
+    std::array<std::size_t, M + 1> row_pointers = {};
+#endif
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < i + 1; j++) {
@@ -125,12 +155,22 @@ public:
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
 
     std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
         CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
         static_cast<std::size_t>(0));
     std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
+#else
+    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
+        {};
+    std::array<std::size_t,
+               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+        row_indices = {};
+    std::array<std::size_t, M + 1> row_pointers = {};
+#endif
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < i + 1; j++) {
