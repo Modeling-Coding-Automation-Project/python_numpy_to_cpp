@@ -269,9 +269,9 @@ public:
     return result;
   }
 
-  std::size_t rows() const { return N; }
+  constexpr std::size_t rows() const { return N; }
 
-  std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return M; }
 
   Vector<T, M> get_row(std::size_t row) const {
     if (row >= N) {
@@ -398,19 +398,87 @@ ColVector<T, N> operator*(const ColVector<T, M> &vec,
   return result;
 }
 
+/* Compiled Matrix Multiplier Classes */
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J, std::size_t K_idx>
+struct MatrixMultiplier {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    result(I, J) += A(I, K_idx) * B(K_idx, J);
+    MatrixMultiplier<T, M, K, N, I, J, K_idx - 1>::multiply(A, B, result);
+  }
+};
+
+// K_idx reached 0
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct MatrixMultiplier<T, M, K, N, I, J, 0> {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    result(I, J) += A(I, 0) * B(0, J);
+  }
+};
+
+// After completing the J column, go to the next row I
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct ColumnMultiplier {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    MatrixMultiplier<T, M, K, N, I, J, K - 1>::multiply(A, B, result);
+    ColumnMultiplier<T, M, K, N, I, J - 1>::multiply(A, B, result);
+  }
+};
+
+// Row recursive termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct ColumnMultiplier<T, M, K, N, I, 0> {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    MatrixMultiplier<T, M, K, N, I, 0, K - 1>::multiply(A, B, result);
+  }
+};
+
+// proceed to the next row after completing the I row
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct RowMultiplier {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    ColumnMultiplier<T, M, K, N, I, N - 1>::multiply(A, B, result);
+    RowMultiplier<T, M, K, N, I - 1>::multiply(A, B, result);
+  }
+};
+
+// Column recursive termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N>
+struct RowMultiplier<T, M, K, N, 0> {
+  static void multiply(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                       Matrix<T, M, N> &result) {
+    ColumnMultiplier<T, M, K, N, 0, N - 1>::multiply(A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MULTIPLY(T, M, K, N, A, B, result)                \
+  RowMultiplier<T, M, K, N, M - 1>::multiply(A, B, result);
+
 /* Matrix Multiplication */
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
-  for (std::size_t i = 0; i < M; ++i) {
-    for (std::size_t j = 0; j < N; ++j) {
-      T sum = 0;
-      for (std::size_t k = 0; k < K; ++k) {
-        sum += A(i, k) * B(k, j);
-      }
-      result(i, j) = sum;
-    }
-  }
+  // for (std::size_t i = 0; i < M; ++i) {
+  //   for (std::size_t j = 0; j < N; ++j) {
+  //     T sum = 0;
+  //     for (std::size_t k = 0; k < K; ++k) {
+  //       sum += A(i, k) * B(k, j);
+  //     }
+  //     result(i, j) = sum;
+  //   }
+  // }
+
+  BASE_MATRIX_COMPILED_MULTIPLY(T, M, K, N, A, B, result);
+
   return result;
 }
 
