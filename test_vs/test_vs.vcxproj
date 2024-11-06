@@ -139,6 +139,7 @@
     <ClInclude Include="..\base_matrix\base_matrix_eigen_solver.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_inverse.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_lu_decomposition.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_macros.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_matrix.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_qr_decomposition.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_sparse.hpp" />

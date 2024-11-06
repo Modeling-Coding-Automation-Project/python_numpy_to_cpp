@@ -217,7 +217,7 @@ std::vector<T>
 get_real_vector_from_complex_vector(const std::vector<Complex<T>> &From_vector,
                                     std::size_t N) {
 
-  std::vector<T> To_vector;
+  std::vector<T> To_vector(N);
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
@@ -231,7 +231,7 @@ std::vector<T>
 get_imag_vector_from_complex_vector(const std::vector<Complex<T>> &From_vector,
                                     std::size_t N) {
 
-  std::vector<T> To_vector;
+  std::vector<T> To_vector(N);
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;

@@ -869,7 +869,7 @@ void check_base_matrix_calc(void) {
     Matrix<T, 4, 4> Ae({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
 
     EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-10F));
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
 #else
     std::array<T, 3> eigen_values = eigen_solver.get_eigen_values();
@@ -881,11 +881,12 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl << std::endl;
 
-#ifdef USE_USE_STD_VECTOR
-    std::vector<T> eigen_values_answer({ 3, 2, 1 });
+#ifdef USE_STD_VECTOR
+    std::vector<T> eigen_values_answer(
 #else
-    std::array<T, 3> eigen_values_answer({ 3, 2, 1 });
+    std::array<T, 3> eigen_values_answer(
 #endif
+        { 3, 2, 1 });
 
     eigen_solver.continue_solving_eigen_values();
     eigen_values = eigen_solver.get_eigen_values();
@@ -930,11 +931,12 @@ void check_base_matrix_calc(void) {
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-10F));
-#ifdef USE_USE_STD_VECTOR
-    std::vector<Complex<T>> eigen_values_comp = eigen_solver_comp.get_eigen_values();
+#ifdef USE_STD_VECTOR
+    std::vector<Complex<T>> eigen_values_comp
 #else
-    std::array<Complex<T>, 3> eigen_values_comp = eigen_solver_comp.get_eigen_values();
+    std::array<Complex<T>, 3> eigen_values_comp
 #endif
+    = eigen_solver_comp.get_eigen_values();
 
     //std::cout << "eigen_values_comp = ";
     //for (size_t i = 0; i < eigen_values_comp.size(); ++i) {
@@ -942,19 +944,19 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl << std::endl;
 
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<T> eigen_values_comp_answer_real(
 #else
     std::array<T, 3> eigen_values_comp_answer_real(
 #endif
         { 6, -1.5F, -1.5F });
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<T> eigen_values_comp_real = 
 #else
     std::array<T, 3> eigen_values_comp_real =
 #endif
         get_real_vector_from_complex_vector(eigen_values_comp
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
             , 3);
 #else
         );
@@ -962,20 +964,20 @@ void check_base_matrix_calc(void) {
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex real eigen values.");
 
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<T> eigen_values_comp_answer_imag(
 #else
     std::array<T, 3> eigen_values_comp_answer_imag(
 #endif
         { 0, -0.8660254F, 0.8660254F });
 
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<T> eigen_values_comp_imag = 
 #else
     std::array<T, 3> eigen_values_comp_imag =
 #endif
         get_imag_vector_from_complex_vector(eigen_values_comp
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
         , 3);
 #else
         );
@@ -987,7 +989,7 @@ void check_base_matrix_calc(void) {
     eigen_values_comp = eigen_solver_comp.get_eigen_values();
 
     eigen_values_comp_real = get_real_vector_from_complex_vector(eigen_values_comp
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
         , 3);
 #else
         );
@@ -995,7 +997,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex real eigen values, strict.");
     eigen_values_comp_imag = get_imag_vector_from_complex_vector(eigen_values_comp
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
         , 3);
 #else
         );
@@ -1016,7 +1018,7 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-#ifdef USE_USE_STD_VECTOR
+#ifdef USE_STD_VECTOR
     std::vector<Complex<T>> eigen_values_answer_comp(3);
 #else
     std::array<Complex<T>, 3> eigen_values_answer_comp;
