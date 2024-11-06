@@ -17,4 +17,6 @@
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
 
+#undef BASE_MATRIX_COMPILED_MULTIPLY
+
 #endif // BASE_MATRIX_HPP
