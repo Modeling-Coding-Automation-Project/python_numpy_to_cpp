@@ -37,7 +37,7 @@ public:
 
   Matrix(const std::vector<T> &input)
       : data(N, std::vector<T>(M, static_cast<T>(0))) {
-    std::memcpy(&this->data[0][0], &input[0], M * sizeof(this->data[0][0]));
+    std::copy(input.begin(), input.end(), this->data[0].begin());
   }
 
   Matrix(T input[][N]) : data(N, std::vector<T>(M, static_cast<T>(0))) {
@@ -136,7 +136,8 @@ public:
       row = M - 1;
     }
 
-    std::memcpy(&result[0], &this->data[row][0], M * sizeof(result[0]));
+    std::copy(this->data[row].begin(), this->data[row].end(),
+              result.data.begin());
 
     return result;
   }
@@ -279,7 +280,8 @@ public:
     }
 
     Vector<T, M> result;
-    std::memcpy(&result[0], &this->data[row][0], M * sizeof(result[0]));
+    std::copy(this->data[row].begin(), this->data[row].end(),
+              result.data.begin());
 
     return result;
   }
@@ -289,8 +291,8 @@ public:
       row = N - 1;
     }
 
-    std::memcpy(&this->data[row][0], &row_vector[0],
-                M * sizeof(this->data[row][0]));
+    std::copy(row_vector.data.begin(), row_vector.data.end(),
+              this->data[row].begin());
   }
 
   Matrix<T, M, M> inv() const {
@@ -350,9 +352,9 @@ void matrix_row_swap(std::size_t row_1, std::size_t row_2,
     row_2 = N - 1;
   }
 
-  std::memcpy(&temp_vec[0], &mat(row_1)[0], M * sizeof(temp_vec[0]));
-  std::memcpy(&mat(row_1)[0], &mat(row_2)[0], M * sizeof(mat(row_1)[0]));
-  std::memcpy(&mat(row_2)[0], &temp_vec[0], M * sizeof(mat(row_2)[0]));
+  std::copy(mat(row_1).begin(), mat(row_1).end(), temp_vec.data.begin());
+  std::copy(mat(row_2).begin(), mat(row_2).end(), mat(row_1).begin());
+  std::copy(temp_vec.data.begin(), temp_vec.data.end(), mat(row_2).begin());
 }
 
 /* (Scalar) * (Matrix) */

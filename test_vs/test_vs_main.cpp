@@ -1219,6 +1219,9 @@ void check_python_numpy_calc(void) {
         "check LinalgSolver inv diag.");
 
     /* 結合 */
+    auto B_C = concatenate_vertically(B, C);
+    auto B_C_dense = B_C.matrix.create_dense();
+
     auto A_A = concatenate_horizontally(CL, CL);
     Base::Matrix::Matrix<T, 4, 6> A_A_dense = A_A.matrix.create_dense();
     //std::cout << "A_A_dense = " << std::endl;

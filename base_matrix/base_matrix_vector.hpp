@@ -165,7 +165,7 @@ public:
   Vector<T, N> transpose() const {
     Vector<T, N> result;
 
-    std::memcpy(&result[0], &this->data[0], N * sizeof(result[0]));
+    std::copy(this->data.begin(), this->data.end(), result.data.begin());
 
     return result;
   }

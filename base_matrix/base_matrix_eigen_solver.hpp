@@ -384,8 +384,8 @@ private:
         }
       }
 
-      std::memcpy(&this->_eigen_vectors(k)[0], &x[0],
-                  M * sizeof(this->_eigen_vectors(k)[0]));
+      std::copy(x.data.begin(), x.data.end(),
+                this->_eigen_vectors.data[k].begin());
     }
   }
 };

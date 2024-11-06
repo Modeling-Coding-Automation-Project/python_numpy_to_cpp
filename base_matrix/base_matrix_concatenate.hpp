@@ -16,8 +16,8 @@ Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
   Matrix<T, M + P, N> result;
 
   for (std::size_t row = 0; row < N; row++) {
-    std::memcpy(&result(row)[0], &A(row)[0], M * sizeof(result(row)[0]));
-    std::memcpy(&result(row)[M], &B(row)[0], P * sizeof(result(row)[M]));
+    std::copy(A(row).begin(), A(row).end(), result(row).begin());
+    std::copy(B(row).begin(), B(row).end(), result(row).begin() + M);
   }
 
   return result;
@@ -33,17 +33,18 @@ concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B) {
 
   /* A */
   SparseMatrix<T, M, N, (M * N)> sparse_A = create_sparse(A);
-  std::memcpy(&values[0], &sparse_A.values[0], (M * N) * sizeof(values[0]));
-  std::memcpy(&row_indices[0], &sparse_A.row_indices[0],
-              (M * N) * sizeof(row_indices[0]));
-  std::memcpy(&row_pointers[0], &sparse_A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
+  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
+            row_indices.begin());
+  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
+            row_pointers.begin());
 
   /* B */
   SparseMatrix<T, N, N, N> sparse_B = create_sparse(B);
-  std::memcpy(&values[M * N], &sparse_B.values[0], N * sizeof(values[M * N]));
-  std::memcpy(&row_indices[M * N], &sparse_B.row_indices[0],
-              N * sizeof(row_indices[M * N]));
+  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
+            values.begin() + M * N);
+  std::copy(sparse_B.row_indices.begin(), sparse_B.row_indices.end(),
+            row_indices.begin() + M * N);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (M + N + 1); i++) {
@@ -68,16 +69,16 @@ concatenate_vertically(const Matrix<T, M, N> &A,
 
   /* A */
   SparseMatrix<T, M, N, (M * N)> sparse_A = create_sparse(A);
-  std::memcpy(&values[0], &sparse_A.values[0], (M * N) * sizeof(T));
-  std::memcpy(&row_indices[0], &sparse_A.row_indices[0],
-              (M * N) * sizeof(values[0]));
-  std::memcpy(&row_pointers[0], &sparse_A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
+  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
+            row_indices.begin());
+  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
+            row_pointers.begin());
 
   /* B */
-  std::memcpy(&values[M * N], &B.values[0], V * sizeof(values[M * N]));
-  std::memcpy(&row_indices[M * N], &B.row_indices[0],
-              V * sizeof(row_indices[M * N]));
+  std::copy(B.values.begin(), B.values.end(), values.begin() + M * N);
+  std::copy(B.row_indices.begin(), B.row_indices.end(),
+            row_indices.begin() + M * N);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (M + P + 1); i++) {
@@ -100,17 +101,17 @@ concatenate_vertically(const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B) {
 
   /* A */
   SparseMatrix<T, M, M, M> sparse_A = create_sparse(A);
-  std::memcpy(&values[0], &sparse_A.values[0], M * sizeof(values[0]));
-  std::memcpy(&row_indices[0], &sparse_A.row_indices[0],
-              M * sizeof(row_indices[0]));
-  std::memcpy(&row_pointers[0], &sparse_A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
+  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
+            row_indices.begin());
+  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
+            row_pointers.begin());
 
   /* B */
   SparseMatrix<T, P, M, (P * M)> sparse_B = create_sparse(B);
-  std::memcpy(&values[M], &sparse_B.values[0], (P * M) * sizeof(values[M]));
-  std::memcpy(&row_indices[M], &sparse_B.row_indices[0],
-              (P * M) * sizeof(row_indices[M]));
+  std::copy(sparse_B.values.begin(), sparse_B.values.end(), values.begin() + M);
+  std::copy(sparse_B.row_indices.begin(), sparse_B.row_indices.end(),
+            row_indices.begin() + M);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (M + P + 1); i++) {
@@ -134,17 +135,17 @@ auto concatenate_vertically(const DiagMatrix<T, M> &A,
 
   /* A */
   SparseMatrix<T, M, M, M> sparse_A = create_sparse(A);
-  std::memcpy(&values[0], &sparse_A.values[0], M * sizeof(values[0]));
-  std::memcpy(&row_indices[0], &sparse_A.row_indices[0],
-              M * sizeof(row_indices[0]));
-  std::memcpy(&row_pointers[0], &sparse_A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
+  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
+            row_indices.begin());
+  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
+            row_pointers.begin());
 
   /* B */
   SparseMatrix<T, M, M, M> sparse_B = create_sparse(B);
-  std::memcpy(&values[M], &sparse_B.values[0], M * sizeof(values[M]));
-  std::memcpy(&row_indices[M], &sparse_B.row_indices[0],
-              M * sizeof(row_indices[M]));
+  std::copy(sparse_B.values.begin(), sparse_B.values.end(), values.begin() + M);
+  std::copy(sparse_B.row_indices.begin(), sparse_B.row_indices.end(),
+            row_indices.begin() + M);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (2 * M + 1); i++) {
@@ -168,15 +169,16 @@ concatenate_vertically(const DiagMatrix<T, M> &A,
 
   /* A */
   SparseMatrix<T, M, M, M> sparse_A = create_sparse(A);
-  std::memcpy(&values[0], &sparse_A.values[0], M * sizeof(values[0]));
-  std::memcpy(&row_indices[0], &sparse_A.row_indices[0],
-              M * sizeof(row_indices[0]));
-  std::memcpy(&row_pointers[0], &sparse_A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
+  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
+            row_indices.begin());
+  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
+            row_pointers.begin());
 
   /* B */
-  std::memcpy(&values[M], &B.values[0], V * sizeof(values[M]));
-  std::memcpy(&row_indices[M], &B.row_indices[0], V * sizeof(row_indices[M]));
+  std::copy(B.values.begin(), B.values.end(), values.begin() + M);
+  std::copy(B.row_indices.begin(), B.row_indices.end(),
+            row_indices.begin() + M);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (M + P + 1); i++) {
@@ -200,14 +202,14 @@ concatenate_vertically(const SparseMatrix<T, M, N, V> &A,
   std::vector<std::size_t> row_pointers(M + P + 1);
 
   /* A */
-  std::memcpy(&values[0], &A.values[0], V * sizeof(values[0]));
-  std::memcpy(&row_indices[0], &A.row_indices[0], V * sizeof(row_indices[0]));
-  std::memcpy(&row_pointers[0], &A.row_pointers[0],
-              (M + 1) * sizeof(row_pointers[0]));
+  std::copy(A.values.begin(), A.values.end(), values.begin());
+  std::copy(A.row_indices.begin(), A.row_indices.end(), row_indices.begin());
+  std::copy(A.row_pointers.begin(), A.row_pointers.end(), row_pointers.begin());
 
   /* B */
-  std::memcpy(&values[V], &B.values[0], W * sizeof(values[V]));
-  std::memcpy(&row_indices[V], &B.row_indices[0], W * sizeof(row_indices[V]));
+  std::copy(B.values.begin(), B.values.end(), values.begin() + V);
+  std::copy(B.row_indices.begin(), B.row_indices.end(),
+            row_indices.begin() + V);
 
   std::size_t pointer_index = 1;
   for (std::size_t i = M + 1; i < (M + P + 1); i++) {
@@ -226,12 +228,12 @@ Matrix<T, M, N + P> concatenate_horizontally(const Matrix<T, M, N> &A,
   Matrix<T, M, N + P> result;
 
   for (std::size_t row = 0; row < N; row++) {
-    std::memcpy(&result(row)[0], &A(row)[0], M * sizeof(result(row)[0]));
+    std::copy(A(row).begin(), A(row).end(), result(row).begin());
   }
 
   std::size_t B_row = 0;
   for (std::size_t row = N; row < N + P; row++) {
-    std::memcpy(&result(row)[0], &B(B_row)[0], M * sizeof(result(row)[0]));
+    std::copy(B(B_row).begin(), B(B_row).end(), result(row).begin());
     B_row++;
   }
 
@@ -488,14 +490,14 @@ concatenate_square(const Matrix<T, M, N> &A, const Matrix<T, M, P> &B,
   Matrix<T, M + K, N + P> result;
 
   for (std::size_t i = 0; i < N; ++i) {
-    std::memcpy(&result(i)[0], &A(i)[0], M * sizeof(result(i)[0]));
-    std::memcpy(&result(i)[M], &C(i)[0], K * sizeof(result(i)[M]));
+    std::copy(A(i).begin(), A(i).end(), result(i).begin());
+    std::copy(C(i).begin(), C(i).end(), result(i).begin() + M);
   }
 
   std::size_t B_row = 0;
   for (std::size_t i = N; i < N + P; ++i) {
-    std::memcpy(&result(i)[0], &B(B_row)[0], M * sizeof(result(i)[0]));
-    std::memcpy(&result(i)[M], &D(B_row)[0], K * sizeof(result(i)[M]));
+    std::copy(B(B_row).begin(), B(B_row).end(), result(i).begin());
+    std::copy(D(B_row).begin(), D(B_row).end(), result(i).begin() + M);
     B_row++;
   }
 
