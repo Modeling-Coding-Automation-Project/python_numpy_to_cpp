@@ -5,7 +5,6 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include <cstddef>
-#include <cstring>
 
 namespace Base {
 namespace Matrix {

@@ -7,7 +7,6 @@
 #include "base_matrix_vector.hpp"
 #include <cmath>
 #include <cstddef>
-#include <cstring>
 #include <utility>
 #include <vector>
 

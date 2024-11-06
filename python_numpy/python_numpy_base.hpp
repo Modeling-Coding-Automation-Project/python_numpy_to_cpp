@@ -3,7 +3,6 @@
 
 #include "base_matrix.hpp"
 #include <cstddef>
-#include <cstring>
 #include <initializer_list>
 #include <utility>
 
