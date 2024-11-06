@@ -14,25 +14,25 @@ void check_base_matrix_calc(void) {
 
     MCAPTester<T> tester;
 
-    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5) : T(1.0e-3);
-    const T NEAR_LIMIT_SOFT = 1.0e-2;
+    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5F) : T(1.0e-3F);
+    const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 行列の作成 */
     Matrix<T, 2, 3> A;
-    A(0, 0) = 1.0; A(0, 1) = 2.0; A(0, 2) = 3.0;
-    A(1, 0) = 4.0; A(1, 1) = 5.0; A(1, 2) = 6.0;
+    A(0, 0) = 1.0F; A(0, 1) = 2.0F; A(0, 2) = 3.0F;
+    A(1, 0) = 4.0F; A(1, 1) = 5.0F; A(1, 2) = 6.0F;
 
     /* ベクトルの作成 */
     Vector<T, 3> b;
-    b[0] = 1.0;
-    b[1] = 2.0;
-    b[2] = 3.0;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
 
     Vector<T, 2> c;
-    c[0] = 4.0;
-    c[1] = 5.0;
+    c[0] = 4.0F;
+    c[1] = 5.0F;
 
-    Vector<T, 3> r = b * 3.0;
+    Vector<T, 3> r = b * 3.0F;
     //std::cout << "scalar calc ";
     //for (size_t i = 0; i < r.size(); ++i) {
     //    std::cout << r[i] << " ";
@@ -50,27 +50,27 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    T b_dot_answer = 14.0;
+    T b_dot_answer = 14.0F;
     tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT, "check Vector dot.");
 
     /* 行列結合 */
     Matrix<T, 2, 2> Aa;
-    Aa(0, 0) = 1.0; Aa(0, 1) = 2.0;
-    Aa(1, 0) = 3.0; Aa(1, 1) = 4.0;
+    Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
+    Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
 
     Matrix<T, 2, 2> Ba;
-    Ba(0, 0) = 5.0; Ba(0, 1) = 6.0;
-    Ba(1, 0) = 7.0; Ba(1, 1) = 8.0;
+    Ba(0, 0) = 5.0F; Ba(0, 1) = 6.0F;
+    Ba(1, 0) = 7.0F; Ba(1, 1) = 8.0F;
 
     Matrix<T, 3, 2> Ca;
-    Ca(0, 0) = 9.0; Ca(0, 1) = 10.0;
-    Ca(1, 0) = 11.0; Ca(1, 1) = 12.0;
-    Ca(2, 0) = 11.0; Ca(2, 1) = 12.0;
+    Ca(0, 0) = 9.0F; Ca(0, 1) = 10.0F;
+    Ca(1, 0) = 11.0F; Ca(1, 1) = 12.0F;
+    Ca(2, 0) = 11.0F; Ca(2, 1) = 12.0F;
 
     Matrix<T, 3, 2> Da;
-    Da(0, 0) = 13.0; Da(0, 1) = 14.0;
-    Da(1, 0) = 15.0; Da(1, 1) = 16.0;
-    Da(2, 0) = 15.0; Da(2, 1) = 16.0;
+    Da(0, 0) = 13.0F; Da(0, 1) = 14.0F;
+    Da(1, 0) = 15.0F; Da(1, 1) = 16.0F;
+    Da(2, 0) = 15.0F; Da(2, 1) = 16.0F;
 
     Matrix<T, 5, 4> C = concatenate_square(Aa, Ba, Ca, Da);
     //std::cout << "Square = " << std::endl;
@@ -136,9 +136,9 @@ void check_base_matrix_calc(void) {
 
     /* ベクトルと行列の積 2 */
     Vector<T, 2> d;
-    d[0] = 1.0; d[1] = 2.0;
+    d[0] = 1.0F; d[1] = 2.0F;
     Matrix<T, 1, 3> BB;
-    BB(0, 0) = 3.0; BB(0, 1) = 4.0; BB(0, 2) = 5.0;
+    BB(0, 0) = 3.0F; BB(0, 1) = 4.0F; BB(0, 2) = 5.0F;
     Matrix<T, 2, 3> Y = d * BB;
     //std::cout << "Y = " << std::endl;
     //for (size_t j = 0; j < Y.cols(); ++j) {
@@ -155,12 +155,12 @@ void check_base_matrix_calc(void) {
 
     /* 行列と行列の積 */
     Matrix<T, 2, 3> E;
-    E(0, 0) = 1.0; E(0, 1) = 2.0; E(0, 2) = 3.0;
-    E(1, 0) = 4.0; E(1, 1) = 5.0; E(1, 2) = 6.0;
+    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
+    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
 
     Matrix<T, 3, 2> F;
-    F(0, 0) = 7.0; F(1, 0) = 8.0; F(2, 0) = 9.0;
-    F(0, 1) = 10.0; F(1, 1) = 11.0; F(2, 1) = 12.0;
+    F(0, 0) = 7.0F; F(1, 0) = 8.0F; F(2, 0) = 9.0F;
+    F(0, 1) = 10.0F; F(1, 1) = 11.0F; F(2, 1) = 12.0F;
 
     Matrix<T, 3, 3> G = F * E;
     //std::cout << "F * E = " << std::endl;
@@ -185,7 +185,7 @@ void check_base_matrix_calc(void) {
 
     Matrix<T, 3, 3> H_lu({ {0, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
-    LUDecomposition<T, 3> lu(H, static_cast<T>(1.0e-10));
+    LUDecomposition<T, 3> lu(H, static_cast<T>(1.0e-10F));
     Matrix<T, 3, 3> L = lu.get_L();
     Vector<T, 3> xx = lu.solve(b);
 
@@ -201,7 +201,7 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3> L_answer({
         { 1, 0, 0 },
         { 8, 1, 0 },
-        { 6, 0.818182, 1 }
+        { 6, 0.818182F, 1 }
         });
     tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition L.");
@@ -213,7 +213,7 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    Vector<T, 3> xx_answer({ 0.652632, -0.821053, 0.221053 });
+    Vector<T, 3> xx_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition solve.");
 
@@ -221,7 +221,7 @@ void check_base_matrix_calc(void) {
     T rho;
     size_t rep_num;
     Vector<T, 3> x_gmres_k_0;
-    Vector<T, 3> x_gmres_k = gmres_k(H, b, x_gmres_k_0, static_cast<T>(0.0), static_cast<T>(1.0e-10), rho, rep_num);
+    Vector<T, 3> x_gmres_k = gmres_k(H, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -230,7 +230,7 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    Vector<T, 3> x_gmres_k_answer({ 0.652632, -0.821053, 0.221053 });
+    Vector<T, 3> x_gmres_k_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer.data, NEAR_LIMIT_STRICT,
         "check GMRES k.");
 
@@ -268,18 +268,18 @@ void check_base_matrix_calc(void) {
 
     /* GMRES k rect */
     Vector<T, 4> b_2;
-    b_2[0] = 1.0;
-    b_2[1] = 2.0;
-    b_2[2] = 3.0;
-    b_2[3] = 4.0;
+    b_2[0] = 1.0F;
+    b_2[1] = 2.0F;
+    b_2[2] = 3.0F;
+    b_2[3] = 4.0F;
     Matrix<T, 4, 3> H_2;
-    H_2(0, 0) = 1.0; H_2(0, 1) = 2.0; H_2(0, 2) = 9.0;
-    H_2(1, 0) = 8.0; H_2(1, 1) = 5.0; H_2(1, 2) = 4.0;
-    H_2(2, 0) = 6.0; H_2(2, 1) = 3.0; H_2(2, 2) = 7.0;
-    H_2(3, 0) = 10.0; H_2(3, 1) = 12.0; H_2(3, 2) = 11.0;
+    H_2(0, 0) = 1.0F; H_2(0, 1) = 2.0F; H_2(0, 2) = 9.0F;
+    H_2(1, 0) = 8.0F; H_2(1, 1) = 5.0F; H_2(1, 2) = 4.0F;
+    H_2(2, 0) = 6.0F; H_2(2, 1) = 3.0F; H_2(2, 2) = 7.0F;
+    H_2(3, 0) = 10.0F; H_2(3, 1) = 12.0F; H_2(3, 2) = 11.0F;
 
     Vector<T, 3> x_gmres_k_rect_0;
-    Vector<T, 3> x_gmres_k_rect = gmres_k_rect(H_2, b_2, x_gmres_k_rect_0, static_cast<T>(0.0), static_cast<T>(1.0e-10), rho, rep_num);
+    Vector<T, 3> x_gmres_k_rect = gmres_k_rect(H_2, b_2, x_gmres_k_rect_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k_rect = ";
     //for (size_t i = 0; i < x_gmres_k_rect.size(); ++i) {
@@ -287,7 +287,7 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Vector<T, 3> x_gmres_k_rect_answer({ 0.271401, -0.0229407, 0.127345 });
+    Vector<T, 3> x_gmres_k_rect_answer({ 0.271401F, -0.0229407F, 0.127345F });
     tester.expect_near(x_gmres_k_rect.data, x_gmres_k_rect_answer.data, NEAR_LIMIT_STRICT,
         "check GMRES k rect.");
 
@@ -308,9 +308,9 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
 
     Matrix<T, 3, 3> H_inv_answer({
-        {-0.242105, -0.136842, 0.389474},
-        {0.336842, 0.494737, -0.715789},
-        {0.0631579, -0.0947368, 0.115789}
+        {-0.242105F, -0.136842F, 0.389474F},
+        {0.336842F, 0.494737F, -0.715789F},
+        {0.0631579F, -0.0947368F, 0.115789F}
         });
     tester.expect_near(H_inv.data, H_inv_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix inverse.");
@@ -320,7 +320,7 @@ void check_base_matrix_calc(void) {
     //std::cout << "det = " << det << std::endl;
     //std::cout << std::endl;
 
-    T det_answer = -95.0;
+    T det_answer = -95.0F;
     tester.expect_near(det, det_answer, NEAR_LIMIT_STRICT,
         "check Matrix determinant.");
 
@@ -328,15 +328,15 @@ void check_base_matrix_calc(void) {
     //std::cout << "trace = " << trace << std::endl;
     //std::cout << std::endl;
 
-    T trace_answer = 13.0;
+    T trace_answer = 13.0F;
     tester.expect_near(trace, trace_answer, NEAR_LIMIT_STRICT,
         "check Matrix trace.");
 
     /* 対角行列 */
     DiagMatrix<T, 3> D;
-    D[0] = 1.0;
-    D[1] = 2.0;
-    D[2] = 3.0;
+    D[0] = 1.0F;
+    D[1] = 2.0F;
+    D[2] = 3.0F;
 
     Vector<T, 3> D_d = D * b;
 
@@ -385,7 +385,7 @@ void check_base_matrix_calc(void) {
     T ddd = D.get_trace();
     //std::cout << "trace " << ddd << std::endl;
 
-    T ddd_answer = 6.0;
+    T ddd_answer = 6.0F;
     tester.expect_near(ddd, ddd_answer, NEAR_LIMIT_STRICT,
         "check DiagMatrix trace.");
 
@@ -432,13 +432,13 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-    DiagMatrix<T, 3> K_diag_answer({ 1, 1.41421, 1.73205 });
+    DiagMatrix<T, 3> K_diag_answer({ 1, 1.41421F, 1.73205F });
     tester.expect_near(K_diag.data, K_diag_answer.data, NEAR_LIMIT_STRICT,
         "check Cholesky decomposition diag.");
 
 
     /* スパース行列 */
-    std::vector<T> A_value({ 1.0, 3.0, 8.0, 2.0, 4.0 });
+    std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
     std::vector<size_t> A_row_indices({ 0, 0, 2, 1, 2 });
     std::vector<size_t> A_row_pointers({ 0, 1, 3, 5 });
 
@@ -615,7 +615,7 @@ void check_base_matrix_calc(void) {
         "check Column Vector multiply SparseMatrix.");
 
     /* スパース行列の逆行列計算 */
-    x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0), static_cast<T>(1.0e-10), rho, rep_num);
+    x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -629,7 +629,7 @@ void check_base_matrix_calc(void) {
         "check SparseMatrix GMRES k.");
 
     SparseMatrix<T, 4, 3, 6> SB({ 1, 3, 2, 8, 4, 1 }, { 0, 1, 2, 1, 2, 1 }, { 0, 2, 3, 5, 6 });
-    x_gmres_k = sparse_gmres_k_rect(SB, b_2, x_gmres_k_rect_0, static_cast<T>(0.0), static_cast<T>(1.0e-10), rho, rep_num);
+    x_gmres_k = sparse_gmres_k_rect(SB, b_2, x_gmres_k_rect_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -638,7 +638,7 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    Vector<T, 3> x_gmres_k_answer_3({ 0.478261, 0.173913, 0.521739 });
+    Vector<T, 3> x_gmres_k_answer_3({ 0.478261F, 0.173913F, 0.521739F });
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer_3.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix GMRES k rect.");
 
@@ -662,7 +662,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(SB_dense.data, SB_dense_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix create dense.");
 
-    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SA, static_cast<T>(0.0), static_cast<T>(1.0e-10), X_temp);
+    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SA, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
 
     //std::cout << "S_inv = " << std::endl;
     //for (size_t j = 0; j < S_inv.cols(); ++j) {
@@ -730,8 +730,8 @@ void check_base_matrix_calc(void) {
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
-    //QRDecomposition<T, 3, 3> qr(C_dense, static_cast<T>(1.0e-10));
-    QRDecompositionSparse<T, 3, 3, 5> qr(SA, static_cast<T>(1.0e-10));
+    //QRDecomposition<T, 3, 3> qr(C_dense, static_cast<T>(1.0e-10F));
+    QRDecompositionSparse<T, 3, 3, 5> qr(SA, static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> Q = qr.get_Q();
     Matrix<T, 3, 3> R = qr.get_R();
@@ -746,8 +746,8 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
 
     Matrix<T, 3, 3> Q_answer({
-        {-0.316228, 0, 0.948683},
-        {-0.948683, 0, -0.316228},
+        {-0.316228F, 0, 0.948683F},
+        {-0.948683F, 0, -0.316228F},
         {0, -1, 0}
         });
     tester.expect_near(Q.data, Q_answer.data, NEAR_LIMIT_STRICT,
@@ -763,14 +763,14 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
 
     Matrix<T, 3, 3> R_answer({
-        {-3.16228, 0, -7.58947},
+        {-3.16228F, 0, -7.58947F},
         {0, -2, -4},
-        {0, 0, -2.52982}
+        {0, 0, -2.52982F}
         });
     tester.expect_near(R.data, R_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition R.");
 
-    QRDecompositionDiag<T, 3> qr_d(DiagJ, static_cast<T>(1.0e-10));
+    QRDecompositionDiag<T, 3> qr_d(DiagJ, static_cast<T>(1.0e-10F));
     DiagMatrix<T, 3> Q_d = qr_d.get_Q();
 
     DiagMatrix<T, 3> Q_d_answer({ 1, 1, 1 });
@@ -836,12 +836,12 @@ void check_base_matrix_calc(void) {
 
     /* 複素数 GMRES K */
     Matrix<Complex<T>, 3, 3> H_comp({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
-    H_comp(0, 1).imag = 1.0;
+    H_comp(0, 1).imag = 1.0F;
     Vector<Complex<T>, 3> b_comp_2({ 1, 2, 3 });
 
     Vector<Complex<T>, 3> x_gmres_k_0_comp;
     Vector<Complex<T>, 3> x_gmres_k_comp = complex_gmres_k(H_comp, b_comp_2, x_gmres_k_0_comp,
-        static_cast<T>(0.0), static_cast<T>(1.0e-10), rho, rep_num);
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k_comp = ";
     //std::cout << "[";
@@ -854,13 +854,13 @@ void check_base_matrix_calc(void) {
 
     Vector<T, 3> x_gmres_k_comp_real;
     get_real_vector_from_complex_vector(x_gmres_k_comp_real, x_gmres_k_comp);
-    Vector<T, 3> x_gmres_k_comp_answer_real({ 0.592496765847348, -0.737386804657180, 0.236739974126779 });
+    Vector<T, 3> x_gmres_k_comp_answer_real({ 0.592496765847348F, -0.737386804657180F, 0.236739974126779F });
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k real.");
 
     Vector<T, 3> x_gmres_k_comp_imag;
     get_real_vector_from_complex_vector(x_gmres_k_comp_imag, x_gmres_k_comp);
-    Vector<T, 3> x_gmres_k_comp_answer_imag({ -0.178525226390686, 0.248382923673997, 0.046571798188875 });
+    Vector<T, 3> x_gmres_k_comp_answer_imag({ -0.178525226390686F, 0.248382923673997F, 0.046571798188875F });
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k imag.");
 
@@ -870,7 +870,7 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<T, 4, 4> Ae({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
 
-    EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-10));
+    EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-10F));
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
 
     //std::cout << "eigen_values = ";
@@ -923,7 +923,7 @@ void check_base_matrix_calc(void) {
 
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
-    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-10));
+    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-10F));
     std::vector<Complex<T>> eigen_values_comp = eigen_solver_comp.get_eigen_values();
 
     //std::cout << "eigen_values_comp = ";
@@ -932,13 +932,13 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl << std::endl;
 
-    std::vector<T> eigen_values_comp_answer_real({ 6, -1.5, -1.5 });
+    std::vector<T> eigen_values_comp_answer_real({ 6, -1.5F, -1.5F });
     std::vector<T> eigen_values_comp_real({ 0, 0, 0 });
     get_real_vector_from_complex_vector(eigen_values_comp_real, eigen_values_comp, 3);
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex real eigen values.");
 
-    std::vector<T> eigen_values_comp_answer_imag({ 0, -0.8660254, 0.8660254 });
+    std::vector<T> eigen_values_comp_answer_imag({ 0, -0.8660254F, 0.8660254F });
     std::vector<T> eigen_values_comp_imag({ 0, 0, 0 });
     get_imag_vector_from_complex_vector(eigen_values_comp_imag, eigen_values_comp, 3);
     tester.expect_near(eigen_values_comp_imag, eigen_values_comp_answer_imag, NEAR_LIMIT_SOFT,
@@ -969,8 +969,8 @@ void check_base_matrix_calc(void) {
 
     std::vector<Complex<T>> eigen_values_answer_comp(3);
     eigen_values_answer_comp[0] = Complex<T>(6, 0);
-    eigen_values_answer_comp[1] = Complex<T>(-1.5, -0.8660254);
-    eigen_values_answer_comp[2] = Complex<T>(-1.5, 0.8660254);
+    eigen_values_answer_comp[1] = Complex<T>(-1.5F, -0.8660254F);
+    eigen_values_answer_comp[2] = Complex<T>(-1.5F, 0.8660254F);
 
     eigen_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eigen_solver_comp.get_eigen_vectors();
@@ -1018,24 +1018,24 @@ void check_python_numpy_calc(void) {
 
     MCAPTester<T> tester;
 
-    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5) : T(1.0e-3);
-    const T NEAR_LIMIT_SOFT = 1.0e-2;
+    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5F) : T(1.0e-3F);
+    const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 配列代入 */
     T in[2][3];
-    in[0][0] = 1.0;
-    in[0][1] = 2.0;
-    in[0][2] = 3.0;
-    in[1][0] = 4.0;
-    in[1][1] = 5.0;
-    in[1][2] = 6.0;
+    in[0][0] = 1.0F;
+    in[0][1] = 2.0F;
+    in[0][2] = 3.0F;
+    in[1][0] = 4.0F;
+    in[1][1] = 5.0F;
+    in[1][2] = 6.0F;
 
     Matrix<DefDense, T, 2, 3> IN(in);
 
     T in_diag[3];
-    in_diag[0] = 1.0;
-    in_diag[1] = 2.0;
-    in_diag[2] = 3.0;
+    in_diag[0] = 1.0F;
+    in_diag[1] = 2.0F;
+    in_diag[2] = 3.0F;
 
     Matrix<DefDiag, T, 3> IN_DIAG(in_diag);
 
@@ -1047,7 +1047,7 @@ void check_python_numpy_calc(void) {
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
 
     Matrix<DefSparse, T, 3, 3, 5> C(
-        { 1.0, 3.0, 8.0, 2.0, 4.0 },
+        { 1.0F, 3.0F, 8.0F, 2.0F, 4.0F },
         { 0, 0, 2, 1, 2 },
         { 0, 1, 3, 5 }
     );
@@ -1149,7 +1149,7 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<DefDense, T, 3, 3> Inv_answer({ {1, 0, 0}, {0.75, -0.25, 0.5}, {-0.375, 0.125, 0} });
+    Matrix<DefDense, T, 3, 3> Inv_answer({ {1, 0, 0}, {0.75F, -0.25F, 0.5F}, {-0.375F, 0.125F, 0} });
     tester.expect_near(Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv.");
 
@@ -1163,7 +1163,7 @@ void check_python_numpy_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    Matrix<DefDiag, T, 3> Inv_d_answer({ 1, 0.5, 0.333333 });
+    Matrix<DefDiag, T, 3> Inv_d_answer({ 1, 0.5F, 0.333333F });
     tester.expect_near(Inv_d.matrix.data, Inv_d_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv diag.");
 
@@ -1259,9 +1259,9 @@ void check_python_numpy_calc(void) {
     //std::cout << std::endl;
 
     Matrix<DefDense, T, 3, 3> A_ch_answer({
-        {3.16228, 0.316228, 0.632456},
-        {0, 4.46094, 0.851838},
-        {0, 0, 5.37349}
+        {3.16228F, 0.316228F, 0.632456F},
+        {0, 4.46094F, 0.851838F},
+        {0, 0, 5.37349F}
         });
     tester.expect_near(A_ch_d.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverCholesky solve.");
@@ -1326,7 +1326,7 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    //Matrix<DefDense, T, 4, 1> eigen_values_answer({ {34}, {8.94427191}, {0}, {-8.94427191} });
+    //Matrix<DefDense, T, 4, 1> eigen_values_answer({ {34}, {8.94427191F}, {0}, {-8.94427191F} });
     Matrix<DefDense, T, 3, 1> eigen_values_answer({ {3}, {2}, {1} });
     tester.expect_near(eigen_values.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen values.");
@@ -1377,8 +1377,8 @@ void check_python_numpy_calc(void) {
     eig_solver_comp.set_iteration_max(5);
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
 
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {6}, {-1.5}, {-1.5} });
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {-0.8660254}, {0.8660254} });
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {6}, {-1.5F}, {-1.5F} });
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {-0.8660254F}, {0.8660254F} });
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_real;
     Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_real.matrix, eigen_values_comp.matrix);
@@ -1409,8 +1409,8 @@ void check_python_numpy_calc(void) {
 
     std::vector<Complex<T>> eigen_values_answer_comp(3);
     eigen_values_answer_comp[0] = Complex<T>(6, 0);
-    eigen_values_answer_comp[1] = Complex<T>(-1.5, -0.8660254);
-    eigen_values_answer_comp[2] = Complex<T>(-1.5, 0.8660254);
+    eigen_values_answer_comp[1] = Complex<T>(-1.5F, -0.8660254F);
+    eigen_values_answer_comp[2] = Complex<T>(-1.5F, 0.8660254F);
 
     eig_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
