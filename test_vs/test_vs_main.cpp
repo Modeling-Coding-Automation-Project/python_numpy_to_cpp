@@ -14,7 +14,7 @@ void check_base_matrix_calc(void) {
 
     MCAPTester<T> tester;
 
-    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5F) : T(1.0e-3F);
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 行列の作成 */
@@ -1069,7 +1069,7 @@ void check_python_numpy_calc(void) {
 
     MCAPTester<T> tester;
 
-    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5F) : T(1.0e-3F);
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 配列代入 */

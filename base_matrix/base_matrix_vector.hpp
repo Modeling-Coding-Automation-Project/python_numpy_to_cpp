@@ -4,11 +4,13 @@
 #include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_utility.hpp"
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>
 #include <vector>
+
 
 namespace Base {
 namespace Matrix {
