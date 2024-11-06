@@ -8,6 +8,7 @@
 #include "base_matrix_eigen_solver.hpp"
 #include "base_matrix_inverse.hpp"
 #include "base_matrix_lu_decomposition.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_qr_decomposition.hpp"
 #include "base_matrix_sparse.hpp"

@@ -852,14 +852,12 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
-    Vector<T, 3> x_gmres_k_comp_real;
-    get_real_vector_from_complex_vector(x_gmres_k_comp_real, x_gmres_k_comp);
+    Vector<T, 3> x_gmres_k_comp_real = get_real_vector_from_complex_vector(x_gmres_k_comp);
     Vector<T, 3> x_gmres_k_comp_answer_real({ 0.592496765847348F, -0.737386804657180F, 0.236739974126779F });
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k real.");
 
-    Vector<T, 3> x_gmres_k_comp_imag;
-    get_real_vector_from_complex_vector(x_gmres_k_comp_imag, x_gmres_k_comp);
+    Vector<T, 3> x_gmres_k_comp_imag = get_real_vector_from_complex_vector(x_gmres_k_comp);
     Vector<T, 3> x_gmres_k_comp_answer_imag({ -0.178525226390686F, 0.248382923673997F, 0.046571798188875F });
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k imag.");
@@ -871,7 +869,11 @@ void check_base_matrix_calc(void) {
     Matrix<T, 4, 4> Ae({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
 
     EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-10F));
+#ifdef USE_USE_STD_VECTOR
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
+#else
+    std::array<T, 3> eigen_values = eigen_solver.get_eigen_values();
+#endif
 
     //std::cout << "eigen_values = ";
     //for (size_t i = 0; i < eigen_values.size(); ++i) {
@@ -879,7 +881,11 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl << std::endl;
 
+#ifdef USE_USE_STD_VECTOR
     std::vector<T> eigen_values_answer({ 3, 2, 1 });
+#else
+    std::array<T, 3> eigen_values_answer({ 3, 2, 1 });
+#endif
 
     eigen_solver.continue_solving_eigen_values();
     eigen_values = eigen_solver.get_eigen_values();
@@ -924,7 +930,11 @@ void check_base_matrix_calc(void) {
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-10F));
+#ifdef USE_USE_STD_VECTOR
     std::vector<Complex<T>> eigen_values_comp = eigen_solver_comp.get_eigen_values();
+#else
+    std::array<Complex<T>, 3> eigen_values_comp = eigen_solver_comp.get_eigen_values();
+#endif
 
     //std::cout << "eigen_values_comp = ";
     //for (size_t i = 0; i < eigen_values_comp.size(); ++i) {
@@ -932,25 +942,64 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl << std::endl;
 
-    std::vector<T> eigen_values_comp_answer_real({ 6, -1.5F, -1.5F });
-    std::vector<T> eigen_values_comp_real({ 0, 0, 0 });
-    get_real_vector_from_complex_vector(eigen_values_comp_real, eigen_values_comp, 3);
+#ifdef USE_USE_STD_VECTOR
+    std::vector<T> eigen_values_comp_answer_real(
+#else
+    std::array<T, 3> eigen_values_comp_answer_real(
+#endif
+        { 6, -1.5F, -1.5F });
+#ifdef USE_USE_STD_VECTOR
+    std::vector<T> eigen_values_comp_real = 
+#else
+    std::array<T, 3> eigen_values_comp_real =
+#endif
+        get_real_vector_from_complex_vector(eigen_values_comp
+#ifdef USE_USE_STD_VECTOR
+            , 3);
+#else
+        );
+#endif
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex real eigen values.");
 
-    std::vector<T> eigen_values_comp_answer_imag({ 0, -0.8660254F, 0.8660254F });
-    std::vector<T> eigen_values_comp_imag({ 0, 0, 0 });
-    get_imag_vector_from_complex_vector(eigen_values_comp_imag, eigen_values_comp, 3);
+#ifdef USE_USE_STD_VECTOR
+    std::vector<T> eigen_values_comp_answer_imag(
+#else
+    std::array<T, 3> eigen_values_comp_answer_imag(
+#endif
+        { 0, -0.8660254F, 0.8660254F });
+
+#ifdef USE_USE_STD_VECTOR
+    std::vector<T> eigen_values_comp_imag = 
+#else
+    std::array<T, 3> eigen_values_comp_imag =
+#endif
+        get_imag_vector_from_complex_vector(eigen_values_comp
+#ifdef USE_USE_STD_VECTOR
+        , 3);
+#else
+        );
+#endif
     tester.expect_near(eigen_values_comp_imag, eigen_values_comp_answer_imag, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex imag eigen values.");
 
     eigen_solver_comp.continue_solving_eigen_values();
     eigen_values_comp = eigen_solver_comp.get_eigen_values();
 
-    get_real_vector_from_complex_vector(eigen_values_comp_real, eigen_values_comp, 3);
+    eigen_values_comp_real = get_real_vector_from_complex_vector(eigen_values_comp
+#ifdef USE_USE_STD_VECTOR
+        , 3);
+#else
+        );
+#endif
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex real eigen values, strict.");
-    get_imag_vector_from_complex_vector(eigen_values_comp_imag, eigen_values_comp, 3);
+    eigen_values_comp_imag = get_imag_vector_from_complex_vector(eigen_values_comp
+#ifdef USE_USE_STD_VECTOR
+        , 3);
+#else
+        );
+#endif
     tester.expect_near(eigen_values_comp_imag, eigen_values_comp_answer_imag, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex imag eigen values, strict.");
 
@@ -967,7 +1016,11 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
+#ifdef USE_USE_STD_VECTOR
     std::vector<Complex<T>> eigen_values_answer_comp(3);
+#else
+    std::array<Complex<T>, 3> eigen_values_answer_comp;
+#endif
     eigen_values_answer_comp[0] = Complex<T>(6, 0);
     eigen_values_answer_comp[1] = Complex<T>(-1.5F, -0.8660254F);
     eigen_values_answer_comp[2] = Complex<T>(-1.5F, 0.8660254F);
@@ -1311,6 +1364,7 @@ void check_python_numpy_calc(void) {
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
     //Matrix<DefDense, T, 4, 4> A2({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
     static auto eig_solver = make_LinalgSolverEigReal(A0);
+
     auto eigen_values = eig_solver.get_eigen_values();
 
     //std::cout << "eigen_values = " << std::endl;

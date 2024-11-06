@@ -4,6 +4,7 @@
 #include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_lu_decomposition.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_variable_sparse.hpp"
@@ -21,6 +22,8 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
+#ifdef USE_STD_VECTOR
+
   EigenSolverReal()
       : iteration_max(0), _division_min(static_cast<T>(0)),
         _eigen_values(M, static_cast<T>(0)),
@@ -35,6 +38,23 @@ public:
 
     this->_solve_values_with_qr_method(matrix);
   }
+
+#else
+
+  EigenSolverReal()
+      : iteration_max(0), _division_min(static_cast<T>(0)), _eigen_values{},
+        _eigen_vectors(Matrix<T, M, M>::ones()) {}
+
+  EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
+                  T division_min)
+      : iteration_max(iteration_max), _division_min(division_min),
+        _eigen_values{}, _eigen_vectors(Matrix<T, M, M>::ones()) {
+    static_assert(M > 1, "Matrix must be larger than 2x2.");
+
+    this->_solve_values_with_qr_method(matrix);
+  }
+
+#endif
 
   /* Copy Constructor */
   EigenSolverReal(EigenSolverReal<T, M> &other)
@@ -109,7 +129,11 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+#ifdef USE_STD_VECTOR
   std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
+#else
+  std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
+#endif
 
   Matrix<T, M, M> get_eigen_vectors(void) { return this->_eigen_vectors; }
 
@@ -119,7 +143,11 @@ public:
 private:
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
+#ifdef USE_STD_VECTOR
   std::vector<T> _eigen_values;
+#else
+  std::array<T, M> _eigen_values;
+#endif
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -364,6 +392,8 @@ private:
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
+#ifdef USE_STD_VECTOR
+
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0),
         _division_min(static_cast<T>(0)), _eigen_values(M, static_cast<T>(0)),
@@ -379,6 +409,26 @@ public:
 
     this->_solve_with_qr_method(matrix);
   }
+
+#else
+
+  EigenSolverComplex()
+      : iteration_max(0), iteration_max_for_eigen_vector(0),
+        _division_min(static_cast<T>(0)), _eigen_values{},
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
+
+  EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
+                     T division_min)
+      : iteration_max(iteration_max),
+        iteration_max_for_eigen_vector(iteration_max * 3),
+        _division_min(division_min), _eigen_values{},
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
+    static_assert(M > 1, "Matrix must be larger than 2x2.");
+
+    this->_solve_with_qr_method(matrix);
+  }
+
+#endif
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
@@ -459,7 +509,13 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+#ifdef USE_STD_VECTOR
   std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
+#else
+  std::array<Complex<T>, M> get_eigen_values(void) {
+    return this->_eigen_values;
+  }
+#endif
 
   Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
@@ -473,7 +529,11 @@ private:
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
+#ifdef USE_STD_VECTOR
   std::vector<Complex<T>> _eigen_values;
+#else
+  std::array<Complex<T>, M> _eigen_values;
+#endif
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);

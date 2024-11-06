@@ -2,14 +2,17 @@
 #define BASE_MATRIX_SPARSE_HPP
 
 #include "base_matrix_diagonal.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <initializer_list>
 #include <utility>
 #include <vector>
+
 
 namespace Base {
 namespace Matrix {
@@ -19,6 +22,8 @@ const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 class SparseMatrix {
 public:
+#ifdef USE_STD_VECTOR
+
   SparseMatrix()
       : values(V, static_cast<T>(0)),
         row_indices(V, static_cast<std::size_t>(0)),
@@ -62,6 +67,68 @@ public:
       this->row_pointers[i + 1] = row_pointer_count;
     }
   }
+
+#else
+
+  SparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+
+  SparseMatrix(const std::initializer_list<T> &values,
+               const std::initializer_list<std::size_t> &row_indices,
+               const std::initializer_list<std::size_t> &row_pointers)
+      : values{}, row_indices{}, row_pointers{} {
+
+    std::copy(values.begin(), values.end(), this->values.begin());
+    std::copy(row_indices.begin(), row_indices.end(),
+              this->row_indices.begin());
+    std::copy(row_pointers.begin(), row_pointers.end(),
+              this->row_pointers.begin());
+  }
+
+  SparseMatrix(const std::array<T, V> &values,
+               const std::array<std::size_t, V> &row_indices,
+               const std::array<std::size_t, (M + 1)> &row_pointers)
+      : values(values), row_indices(row_indices), row_pointers(row_pointers) {}
+
+  SparseMatrix(const std::vector<T> &values,
+               const std::vector<std::size_t> &row_indices,
+               const std::vector<std::size_t> &row_pointers)
+      : values{}, row_indices{}, row_pointers{} {
+
+    std::copy(values.begin(), values.end(), this->values.begin());
+    std::copy(row_indices.begin(), row_indices.end(),
+              this->row_indices.begin());
+    std::copy(row_pointers.begin(), row_pointers.end(),
+              this->row_pointers.begin());
+  }
+
+  SparseMatrix(const Matrix<T, M, N> &input)
+      : values{}, row_indices{}, row_pointers{} {
+
+    std::size_t row_index_index = 0;
+    std::size_t row_pointer_count = 0;
+
+    for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t j = 0; j < N; j++) {
+        if (std::abs(input(i, j)) >
+            static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
+          this->values[row_index_index] = input(i, j);
+          this->row_indices[row_index_index] = j;
+
+          row_pointer_count++;
+          row_index_index++;
+
+          if (row_index_index >= V) {
+            this->row_pointers[i + 1] = row_pointer_count;
+            return;
+          }
+        }
+      }
+
+      this->row_pointers[i + 1] = row_pointer_count;
+    }
+  }
+
+#endif
 
   /* Copy Constructor */
   SparseMatrix(const SparseMatrix<T, M, N, V> &other)
@@ -228,10 +295,16 @@ public:
 
   std::size_t cols() const { return M; }
 
-  /* Variable */
+/* Variable */
+#ifdef USE_STD_VECTOR
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
+#else
+  std::array<T, V> values;
+  std::array<std::size_t, V> row_indices;
+  std::array<std::size_t, M + 1> row_pointers;
+#endif
 };
 
 template <typename T, std::size_t M, std::size_t N>

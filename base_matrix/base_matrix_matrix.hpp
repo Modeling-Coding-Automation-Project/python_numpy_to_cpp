@@ -2,7 +2,9 @@
 #define BASE_MATRIX_MATRIX_HPP
 
 #include "base_matrix_complex.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_vector.hpp"
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
@@ -15,6 +17,8 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class Matrix {
 public:
+#ifdef USE_STD_VECTOR
+
   Matrix() : data(N, std::vector<T>(M, static_cast<T>(0))) {}
 
   Matrix(const std::initializer_list<std::initializer_list<T>> &input)
@@ -44,6 +48,45 @@ public:
       }
     }
   }
+
+#else
+
+  Matrix() : data{} {}
+
+  Matrix(const std::initializer_list<std::initializer_list<T>> &input)
+      : data{} {
+
+    auto outer_it = input.begin();
+    for (std::size_t i = 0; i < M; i++) {
+      auto inner_it = outer_it->begin();
+      for (std::size_t j = 0; j < N; j++) {
+        this->data[j][i] = *inner_it;
+        ++inner_it;
+      }
+      ++outer_it;
+    }
+  }
+
+  Matrix(const std::array<std::array<T, N>, M> &input) : data(input) {}
+
+  Matrix(const std::vector<T> &input) : data{} {
+    std::copy(input.begin(), input.end(), this->data[0].begin());
+  }
+
+  Matrix(const std::array<T, M> &input) : data{} {
+    std::copy(input.begin(), input.end(), this->data[0].begin());
+  }
+
+  Matrix(T input[][N]) : data{} {
+
+    for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t j = 0; j < N; j++) {
+        this->data[j][i] = input[i][j];
+      }
+    }
+  }
+
+#endif
 
   /* Copy Constructor */
   Matrix(const Matrix<T, M, N> &other) : data(other.data) {}
@@ -120,6 +163,8 @@ public:
     return this->data[row][col];
   }
 
+#ifdef USE_STD_VECTOR
+
   std::vector<T> &operator()(std::size_t row) {
     if (row >= N) {
       row = N - 1;
@@ -135,6 +180,26 @@ public:
 
     return this->data[row];
   }
+
+#else
+
+  std::array<T, M> &operator()(std::size_t row) {
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->data[row];
+  }
+
+  const std::array<T, M> &operator()(std::size_t row) const {
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->data[row];
+  }
+
+#endif
 
   Matrix<T, M, N> operator+(const Matrix<T, M, N> &mat) const {
     Matrix<T, M, N> result;
@@ -244,8 +309,12 @@ public:
     return trace;
   }
 
-  /* Variable */
+/* Variable */
+#ifdef USE_STD_VECTOR
   std::vector<std::vector<T>> data;
+#else
+  std::array<std::array<T, M>, N> data;
+#endif
 };
 
 /* swap columns */

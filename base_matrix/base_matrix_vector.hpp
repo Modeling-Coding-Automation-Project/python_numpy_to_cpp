@@ -2,6 +2,7 @@
 #define BASE_MATRIX_VECTOR_HPP
 
 #include "base_matrix_complex.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_utility.hpp"
 #include <cmath>
 #include <cstddef>
@@ -16,11 +17,31 @@ namespace Matrix {
 /* Vector */
 template <typename T, std::size_t N> class Vector {
 public:
+#ifdef USE_STD_VECTOR
+
   Vector() : data(N, static_cast<T>(0)) {}
 
   Vector(const std::initializer_list<T> &input) : data(input) {}
 
   Vector(const std::vector<T> &input) : data(input) {}
+
+#else
+
+  Vector() : data{} {}
+
+  Vector(const std::initializer_list<T> &input) : data{} {
+
+    std::copy(input.begin(), input.end(), this->data.begin());
+  }
+
+  Vector(const std::array<T, N> &input) : data(input) {}
+
+  Vector(const std::vector<T> &input) : data{} {
+
+    std::copy(input.begin(), input.end(), this->data.begin());
+  }
+
+#endif
 
   /* Copy Constructor */
   Vector(const Vector<T, N> &vector) : data(vector.data) {}
@@ -127,8 +148,12 @@ public:
     return std::sqrt(sum);
   }
 
-  /* Variable */
+/* Variable */
+#ifdef USE_STD_VECTOR
   std::vector<T> data;
+#else
+  std::array<T, N> data;
+#endif
 };
 
 template <typename T, std::size_t N> class ColVector : public Vector<T, N> {
@@ -185,42 +210,90 @@ T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   return std::sqrt(sum);
 }
 
+#ifdef USE_STD_VECTOR
+
 template <typename T>
-void get_real_vector_from_complex_vector(
-    std::vector<T> &To_vector, const std::vector<Complex<T>> &From_vector,
-    std::size_t N) {
+std::vector<T>
+get_real_vector_from_complex_vector(const std::vector<Complex<T>> &From_vector,
+                                    std::size_t N) {
+
+  std::vector<T> To_vector;
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
   }
+
+  return To_vector;
 }
 
+template <typename T>
+std::vector<T>
+get_imag_vector_from_complex_vector(const std::vector<Complex<T>> &From_vector,
+                                    std::size_t N) {
+
+  std::vector<T> To_vector;
+
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].imag;
+  }
+
+  return To_vector;
+}
+
+#else
+
 template <typename T, std::size_t N>
-void get_real_vector_from_complex_vector(
-    Vector<T, N> &To_vector, const Vector<Complex<T>, N> &From_vector) {
+std::array<T, N> get_real_vector_from_complex_vector(
+    const std::array<Complex<T>, N> &From_vector) {
+
+  std::array<T, N> To_vector;
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
   }
-}
 
-template <typename T>
-void get_imag_vector_from_complex_vector(
-    std::vector<T> &To_vector, const std::vector<Complex<T>> &From_vector,
-    std::size_t N) {
-
-  for (std::size_t i = 0; i < N; ++i) {
-    To_vector[i] = From_vector[i].imag;
-  }
+  return To_vector;
 }
 
 template <typename T, std::size_t N>
-void get_imag_vector_from_complex_vector(
-    Vector<T, N> &To_vector, const Vector<Complex<T>, N> &From_vector) {
+std::array<T, N> get_imag_vector_from_complex_vector(
+    const std::array<Complex<T>, N> &From_vector) {
+
+  std::array<T, N> To_vector;
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
   }
+
+  return To_vector;
+}
+
+#endif
+
+template <typename T, std::size_t N>
+Vector<T, N>
+get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
+
+  Vector<T, N> To_vector;
+
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].real;
+  }
+
+  return To_vector;
+}
+
+template <typename T, std::size_t N>
+Vector<T, N>
+get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
+
+  Vector<T, N> To_vector;
+
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].imag;
+  }
+
+  return To_vector;
 }
 
 } // namespace Matrix

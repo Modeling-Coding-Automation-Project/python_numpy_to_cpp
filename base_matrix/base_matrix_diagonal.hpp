@@ -1,8 +1,10 @@
 #ifndef BASE_MATRIX_DIAGONAL_HPP
 #define BASE_MATRIX_DIAGONAL_HPP
 
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
+#include <array>
 #include <cstddef>
 #include <cstring>
 #include <initializer_list>
@@ -14,6 +16,8 @@ namespace Matrix {
 
 template <typename T, std::size_t M> class DiagMatrix {
 public:
+#ifdef USE_STD_VECTOR
+
   DiagMatrix() : data(M, static_cast<T>(0)) {}
 
   DiagMatrix(const std::vector<T> &input) : data(input) {}
@@ -26,6 +30,31 @@ public:
       this->data[i] = input[i];
     }
   }
+
+#else
+
+  DiagMatrix() : data{} {}
+
+  DiagMatrix(const std::initializer_list<T> &input) : data{} {
+
+    std::copy(input.begin(), input.end(), this->data.begin());
+  }
+
+  DiagMatrix(const std::array<T, M> &input) : data(input) {}
+
+  DiagMatrix(const std::vector<T> &input) : data{} {
+
+    std::copy(input.begin(), input.end(), this->data.begin());
+  }
+
+  DiagMatrix(T input[M]) : data{} {
+
+    for (std::size_t i = 0; i < M; i++) {
+      this->data[i] = input[i];
+    }
+  }
+
+#endif
 
   /* Copy Constructor */
   DiagMatrix(const DiagMatrix<T, M> &other) : data(other.data) {}
@@ -165,8 +194,12 @@ public:
     return result;
   }
 
-  /* Variable */
+/* Variable */
+#ifdef USE_STD_VECTOR
   std::vector<T> data;
+#else
+  std::array<T, M> data;
+#endif
 };
 
 /* Matrix Addition */
