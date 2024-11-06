@@ -308,10 +308,18 @@ public:
 template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
   std::vector<T> values(M * N);
   std::vector<std::size_t> row_indices(M * N);
   std::vector<std::size_t> row_pointers(M + 1);
+#else
+  std::array<T, (M * N)> values;
+  std::array<std::size_t, (M * N)> row_indices;
+  std::array<std::size_t, (M + 1)> row_pointers;
+#endif
 
+  row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < N; j++) {
       values[consecutive_index] = A(i, j);
@@ -329,10 +337,18 @@ SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
 template <typename T, std::size_t M>
 SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
+
+#ifdef USE_STD_VECTOR
   std::vector<T> values(M);
   std::vector<std::size_t> row_indices(M);
   std::vector<std::size_t> row_pointers(M + 1);
+#else
+  std::array<T, M> values;
+  std::array<std::size_t, M> row_indices;
+  std::array<std::size_t, M + 1> row_pointers;
+#endif
 
+  row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     values[consecutive_index] = A[i];
     row_indices[consecutive_index] = i;
