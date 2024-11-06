@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#include <type_traits>
+#include <iostream>
 
 #include "MCAP_tester.hpp"
 
@@ -12,7 +13,8 @@ void check_base_matrix_calc(void) {
     using namespace Base::Matrix;
 
     MCAPTester<T> tester;
-    const T NEAR_LIMIT_STRICT = 1.0e-5;
+
+    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2;
 
     /* 行列の作成 */
@@ -1015,7 +1017,8 @@ void check_python_numpy_calc(void) {
     using namespace PythonNumpy;
 
     MCAPTester<T> tester;
-    const T NEAR_LIMIT_STRICT = 1.0e-5;
+
+    const T NEAR_LIMIT_STRICT = std::is_same_v<T, double> ? T(1.0e-5) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2;
 
     /* 配列代入 */
@@ -1453,7 +1456,12 @@ int main() {
 
     check_base_matrix_calc<double>();
 
+    check_base_matrix_calc<float>();
+
     check_python_numpy_calc<double>();
+
+    check_python_numpy_calc<float>();
+
 
     return 0;
 }
