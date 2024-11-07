@@ -425,6 +425,14 @@ struct GetRealFromComplexVectorCore {
     GetRealFromComplexVectorCore<T, N, N_idx - 1>::compute(To_vector,
                                                            From_vector);
   }
+
+  // For Vector
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
+    To_vector[N_idx] = From_vector[N_idx].real;
+    GetRealFromComplexVectorCore<T, N, N_idx - 1>::compute(To_vector,
+                                                           From_vector);
+  }
 };
 
 // Termination condition: N_idx == 0
@@ -439,6 +447,12 @@ struct GetRealFromComplexVectorCore<T, N, 0> {
   // For std::array
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
+    To_vector[0] = From_vector[0].real;
+  }
+
+  // For Vector
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
     To_vector[0] = From_vector[0].real;
   }
 };
@@ -461,6 +475,14 @@ struct GetImagFromComplexVectorCore {
     GetImagFromComplexVectorCore<T, N, N_idx - 1>::compute(To_vector,
                                                            From_vector);
   }
+
+  // For Vector
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
+    To_vector[N_idx] = From_vector[N_idx].imag;
+    GetImagFromComplexVectorCore<T, N, N_idx - 1>::compute(To_vector,
+                                                           From_vector);
+  }
 };
 
 // Termination condition: N_idx == 0
@@ -475,6 +497,12 @@ struct GetImagFromComplexVectorCore<T, N, 0> {
   // For std::array
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
+    To_vector[0] = From_vector[0].imag;
+  }
+
+  // For Vector
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
     To_vector[0] = From_vector[0].imag;
   }
 };
@@ -571,9 +599,14 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-  for (std::size_t i = 0; i < N; ++i) {
-    To_vector[i] = From_vector[i].real;
-  }
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   To_vector[i] = From_vector[i].real;
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
+                                                    From_vector);
 
   return To_vector;
 }
@@ -584,9 +617,14 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-  for (std::size_t i = 0; i < N; ++i) {
-    To_vector[i] = From_vector[i].imag;
-  }
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   To_vector[i] = From_vector[i].imag;
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
+                                                    From_vector);
 
   return To_vector;
 }
