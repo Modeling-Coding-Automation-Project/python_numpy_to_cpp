@@ -11,14 +11,15 @@ namespace Matrix {
 
 template <typename T, std::size_t M> class LUDecomposition {
 public:
-  LUDecomposition() {}
+  LUDecomposition() : _division_min(static_cast<T>(0)) {}
 
   LUDecomposition(const Matrix<T, M, M> &matrix, T division_min)
       : _division_min(division_min) {
     this->_decompose(matrix);
   }
 
-  LUDecomposition(const DiagMatrix<T, M> &matrix) {
+  LUDecomposition(const DiagMatrix<T, M> &matrix)
+      : _division_min(static_cast<T>(0)) {
     this->_Lower = Matrix<T, M, M>::identity();
     this->_Upper = matrix.create_dense();
   }
