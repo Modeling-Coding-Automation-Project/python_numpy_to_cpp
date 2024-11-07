@@ -368,14 +368,40 @@ Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
   return result;
 }
 
+/* Complex Norm */
+// Vector Multiply Scalar Core Template: N_idx < N
+template <typename T, std::size_t N, std::size_t N_idx>
+struct ComplexVectorNormCore {
+  static T compute(const Vector<Complex<T>, N> &vec_comp) {
+    return vec_comp[N_idx].real * vec_comp[N_idx].real +
+           vec_comp[N_idx].imag * vec_comp[N_idx].imag +
+           ComplexVectorNormCore<T, N, N_idx - 1>::compute(vec_comp);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct ComplexVectorNormCore<T, N, 0> {
+  static T compute(const Vector<Complex<T>, N> &vec_comp) {
+    return vec_comp[0].real * vec_comp[0].real +
+           vec_comp[0].imag * vec_comp[0].imag;
+  }
+};
+
+#define BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(T, N, vec_comp, sum)          \
+  ComplexVectorNormCore<T, N, N - 1>::compute(vec_comp);
+
 template <typename T, std::size_t N>
 T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
-  for (std::size_t i = 0; i < N; ++i) {
-    sum += vec_comp[i].real * vec_comp[i].real +
-           vec_comp[i].imag * vec_comp[i].imag;
-  }
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   sum += vec_comp[i].real * vec_comp[i].real +
+  //          vec_comp[i].imag * vec_comp[i].imag;
+  // }
+
+  /* Compiled operation */
+  sum = BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(T, N, vec_comp, sum);
 
   return std::sqrt(sum);
 }
