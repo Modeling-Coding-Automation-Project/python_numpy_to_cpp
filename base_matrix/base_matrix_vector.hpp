@@ -84,22 +84,6 @@ public:
     return Vector<T, N>(std::vector<T>(N, static_cast<T>(1)));
   }
 
-  Vector<T, N> operator+(const Vector<T, N> &vec) const {
-    Vector<T, N> result;
-    for (std::size_t i = 0; i < N; ++i) {
-      result[i] = this->data[i] + vec[i];
-    }
-    return result;
-  }
-
-  Vector<T, N> operator-(const Vector<T, N> &vec) const {
-    Vector<T, N> result;
-    for (std::size_t i = 0; i < N; ++i) {
-      result[i] = this->data[i] - vec[i];
-    }
-    return result;
-  }
-
   Vector<T, N> operator*(const T &scalar) const {
     Vector<T, N> result;
     for (std::size_t i = 0; i < N; ++i) {
@@ -155,7 +139,7 @@ public:
   }
 };
 
-/* Addition */
+/* Scalar Addition */
 // Vector Add Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t N_idx>
 struct VectorAddScalarCore {
@@ -204,7 +188,7 @@ Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
   return result;
 }
 
-/* Subtraction */
+/* Scalar Subtraction */
 // Vector Sub Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t N_idx>
 struct VectorSubScalarCore {
@@ -225,15 +209,6 @@ template <typename T, std::size_t N> struct VectorSubScalarCore<T, N, 0> {
   VectorSubScalarCore<T, N, N - 1>::compute(vec, scalar, result);
 
 template <typename T, std::size_t N>
-Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
-  Vector<T, N> result;
-  for (std::size_t i = 0; i < N; ++i) {
-    result[i] = scalar - vec[i];
-  }
-  return result;
-}
-
-template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
@@ -244,6 +219,112 @@ Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
 
   /* Compiled operation */
   BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR(T, N, vec, scalar, result);
+  return result;
+}
+
+// Scalar Sub Vector Core Template: N_idx < N
+template <typename T, std::size_t N, std::size_t N_idx>
+struct ScalarSubVectorCore {
+  static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
+    result[N_idx] = scalar - vec[N_idx];
+    ScalarSubVectorCore<T, N, N_idx - 1>::compute(vec, scalar, result);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct ScalarSubVectorCore<T, N, 0> {
+  static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
+    result[0] = scalar - vec[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(T, N, scalar, vec, result)      \
+  ScalarSubVectorCore<T, N, N - 1>::compute(scalar, vec, result);
+
+template <typename T, std::size_t N>
+Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
+  Vector<T, N> result;
+
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   result[i] = scalar - vec[i];
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(T, N, scalar, vec, result);
+  return result;
+}
+
+/* Vector Addition */
+// Vector Add Scalar Core Template: N_idx < N
+template <typename T, std::size_t N, std::size_t N_idx>
+struct VectorAddVectorCore {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+                      Vector<T, N> &result) {
+    result[N_idx] = a[N_idx] + b[N_idx];
+    VectorAddVectorCore<T, N, N_idx - 1>::compute(a, b, result);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct VectorAddVectorCore<T, N, 0> {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+                      Vector<T, N> &result) {
+    result[0] = a[0] + b[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(T, N, a, b, result)             \
+  VectorAddVectorCore<T, N, N - 1>::compute(a, b, result);
+
+template <typename T, std::size_t N>
+Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
+  Vector<T, N> result;
+
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   result[i] = a[i] + b[i];
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(T, N, a, b, result);
+  return result;
+}
+
+/* Vector Subtraction */
+// Vector Sub Scalar Core Template: N_idx < N
+template <typename T, std::size_t N, std::size_t N_idx>
+struct VectorSubVectorCore {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+                      Vector<T, N> &result) {
+    result[N_idx] = a[N_idx] - b[N_idx];
+    VectorSubVectorCore<T, N, N_idx - 1>::compute(a, b, result);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct VectorSubVectorCore<T, N, 0> {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+                      Vector<T, N> &result) {
+    result[0] = a[0] - b[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result)             \
+  VectorSubVectorCore<T, N, N - 1>::compute(a, b, result);
+
+template <typename T, std::size_t N>
+Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
+  Vector<T, N> result;
+
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   result[i] = a[i] - b[i];
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result);
+
   return result;
 }
 

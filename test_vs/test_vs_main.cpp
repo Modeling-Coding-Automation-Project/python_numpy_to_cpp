@@ -40,6 +40,8 @@ void check_base_matrix_calc(void) {
     //std::cout << std::endl;
     //std::cout << std::endl;
 
+    Vector<T, 3> b_add_b = b + b;
+
     Vector<T, 3> r_answer({ 3, 6, 9 });
     tester.expect_near(r.data, r_answer.data, NEAR_LIMIT_STRICT,
         "check Vector multiply.");
