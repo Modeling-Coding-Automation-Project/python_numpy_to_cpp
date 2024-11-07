@@ -384,7 +384,7 @@ struct MatrixAdderRow<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_ADD(T, M, N, A, B, result)                 \
+#define BASE_MATRIX_COMPILED_MATRIX_ADD_MATRIX(T, M, N, A, B, result)          \
   MatrixAdderRow<T, M, N, M - 1>::compute(A, B, result);
 
 template <typename T, std::size_t M, std::size_t N>
@@ -401,7 +401,7 @@ Matrix<T, M, N> operator+(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_ADD(T, M, N, A, B, result);
+  BASE_MATRIX_COMPILED_MATRIX_ADD_MATRIX(T, M, N, A, B, result);
 
 #endif
 
