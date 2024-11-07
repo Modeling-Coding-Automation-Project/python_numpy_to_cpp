@@ -155,13 +155,17 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = vec.data[i] + scalar;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = vec.data[i] + scalar;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(T, N, vec, scalar, result);
+
+#endif
 
   return result;
 }
@@ -170,13 +174,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = scalar + vec[i];
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = scalar + vec[i];
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(T, N, vec, scalar, result);
+
+#endif
+
   return result;
 }
 
@@ -204,13 +213,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = vec[i] - scalar;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = vec[i] - scalar;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR(T, N, vec, scalar, result);
+
+#endif
+
   return result;
 }
 
@@ -237,13 +251,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = scalar - vec[i];
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = scalar - vec[i];
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(T, N, scalar, vec, result);
+
+#endif
+
   return result;
 }
 
@@ -273,13 +292,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = a[i] + b[i];
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = a[i] + b[i];
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(T, N, a, b, result);
+
+#endif
+
   return result;
 }
 
@@ -309,13 +333,17 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = a[i] - b[i];
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = a[i] - b[i];
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result);
+
+#endif
 
   return result;
 }
@@ -344,13 +372,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = vec[i] * scalar;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = vec[i] * scalar;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result);
+
+#endif
+
   return result;
 }
 
@@ -358,13 +391,18 @@ template <typename T, std::size_t N>
 Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   result[i] = scalar * vec[i];
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = scalar * vec[i];
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result);
+
+#endif
+
   return result;
 }
 
@@ -394,14 +432,18 @@ template <typename T, std::size_t N>
 T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   sum += vec_comp[i].real * vec_comp[i].real +
-  //          vec_comp[i].imag * vec_comp[i].imag;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
   sum = BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(T, N, vec_comp, sum);
+
+#endif
 
   return std::sqrt(sum);
 }
@@ -523,14 +565,18 @@ std::vector<T> get_real_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].real;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].real;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }
@@ -541,14 +587,18 @@ std::vector<T> get_imag_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].imag;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].imag;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }
@@ -561,14 +611,18 @@ std::array<T, N> get_real_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].real;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].real;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }
@@ -579,14 +633,18 @@ std::array<T, N> get_imag_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].imag;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].imag;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }
@@ -599,14 +657,18 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].real;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].real;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }
@@ -617,14 +679,18 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < N; ++i) {
-  //   To_vector[i] = From_vector[i].imag;
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < N; ++i) {
+    To_vector[i] = From_vector[i].imag;
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
                                                     From_vector);
+
+#endif
 
   return To_vector;
 }

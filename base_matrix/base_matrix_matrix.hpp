@@ -467,19 +467,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
 
-  /* Normal operation */
-  // for (std::size_t i = 0; i < M; ++i) {
-  //   for (std::size_t j = 0; j < N; ++j) {
-  //     T sum = 0;
-  //     for (std::size_t k = 0; k < K; ++k) {
-  //       sum += A(i, k) * B(k, j);
-  //     }
-  //     result(i, j) = sum;
-  //   }
-  // }
+#ifdef USE_FOR_LOOP_OPERATION
 
-  /* Compiled operation */
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      T sum = 0;
+      for (std::size_t k = 0; k < K; ++k) {
+        sum += A(i, k) * B(k, j);
+      }
+      result(i, j) = sum;
+    }
+  }
+
+#else
+
   BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(T, M, K, N, A, B, result);
+
+#endif
 
   return result;
 }
