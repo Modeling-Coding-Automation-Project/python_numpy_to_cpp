@@ -34,6 +34,8 @@ void check_base_matrix_calc(void) {
 
     Vector<T, 3> b_add_b = b + b;
 
+    Matrix<T, 2, 3> A_add_A = A + A;
+
     Vector<T, 3> r = b * static_cast<T>(3.0F);
     //std::cout << "scalar calc ";
     //for (size_t i = 0; i < r.size(); ++i) {

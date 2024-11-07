@@ -201,18 +201,6 @@ public:
 
 #endif
 
-  Matrix<T, M, N> operator+(const Matrix<T, M, N> &mat) const {
-    Matrix<T, M, N> result;
-
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        result(i, j) = this->data[j][i] + mat(i, j);
-      }
-    }
-
-    return result;
-  }
-
   Matrix<T, M, N> operator-(const Matrix<T, M, N> &mat) const {
     Matrix<T, M, N> result;
 
@@ -354,6 +342,70 @@ void matrix_row_swap(std::size_t row_1, std::size_t row_2,
   std::copy(mat(row_1).begin(), mat(row_1).end(), temp_vec.data.begin());
   std::copy(mat(row_2).begin(), mat(row_2).end(), mat(row_1).begin());
   std::copy(temp_vec.data.begin(), temp_vec.data.end(), mat(row_2).begin());
+}
+
+/* Matrix Addition */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixAdderColumn {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, J_idx) = A(I, J_idx) + B(I, J_idx);
+    MatrixAdderColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixAdderColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, 0) = A(I, 0) + B(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixAdderRow {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixAdderColumn<T, M, N, I_idx, N - 1>::compute(A, B, result);
+    MatrixAdderRow<T, M, N, I_idx - 1>::compute(A, B, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixAdderRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixAdderColumn<T, M, N, 0, N - 1>::compute(A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_ADD(T, M, N, A, B, result)                 \
+  MatrixAdderRow<T, M, N, M - 1>::compute(A, B, result);
+
+template <typename T, std::size_t M, std::size_t N>
+Matrix<T, M, N> operator+(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
+  Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(i, j) = A(i, j) + B(i, j);
+    }
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_ADD(T, M, N, A, B, result);
+
+#endif
+
+  return result;
 }
 
 /* (Scalar) * (Matrix) */
