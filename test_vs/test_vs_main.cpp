@@ -32,15 +32,15 @@ void check_base_matrix_calc(void) {
     c[0] = 4.0F;
     c[1] = 5.0F;
 
-    Vector<T, 3> r = b * 3.0F;
+    Vector<T, 3> b_add_b = b + b;
+
+    Vector<T, 3> r = b * static_cast<T>(3.0F);
     //std::cout << "scalar calc ";
     //for (size_t i = 0; i < r.size(); ++i) {
     //    std::cout << r[i] << " ";
     //}
     //std::cout << std::endl;
     //std::cout << std::endl;
-
-    Vector<T, 3> b_add_b = b + b;
 
     Vector<T, 3> r_answer({ 3, 6, 9 });
     tester.expect_near(r.data, r_answer.data, NEAR_LIMIT_STRICT,

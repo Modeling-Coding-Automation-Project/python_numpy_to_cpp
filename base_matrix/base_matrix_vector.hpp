@@ -84,14 +84,6 @@ public:
     return Vector<T, N>(std::vector<T>(N, static_cast<T>(1)));
   }
 
-  Vector<T, N> operator*(const T &scalar) const {
-    Vector<T, N> result;
-    for (std::size_t i = 0; i < N; ++i) {
-      result[i] = this->data[i] * scalar;
-    }
-    return result;
-  }
-
   Vector<T, N> operator*(const Vector<T, N> &vec) const {
     Vector<T, N> result;
     for (std::size_t i = 0; i < N; ++i) {
@@ -325,6 +317,40 @@ Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
   /* Compiled operation */
   BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result);
 
+  return result;
+}
+
+/* Scalar Multiplication */
+// Vector Multiply Scalar Core Template: N_idx < N
+template <typename T, std::size_t N, std::size_t N_idx>
+struct VectorMultiplyScalarCore {
+  static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
+    result[N_idx] = vec[N_idx] * scalar;
+    VectorMultiplyScalarCore<T, N, N_idx - 1>::compute(vec, scalar, result);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct VectorMultiplyScalarCore<T, N, 0> {
+  static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
+    result[0] = vec[0] * scalar;
+  }
+};
+
+#define BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result) \
+  VectorMultiplyScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+
+template <typename T, std::size_t N>
+Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
+  Vector<T, N> result;
+
+  /* Normal operation */
+  // for (std::size_t i = 0; i < N; ++i) {
+  //   result[i] = vec[i] * scalar;
+  // }
+
+  /* Compiled operation */
+  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result);
   return result;
 }
 
