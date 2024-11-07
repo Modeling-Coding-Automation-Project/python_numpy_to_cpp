@@ -32,7 +32,7 @@ public:
 
     std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
@@ -68,7 +68,7 @@ public:
 
     std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
@@ -120,7 +120,7 @@ public:
 
     std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(
@@ -156,7 +156,7 @@ public:
 
     std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
                           static_cast<T>(0));
     std::vector<std::size_t> row_indices(

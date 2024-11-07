@@ -26,7 +26,7 @@ template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, (M + N), N, ((M + 1) * N)>
 concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((M + 1) * N);
   std::vector<std::size_t> row_indices((M + 1) * N);
   std::vector<std::size_t> row_pointers(M + N + 1);
@@ -68,7 +68,7 @@ SparseMatrix<T, (M + P), N, ((M * N) + V)>
 concatenate_vertically(const Matrix<T, M, N> &A,
                        const SparseMatrix<T, P, N, V> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((M * N) + V);
   std::vector<std::size_t> row_indices((M * N) + V);
   std::vector<std::size_t> row_pointers(M + P + 1);
@@ -106,7 +106,7 @@ template <typename T, std::size_t M, std::size_t P>
 SparseMatrix<T, (M + P), M, ((P + 1) * M)>
 concatenate_vertically(const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((P + 1) * M);
   std::vector<std::size_t> row_indices((P + 1) * M);
   std::vector<std::size_t> row_pointers(M + P + 1);
@@ -146,7 +146,7 @@ auto concatenate_vertically(const DiagMatrix<T, M> &A,
                             const DiagMatrix<T, M> &B)
     -> SparseMatrix<T, (2 * M), M, (2 * M)> {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(2 * M);
   std::vector<std::size_t> row_indices(2 * M);
   std::vector<std::size_t> row_pointers(2 * M + 1);
@@ -186,7 +186,7 @@ SparseMatrix<T, (M + P), M, (M + V)>
 concatenate_vertically(const DiagMatrix<T, M> &A,
                        const SparseMatrix<T, P, M, V> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M + V);
   std::vector<std::size_t> row_indices(M + V);
   std::vector<std::size_t> row_pointers(M + P + 1);
@@ -226,7 +226,7 @@ SparseMatrix<T, (M + P), N, (V + W)>
 concatenate_vertically(const SparseMatrix<T, M, N, V> &A,
                        const SparseMatrix<T, P, N, W> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(V + W);
   std::vector<std::size_t> row_indices(V + W);
   std::vector<std::size_t> row_pointers(M + P + 1);
@@ -279,7 +279,7 @@ template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, M, (M + N), ((N + 1) * M)>
 concatenate_horizontally(const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((N + 1) * M);
   std::vector<std::size_t> row_indices((N + 1) * M);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -320,7 +320,7 @@ SparseMatrix<T, M, (N + L), ((M * N) + V)>
 concatenate_horizontally(const Matrix<T, M, N> &A,
                          const SparseMatrix<T, M, L, V> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((M * N) + V);
   std::vector<std::size_t> row_indices((M * N) + V);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -369,7 +369,7 @@ template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, M, (M + N), ((N + 1) * M)>
 concatenate_horizontally(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values((N + 1) * M);
   std::vector<std::size_t> row_indices((N + 1) * M);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -408,7 +408,7 @@ template <typename T, std::size_t M>
 SparseMatrix<T, M, (2 * M), (2 * M)>
 concatenate_horizontally(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(2 * M);
   std::vector<std::size_t> row_indices(2 * M);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -449,7 +449,7 @@ SparseMatrix<T, M, (M + N), (M + V)>
 concatenate_horizontally(const DiagMatrix<T, M> &A,
                          const SparseMatrix<T, M, N, V> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M + V);
   std::vector<std::size_t> row_indices(M + V);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -500,7 +500,7 @@ SparseMatrix<T, M, (N + L), (V + W)>
 concatenate_horizontally(const SparseMatrix<T, M, N, V> &A,
                          const SparseMatrix<T, M, L, W> &B) {
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(V + W);
   std::vector<std::size_t> row_indices(V + W);
   std::vector<std::size_t> row_pointers(M + 1);

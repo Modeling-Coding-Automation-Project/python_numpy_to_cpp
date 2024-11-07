@@ -17,7 +17,7 @@ namespace Matrix {
 /* Vector */
 template <typename T, std::size_t N> class Vector {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   Vector() : data(N, static_cast<T>(0)) {}
 
@@ -109,7 +109,7 @@ public:
   }
 
 /* Variable */
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> data;
 #else
   std::array<T, N> data;
@@ -155,7 +155,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec.data[i] + scalar;
@@ -174,7 +174,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar + vec[i];
@@ -213,7 +213,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec[i] - scalar;
@@ -251,7 +251,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar - vec[i];
@@ -292,7 +292,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] + b[i];
@@ -333,7 +333,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] - b[i];
@@ -372,7 +372,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec[i] * scalar;
@@ -391,7 +391,7 @@ template <typename T, std::size_t N>
 Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar * vec[i];
@@ -432,7 +432,7 @@ template <typename T, std::size_t N>
 T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     sum += vec_comp[i].real * vec_comp[i].real +
@@ -557,7 +557,7 @@ struct GetImagFromComplexVectorCore<T, N, 0> {
                                                           From_vector)         \
   GetImagFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
 template <typename T, std::size_t N>
 std::vector<T> get_real_vector_from_complex_vector(
@@ -565,7 +565,7 @@ std::vector<T> get_real_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
@@ -587,7 +587,7 @@ std::vector<T> get_imag_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
@@ -611,7 +611,7 @@ std::array<T, N> get_real_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
@@ -633,7 +633,7 @@ std::array<T, N> get_imag_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
@@ -657,7 +657,7 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
@@ -679,7 +679,7 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;

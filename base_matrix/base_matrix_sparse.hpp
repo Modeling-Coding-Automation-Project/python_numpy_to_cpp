@@ -20,7 +20,7 @@ const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 class SparseMatrix {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   SparseMatrix()
       : values(V, static_cast<T>(0)),
@@ -294,7 +294,7 @@ public:
   std::size_t cols() const { return M; }
 
 /* Variable */
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
@@ -309,7 +309,7 @@ template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M * N);
   std::vector<std::size_t> row_indices(M * N);
   std::vector<std::size_t> row_pointers(M + 1);
@@ -338,7 +338,7 @@ template <typename T, std::size_t M>
 SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M);
   std::vector<std::size_t> row_indices(M);
   std::vector<std::size_t> row_pointers(M + 1);

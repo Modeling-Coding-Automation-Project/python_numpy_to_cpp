@@ -15,7 +15,7 @@ namespace Matrix {
 
 template <typename T, std::size_t M> class DiagMatrix {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   DiagMatrix() : data(M, static_cast<T>(0)) {}
 
@@ -194,7 +194,7 @@ public:
   }
 
 /* Variable */
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> data;
 #else
   std::array<T, M> data;

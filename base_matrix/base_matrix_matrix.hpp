@@ -16,7 +16,7 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class Matrix {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   Matrix() : data(N, std::vector<T>(M, static_cast<T>(0))) {}
 
@@ -163,7 +163,7 @@ public:
     return this->data[row][col];
   }
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   std::vector<T> &operator()(std::size_t row) {
     if (row >= N) {
@@ -311,7 +311,7 @@ public:
   }
 
 /* Variable */
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<std::vector<T>> data;
 #else
   std::array<std::array<T, M>, N> data;
@@ -467,7 +467,7 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef USE_FOR_LOOP_OPERATION
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {

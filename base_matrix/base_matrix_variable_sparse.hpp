@@ -15,7 +15,7 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class VariableSparseMatrix {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
         row_indices(M * N, static_cast<std::size_t>(0)),
@@ -73,7 +73,7 @@ public:
   }
 
 /* Variable */
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;

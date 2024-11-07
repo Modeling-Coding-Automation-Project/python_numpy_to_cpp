@@ -22,7 +22,7 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   EigenSolverReal()
       : iteration_max(0), _division_min(static_cast<T>(0)),
@@ -129,7 +129,7 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
 #else
   std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
@@ -143,7 +143,7 @@ public:
 private:
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> _eigen_values;
 #else
   std::array<T, M> _eigen_values;
@@ -392,7 +392,7 @@ private:
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
 
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0),
@@ -509,7 +509,7 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
 #else
   std::array<Complex<T>, M> get_eigen_values(void) {
@@ -529,7 +529,7 @@ private:
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
-#ifdef USE_STD_VECTOR
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> _eigen_values;
 #else
   std::array<Complex<T>, M> _eigen_values;
