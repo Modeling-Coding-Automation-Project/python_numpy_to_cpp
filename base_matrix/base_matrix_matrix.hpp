@@ -203,15 +203,7 @@ public:
 
   Matrix<T, M, N> operator-() const { return output_minus_matrix(*this); }
 
-  Matrix<T, N, M> transpose() const {
-    Matrix<T, N, M> result;
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        result(j, i) = this->data[j][i];
-      }
-    }
-    return result;
-  }
+  Matrix<T, N, M> transpose() const { return output_matrix_transpose(*this); }
 
   constexpr std::size_t rows() const { return N; }
 
@@ -857,6 +849,66 @@ Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 #else
 
   BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(T, M, K, N, A, B, result);
+
+#endif
+
+  return result;
+}
+
+/* Transpose */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixTransposeColumn {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
+    result(J_idx, I) = A(I, J_idx);
+    MatrixTransposeColumn<T, M, N, I, J_idx - 1>::compute(A, result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixTransposeColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
+    result(0, I) = A(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixTransposeRow {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
+    MatrixTransposeColumn<T, M, N, I_idx, N - 1>::compute(A, result);
+    MatrixTransposeRow<T, M, N, I_idx - 1>::compute(A, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixTransposeRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
+    MatrixTransposeColumn<T, M, N, 0, N - 1>::compute(A, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_TRANSPOSE(T, M, N, A, result)              \
+  MatrixTransposeRow<T, M, N, M - 1>::compute(A, result);
+
+template <typename T, std::size_t M, std::size_t N>
+inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
+  Matrix<T, N, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(j, i) = mat(i, j);
+    }
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_TRANSPOSE(T, M, N, mat, result);
 
 #endif
 
