@@ -30,8 +30,9 @@ template <typename Array> class CompiledSparseMatrixList {
 public:
   typedef const std::size_t *sizes_type;
   static const sizes_type sizes;
+  static const std::size_t size = Array::size;
 
-  template <std::size_t I> static std::size_t get_size() {
+  template <std::size_t I> static std::size_t get_each_size() {
     static_assert(I < Array::size, "Index out of bounds");
     return sizes[I];
   }
@@ -42,18 +43,25 @@ const typename CompiledSparseMatrixList<Array>::sizes_type
     CompiledSparseMatrixList<Array>::sizes = Array::value;
 
 template <std::size_t... Sizes>
-using Indices = CompiledSparseMatrixList<sizes_array<Sizes...>>;
+using RowIndices = CompiledSparseMatrixList<sizes_array<Sizes...>>;
 
 template <std::size_t... Sizes>
-using Pointers = CompiledSparseMatrixList<sizes_array<Sizes...>>;
+using RowPointers = CompiledSparseMatrixList<sizes_array<Sizes...>>;
 
-template <typename T, typename I> class CompiledSparseMatrix {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+class CompiledSparseMatrix {
 public:
   CompiledSparseMatrix() {}
 
-  void print_sizes() { this->value = I::template get_size<1>(); }
+  std::size_t print_sizes() { return RowIndices::template get_each_size<1>(); }
 
-  std::size_t value = static_cast<std::size_t>(0);
+/* Variable */
+#ifdef BASE_MATRIX_USE_STD_VECTOR
+
+#else
+  std::array<T, RowIndices::size> values;
+#endif
 };
 
 } // namespace Matrix
