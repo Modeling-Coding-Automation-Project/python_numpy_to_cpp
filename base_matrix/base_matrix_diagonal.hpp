@@ -618,12 +618,37 @@ Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
 }
 
 /* Trace */
+// Base case: when index reaches 0
+template <typename T, std::size_t M, std::size_t Index> struct TraceCalculator {
+  static T compute(const DiagMatrix<T, M> &A) {
+    return A[Index] + TraceCalculator<T, M, Index - 1>::compute(A);
+  }
+};
+
+// Specialization for the base case when Index is 0
+template <typename T, std::size_t M> struct TraceCalculator<T, M, 0> {
+  static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
+};
+
+#define BASE_MATRIX_COMPILED_TRACE_CALCULATOR(T, M, A)                         \
+  TraceCalculator<T, M, M - 1>::compute(A);
+
 template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
   T trace = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; i++) {
     trace += A[i];
   }
+
+#else
+
+  trace = BASE_MATRIX_COMPILED_TRACE_CALCULATOR(T, M, A);
+
+#endif
+
   return trace;
 }
 

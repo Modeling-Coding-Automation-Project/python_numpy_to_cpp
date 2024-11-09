@@ -342,7 +342,11 @@ void check_base_matrix_calc(void) {
     D[1] = 2.0F;
     D[2] = 3.0F;
 
-    DiagMatrix<T, 3> D_add_D = D + D;
+    DiagMatrix<T, 3> D_add_D = D * D;
+
+    T D_trace = D.get_trace();
+    tester.expect_near(D_trace, static_cast<T>(6), NEAR_LIMIT_STRICT,
+        "check DiagMatrix trace.");
 
     Vector<T, 3> D_d = D * b;
 
@@ -1090,7 +1094,7 @@ void check_python_numpy_calc(void) {
         { 0, 1, 3, 5 }
     );
 
-    auto A_add_B = B + A;
+    auto A_add_B = A - B;
 
     auto D = C + C;
 
