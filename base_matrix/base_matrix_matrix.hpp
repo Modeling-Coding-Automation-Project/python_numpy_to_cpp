@@ -203,28 +203,6 @@ public:
 
   Matrix<T, M, N> operator-() const { return output_minus_matrix(*this); }
 
-  Matrix<T, M, N> operator*(const T &scalar) const {
-    Matrix<T, M, N> result;
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        result(i, j) = this->data[j][i] * scalar;
-      }
-    }
-    return result;
-  }
-
-  Vector<T, M> operator*(const Vector<T, N> &vec) const {
-    Vector<T, M> result;
-    for (std::size_t i = 0; i < M; ++i) {
-      T sum = 0;
-      for (std::size_t j = 0; j < N; ++j) {
-        sum += this->data[j][i] * vec[j];
-      }
-      result[i] = sum;
-    }
-    return result;
-  }
-
   Matrix<T, N, M> transpose() const {
     Matrix<T, N, M> result;
     for (std::size_t i = 0; i < M; ++i) {
@@ -510,19 +488,160 @@ inline Matrix<T, M, N> output_minus_matrix(const Matrix<T, M, N> &A) {
 }
 
 /* (Scalar) * (Matrix) */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixMultiplyScalarColumn {
+  static void compute(const T &scalar, const Matrix<T, M, N> &mat,
+                      Matrix<T, M, N> &result) {
+    result(I, J_idx) = scalar * mat(I, J_idx);
+    MatrixMultiplyScalarColumn<T, M, N, I, J_idx - 1>::compute(scalar, mat,
+                                                               result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixMultiplyScalarColumn<T, M, N, I, 0> {
+  static void compute(const T &scalar, const Matrix<T, M, N> &mat,
+                      Matrix<T, M, N> &result) {
+    result(I, 0) = scalar * mat(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixMultiplyScalarRow {
+  static void compute(const T &scalar, const Matrix<T, M, N> &mat,
+                      Matrix<T, M, N> &result) {
+    MatrixMultiplyScalarColumn<T, M, N, I_idx, N - 1>::compute(scalar, mat,
+                                                               result);
+    MatrixMultiplyScalarRow<T, M, N, I_idx - 1>::compute(scalar, mat, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixMultiplyScalarRow<T, M, N, 0> {
+  static void compute(const T &scalar, const Matrix<T, M, N> &mat,
+                      Matrix<T, M, N> &result) {
+    MatrixMultiplyScalarColumn<T, M, N, 0, N - 1>::compute(scalar, mat, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat,      \
+                                                    result)                    \
+  MatrixMultiplyScalarRow<T, M, N, M - 1>::compute(scalar, mat, result);
+
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
       result(j, k) = scalar * mat(j, k);
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat, result);
+
+#endif
+
   return result;
 }
 
-/* (Row Vector) * (Matrix) */
+template <typename T, std::size_t M, std::size_t N>
+Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
+  Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = 0; k < N; ++k) {
+      result(j, k) = scalar * mat(j, k);
+    }
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat, result);
+
+#endif
+
+  return result;
+}
+
+/* Matrix multiply Vector */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct MatrixVectorMultiplierCore {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
+                   std::size_t i) {
+    return mat(i, J) * vec[J] +
+           MatrixVectorMultiplierCore<T, M, N, J - 1>::compute(mat, vec, i);
+  }
+};
+
+// if J == 0
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixVectorMultiplierCore<T, M, N, 0> {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
+                   std::size_t i) {
+    return mat(i, 0) * vec[0];
+  }
+};
+
+// column recursion
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixVectorMultiplierRow {
+  static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
+                      Vector<T, M> &result) {
+    result[I] =
+        MatrixVectorMultiplierCore<T, M, N, N - 1>::compute(mat, vec, I);
+    MatrixVectorMultiplierRow<T, M, N, I - 1>::compute(mat, vec, result);
+  }
+};
+
+// if I == 0
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixVectorMultiplierRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
+                      Vector<T, M> &result) {
+    result[0] =
+        MatrixVectorMultiplierCore<T, M, N, N - 1>::compute(mat, vec, 0);
+  }
+};
+
+#define BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(T, M, N, mat, vec, result)          \
+  MatrixVectorMultiplierRow<T, M, N, M - 1>::compute(mat, vec, result);
+
+template <typename T, std::size_t M, std::size_t N>
+Vector<T, M> operator*(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
+  Vector<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    T sum = 0;
+    for (std::size_t j = 0; j < N; ++j) {
+      sum += mat(i, j) * vec[j];
+    }
+    result[i] = sum;
+  }
+
+#else
+
+  BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(T, M, N, mat, vec, result);
+
+#endif
+
+  return result;
+}
+
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
 Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
   static_assert(M == 1, "Invalid size.");
