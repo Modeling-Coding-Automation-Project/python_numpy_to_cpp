@@ -1513,11 +1513,61 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
   return To_matrix;
 }
 
+/* Matrix real from complex */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixRealFromComplexColumn {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    To_matrix(I, J_idx) = From_matrix(I, J_idx).real;
+    MatrixRealFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
+                                                                To_matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixRealFromComplexColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    To_matrix(I, 0) = From_matrix(I, 0).real;
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixRealFromComplexRow {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    MatrixRealFromComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
+                                                                To_matrix);
+    MatrixRealFromComplexRow<T, M, N, I_idx - 1>::compute(From_matrix,
+                                                          To_matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixRealFromComplexRow<T, M, N, 0> {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    MatrixRealFromComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
+                                                            To_matrix);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_REAL_FROM_COMPLEX(T, M, N, From_matrix,    \
+                                                      To_matrix)               \
+  MatrixRealFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
+
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> get_real_matrix_from_complex_matrix(
     const Matrix<Complex<T>, M, N> &From_matrix) {
 
   Matrix<T, M, N> To_matrix;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -1525,8 +1575,63 @@ Matrix<T, M, N> get_real_matrix_from_complex_matrix(
     }
   }
 
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_REAL_FROM_COMPLEX(T, M, N, From_matrix,
+                                                To_matrix);
+
+#endif
+
   return To_matrix;
 }
+
+/* Matrix imag from complex */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixImagFromComplexColumn {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    To_matrix(I, J_idx) = From_matrix(I, J_idx).imag;
+    MatrixImagFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
+                                                                To_matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixImagFromComplexColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    To_matrix(I, 0) = From_matrix(I, 0).imag;
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixImagFromComplexRow {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    MatrixImagFromComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
+                                                                To_matrix);
+    MatrixImagFromComplexRow<T, M, N, I_idx - 1>::compute(From_matrix,
+                                                          To_matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixImagFromComplexRow<T, M, N, 0> {
+  static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                      Matrix<T, M, N> &To_matrix) {
+    MatrixImagFromComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
+                                                            To_matrix);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_IMAG_FROM_COMPLEX(T, M, N, From_matrix,    \
+                                                      To_matrix)               \
+  MatrixImagFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
@@ -1534,11 +1639,20 @@ Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 
   Matrix<T, M, N> To_matrix;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       To_matrix(i, j) = From_matrix(i, j).imag;
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_IMAG_FROM_COMPLEX(T, M, N, From_matrix,
+                                                To_matrix);
+
+#endif
 
   return To_matrix;
 }
