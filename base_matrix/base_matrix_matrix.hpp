@@ -315,13 +315,7 @@ public:
     return Inv;
   }
 
-  T get_trace() const {
-    T trace = static_cast<T>(0);
-    for (std::size_t i = 0; i < M; i++) {
-      trace += this->data[i][i];
-    }
-    return trace;
-  }
+  T get_trace() const { return output_matrix_trace(*this); }
 
 /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
@@ -367,6 +361,42 @@ void matrix_row_swap(std::size_t row_1, std::size_t row_2,
   std::copy(mat(row_1).begin(), mat(row_1).end(), temp_vec.data.begin());
   std::copy(mat(row_2).begin(), mat(row_2).end(), mat(row_1).begin());
   std::copy(temp_vec.data.begin(), temp_vec.data.end(), mat(row_2).begin());
+}
+
+/* Trace */
+// calculate trace of matrix
+template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
+  static T compute(const Matrix<T, N, N> &mat) {
+    return mat(I, I) + MatrixTraceCore<T, N, I - 1>::compute(mat);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_TRACE(T, N, mat)                           \
+  MatrixTraceCore<T, N, N - 1>::compute(mat);
+
+// if I == 0
+template <typename T, std::size_t N> struct MatrixTraceCore<T, N, 0> {
+  static T compute(const Matrix<T, N, N> &mat) { return mat(0, 0); }
+};
+
+template <typename T, std::size_t M, std::size_t N>
+inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
+  static_assert(M == N, "Matrix must be square matrix");
+  T trace = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; i++) {
+    trace += mat(i, i);
+  }
+
+#else
+
+  trace = BASE_MATRIX_COMPILED_MATRIX_TRACE(T, N, mat);
+
+#endif
+
+  return trace;
 }
 
 /* Matrix Addition */
