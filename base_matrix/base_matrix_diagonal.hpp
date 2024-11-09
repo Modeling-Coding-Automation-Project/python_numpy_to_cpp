@@ -488,26 +488,131 @@ DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/* Diag Matrix Multiply Matrix */
+// Core multiplication for DiagMatrix and Matrix
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t K>
+struct DiagMatrixMultiplyMatrixCore {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(J, K) = A[J] * B(J, K);
+    DiagMatrixMultiplyMatrixCore<T, M, N, J, K - 1>::compute(A, B, result);
+  }
+};
+
+// Specialization for K == 0
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct DiagMatrixMultiplyMatrixCore<T, M, N, J, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(J, 0) = A[J] * B(J, 0);
+  }
+};
+
+// Column-wise multiplication
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct DiagMatrixMultiplyMatrixColumn {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    DiagMatrixMultiplyMatrixCore<T, M, N, J, N - 1>::compute(A, B, result);
+    DiagMatrixMultiplyMatrixColumn<T, M, N, J - 1>::compute(A, B, result);
+  }
+};
+
+// Specialization for J == 0
+template <typename T, std::size_t M, std::size_t N>
+struct DiagMatrixMultiplyMatrixColumn<T, M, N, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    DiagMatrixMultiplyMatrixCore<T, M, N, 0, N - 1>::compute(A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(T, M, N, A, B,        \
+                                                         result)               \
+  DiagMatrixMultiplyMatrixColumn<T, M, N, M - 1>::compute(A, B, result);
+
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
       result(j, k) = A[j] * B(j, k);
     }
   }
 
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(T, M, N, A, B, result);
+
+#endif
+
   return result;
 }
+
+// Core multiplication for each element
+template <typename T, std::size_t L, std::size_t M, std::size_t I,
+          std::size_t J>
+struct DiagMatrixMultiplierCore {
+  static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
+                      Matrix<T, L, M> &result) {
+    result(I, J) = A(I, J) * B[J];
+    DiagMatrixMultiplierCore<T, L, M, I, J - 1>::compute(A, B, result);
+  }
+};
+
+// Specialization for J = 0
+template <typename T, std::size_t L, std::size_t M, std::size_t I>
+struct DiagMatrixMultiplierCore<T, L, M, I, 0> {
+  static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
+                      Matrix<T, L, M> &result) {
+    result(I, 0) = A(I, 0) * B[0];
+  }
+};
+
+// Column-wise multiplication
+template <typename T, std::size_t L, std::size_t M, std::size_t I>
+struct DiagMatrixMultiplierColumn {
+  static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
+                      Matrix<T, L, M> &result) {
+    DiagMatrixMultiplierCore<T, L, M, I, M - 1>::compute(A, B, result);
+    DiagMatrixMultiplierColumn<T, L, M, I - 1>::compute(A, B, result);
+  }
+};
+
+// Specialization for I = 0
+template <typename T, std::size_t L, std::size_t M>
+struct DiagMatrixMultiplierColumn<T, L, M, 0> {
+  static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
+                      Matrix<T, L, M> &result) {
+    DiagMatrixMultiplierCore<T, L, M, 0, M - 1>::compute(A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(T, L, M, A, B,        \
+                                                         result)               \
+  DiagMatrixMultiplierColumn<T, L, M, L - 1>::compute(A, B, result);
 
 template <typename T, std::size_t L, std::size_t M>
 Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
   Matrix<T, L, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < L; ++j) {
     for (std::size_t k = 0; k < M; ++k) {
       result(j, k) = A(j, k) * B[k];
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(T, L, M, A, B, result);
+
+#endif
 
   return result;
 }
