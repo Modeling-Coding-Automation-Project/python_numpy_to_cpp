@@ -81,10 +81,6 @@ public:
 
 #endif
 
-  std::size_t print_size_list() {
-    return RowIndices::template get_each_size<1>();
-  }
-
   /* Copy Constructor */
   CompiledSparseMatrix(
       const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &other)
@@ -112,6 +108,7 @@ public:
   }
 
   /* Function */
+  Matrix<T, M, N> create_dense() const { return output_dense_matrix(*this); }
 
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
@@ -120,6 +117,23 @@ public:
   std::array<T, RowIndices::size> values;
 #endif
 };
+
+/* Create dense matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+inline Matrix<T, M, N> output_dense_matrix(
+    const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat) {
+  Matrix<T, M, N> result;
+
+  for (std::size_t j = 0; j < M; j++) {
+    for (std::size_t k = RowPointers::size_list[j];
+         k < RowPointers::size_list[j + 1]; k++) {
+      result(j, RowIndices::size_list[k]) = mat.values[k];
+    }
+  }
+
+  return result;
+}
 
 } // namespace Matrix
 } // namespace Base
