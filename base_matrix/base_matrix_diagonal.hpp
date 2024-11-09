@@ -125,13 +125,43 @@ public:
 };
 
 /* Matrix Addition */
+// Vector Add Scalar Core Template: M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx>
+struct DiagMatrixAdderCore {
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+                      DiagMatrix<T, M> &result) {
+    result[M_idx] = A[M_idx] + B[M_idx];
+    DiagMatrixAdderCore<T, M, M_idx - 1>::compute(A, B, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct DiagMatrixAdderCore<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+                      DiagMatrix<T, M> &result) {
+    result[0] = A[0] + B[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER(T, M, A, B, result)             \
+  DiagMatrixAdderCore<T, M, M - 1>::compute(A, B, result);
+
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
                            const DiagMatrix<T, M> &B) {
   DiagMatrix<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] + B[j];
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER(T, M, A, B, result);
+
+#endif
 
   return result;
 }

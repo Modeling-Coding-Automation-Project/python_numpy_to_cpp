@@ -342,6 +342,8 @@ void check_base_matrix_calc(void) {
     D[1] = 2.0F;
     D[2] = 3.0F;
 
+    DiagMatrix<T, 3> D_add_D = D + D;
+
     Vector<T, 3> D_d = D * b;
 
     //std::cout << "D_d = ";
