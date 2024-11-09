@@ -18,14 +18,13 @@ namespace Matrix {
 const double COMPILED_SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 
 template <std::size_t... Sizes> struct size_list_array {
-  static const std::size_t size = sizeof...(Sizes);
-  static const std::size_t value[size];
+  static constexpr std::size_t size = sizeof...(Sizes);
+  static constexpr std::size_t value[size] = {Sizes...};
 };
 
 template <std::size_t... Sizes>
-const std::size_t
-    size_list_array<Sizes...>::value[size_list_array<Sizes...>::size] = {
-        Sizes...};
+constexpr std::size_t
+    size_list_array<Sizes...>::value[size_list_array<Sizes...>::size];
 
 template <typename Array> class CompiledSparseMatrixList {
 public:
@@ -106,6 +105,7 @@ public:
   std::vector<T> values;
 #else
   std::array<T, RowIndices::size> values;
+  std::array<T, RowPointers::size_list[M]> test_pointers;
 #endif
 };
 
