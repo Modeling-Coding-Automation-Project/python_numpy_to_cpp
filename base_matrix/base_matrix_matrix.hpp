@@ -201,29 +201,7 @@ public:
 
 #endif
 
-  Matrix<T, M, N> operator-(const Matrix<T, M, N> &mat) const {
-    Matrix<T, M, N> result;
-
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        result(i, j) = this->data[j][i] - mat(i, j);
-      }
-    }
-
-    return result;
-  }
-
-  Matrix<T, M, N> operator-() const {
-    Matrix<T, M, N> result;
-
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        result(i, j) = -this->data[j][i];
-      }
-    }
-
-    return result;
-  }
+  Matrix<T, M, N> operator-() const { return output_minus_matrix(*this); }
 
   Matrix<T, M, N> operator*(const T &scalar) const {
     Matrix<T, M, N> result;
@@ -402,6 +380,129 @@ Matrix<T, M, N> operator+(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
 #else
 
   BASE_MATRIX_COMPILED_MATRIX_ADD_MATRIX(T, M, N, A, B, result);
+
+#endif
+
+  return result;
+}
+
+/* Matrix Subtraction */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixSubtractorColumn {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, J_idx) = A(I, J_idx) - B(I, J_idx);
+    MatrixSubtractorColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixSubtractorColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, 0) = A(I, 0) - B(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixSubtractorRow {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixSubtractorColumn<T, M, N, I_idx, N - 1>::compute(A, B, result);
+    MatrixSubtractorRow<T, M, N, I_idx - 1>::compute(A, B, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixSubtractorRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixSubtractorColumn<T, M, N, 0, N - 1>::compute(A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_SUB_MATRIX(T, M, N, A, B, result)          \
+  MatrixSubtractorRow<T, M, N, M - 1>::compute(A, B, result);
+
+template <typename T, std::size_t M, std::size_t N>
+Matrix<T, M, N> operator-(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
+  Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(i, j) = A(i, j) - B(i, j);
+    }
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_SUB_MATRIX(T, M, N, A, B, result);
+
+#endif
+
+  return result;
+}
+
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixMinusColumn {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
+    result(I, J_idx) = -A(I, J_idx);
+    MatrixMinusColumn<T, M, N, I, J_idx - 1>::compute(A, result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixMinusColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
+    result(I, 0) = -A(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixMinusRow {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
+    MatrixMinusColumn<T, M, N, I_idx, N - 1>::compute(A, result);
+    MatrixMinusRow<T, M, N, I_idx - 1>::compute(A, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixMinusRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
+    MatrixMinusColumn<T, M, N, 0, N - 1>::compute(A, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(T, M, N, A, result)           \
+  MatrixMinusRow<T, M, N, M - 1>::compute(A, result);
+
+template <typename T, std::size_t M, std::size_t N>
+inline Matrix<T, M, N> output_minus_matrix(const Matrix<T, M, N> &A) {
+  Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(i, j) = -A(i, j);
+    }
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(T, M, N, A, result);
 
 #endif
 
