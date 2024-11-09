@@ -619,19 +619,20 @@ Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
 
 /* Trace */
 // Base case: when index reaches 0
-template <typename T, std::size_t M, std::size_t Index> struct TraceCalculator {
+template <typename T, std::size_t M, std::size_t Index>
+struct DiagMatrixTraceCalculator {
   static T compute(const DiagMatrix<T, M> &A) {
-    return A[Index] + TraceCalculator<T, M, Index - 1>::compute(A);
+    return A[Index] + DiagMatrixTraceCalculator<T, M, Index - 1>::compute(A);
   }
 };
 
 // Specialization for the base case when Index is 0
-template <typename T, std::size_t M> struct TraceCalculator<T, M, 0> {
+template <typename T, std::size_t M> struct DiagMatrixTraceCalculator<T, M, 0> {
   static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
 };
 
 #define BASE_MATRIX_COMPILED_TRACE_CALCULATOR(T, M, A)                         \
-  TraceCalculator<T, M, M - 1>::compute(A);
+  DiagMatrixTraceCalculator<T, M, M - 1>::compute(A);
 
 template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
