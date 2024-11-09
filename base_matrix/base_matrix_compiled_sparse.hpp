@@ -30,18 +30,9 @@ const std::size_t
 template <typename Array> class CompiledSparseMatrixList {
 public:
   typedef const std::size_t *size_list_type;
-  static const size_list_type size_list;
-  static const std::size_t size = Array::size;
-
-  template <std::size_t I> static std::size_t get_each_size() {
-    static_assert(I < Array::size, "Index out of bounds");
-    return size_list[I];
-  }
+  static constexpr size_list_type size_list = Array::value;
+  static constexpr std::size_t size = Array::size;
 };
-
-template <typename Array>
-const typename CompiledSparseMatrixList<Array>::size_list_type
-    CompiledSparseMatrixList<Array>::size_list = Array::value;
 
 template <std::size_t... Sizes>
 using RowIndices = CompiledSparseMatrixList<size_list_array<Sizes...>>;
@@ -131,7 +122,6 @@ inline Matrix<T, M, N> output_dense_matrix(
       result(j, RowIndices::size_list[k]) = mat.values[k];
     }
   }
-
   return result;
 }
 
