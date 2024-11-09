@@ -1343,10 +1343,86 @@ Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
   return result;
 }
 
+/* Matrix multiply Transpose Matrix */
+// when K_idx < K
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J, std::size_t K_idx>
+struct MatrixMultiplyTransposeMatrixCore {
+  static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
+    return A(I, K_idx) * B(J, K_idx) +
+           MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J,
+                                             K_idx - 1>::compute(A, B);
+  }
+};
+
+// when K_idx reached 0
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, 0> {
+  static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
+    return A(I, 0) * B(J, 0);
+  }
+};
+
+// After completing the J column, go to the next row I
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct MatrixMultiplyTransposeMatrixColumn {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, J) =
+        MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
+                                                                            B);
+    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
+                                                                       result);
+  }
+};
+
+// Row recursive termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, 0> {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, 0) =
+        MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
+                                                                            B);
+  }
+};
+
+// proceed to the next row after completing the I row
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct MatrixMultiplyTransposeMatrixRow {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, N - 1>::compute(A, B,
+                                                                       result);
+    MatrixMultiplyTransposeMatrixRow<T, M, K, N, I - 1>::compute(A, B, result);
+  }
+};
+
+// Column recursive termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N>
+struct MatrixMultiplyTransposeMatrixRow<T, M, K, N, 0> {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
+                      Matrix<T, M, N> &result) {
+    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, 0, N - 1>::compute(A, B,
+                                                                       result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(T, M, K, N, A,   \
+                                                              B, result)       \
+  MatrixMultiplyTransposeMatrixRow<T, M, K, N, M - 1>::compute(A, B, result);
+
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
                                          const Matrix<T, N, K> &B) {
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       T sum = 0;
@@ -1356,6 +1432,14 @@ Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
       result(i, j) = sum;
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(T, M, K, N, A, B,
+                                                        result);
+
+#endif
+
   return result;
 }
 
