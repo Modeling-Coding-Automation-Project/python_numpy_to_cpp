@@ -1057,12 +1057,100 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
   return result;
 }
 
+/* Upper Triangular Matrix Multiply Matrix */
+// when K_idx >= I
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J, std::size_t K_idx>
+struct UpperTriangularMatrixMultiplierCore {
+  static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
+    return (K_idx >= I)
+               ? (A(I, K_idx) * B(K_idx, J) +
+                  UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
+                                                      K_idx - 1>::compute(A, B))
+               : static_cast<T>(0);
+  }
+};
+
+// recursion termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
+                                           static_cast<std::size_t>(-1)> {
+  static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
+    return static_cast<T>(0);
+  }
+};
+
+// when K_idx reaches I (base case)
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, I> {
+  static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
+    return A(I, I) * B(I, J);
+  }
+};
+
+// Column-wise computation
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J>
+struct UpperTriangularMatrixMultiplierColumn {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, J) =
+        UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(
+            A, B);
+    UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, J - 1>::compute(
+        A, B, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, 0> {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                      Matrix<T, M, N> &result) {
+    result(I, 0) =
+        UpperTriangularMatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(
+            A, B);
+  }
+};
+
+// Row-wise computation
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I>
+struct UpperTriangularMatrixMultiplierRow {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                      Matrix<T, M, N> &result) {
+    UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, N - 1>::compute(
+        A, B, result);
+    UpperTriangularMatrixMultiplierRow<T, M, K, N, I - 1>::compute(A, B,
+                                                                   result);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t K, std::size_t N>
+struct UpperTriangularMatrixMultiplierRow<T, M, K, N, 0> {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                      Matrix<T, M, N> &result) {
+    UpperTriangularMatrixMultiplierColumn<T, M, K, N, 0, N - 1>::compute(
+        A, B, result);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY(T, M, K, N, A,   \
+                                                              B, result)       \
+  UpperTriangularMatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
+
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N>
 matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
                                          const Matrix<T, K, N> &B) {
-
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       T sum = 0;
@@ -1072,6 +1160,14 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
       result(i, j) = sum;
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY(T, M, K, N, A, B,
+                                                        result);
+
+#endif
+
   return result;
 }
 
