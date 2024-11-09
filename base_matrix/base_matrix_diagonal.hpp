@@ -265,12 +265,40 @@ DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
   return result;
 }
 
+// M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx>
+struct DiagMatrixSubMatrixCore {
+  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+    result(M_idx, M_idx) += A[M_idx];
+    DiagMatrixSubMatrixCore<T, M, M_idx - 1>::compute(A, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct DiagMatrixSubMatrixCore<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+    result(0, 0) += A[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX(T, M, A, result)           \
+  DiagMatrixSubMatrixCore<T, M, M - 1>::compute(A, result);
+
 template <typename T, std::size_t M>
 Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
   Matrix<T, M, M> result = -B;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     result(i, i) += A[i];
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX(T, M, A, result);
+
+#endif
 
   return result;
 }
