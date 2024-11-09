@@ -681,7 +681,7 @@ struct VectorMatrixMultiplierColumn<T, L, N, 0> {
   }
 };
 
-#define BASE_MATRIX_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result)          \
+#define BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result) \
   VectorMatrixMultiplierColumn<T, L, N, N - 1>::compute(vec, mat, result);
 
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
@@ -699,7 +699,7 @@ Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result);
+  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result);
 
 #endif
 
@@ -707,10 +707,56 @@ Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
 }
 
 /* (Column Vector) * (Matrix) */
+// calculation when I > 0
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t I>
+struct ColVectorMatrixMultiplierCore {
+  static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
+    return vec[I] * mat(I, J) +
+           ColVectorMatrixMultiplierCore<T, M, N, J, I - 1>::compute(vec, mat);
+  }
+};
+
+// if I = 0
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct ColVectorMatrixMultiplierCore<T, M, N, J, 0> {
+  static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
+    return vec[0] * mat(0, J);
+  }
+};
+
+// row recursion
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct ColVectorMatrixMultiplierColumn {
+  static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
+                      ColVector<T, N> &result) {
+    result[J] =
+        ColVectorMatrixMultiplierCore<T, M, N, J, M - 1>::compute(vec, mat);
+    ColVectorMatrixMultiplierColumn<T, M, N, J - 1>::compute(vec, mat, result);
+  }
+};
+
+// if J = 0
+template <typename T, std::size_t M, std::size_t N>
+struct ColVectorMatrixMultiplierColumn<T, M, N, 0> {
+  static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
+                      ColVector<T, N> &result) {
+    result[0] =
+        ColVectorMatrixMultiplierCore<T, M, N, 0, M - 1>::compute(vec, mat);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(T, M, N, vec, mat,  \
+                                                           result)             \
+  ColVectorMatrixMultiplierColumn<T, M, N, N - 1>::compute(vec, mat, result);
+
 template <typename T, std::size_t M, std::size_t N>
 ColVector<T, N> operator*(const ColVector<T, M> &vec,
                           const Matrix<T, M, N> &mat) {
   ColVector<T, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < N; ++j) {
     T sum = 0;
     for (std::size_t i = 0; i < M; ++i) {
@@ -718,10 +764,17 @@ ColVector<T, N> operator*(const ColVector<T, M> &vec,
     }
     result[j] = sum;
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(T, M, N, vec, mat, result);
+
+#endif
+
   return result;
 }
 
-/* Compiled Matrix Multiplier Classes */
+/* Matrix Multiply Matrix */
 // when K_idx < K
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
@@ -785,7 +838,6 @@ struct MatrixMultiplierRow<T, M, K, N, 0> {
 #define BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(T, M, K, N, A, B, result)         \
   MatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
 
-/* Matrix Multiplication */
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
