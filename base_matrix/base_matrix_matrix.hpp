@@ -109,24 +109,24 @@ public:
 
   /* Function */
   /* Identity */
-  // N_idx < N
-  template <typename T, std::size_t N, std::size_t N_idx>
+  // P_idx < P
+  template <typename U, std::size_t P, std::size_t P_idx>
   struct CreateIdentityCore {
-    static void compute(Matrix<T, M, M> &identity) {
-      identity(N_idx, N_idx) = static_cast<T>(1);
-      CreateIdentityCore<T, N, N_idx - 1>::compute(identity);
+    static void compute(Matrix<U, M, M> &identity) {
+      identity(P_idx, P_idx) = static_cast<U>(1);
+      CreateIdentityCore<U, P, P_idx - 1>::compute(identity);
     }
   };
 
-  // Termination condition: N_idx == 0
-  template <typename T, std::size_t N> struct CreateIdentityCore<T, N, 0> {
-    static void compute(Matrix<T, M, M> &identity) {
-      identity(0, 0) = static_cast<T>(1);
+  // Termination condition: P_idx == 0
+  template <typename U, std::size_t P> struct CreateIdentityCore<U, P, 0> {
+    static void compute(Matrix<U, P, P> &identity) {
+      identity(0, 0) = static_cast<U>(1);
     }
   };
 
-#define BASE_MATRIX_COMPILED_MATRIX_IDENTITY(T, M, identity)                   \
-  CreateIdentityCore<T, M, M - 1>::compute(identity);
+#define BASE_MATRIX_COMPILED_MATRIX_IDENTITY(U, P, identity)                   \
+  CreateIdentityCore<U, P, P - 1>::compute(identity);
 
   static Matrix<T, M, M> identity() {
     Matrix<T, M, M> identity;
@@ -147,43 +147,43 @@ public:
   }
 
   /* Ones */
-  // when J_idx < N
-  template <typename T, std::size_t M, std::size_t N, std::size_t I,
+  // when J_idx < P
+  template <typename U, std::size_t O, std::size_t P, std::size_t I,
             std::size_t J_idx>
   struct MatrixOnesColumn {
-    static void compute(Matrix<T, M, N> &Ones) {
-      Ones(I, J_idx) = static_cast<T>(1);
-      MatrixOnesColumn<T, M, N, I, J_idx - 1>::compute(Ones);
+    static void compute(Matrix<U, O, P> &Ones) {
+      Ones(I, J_idx) = static_cast<U>(1);
+      MatrixOnesColumn<U, O, P, I, J_idx - 1>::compute(Ones);
     }
   };
 
   // column recursion termination
-  template <typename T, std::size_t M, std::size_t N, std::size_t I>
-  struct MatrixOnesColumn<T, M, N, I, 0> {
-    static void compute(Matrix<T, M, N> &Ones) {
-      Ones(I, 0) = static_cast<T>(1);
+  template <typename U, std::size_t O, std::size_t P, std::size_t I>
+  struct MatrixOnesColumn<U, O, P, I, 0> {
+    static void compute(Matrix<U, O, P> &Ones) {
+      Ones(I, 0) = static_cast<U>(1);
     }
   };
 
   // when I_idx < M
-  template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+  template <typename U, std::size_t O, std::size_t P, std::size_t I_idx>
   struct MatrixOnesRow {
-    static void compute(Matrix<T, M, N> &Ones) {
-      MatrixOnesColumn<T, M, N, I_idx, N - 1>::compute(Ones);
-      MatrixOnesRow<T, M, N, I_idx - 1>::compute(Ones);
+    static void compute(Matrix<U, O, P> &Ones) {
+      MatrixOnesColumn<U, O, P, I_idx, P - 1>::compute(Ones);
+      MatrixOnesRow<U, O, P, I_idx - 1>::compute(Ones);
     }
   };
 
   // row recursion termination
-  template <typename T, std::size_t M, std::size_t N>
-  struct MatrixOnesRow<T, M, N, 0> {
-    static void compute(Matrix<T, M, N> &Ones) {
-      MatrixOnesColumn<T, M, N, 0, N - 1>::compute(Ones);
+  template <typename U, std::size_t O, std::size_t P>
+  struct MatrixOnesRow<U, O, P, 0> {
+    static void compute(Matrix<U, O, P> &Ones) {
+      MatrixOnesColumn<U, O, P, 0, P - 1>::compute(Ones);
     }
   };
 
-#define BASE_MATRIX_COMPILED_MATRIX_ONES(T, M, N, Ones)                        \
-  MatrixOnesRow<T, M, N, M - 1>::compute(Ones);
+#define BASE_MATRIX_COMPILED_MATRIX_ONES(U, O, P, Ones)                        \
+  MatrixOnesRow<U, O, P, O - 1>::compute(Ones);
 
   static Matrix<T, M, N> ones() {
     Matrix<T, M, N> Ones;
