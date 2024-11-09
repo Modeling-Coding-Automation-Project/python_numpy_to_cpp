@@ -642,16 +642,67 @@ Vector<T, M> operator*(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
   return result;
 }
 
+// calculate if K_idx > 0
+template <typename T, std::size_t L, std::size_t N, std::size_t K_idx>
+struct VectorMatrixMultiplierCore {
+  static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
+                      Matrix<T, L, N> &result, std::size_t j) {
+    result(K_idx, j) = vec[K_idx] * mat(0, j);
+    VectorMatrixMultiplierCore<T, L, N, K_idx - 1>::compute(vec, mat, result,
+                                                            j);
+  }
+};
+
+// if K_idx = 0
+template <typename T, std::size_t L, std::size_t N>
+struct VectorMatrixMultiplierCore<T, L, N, 0> {
+  static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
+                      Matrix<T, L, N> &result, std::size_t j) {
+    result(0, j) = vec[0] * mat(0, j);
+  }
+};
+
+// row recursion
+template <typename T, std::size_t L, std::size_t N, std::size_t J>
+struct VectorMatrixMultiplierColumn {
+  static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
+                      Matrix<T, L, N> &result) {
+    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, J);
+    VectorMatrixMultiplierColumn<T, L, N, J - 1>::compute(vec, mat, result);
+  }
+};
+
+// if J = 0
+template <typename T, std::size_t L, std::size_t N>
+struct VectorMatrixMultiplierColumn<T, L, N, 0> {
+  static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
+                      Matrix<T, L, N> &result) {
+    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, 0);
+  }
+};
+
+#define BASE_MATRIX_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result)          \
+  VectorMatrixMultiplierColumn<T, L, N, N - 1>::compute(vec, mat, result);
+
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
 Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
   static_assert(M == 1, "Invalid size.");
-
   Matrix<T, L, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < N; ++j) {
     for (std::size_t k = 0; k < L; ++k) {
       result(k, j) = vec[k] * mat(0, j);
     }
   }
+
+#else
+
+  BASE_MATRIX_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result);
+
+#endif
+
   return result;
 }
 
