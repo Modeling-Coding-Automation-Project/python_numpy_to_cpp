@@ -1090,6 +1090,8 @@ void check_python_numpy_calc(void) {
         { 0, 1, 3, 5 }
     );
 
+    auto A_add_B = B + A;
+
     auto D = C + C;
 
     //std::cout << "D = " << std::endl;
