@@ -736,16 +736,74 @@ DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/* Diag Matrix Inverse multiply Matrix */
+// core multiplication for each element
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t K>
+struct DiagInvMultiplyDenseColumn {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result, const T division_min) {
+    result(J, K) = B(J, K) / avoid_zero_divide(A[J], division_min);
+    DiagInvMultiplyDenseColumn<T, M, N, J, K - 1>::compute(A, B, result,
+                                                           division_min);
+  }
+};
+
+// if K == 0
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct DiagInvMultiplyDenseColumn<T, M, N, J, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result, const T division_min) {
+    result(J, 0) = B(J, 0) / avoid_zero_divide(A[J], division_min);
+  }
+};
+
+// Column-wise multiplication
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct DiagInvMultiplyDenseRow {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result, const T division_min) {
+    DiagInvMultiplyDenseColumn<T, M, N, J, N - 1>::compute(A, B, result,
+                                                           division_min);
+    DiagInvMultiplyDenseRow<T, M, N, J - 1>::compute(A, B, result,
+                                                     division_min);
+  }
+};
+
+// if J == 0
+template <typename T, std::size_t M, std::size_t N>
+struct DiagInvMultiplyDenseRow<T, M, N, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                      Matrix<T, M, N> &result, const T division_min) {
+    DiagInvMultiplyDenseColumn<T, M, N, 0, N - 1>::compute(A, B, result,
+                                                           division_min);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE(T, M, N, A, B, result,    \
+                                                     division_min)             \
+  DiagInvMultiplyDenseRow<T, M, N, M - 1>::compute(A, B, result, division_min);
+
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
                                         const Matrix<T, M, N> &B,
                                         const T division_min) {
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
       result(j, k) = B(j, k) / avoid_zero_divide(A[j], division_min);
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE(T, M, N, A, B, result,
+                                               division_min);
+
+#endif
 
   return result;
 }
