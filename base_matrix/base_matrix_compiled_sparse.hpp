@@ -26,20 +26,10 @@ template <std::size_t... Sizes>
 const std::size_t sizes_array<Sizes...>::value[sizes_array<Sizes...>::size] = {
     Sizes...};
 
-template <typename Array> class CompiledSparseMatrixIndices {
+template <typename Array> class CompiledSparseMatrixList {
 public:
   typedef const std::size_t *sizes_type;
   static const sizes_type sizes;
-
-  void example() {
-    static const std::size_t size1 = sizes[0]; // 1
-    static const std::size_t size2 = sizes[1]; // 2
-    static const std::size_t size3 = sizes[2]; // 3
-
-    for (std::size_t i = 0; i < Array::size; ++i) {
-      std::size_t size = sizes[i];
-    }
-  }
 
   template <std::size_t I> static std::size_t get_size() {
     static_assert(I < Array::size, "Index out of bounds");
@@ -48,11 +38,23 @@ public:
 };
 
 template <typename Array>
-const typename CompiledSparseMatrixIndices<Array>::sizes_type
-    CompiledSparseMatrixIndices<Array>::sizes = Array::value;
+const typename CompiledSparseMatrixList<Array>::sizes_type
+    CompiledSparseMatrixList<Array>::sizes = Array::value;
 
 template <std::size_t... Sizes>
-using Indices = CompiledSparseMatrixIndices<sizes_array<Sizes...>>;
+using Indices = CompiledSparseMatrixList<sizes_array<Sizes...>>;
+
+template <std::size_t... Sizes>
+using Pointers = CompiledSparseMatrixList<sizes_array<Sizes...>>;
+
+template <typename T, typename I> class CompiledSparseMatrix {
+public:
+  CompiledSparseMatrix() {}
+
+  void print_sizes() { this->value = I::template get_size<1>(); }
+
+  std::size_t value = static_cast<std::size_t>(0);
+};
 
 } // namespace Matrix
 } // namespace Base
