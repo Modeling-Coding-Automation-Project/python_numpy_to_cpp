@@ -344,10 +344,6 @@ void check_base_matrix_calc(void) {
 
     DiagMatrix<T, 3> D_add_D = D * D;
 
-    T D_trace = D.get_trace();
-    tester.expect_near(D_trace, static_cast<T>(6), NEAR_LIMIT_STRICT,
-        "check DiagMatrix trace.");
-
     Vector<T, 3> D_d = D * b;
 
     //std::cout << "D_d = ";
@@ -398,6 +394,17 @@ void check_base_matrix_calc(void) {
     T ddd_answer = 6.0F;
     tester.expect_near(ddd, ddd_answer, NEAR_LIMIT_STRICT,
         "check DiagMatrix trace.");
+
+    Matrix<T, 3, 3> D_dense = D.create_dense();
+
+    Matrix<T, 3, 3> D_dense_answer({
+    {1, 0, 0},
+    {0, 2, 0},
+    {0, 0, 3}
+        });
+
+    tester.expect_near(D_dense.data, D_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix create dense.");
 
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });

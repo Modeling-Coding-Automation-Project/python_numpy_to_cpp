@@ -631,7 +631,7 @@ template <typename T, std::size_t M> struct DiagMatrixTraceCalculator<T, M, 0> {
   static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
 };
 
-#define BASE_MATRIX_COMPILED_TRACE_CALCULATOR(T, M, A)                         \
+#define BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR(T, M, A)                    \
   DiagMatrixTraceCalculator<T, M, M - 1>::compute(A);
 
 template <typename T, std::size_t M>
@@ -646,7 +646,7 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 
 #else
 
-  trace = BASE_MATRIX_COMPILED_TRACE_CALCULATOR(T, M, A);
+  trace = BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR(T, M, A);
 
 #endif
 
@@ -654,13 +654,40 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 }
 
 /* Create dense */
+// Diagonal element assignment core
+template <typename T, std::size_t M, std::size_t I>
+struct DiagMatrixToDenseCore {
+  static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
+    result(I, I) = A[I];
+    DiagMatrixToDenseCore<T, M, I - 1>::assign(result, A);
+  }
+};
+
+// Base case for recursion termination
+template <typename T, std::size_t M> struct DiagMatrixToDenseCore<T, M, 0> {
+  static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
+    result(0, 0) = A[0];
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE(T, M, A, result)             \
+  DiagMatrixToDenseCore<T, M, M - 1>::assign(result, A);
+
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
   Matrix<T, M, M> result;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; i++) {
     result(i, i) = A[i];
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE(T, M, A, result);
+
+#endif
 
   return result;
 }
