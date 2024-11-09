@@ -157,7 +157,8 @@ public:
   auto solve(const Matrix<DefDiag, T, M> &A, const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix);
+    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
+                                                this->division_min);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -179,7 +180,8 @@ public:
 
     Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense);
+    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
+                                                this->division_min);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }

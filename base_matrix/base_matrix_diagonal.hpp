@@ -738,11 +738,12 @@ DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
 
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
-                                        const Matrix<T, M, N> &B) {
+                                        const Matrix<T, M, N> &B,
+                                        const T division_min) {
   Matrix<T, M, N> result;
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
-      result(j, k) = B(j, k) / A[j];
+      result(j, k) = B(j, k) / avoid_zero_divide(A[j], division_min);
     }
   }
 
