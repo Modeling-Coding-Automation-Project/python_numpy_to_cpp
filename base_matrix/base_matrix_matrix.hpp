@@ -108,24 +108,95 @@ public:
   }
 
   /* Function */
+  /* Identity */
+  // N_idx < N
+  template <typename T, std::size_t N, std::size_t N_idx>
+  struct CreateIdentityCore {
+    static void compute(Matrix<T, M, M> &identity) {
+      identity(N_idx, N_idx) = static_cast<T>(1);
+      CreateIdentityCore<T, N, N_idx - 1>::compute(identity);
+    }
+  };
+
+  // Termination condition: N_idx == 0
+  template <typename T, std::size_t N> struct CreateIdentityCore<T, N, 0> {
+    static void compute(Matrix<T, M, M> &identity) {
+      identity(0, 0) = static_cast<T>(1);
+    }
+  };
+
   static Matrix<T, M, M> identity() {
     Matrix<T, M, M> identity;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     for (std::size_t i = 0; i < M; i++) {
       identity(i, i) = static_cast<T>(1);
     }
+
+#else
+
+    CreateIdentityCore<T, M, M - 1>::compute(identity);
+
+#endif
+
     return identity;
   }
 
+  /* Ones */
+  // when J_idx < N
+  template <typename T, std::size_t M, std::size_t N, std::size_t I,
+            std::size_t J_idx>
+  struct MatrixOnesColumn {
+    static void compute(Matrix<T, M, N> &Ones) {
+      Ones(I, J_idx) = static_cast<T>(1);
+      MatrixOnesColumn<T, M, N, I, J_idx - 1>::compute(Ones);
+    }
+  };
+
+  // column recursion termination
+  template <typename T, std::size_t M, std::size_t N, std::size_t I>
+  struct MatrixOnesColumn<T, M, N, I, 0> {
+    static void compute(Matrix<T, M, N> &Ones) {
+      Ones(I, 0) = static_cast<T>(1);
+    }
+  };
+
+  // when I_idx < M
+  template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+  struct MatrixOnesRow {
+    static void compute(Matrix<T, M, N> &Ones) {
+      MatrixOnesColumn<T, M, N, I_idx, N - 1>::compute(Ones);
+      MatrixOnesRow<T, M, N, I_idx - 1>::compute(Ones);
+    }
+  };
+
+  // row recursion termination
+  template <typename T, std::size_t M, std::size_t N>
+  struct MatrixOnesRow<T, M, N, 0> {
+    static void compute(Matrix<T, M, N> &Ones) {
+      MatrixOnesColumn<T, M, N, 0, N - 1>::compute(Ones);
+    }
+  };
+
   static Matrix<T, M, N> ones() {
-    Matrix<T, M, N> Y;
+    Matrix<T, M, N> Ones;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
-        Y(i, j) = static_cast<T>(1);
+        Ones(i, j) = static_cast<T>(1);
       }
     }
 
-    return Y;
+#else
+
+    MatrixOnesRow<T, M, N, M - 1>::compute(Ones);
+
+#endif
+
+    return Ones;
   }
 
   Vector<T, M> create_row_vector(std::size_t row) const {
