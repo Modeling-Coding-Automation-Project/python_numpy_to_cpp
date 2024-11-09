@@ -326,10 +326,37 @@ public:
 };
 
 /* swap columns */
+// Swap N_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
+struct MatrixSwapColumnsCore {
+  static void compute(std::size_t col_1, std::size_t col_2,
+                      Matrix<T, M, N> &mat, T temp) {
+    temp = mat(col_1, N_idx);
+    mat(col_1, N_idx) = mat(col_2, N_idx);
+    mat(col_2, N_idx) = temp;
+    MatrixSwapColumnsCore<T, M, N, N_idx - 1>::compute(col_1, col_2, mat, temp);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixSwapColumnsCore<T, M, N, 0> {
+  static void compute(std::size_t col_1, std::size_t col_2,
+                      Matrix<T, M, N> &mat, T temp) {
+    temp = mat(col_1, 0);
+    mat(col_1, 0) = mat(col_2, 0);
+    mat(col_2, 0) = temp;
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(T, M, N, col_1, col_2, mat,    \
+                                                temp)                          \
+  MatrixSwapColumnsCore<T, M, N, N - 1>::compute(col_1, col_2, mat, temp);
+
 template <typename T, std::size_t M, std::size_t N>
 void matrix_col_swap(std::size_t col_1, std::size_t col_2,
                      Matrix<T, M, N> &mat) {
-  T temp;
+  T temp = static_cast<T>(0);
 
   if (col_1 >= M) {
     col_1 = M - 1;
@@ -338,11 +365,19 @@ void matrix_col_swap(std::size_t col_1, std::size_t col_2,
     col_2 = M - 1;
   }
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; i++) {
     temp = mat(col_1, i);
     mat(col_1, i) = mat(col_2, i);
     mat(col_2, i) = temp;
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(T, M, N, col_1, col_2, mat, temp);
+
+#endif
 }
 
 /* swap rows */
