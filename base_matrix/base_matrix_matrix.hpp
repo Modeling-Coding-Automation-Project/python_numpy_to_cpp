@@ -1270,10 +1270,62 @@ Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
   return result;
 }
 
+/* Transpose Matrix multiply Vector  */
+// when M_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t M_idx>
+struct MatrixTransposeVectorMultiplierCore {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
+                   std::size_t n) {
+    return mat(M_idx, n) * vec[M_idx] +
+           MatrixTransposeVectorMultiplierCore<T, M, N, M_idx - 1>::compute(
+               mat, vec, n);
+  }
+};
+
+// if M_idx == 0
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixTransposeVectorMultiplierCore<T, M, N, 0> {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
+                   std::size_t n) {
+    return mat(0, n) * vec[0];
+  }
+};
+
+// column recursion
+template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
+struct MatrixTransposeVectorMultiplierColumn {
+  static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
+                      Vector<T, N> &result) {
+    result[N_idx] =
+        MatrixTransposeVectorMultiplierCore<T, M, N, M - 1>::compute(mat, vec,
+                                                                     N_idx);
+    MatrixTransposeVectorMultiplierColumn<T, M, N, N_idx - 1>::compute(mat, vec,
+                                                                       result);
+  }
+};
+
+// if N_idx == 0
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixTransposeVectorMultiplierColumn<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
+                      Vector<T, N> &result) {
+    result[0] = MatrixTransposeVectorMultiplierCore<T, M, N, M - 1>::compute(
+        mat, vec, 0);
+  }
+};
+
+#define BASE_MATRIX_MATRIX_TRANSPOSE_MULTIPLY_VECTOR(T, M, N, mat, vec,        \
+                                                     result)                   \
+  MatrixTransposeVectorMultiplierColumn<T, M, N, N - 1>::compute(mat, vec,     \
+                                                                 result);
+
 template <typename T, std::size_t M, std::size_t N>
 Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
                                       const Vector<T, M> &b) {
   Vector<T, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t n = 0; n < N; ++n) {
     T sum = 0;
     for (std::size_t m = 0; m < M; ++m) {
@@ -1281,6 +1333,13 @@ Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
     }
     result[n] = sum;
   }
+
+#else
+
+  BASE_MATRIX_MATRIX_TRANSPOSE_MULTIPLY_VECTOR(T, M, N, A, b, result);
+
+#endif
+
   return result;
 }
 
