@@ -692,13 +692,46 @@ inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
   return result;
 }
 
+/* Diag Matrix divide Diag Matrix */
+// M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx>
+struct DiagMatrixDividerCore {
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+                      DiagMatrix<T, M> &result, const T division_min) {
+    result[M_idx] = A[M_idx] / avoid_zero_divide(B[M_idx], division_min);
+    DiagMatrixDividerCore<T, M, M_idx - 1>::compute(A, B, result, division_min);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct DiagMatrixDividerCore<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+                      DiagMatrix<T, M> &result, const T division_min) {
+    result[0] = A[0] / avoid_zero_divide(B[0], division_min);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER(T, M, A, B, result,           \
+                                                 division_min)                 \
+  DiagMatrixDividerCore<T, M, M - 1>::compute(A, B, result, division_min);
+
 template <typename T, std::size_t M>
 DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
-                                  const DiagMatrix<T, M> &B, T division_min) {
+                                  const DiagMatrix<T, M> &B,
+                                  const T division_min) {
   DiagMatrix<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] / avoid_zero_divide(B[j], division_min);
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER(T, M, A, B, result, division_min);
+
+#endif
 
   return result;
 }
