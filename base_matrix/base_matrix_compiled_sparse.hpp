@@ -111,10 +111,53 @@ public:
 
 /* Create dense matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J, std::size_t K>
+struct OutputDenseMatrixCore {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    result(J, RowIndices::size_list[K]) = mat.values[K];
+    std::cout << "J = " << J << ", K = " << K << std::endl;
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t L, std::size_t P>
+struct OutputDenseMatrixList {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, M - 1 - P,
+                          L>::compute(mat, result);
+    std::cout << "P = " << P << std::endl;
+
+    (RowPointers::size_list[M - 1 - P] == L)
+        ? OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, L - 1,
+                                P + 1>::compute(mat, result)
+        : OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, L - 1,
+                                P>::compute(mat, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t P>
+struct OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, 0, P> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, M - 1 - P,
+                          0>::compute(mat, result);
+    std::cout << "End." << std::endl;
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
 inline Matrix<T, M, N> output_dense_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat) {
   Matrix<T, M, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = RowPointers::size_list[j];
@@ -122,6 +165,14 @@ inline Matrix<T, M, N> output_dense_matrix(
       result(j, RowIndices::size_list[k]) = mat.values[k];
     }
   }
+
+#else
+
+  OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, M + 1, 0>::compute(
+      mat, result);
+
+#endif
+
   return result;
 }
 
