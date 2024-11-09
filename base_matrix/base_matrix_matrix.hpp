@@ -1443,17 +1443,72 @@ Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
   return result;
 }
 
+/* Matrix real from complex */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct MatrixRealToComplexColumn {
+  static void compute(const Matrix<T, M, N> &From_matrix,
+                      Matrix<Complex<T>, M, N> &To_matrix) {
+    To_matrix(I, J_idx).real = From_matrix(I, J_idx);
+    MatrixRealToComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
+                                                              To_matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixRealToComplexColumn<T, M, N, I, 0> {
+  static void compute(const Matrix<T, M, N> &From_matrix,
+                      Matrix<Complex<T>, M, N> &To_matrix) {
+    To_matrix(I, 0).real = From_matrix(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct MatrixRealToComplexRow {
+  static void compute(const Matrix<T, M, N> &From_matrix,
+                      Matrix<Complex<T>, M, N> &To_matrix) {
+    MatrixRealToComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
+                                                              To_matrix);
+    MatrixRealToComplexRow<T, M, N, I_idx - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N>
+struct MatrixRealToComplexRow<T, M, N, 0> {
+  static void compute(const Matrix<T, M, N> &From_matrix,
+                      Matrix<Complex<T>, M, N> &To_matrix) {
+    MatrixRealToComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
+                                                          To_matrix);
+  }
+};
+
+#define BASE_MATRIX_COMPILED_MATRIX_REAL_TO_COMPLEX(T, M, N, From_matrix,      \
+                                                    To_matrix)                 \
+  MatrixRealToComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
+
 template <typename T, std::size_t M, std::size_t N>
 Matrix<Complex<T>, M, N>
 convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 
   Matrix<Complex<T>, M, N> To_matrix;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
-      To_matrix(i, j) = From_matrix(i, j);
+      To_matrix(i, j).real = From_matrix(i, j);
     }
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_MATRIX_REAL_TO_COMPLEX(T, M, N, From_matrix, To_matrix);
+
+#endif
 
   return To_matrix;
 }
