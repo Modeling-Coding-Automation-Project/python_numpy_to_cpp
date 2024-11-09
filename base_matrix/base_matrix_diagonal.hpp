@@ -342,12 +342,63 @@ Matrix<T, M, M> operator-(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
 }
 
 /* Matrix multiply Scalar */
+// M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx>
+struct DiagMatrixMultiplyScalarCore {
+  static void compute(const DiagMatrix<T, M> &mat, const T scalar,
+                      DiagMatrix<T, M> &result) {
+    result[M_idx] = mat[M_idx] * scalar;
+    DiagMatrixMultiplyScalarCore<T, M, M_idx - 1>::compute(mat, scalar, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M>
+struct DiagMatrixMultiplyScalarCore<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &mat, const T scalar,
+                      DiagMatrix<T, M> &result) {
+    result[0] = mat[0] * scalar;
+  }
+};
+
+#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, mat, scalar,    \
+                                                         result)               \
+  DiagMatrixMultiplyScalarCore<T, M, M - 1>::compute(mat, scalar, result);
+
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
   DiagMatrix<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < M; ++i) {
     result[i] = A[i] * scalar;
   }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, A, scalar, result);
+
+#endif
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
+  DiagMatrix<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    result[i] = A[i] * scalar;
+  }
+
+#else
+
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, A, scalar, result);
+
+#endif
 
   return result;
 }
@@ -370,16 +421,6 @@ DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
   DiagMatrix<T, M> result;
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] * B[j];
-  }
-
-  return result;
-}
-
-template <typename T, std::size_t M>
-DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
-  DiagMatrix<T, M> result;
-  for (std::size_t i = 0; i < M; ++i) {
-    result[i] = A[i] * scalar;
   }
 
   return result;
