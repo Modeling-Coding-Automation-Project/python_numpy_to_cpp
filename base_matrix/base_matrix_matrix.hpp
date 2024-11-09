@@ -125,6 +125,9 @@ public:
     }
   };
 
+#define BASE_MATRIX_COMPILED_MATRIX_IDENTITY(T, M, identity)                   \
+  CreateIdentityCore<T, M, M - 1>::compute(identity);
+
   static Matrix<T, M, M> identity() {
     Matrix<T, M, M> identity;
 
@@ -136,7 +139,7 @@ public:
 
 #else
 
-    CreateIdentityCore<T, M, M - 1>::compute(identity);
+    BASE_MATRIX_COMPILED_MATRIX_IDENTITY(T, M, identity);
 
 #endif
 
@@ -179,6 +182,9 @@ public:
     }
   };
 
+#define BASE_MATRIX_COMPILED_MATRIX_ONES(T, M, N, Ones)                        \
+  MatrixOnesRow<T, M, N, M - 1>::compute(Ones);
+
   static Matrix<T, M, N> ones() {
     Matrix<T, M, N> Ones;
 
@@ -192,7 +198,7 @@ public:
 
 #else
 
-    MatrixOnesRow<T, M, N, M - 1>::compute(Ones);
+    BASE_MATRIX_COMPILED_MATRIX_ONES(T, M, N, Ones);
 
 #endif
 
