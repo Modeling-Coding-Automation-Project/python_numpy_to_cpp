@@ -86,72 +86,9 @@ public:
 
   const T &operator[](std::size_t index) const { return this->data[index]; }
 
-  Vector<T, M> operator*(const Vector<T, M> &vec) const {
-    Vector<T, M> result;
-    for (std::size_t i = 0; i < M; ++i) {
-      result[i] = this->data[i] * vec[i];
-    }
+  constexpr std::size_t rows() const { return M; }
 
-    return result;
-  }
-
-  DiagMatrix<T, M> operator*(const T &scalar) const {
-    DiagMatrix<T, M> result;
-    for (std::size_t i = 0; i < M; ++i) {
-      result[i] = this->data[i] * scalar;
-    }
-
-    return result;
-  }
-
-  DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &B) const {
-    DiagMatrix<T, M> result;
-    for (std::size_t j = 0; j < M; ++j) {
-      result[j] = this->data[j] + B[j];
-    }
-
-    return result;
-  }
-
-  DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &B) const {
-    DiagMatrix<T, M> result;
-    for (std::size_t j = 0; j < M; ++j) {
-      result[j] = this->data[j] - B[j];
-    }
-
-    return result;
-  }
-
-  DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &B) const {
-    DiagMatrix<T, M> result;
-    for (std::size_t j = 0; j < M; ++j) {
-      result[j] = this->data[j] * B[j];
-    }
-
-    return result;
-  }
-
-  Matrix<T, M, M> operator+(const Matrix<T, M, M> &mat) const {
-    Matrix<T, M, M> result = mat;
-    for (std::size_t i = 0; i < M; ++i) {
-      result(i, i) += this->data[i];
-    }
-
-    return result;
-  }
-
-  Matrix<T, M, M> operator-(const Matrix<T, M, M> &mat) const {
-    Matrix<T, M, M> result = -mat;
-    for (std::size_t i = 0; i < M; ++i) {
-      result(i, i) += this->data[i];
-    }
-
-    return result;
-  }
-
-  std::size_t rows() const { return M; }
-
-  std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return M; }
 
   Vector<T, M> get_row(std::size_t row) const {
     if (row >= M) {
@@ -164,23 +101,9 @@ public:
     return result;
   }
 
-  T get_trace() const {
-    T trace = static_cast<T>(0);
-    for (std::size_t i = 0; i < M; i++) {
-      trace += this->data[i];
-    }
-    return trace;
-  }
+  T get_trace() const { return output_trace(*this); }
 
-  Matrix<T, M, M> create_dense() const {
-    Matrix<T, M, M> result;
-
-    for (std::size_t i = 0; i < M; i++) {
-      result(i, i) = this->data[i];
-    }
-
-    return result;
-  }
+  Matrix<T, M, M> create_dense() const { return output_dense(*this); }
 
   DiagMatrix<T, M> inv(T division_min) const {
     DiagMatrix<T, M> result;
@@ -203,6 +126,27 @@ public:
 
 /* Matrix Addition */
 template <typename T, std::size_t M>
+DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
+                           const DiagMatrix<T, M> &B) {
+  DiagMatrix<T, M> result;
+  for (std::size_t j = 0; j < M; ++j) {
+    result[j] = A[j] + B[j];
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
+  Matrix<T, M, M> result = B;
+  for (std::size_t i = 0; i < M; ++i) {
+    result(i, i) += A[i];
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M>
 Matrix<T, M, M> operator+(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
   Matrix<T, M, M> result = A;
   for (std::size_t i = 0; i < M; ++i) {
@@ -214,6 +158,27 @@ Matrix<T, M, M> operator+(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
 
 /* Matrix Subtraction */
 template <typename T, std::size_t M>
+DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
+                           const DiagMatrix<T, M> &B) {
+  DiagMatrix<T, M> result;
+  for (std::size_t j = 0; j < M; ++j) {
+    result[j] = A[j] - B[j];
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
+  Matrix<T, M, M> result = -B;
+  for (std::size_t i = 0; i < M; ++i) {
+    result(i, i) += A[i];
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M>
 Matrix<T, M, M> operator-(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
   Matrix<T, M, M> result = A;
   for (std::size_t i = 0; i < M; ++i) {
@@ -223,7 +188,40 @@ Matrix<T, M, M> operator-(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
   return result;
 }
 
+/* Matrix multiply Scalar */
+template <typename T, std::size_t M>
+DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
+  DiagMatrix<T, M> result;
+  for (std::size_t i = 0; i < M; ++i) {
+    result[i] = A[i] * scalar;
+  }
+
+  return result;
+}
+
+/* Matrix multiply Vector */
+template <typename T, std::size_t M>
+Vector<T, M> operator*(const DiagMatrix<T, M> &A, const Vector<T, M> &vec) {
+  Vector<T, M> result;
+  for (std::size_t i = 0; i < M; ++i) {
+    result[i] = A[i] * vec[i];
+  }
+
+  return result;
+}
+
 /* Matrix Multiplication */
+template <typename T, std::size_t M>
+DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
+                           const DiagMatrix<T, M> &B) {
+  DiagMatrix<T, M> result;
+  for (std::size_t j = 0; j < M; ++j) {
+    result[j] = A[j] * B[j];
+  }
+
+  return result;
+}
+
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
   DiagMatrix<T, M> result;
@@ -253,6 +251,28 @@ Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
     for (std::size_t k = 0; k < M; ++k) {
       result(j, k) = A(j, k) * B[k];
     }
+  }
+
+  return result;
+}
+
+/* Trace */
+template <typename T, std::size_t M>
+inline T output_trace(const DiagMatrix<T, M> &A) {
+  T trace = static_cast<T>(0);
+  for (std::size_t i = 0; i < M; i++) {
+    trace += A[i];
+  }
+  return trace;
+}
+
+/* Create dense */
+template <typename T, std::size_t M>
+inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
+  Matrix<T, M, M> result;
+
+  for (std::size_t i = 0; i < M; i++) {
+    result(i, i) = A[i];
   }
 
   return result;
