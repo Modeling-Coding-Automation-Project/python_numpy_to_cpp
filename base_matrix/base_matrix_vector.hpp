@@ -571,14 +571,6 @@ struct GetImagFromComplexVectorCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,     \
-                                                          From_vector)         \
-  GetRealFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
-
-#define BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,     \
-                                                          From_vector)         \
-  GetImagFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
-
 #ifdef BASE_MATRIX_USE_STD_VECTOR
 
 template <typename T, std::size_t N>
@@ -595,8 +587,7 @@ std::vector<T> get_real_vector_from_complex_vector(
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetRealFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
@@ -617,8 +608,7 @@ std::vector<T> get_imag_vector_from_complex_vector(
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetImagFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
@@ -641,8 +631,7 @@ std::array<T, N> get_real_vector_from_complex_vector(
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetRealFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
@@ -663,8 +652,7 @@ std::array<T, N> get_imag_vector_from_complex_vector(
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetImagFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
@@ -687,8 +675,7 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_REAL_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetRealFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
@@ -709,8 +696,7 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
 #else
 
-  BASE_MATRIX_COMPILED_GET_IMAG_FROM_COMPLEX_VECTOR(T, N, To_vector,
-                                                    From_vector);
+  GetImagFromComplexVectorCore<T, N, N - 1>::compute(To_vector, From_vector);
 
 #endif
 
