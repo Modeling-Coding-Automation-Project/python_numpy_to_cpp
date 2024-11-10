@@ -204,6 +204,9 @@ struct MatrixMultiplicationLoop<T, M, N, K, RowIndices_A, RowPointers_A, J, I,
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, N, K> &B, T &sum) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(sum);
     // End of loop, do nothing
   }
 };
