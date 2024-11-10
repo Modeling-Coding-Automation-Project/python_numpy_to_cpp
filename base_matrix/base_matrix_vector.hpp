@@ -341,8 +341,11 @@ template <typename T, std::size_t N> struct VectorSubVectorCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result)             \
+template <typename T, std::size_t N>
+static inline void BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(
+    const Vector<T, N> &a, const Vector<T, N> &b, Vector<T, N> &result) {
   VectorSubVectorCore<T, N, N - 1>::compute(a, b, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
@@ -356,7 +359,7 @@ Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR(T, N, a, b, result);
+  BASE_MATRIX_COMPILED_VECTOR_SUB_VECTOR<T, N>(a, b, result);
 
 #endif
 
