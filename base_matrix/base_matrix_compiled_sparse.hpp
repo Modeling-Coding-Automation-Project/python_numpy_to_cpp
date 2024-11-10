@@ -150,7 +150,7 @@ struct OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, 0, P> {
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
-static inline void BASE_MATRIX_COMPILED_SPARSE_MATRIX_CREATE_DENSE(
+static inline void COMPILED_SPARSE_MATRIX_CREATE_DENSE(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
     Matrix<T, M, N> &result) {
   OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, M + 1, 0>::compute(
@@ -174,8 +174,8 @@ inline Matrix<T, M, N> output_dense_matrix(
 
 #else
 
-  BASE_MATRIX_COMPILED_SPARSE_MATRIX_CREATE_DENSE<T, M, N, RowIndices,
-                                                  RowPointers>(mat, result);
+  COMPILED_SPARSE_MATRIX_CREATE_DENSE<T, M, N, RowIndices, RowPointers>(mat,
+                                                                        result);
 
 #endif
 

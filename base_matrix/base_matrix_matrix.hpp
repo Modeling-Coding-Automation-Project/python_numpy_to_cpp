@@ -126,8 +126,7 @@ public:
   };
 
   template <typename U, std::size_t P>
-  static inline void
-  BASE_MATRIX_COMPILED_MATRIX_IDENTITY(Matrix<U, P, P> &identity) {
+  static inline void COMPILED_MATRIX_IDENTITY(Matrix<U, P, P> &identity) {
     CreateIdentityCore<U, P, P - 1>::compute(identity);
   }
 
@@ -142,7 +141,7 @@ public:
 
 #else
 
-    BASE_MATRIX_COMPILED_MATRIX_IDENTITY<T, M>(identity);
+    COMPILED_MATRIX_IDENTITY<T, M>(identity);
 
 #endif
 
@@ -186,7 +185,7 @@ public:
   };
 
   template <typename U, std::size_t O, std::size_t P>
-  static inline void BASE_MATRIX_COMPILED_MATRIX_ONES(Matrix<U, O, P> &Ones) {
+  static inline void COMPILED_MATRIX_ONES(Matrix<U, O, P> &Ones) {
     MatrixOnesRow<U, O, P, O - 1>::compute(Ones);
   }
 
@@ -203,7 +202,7 @@ public:
 
 #else
 
-    BASE_MATRIX_COMPILED_MATRIX_ONES<T, M, N>(Ones);
+    COMPILED_MATRIX_ONES<T, M, N>(Ones);
 
 #endif
 
@@ -355,9 +354,9 @@ struct MatrixSwapColumnsCore<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(std::size_t col_1, std::size_t col_2,
-                                        Matrix<T, M, N> &mat, T &temp) {
+static inline void COMPILED_MATRIX_COLUMN_SWAP(std::size_t col_1,
+                                               std::size_t col_2,
+                                               Matrix<T, M, N> &mat, T &temp) {
   MatrixSwapColumnsCore<T, M, N, N - 1>::compute(col_1, col_2, mat, temp);
 }
 
@@ -383,7 +382,7 @@ void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP<T, M, N>(col_1, col_2, mat, temp);
+  COMPILED_MATRIX_COLUMN_SWAP<T, M, N>(col_1, col_2, mat, temp);
 
 #endif
 }
@@ -415,7 +414,7 @@ template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline T BASE_MATRIX_COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
+static inline T COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
   return MatrixTraceCore<T, N, N - 1>::compute(mat);
 }
 
@@ -437,7 +436,7 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
 
 #else
 
-  trace = BASE_MATRIX_COMPILED_MATRIX_TRACE<T, M, N>(mat);
+  trace = COMPILED_MATRIX_TRACE<T, M, N>(mat);
 
 #endif
 
@@ -485,10 +484,9 @@ struct MatrixAdderRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_ADD_MATRIX(const Matrix<T, M, N> &A,
-                                       const Matrix<T, M, N> &B,
-                                       Matrix<T, M, N> &result) {
+static inline void COMPILED_MATRIX_ADD_MATRIX(const Matrix<T, M, N> &A,
+                                              const Matrix<T, M, N> &B,
+                                              Matrix<T, M, N> &result) {
   MatrixAdderRow<T, M, N, M - 1>::compute(A, B, result);
 }
 
@@ -506,7 +504,7 @@ Matrix<T, M, N> operator+(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_ADD_MATRIX<T, M, N>(A, B, result);
+  COMPILED_MATRIX_ADD_MATRIX<T, M, N>(A, B, result);
 
 #endif
 
@@ -554,10 +552,9 @@ struct MatrixSubtractorRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_SUB_MATRIX(const Matrix<T, M, N> &A,
-                                       const Matrix<T, M, N> &B,
-                                       Matrix<T, M, N> &result) {
+static inline void COMPILED_MATRIX_SUB_MATRIX(const Matrix<T, M, N> &A,
+                                              const Matrix<T, M, N> &B,
+                                              Matrix<T, M, N> &result) {
   MatrixSubtractorRow<T, M, N, M - 1>::compute(A, B, result);
 }
 
@@ -575,7 +572,7 @@ Matrix<T, M, N> operator-(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_SUB_MATRIX<T, M, N>(A, B, result);
+  COMPILED_MATRIX_SUB_MATRIX<T, M, N>(A, B, result);
 
 #endif
 
@@ -618,9 +615,8 @@ struct MatrixMinusRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(const Matrix<T, M, N> &A,
-                                         Matrix<T, M, N> &result) {
+static inline void COMPILED_MATRIX_MINUS_MATRIX(const Matrix<T, M, N> &A,
+                                                Matrix<T, M, N> &result) {
   MatrixMinusRow<T, M, N, M - 1>::compute(A, result);
 }
 
@@ -638,7 +634,7 @@ inline Matrix<T, M, N> output_minus_matrix(const Matrix<T, M, N> &A) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX<T, M, N>(A, result);
+  COMPILED_MATRIX_MINUS_MATRIX<T, M, N>(A, result);
 
 #endif
 
@@ -688,8 +684,9 @@ struct MatrixMultiplyScalarRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(
-    const T &scalar, const Matrix<T, M, N> &mat, Matrix<T, M, N> &result) {
+static inline void COMPILED_SCALAR_MULTIPLY_MATRIX(const T &scalar,
+                                                   const Matrix<T, M, N> &mat,
+                                                   Matrix<T, M, N> &result) {
   MatrixMultiplyScalarRow<T, M, N, M - 1>::compute(scalar, mat, result);
 }
 
@@ -707,7 +704,7 @@ Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
+  COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
 #endif
 
@@ -728,7 +725,7 @@ Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
+  COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
 #endif
 
@@ -845,10 +842,9 @@ struct VectorMatrixMultiplierColumn<T, L, N, 0> {
 };
 
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(const Vector<T, L> &vec,
-                                            const Matrix<T, M, N> &mat,
-                                            Matrix<T, L, N> &result) {
+static inline void COMPILED_VECTOR_MULTIPLY_MATRIX(const Vector<T, L> &vec,
+                                                   const Matrix<T, M, N> &mat,
+                                                   Matrix<T, L, N> &result) {
   VectorMatrixMultiplierColumn<T, L, N, N - 1>::compute(vec, mat, result);
 }
 
@@ -867,7 +863,7 @@ Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX<T, L, M, N>(vec, mat, result);
+  COMPILED_VECTOR_MULTIPLY_MATRIX<T, L, M, N>(vec, mat, result);
 
 #endif
 
@@ -916,9 +912,9 @@ struct ColVectorMatrixMultiplierColumn<T, M, N, 0> {
 
 template <typename T, std::size_t M, std::size_t N>
 static inline void
-BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(const ColVector<T, M> &vec,
-                                                   const Matrix<T, M, N> &mat,
-                                                   ColVector<T, N> &result) {
+COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(const ColVector<T, M> &vec,
+                                       const Matrix<T, M, N> &mat,
+                                       ColVector<T, N> &result) {
   ColVectorMatrixMultiplierColumn<T, M, N, N - 1>::compute(vec, mat, result);
 }
 
@@ -939,7 +935,7 @@ ColVector<T, N> operator*(const ColVector<T, M> &vec,
 
 #else
 
-  BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX<T, M, N>(vec, mat, result);
+  COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX<T, M, N>(vec, mat, result);
 
 #endif
 
@@ -1008,10 +1004,9 @@ struct MatrixMultiplierRow<T, M, K, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
-                                     const Matrix<T, K, N> &B,
-                                     Matrix<T, M, N> &result) {
+static inline void COMPILED_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
+                                            const Matrix<T, K, N> &B,
+                                            Matrix<T, M, N> &result) {
   MatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
 }
 
@@ -1033,7 +1028,7 @@ Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
+  COMPILED_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
 
 #endif
 
@@ -1077,9 +1072,8 @@ struct MatrixTransposeRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_TRANSPOSE(const Matrix<T, M, N> &A,
-                                      Matrix<T, N, M> &result) {
+static inline void COMPILED_MATRIX_TRANSPOSE(const Matrix<T, M, N> &A,
+                                             Matrix<T, N, M> &result) {
   MatrixTransposeRow<T, M, N, M - 1>::compute(A, result);
 }
 
@@ -1097,7 +1091,7 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_TRANSPOSE<T, M, N>(mat, result);
+  COMPILED_MATRIX_TRANSPOSE<T, M, N>(mat, result);
 
 #endif
 
@@ -1188,9 +1182,9 @@ struct UpperTriangularMatrixMultiplierRow<T, M, K, N, 0> {
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 static inline void
-BASE_MATRIX_COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
-                                                      const Matrix<T, K, N> &B,
-                                                      Matrix<T, M, N> &result) {
+COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
+                                          const Matrix<T, K, N> &B,
+                                          Matrix<T, M, N> &result) {
   UpperTriangularMatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
 }
 
@@ -1214,8 +1208,7 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY<T, M, K, N>(A, B,
-                                                                    result);
+  COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
 
 #endif
 
@@ -1292,10 +1285,9 @@ struct MatrixTransposeMultiplyMatrixRow<T, M, K, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void
-BASE_MATRIX_COMPILED_MATRIX_T_MULTIPLY_MATRIX(const Matrix<T, K, M> &A,
-                                              const Matrix<T, K, N> &B,
-                                              Matrix<T, M, N> &result) {
+static inline void COMPILED_MATRIX_T_MULTIPLY_MATRIX(const Matrix<T, K, M> &A,
+                                                     const Matrix<T, K, N> &B,
+                                                     Matrix<T, M, N> &result) {
   MatrixTransposeMultiplyMatrixRow<T, M, K, N, M - 1>::compute(A, B, result);
 }
 
@@ -1318,7 +1310,7 @@ Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_T_MULTIPLY_MATRIX<T, M, K, N>(A, B, result);
+  COMPILED_MATRIX_T_MULTIPLY_MATRIX<T, M, K, N>(A, B, result);
 
 #endif
 
@@ -1471,9 +1463,9 @@ struct MatrixMultiplyTransposeMatrixRow<T, M, K, N, 0> {
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 static inline void
-BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(const Matrix<T, M, K> &A,
-                                                      const Matrix<T, N, K> &B,
-                                                      Matrix<T, M, N> &result) {
+COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(const Matrix<T, M, K> &A,
+                                          const Matrix<T, N, K> &B,
+                                          Matrix<T, M, N> &result) {
   MatrixMultiplyTransposeMatrixRow<T, M, K, N, M - 1>::compute(A, B, result);
 }
 
@@ -1496,8 +1488,7 @@ Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX<T, M, K, N>(A, B,
-                                                                    result);
+  COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX<T, M, K, N>(A, B, result);
 
 #endif
 
@@ -1548,8 +1539,9 @@ struct MatrixRealToComplexRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_COMPILED_MATRIX_REAL_TO_COMPLEX(
-    const Matrix<T, M, N> &From_matrix, Matrix<Complex<T>, M, N> &To_matrix) {
+static inline void
+COMPILED_MATRIX_REAL_TO_COMPLEX(const Matrix<T, M, N> &From_matrix,
+                                Matrix<Complex<T>, M, N> &To_matrix) {
   MatrixRealToComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
 
@@ -1569,7 +1561,7 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_REAL_TO_COMPLEX<T, M, N>(From_matrix, To_matrix);
+  COMPILED_MATRIX_REAL_TO_COMPLEX<T, M, N>(From_matrix, To_matrix);
 
 #endif
 
@@ -1621,8 +1613,9 @@ struct MatrixRealFromComplexRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_COMPILED_MATRIX_REAL_FROM_COMPLEX(
-    const Matrix<Complex<T>, M, N> &From_matrix, Matrix<T, M, N> &To_matrix) {
+static inline void
+COMPILED_MATRIX_REAL_FROM_COMPLEX(const Matrix<Complex<T>, M, N> &From_matrix,
+                                  Matrix<T, M, N> &To_matrix) {
   MatrixRealFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
 
@@ -1642,8 +1635,7 @@ Matrix<T, M, N> get_real_matrix_from_complex_matrix(
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_REAL_FROM_COMPLEX<T, M, N>(From_matrix,
-                                                         To_matrix);
+  COMPILED_MATRIX_REAL_FROM_COMPLEX<T, M, N>(From_matrix, To_matrix);
 
 #endif
 
@@ -1695,8 +1687,9 @@ struct MatrixImagFromComplexRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_COMPILED_MATRIX_IMAG_FROM_COMPLEX(
-    const Matrix<Complex<T>, M, N> &From_matrix, Matrix<T, M, N> &To_matrix) {
+static inline void
+COMPILED_MATRIX_IMAG_FROM_COMPLEX(const Matrix<Complex<T>, M, N> &From_matrix,
+                                  Matrix<T, M, N> &To_matrix) {
   MatrixImagFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
 
@@ -1716,8 +1709,7 @@ Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_IMAG_FROM_COMPLEX<T, M, N>(From_matrix,
-                                                         To_matrix);
+  COMPILED_MATRIX_IMAG_FROM_COMPLEX<T, M, N>(From_matrix, To_matrix);
 
 #endif
 
