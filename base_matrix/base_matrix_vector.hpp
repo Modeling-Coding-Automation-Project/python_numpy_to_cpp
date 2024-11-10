@@ -148,8 +148,12 @@ template <typename T, std::size_t N> struct VectorAddScalarCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(T, N, vec, scalar, result)      \
+template <typename T, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(const Vector<T, N> &vec, T scalar,
+                                       Vector<T, N> &result) {
   VectorAddScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
@@ -163,7 +167,7 @@ Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(T, N, vec, scalar, result);
+  BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -206,8 +210,12 @@ template <typename T, std::size_t N> struct VectorSubScalarCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR(T, N, vec, scalar, result)      \
+template <typename T, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR(const Vector<T, N> &vec, const T &scalar,
+                                       Vector<T, N> &result) {
   VectorSubScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
@@ -221,7 +229,7 @@ Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR(T, N, vec, scalar, result);
+  BASE_MATRIX_COMPILED_VECTOR_SUB_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -244,8 +252,12 @@ template <typename T, std::size_t N> struct ScalarSubVectorCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(T, N, scalar, vec, result)      \
+template <typename T, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(const T &scalar, const Vector<T, N> &vec,
+                                       Vector<T, N> &result) {
   ScalarSubVectorCore<T, N, N - 1>::compute(scalar, vec, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
@@ -259,7 +271,7 @@ Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR(T, N, scalar, vec, result);
+  BASE_MATRIX_COMPILED_SCALAR_SUB_VECTOR<T, N>(scalar, vec, result);
 
 #endif
 
@@ -285,8 +297,11 @@ template <typename T, std::size_t N> struct VectorAddVectorCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(T, N, a, b, result)             \
+template <typename T, std::size_t N>
+static inline void BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(
+    const Vector<T, N> &a, const Vector<T, N> &b, Vector<T, N> &result) {
   VectorAddVectorCore<T, N, N - 1>::compute(a, b, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
@@ -300,7 +315,7 @@ Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR(T, N, a, b, result);
+  BASE_MATRIX_COMPILED_VECTOR_ADD_VECTOR<T, N>(a, b, result);
 
 #endif
 
@@ -365,8 +380,12 @@ template <typename T, std::size_t N> struct VectorMultiplyScalarCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result) \
+template <typename T, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(const Vector<T, N> &vec, T scalar,
+                                            Vector<T, N> &result) {
   VectorMultiplyScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+}
 
 template <typename T, std::size_t N>
 Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
@@ -380,7 +399,7 @@ Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result);
+  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -425,8 +444,11 @@ template <typename T, std::size_t N> struct ComplexVectorNormCore<T, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(T, N, vec_comp, sum)          \
-  ComplexVectorNormCore<T, N, N - 1>::compute(vec_comp);
+template <typename T, std::size_t N>
+static inline T BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(
+    const Vector<Complex<T>, N> &vec_comp) {
+  return ComplexVectorNormCore<T, N, N - 1>::compute(vec_comp);
+}
 
 template <typename T, std::size_t N>
 T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
@@ -441,7 +463,7 @@ T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #else
 
-  sum = BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM(T, N, vec_comp, sum);
+  sum = BASE_MATRIX_COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
 
 #endif
 

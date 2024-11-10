@@ -354,9 +354,12 @@ struct MatrixSwapColumnsCore<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(T, M, N, col_1, col_2, mat,    \
-                                                temp)                          \
+template <typename T, std::size_t M, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(std::size_t col_1, std::size_t col_2,
+                                        Matrix<T, M, N> &mat, T &temp) {
   MatrixSwapColumnsCore<T, M, N, N - 1>::compute(col_1, col_2, mat, temp);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 void matrix_col_swap(std::size_t col_1, std::size_t col_2,
@@ -380,7 +383,7 @@ void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP(T, M, N, col_1, col_2, mat, temp);
+  BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP<T, M, N>(col_1, col_2, mat, temp);
 
 #endif
 }
@@ -976,8 +979,13 @@ struct MatrixMultiplierRow<T, M, K, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(T, M, K, N, A, B, result)         \
+template <typename T, std::size_t M, std::size_t K, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
+                                     const Matrix<T, K, N> &B,
+                                     Matrix<T, M, N> &result) {
   MatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
@@ -997,7 +1005,7 @@ Matrix<T, M, N> operator*(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY(T, M, K, N, A, B, result);
+  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
 
 #endif
 
