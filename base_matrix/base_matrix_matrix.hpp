@@ -617,8 +617,12 @@ struct MatrixMinusRow<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(T, M, N, A, result)           \
+template <typename T, std::size_t M, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(const Matrix<T, M, N> &A,
+                                         Matrix<T, M, N> &result) {
   MatrixMinusRow<T, M, N, M - 1>::compute(A, result);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> output_minus_matrix(const Matrix<T, M, N> &A) {
@@ -634,7 +638,7 @@ inline Matrix<T, M, N> output_minus_matrix(const Matrix<T, M, N> &A) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX(T, M, N, A, result);
+  BASE_MATRIX_COMPILED_MATRIX_MINUS_MATRIX<T, M, N>(A, result);
 
 #endif
 
@@ -683,9 +687,11 @@ struct MatrixMultiplyScalarRow<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat,      \
-                                                    result)                    \
+template <typename T, std::size_t M, std::size_t N>
+static inline void BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(
+    const T &scalar, const Matrix<T, M, N> &mat, Matrix<T, M, N> &result) {
   MatrixMultiplyScalarRow<T, M, N, M - 1>::compute(scalar, mat, result);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
@@ -701,7 +707,7 @@ Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat, result);
+  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
 #endif
 
@@ -835,8 +841,13 @@ struct VectorMatrixMultiplierColumn<T, L, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result) \
+template <typename T, std::size_t L, std::size_t M, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(const Vector<T, L> &vec,
+                                            const Matrix<T, M, N> &mat,
+                                            Matrix<T, L, N> &result) {
   VectorMatrixMultiplierColumn<T, L, N, N - 1>::compute(vec, mat, result);
+}
 
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
 Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
@@ -853,7 +864,7 @@ Matrix<T, L, N> operator*(const Vector<T, L> &vec, const Matrix<T, M, N> &mat) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX(T, L, N, vec, mat, result);
+  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_MATRIX<T, L, M, N>(vec, mat, result);
 
 #endif
 
