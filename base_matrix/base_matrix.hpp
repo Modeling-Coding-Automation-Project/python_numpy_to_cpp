@@ -19,7 +19,6 @@
 #include "base_matrix_vector.hpp"
 
 /* Remove compiled matrix operation macros */
-#undef BASE_MATRIX_COMPILED_MATRIX_TRACE
 #undef BASE_MATRIX_COMPILED_MATRIX_COLUMN_SWAP
 #undef BASE_MATRIX_COMPILED_MATRIX_MULTIPLY
 #undef BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR

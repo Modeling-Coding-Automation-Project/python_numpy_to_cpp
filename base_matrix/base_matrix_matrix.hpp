@@ -125,7 +125,7 @@ public:
     }
   };
 
-  template <typename U, int P>
+  template <typename U, std::size_t P>
   static inline void
   BASE_MATRIX_COMPILED_MATRIX_IDENTITY(Matrix<U, P, P> &identity) {
     CreateIdentityCore<U, P, P - 1>::compute(identity);
@@ -185,7 +185,7 @@ public:
     }
   };
 
-  template <typename U, int O, int P>
+  template <typename U, std::size_t O, std::size_t P>
   static inline void BASE_MATRIX_COMPILED_MATRIX_ONES(Matrix<U, O, P> &Ones) {
     MatrixOnesRow<U, O, P, O - 1>::compute(Ones);
   }
@@ -411,8 +411,10 @@ template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_TRACE(T, N, mat)                           \
-  MatrixTraceCore<T, N, N - 1>::compute(mat);
+template <typename T, std::size_t M, std::size_t N>
+static inline T BASE_MATRIX_COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
+  return MatrixTraceCore<T, N, N - 1>::compute(mat);
+}
 
 // if I == 0
 template <typename T, std::size_t N> struct MatrixTraceCore<T, N, 0> {
@@ -432,7 +434,7 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
 
 #else
 
-  trace = BASE_MATRIX_COMPILED_MATRIX_TRACE(T, N, mat);
+  trace = BASE_MATRIX_COMPILED_MATRIX_TRACE<T, M, N>(mat);
 
 #endif
 
