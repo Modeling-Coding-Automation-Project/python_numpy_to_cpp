@@ -911,9 +911,13 @@ struct ColVectorMatrixMultiplierColumn<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(T, M, N, vec, mat,  \
-                                                           result)             \
+template <typename T, std::size_t M, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(const ColVector<T, M> &vec,
+                                                   const Matrix<T, M, N> &mat,
+                                                   ColVector<T, N> &result) {
   ColVectorMatrixMultiplierColumn<T, M, N, N - 1>::compute(vec, mat, result);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 ColVector<T, N> operator*(const ColVector<T, M> &vec,
@@ -932,7 +936,7 @@ ColVector<T, N> operator*(const ColVector<T, M> &vec,
 
 #else
 
-  BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(T, M, N, vec, mat, result);
+  BASE_MATRIX_COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX<T, M, N>(vec, mat, result);
 
 #endif
 
