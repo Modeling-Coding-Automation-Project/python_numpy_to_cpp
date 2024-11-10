@@ -776,8 +776,11 @@ struct MatrixVectorMultiplierRow<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(T, M, N, mat, vec, result)          \
+template <typename T, std::size_t M, std::size_t N>
+static inline void BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(
+    const Matrix<T, M, N> &mat, const Vector<T, N> &vec, Vector<T, M> &result) {
   MatrixVectorMultiplierRow<T, M, N, M - 1>::compute(mat, vec, result);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 Vector<T, M> operator*(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
@@ -795,7 +798,7 @@ Vector<T, M> operator*(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
 
 #else
 
-  BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(T, M, N, mat, vec, result);
+  BASE_MATRIX_MATRIX_MULTIPLY_VECTOR<T, M, N>(mat, vec, result);
 
 #endif
 
