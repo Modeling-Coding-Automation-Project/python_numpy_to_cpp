@@ -278,6 +278,15 @@ struct MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K>
+static inline void COMPILED_SPARSE_MATRIX_CREATE_DENSE(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+  MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A,
+                             K - 1>::compute(A, B, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K>
 Matrix<T, M, K>
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, N, K> &B) {
@@ -298,8 +307,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A,
-                             K - 1>::compute(A, B, Y);
+  COMPILED_SPARSE_MATRIX_CREATE_DENSE<T, M, N, RowIndices_A, RowPointers_A, K>(
+      A, B, Y);
 
 #endif
 
