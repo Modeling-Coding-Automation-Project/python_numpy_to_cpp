@@ -181,16 +181,41 @@ inline Matrix<T, M, N> output_dense_matrix(
 /* Sparse Matrix multiply Matrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          std::size_t I, std::size_t Start, std::size_t End>
+struct MatrixMultiplicationLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, T &sum) {
+    sum += A.values[Start] * B(RowIndices_A::size_list[Start], I);
+    MatrixMultiplicationLoop<T, M, N, K, RowIndices_A, RowPointers_A, J, I,
+                             Start + 1, End>::compute(A, B, sum);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          std::size_t I, std::size_t End>
+struct MatrixMultiplicationLoop<T, M, N, K, RowIndices_A, RowPointers_A, J, I,
+                                End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, T &sum) {
+    // End of loop, do nothing
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t J,
           std::size_t I>
 struct MatrixMultiplicationCore {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
     T sum = static_cast<T>(0);
-    for (std::size_t k = RowPointers_A::size_list[J];
-         k < RowPointers_A::size_list[J + 1]; k++) {
-      sum += A.values[k] * B(RowIndices_A::size_list[k], I);
-    }
+    MatrixMultiplicationLoop<T, M, N, K, RowIndices_A, RowPointers_A, J, I,
+                             RowPointers_A::size_list[J],
+                             RowPointers_A::size_list[J + 1]>::compute(A, B,
+                                                                       sum);
     Y(J, I) = sum;
   }
 };
