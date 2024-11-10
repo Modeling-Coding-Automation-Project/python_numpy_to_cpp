@@ -18,7 +18,4 @@
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
 
-/* Remove compiled matrix operation macros */
-#undef BASE_MATRIX_COMPILED_SPARSE_MATRIX_CREATE_DENSE
-
 #endif // BASE_MATRIX_HPP
