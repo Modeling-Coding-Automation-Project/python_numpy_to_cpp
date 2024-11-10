@@ -178,6 +178,102 @@ inline Matrix<T, M, N> output_dense_matrix(
   return result;
 }
 
+/* Sparse Matrix multiply Matrix */
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          std::size_t I>
+struct MatrixMultiplicationCore {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    T sum = static_cast<T>(0);
+    for (std::size_t k = RowPointers_A::size_list[J];
+         k < RowPointers_A::size_list[J + 1]; k++) {
+      sum += A.values[k] * B(RowIndices_A::size_list[k], I);
+    }
+    Y(J, I) = sum;
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          std::size_t I>
+struct MatrixMultiplicationList {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    MatrixMultiplicationCore<T, M, N, K, RowIndices_A, RowPointers_A, J,
+                             I>::compute(A, B, Y);
+    MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, J - 1,
+                             I>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t I>
+struct MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    MatrixMultiplicationCore<T, M, N, K, RowIndices_A, RowPointers_A, 0,
+                             I>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, std::size_t I>
+struct MatrixMultiplicationColumn {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, M - 1,
+                             I>::compute(A, B, Y);
+    MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A,
+                               I - 1>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A>
+struct MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, M - 1,
+                             0>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K>
+Matrix<T, M, K>
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, N, K> &B) {
+  Matrix<T, M, K> Y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < K; i++) {
+    for (std::size_t j = 0; j < M; j++) {
+      T sum = static_cast<T>(0);
+      for (std::size_t k = RowPointers_A::size_list[j];
+           k < RowPointers_A::size_list[j + 1]; k++) {
+        sum += A.values[k] * B(RowIndices_A::size_list[k], i);
+      }
+      Y(j, i) = sum;
+    }
+  }
+
+#else
+
+  MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A,
+                             K - 1>::compute(A, B, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
