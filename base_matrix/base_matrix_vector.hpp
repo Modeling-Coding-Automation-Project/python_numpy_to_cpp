@@ -186,7 +186,7 @@ Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR(T, N, vec, scalar, result);
+  BASE_MATRIX_COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -418,7 +418,7 @@ Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR(T, N, vec, scalar, result);
+  BASE_MATRIX_COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 

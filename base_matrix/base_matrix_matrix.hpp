@@ -728,7 +728,7 @@ Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX(T, M, N, scalar, mat, result);
+  BASE_MATRIX_COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
 #endif
 

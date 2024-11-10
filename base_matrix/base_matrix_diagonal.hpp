@@ -225,7 +225,7 @@ Matrix<T, M, M> operator+(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX(T, M, B, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
 
 #endif
 
@@ -420,7 +420,7 @@ DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, A, scalar, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
 
 #endif
 
