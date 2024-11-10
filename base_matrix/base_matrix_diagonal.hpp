@@ -143,8 +143,13 @@ template <typename T, std::size_t M> struct DiagMatrixAdderCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER(T, M, A, B, result)             \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER(const DiagMatrix<T, M> &A,
+                                       const DiagMatrix<T, M> &B,
+                                       DiagMatrix<T, M> &result) {
   DiagMatrixAdderCore<T, M, M - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
@@ -159,7 +164,7 @@ DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER(T, M, A, B, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADDER<T, M>(A, B, result);
 
 #endif
 
@@ -182,8 +187,12 @@ template <typename T, std::size_t M> struct DiagMatrixAddMatrixCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX(T, M, A, result)           \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX(const DiagMatrix<T, M> &A,
+                                            Matrix<T, M, M> &result) {
   DiagMatrixAddMatrixCore<T, M, M - 1>::compute(A, result);
+}
 
 template <typename T, std::size_t M>
 Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
@@ -197,7 +206,7 @@ Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX(T, M, A, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
 
 #endif
 
@@ -242,8 +251,13 @@ template <typename T, std::size_t M> struct DiagMatrixSubtractorCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_SUBTRACTOR(T, M, A, B, result)        \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_SUBTRACTOR(const DiagMatrix<T, M> &A,
+                                            const DiagMatrix<T, M> &B,
+                                            DiagMatrix<T, M> &result) {
   DiagMatrixSubtractorCore<T, M, M - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
@@ -258,7 +272,7 @@ DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_SUBTRACTOR(T, M, A, B, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_SUBTRACTOR<T, M>(A, B, result);
 
 #endif
 
@@ -281,8 +295,12 @@ template <typename T, std::size_t M> struct DiagMatrixSubMatrixCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX(T, M, A, result)           \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX(const Matrix<T, M, M> &A,
+                                            Matrix<T, M, M> &result) {
   DiagMatrixSubMatrixCore<T, M, M - 1>::compute(A, result);
+}
 
 template <typename T, std::size_t M>
 Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
@@ -296,7 +314,7 @@ Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A, const Matrix<T, M, M> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX(T, M, A, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_SUB_MATRIX<T, M>(A, result);
 
 #endif
 
@@ -319,8 +337,12 @@ template <typename T, std::size_t M> struct MatrixSubDiagMatrixCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_SUB_DIAG_MATRIX(T, M, A, result)           \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_MATRIX_SUB_DIAG_MATRIX(const DiagMatrix<T, M> &A,
+                                            Matrix<T, M, M> &result) {
   MatrixSubDiagMatrixCore<T, M, M - 1>::compute(A, result);
+}
 
 template <typename T, std::size_t M>
 Matrix<T, M, M> operator-(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
@@ -334,7 +356,7 @@ Matrix<T, M, M> operator-(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_SUB_DIAG_MATRIX(T, M, B, result);
+  BASE_MATRIX_COMPILED_MATRIX_SUB_DIAG_MATRIX<T, M>(B, result);
 
 #endif
 
@@ -361,9 +383,11 @@ struct DiagMatrixMultiplyScalarCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, mat, scalar,    \
-                                                         result)               \
+template <typename T, std::size_t M>
+static inline void BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(
+    const DiagMatrix<T, M> &mat, const T &scalar, DiagMatrix<T, M> &result) {
   DiagMatrixMultiplyScalarCore<T, M, M - 1>::compute(mat, scalar, result);
+}
 
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
@@ -377,7 +401,7 @@ DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(T, M, A, scalar, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
 
 #endif
 
@@ -423,8 +447,11 @@ struct DiagMatrixMultiplyVectorCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR(T, M, A, vec, result) \
+template <typename T, std::size_t M>
+static inline void BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR(
+    const DiagMatrix<T, M> &A, const Vector<T, M> &vec, Vector<T, M> &result) {
   DiagMatrixMultiplyVectorCore<T, M, M - 1>::compute(A, vec, result);
+}
 
 template <typename T, std::size_t M>
 Vector<T, M> operator*(const DiagMatrix<T, M> &A, const Vector<T, M> &vec) {
@@ -438,7 +465,7 @@ Vector<T, M> operator*(const DiagMatrix<T, M> &A, const Vector<T, M> &vec) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR(T, M, A, vec, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR<T, M>(A, vec, result);
 
 #endif
 
@@ -465,8 +492,13 @@ struct DiagMatrixMultiplyDiagCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_DIAG(T, M, A, B, result)     \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_DIAG(const DiagMatrix<T, M> &A,
+                                               const DiagMatrix<T, M> &B,
+                                               DiagMatrix<T, M> &result) {
   DiagMatrixMultiplyDiagCore<T, M, M - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t M>
 DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
@@ -481,7 +513,7 @@ DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_DIAG(T, M, A, B, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_DIAG<T, M>(A, B, result);
 
 #endif
 
@@ -528,9 +560,13 @@ struct DiagMatrixMultiplyMatrixColumn<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(T, M, N, A, B,        \
-                                                         result)               \
+template <typename T, std::size_t M, std::size_t N>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(const DiagMatrix<T, M> &A,
+                                                 const Matrix<T, M, N> &B,
+                                                 Matrix<T, M, N> &result) {
   DiagMatrixMultiplyMatrixColumn<T, M, N, M - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
@@ -546,7 +582,7 @@ Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(T, M, N, A, B, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX<T, M, N>(A, B, result);
 
 #endif
 
@@ -592,9 +628,13 @@ struct DiagMatrixMultiplierColumn<T, L, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(T, L, M, A, B,        \
-                                                         result)               \
+template <typename T, std::size_t L, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(const Matrix<T, L, M> &A,
+                                                 const DiagMatrix<T, M> &B,
+                                                 Matrix<T, L, M> &result) {
   DiagMatrixMultiplierColumn<T, L, M, L - 1>::compute(A, B, result);
+}
 
 template <typename T, std::size_t L, std::size_t M>
 Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
@@ -610,7 +650,7 @@ Matrix<T, L, M> operator*(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B) {
 
 #else
 
-  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(T, L, M, A, B, result);
+  BASE_MATRIX_COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX<T, L, M>(A, B, result);
 
 #endif
 
@@ -631,8 +671,11 @@ template <typename T, std::size_t M> struct DiagMatrixTraceCalculator<T, M, 0> {
   static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR(T, M, A)                    \
-  DiagMatrixTraceCalculator<T, M, M - 1>::compute(A);
+template <typename T, std::size_t M>
+static inline T
+BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR(const DiagMatrix<T, M> &A) {
+  return DiagMatrixTraceCalculator<T, M, M - 1>::compute(A);
+}
 
 template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
@@ -646,7 +689,7 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 
 #else
 
-  trace = BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR(T, M, A);
+  trace = BASE_MATRIX_COMPILED_DIAG_TRACE_CALCULATOR<T, M>(A);
 
 #endif
 
@@ -670,8 +713,12 @@ template <typename T, std::size_t M> struct DiagMatrixToDenseCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE(T, M, A, result)             \
+template <typename T, std::size_t M>
+static inline void
+BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE(const DiagMatrix<T, M> &A,
+                                          Matrix<T, M, M> &result) {
   DiagMatrixToDenseCore<T, M, M - 1>::assign(result, A);
+}
 
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
@@ -685,7 +732,7 @@ inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE(T, M, A, result);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_TO_DENSE<T, M>(A, result);
 
 #endif
 
@@ -711,9 +758,12 @@ template <typename T, std::size_t M> struct DiagMatrixDividerCore<T, M, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER(T, M, A, B, result,           \
-                                                 division_min)                 \
+template <typename T, std::size_t M>
+static inline void BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER(
+    const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+    DiagMatrix<T, M> &result, const T division_min) {
   DiagMatrixDividerCore<T, M, M - 1>::compute(A, B, result, division_min);
+}
 
 template <typename T, std::size_t M>
 DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
@@ -729,7 +779,7 @@ DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER(T, M, A, B, result, division_min);
+  BASE_MATRIX_COMPILED_DIAG_MATRIX_DIVIDER<T, M>(A, B, result, division_min);
 
 #endif
 
@@ -780,9 +830,12 @@ struct DiagInvMultiplyDenseRow<T, M, N, 0> {
   }
 };
 
-#define BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE(T, M, N, A, B, result,    \
-                                                     division_min)             \
+template <typename T, std::size_t M, std::size_t N>
+static inline void BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE(
+    const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+    Matrix<T, M, N> &result, T division_min) {
   DiagInvMultiplyDenseRow<T, M, N, M - 1>::compute(A, B, result, division_min);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
@@ -800,8 +853,8 @@ Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
 
 #else
 
-  BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE(T, M, N, A, B, result,
-                                               division_min);
+  BASE_MATRIX_COMPILED_DIAG_INV_MULTIPLY_DENSE<T, M, N>(A, B, result,
+                                                        division_min);
 
 #endif
 
