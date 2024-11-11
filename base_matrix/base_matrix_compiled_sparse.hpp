@@ -110,6 +110,7 @@ public:
 };
 
 /* Create dense matrix */
+// Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
           std::size_t End>
@@ -123,6 +124,7 @@ struct OutputDenseMatrixLoop {
   }
 };
 
+// Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
 struct OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
@@ -135,6 +137,7 @@ struct OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
   }
 };
 
+// Pointer loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K>
 struct OutputDenseMatrixCore {
@@ -147,6 +150,7 @@ struct OutputDenseMatrixCore {
   }
 };
 
+// Row loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J>
 struct OutputDenseMatrixRow {
@@ -160,6 +164,7 @@ struct OutputDenseMatrixRow {
   }
 };
 
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
 struct OutputDenseMatrixRow<T, M, N, RowIndices, RowPointers, 0> {
@@ -206,6 +211,7 @@ inline Matrix<T, M, N> output_dense_matrix(
 }
 
 /* Sparse Matrix multiply Matrix */
+// Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
           std::size_t I, std::size_t Start, std::size_t End>
@@ -219,6 +225,7 @@ struct MatrixMultiplicationLoop {
   }
 };
 
+// Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
           std::size_t I, std::size_t End>
@@ -234,6 +241,7 @@ struct MatrixMultiplicationLoop<T, M, N, K, RowIndices_A, RowPointers_A, J, I,
   }
 };
 
+// Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
           std::size_t I>
@@ -250,6 +258,7 @@ struct MatrixMultiplicationCore {
   }
 };
 
+// List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
           std::size_t I>
@@ -264,6 +273,7 @@ struct MatrixMultiplicationList {
   }
 };
 
+// End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t I>
 struct MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
@@ -275,6 +285,7 @@ struct MatrixMultiplicationList<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
   }
 };
 
+// Column loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t I>
 struct MatrixMultiplicationColumn {
@@ -288,6 +299,7 @@ struct MatrixMultiplicationColumn {
   }
 };
 
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
 struct MatrixMultiplicationColumn<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
