@@ -111,49 +111,72 @@ public:
 
 /* Create dense matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
+          std::size_t End>
+struct OutputDenseMatrixLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    result(J, RowIndices::size_list[Start]) = mat.values[Start];
+    OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, Start + 1,
+                          End>::compute(mat, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
+struct OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    static_cast<void>(mat);
+    static_cast<void>(result);
+    // End of loop, do nothing
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K>
 struct OutputDenseMatrixCore {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
-    result(J, RowIndices::size_list[K]) = mat.values[K];
+    OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K,
+                          RowPointers::size_list[J],
+                          RowPointers::size_list[J + 1]>::compute(mat, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t L, std::size_t P>
-struct OutputDenseMatrixList {
+          typename RowPointers, std::size_t J>
+struct OutputDenseMatrixRow {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
-    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, M - 1 - P,
-                          L>::compute(mat, result);
-
-    (RowPointers::size_list[M - 1 - P] == L)
-        ? OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, L - 1,
-                                P + 1>::compute(mat, result)
-        : OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, L - 1,
-                                P>::compute(mat, result);
-  }
-};
-
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t P>
-struct OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, 0, P> {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, M, N> &result) {
-    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, M - 1 - P,
-                          0>::compute(mat, result);
+    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, J, 0>::compute(
+        mat, result);
+    OutputDenseMatrixRow<T, M, N, RowIndices, RowPointers, J - 1>::compute(
+        mat, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
-static inline void COMPILED_SPARSE_MATRIX_CREATE_DENSE(
+struct OutputDenseMatrixRow<T, M, N, RowIndices, RowPointers, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
+          Matrix<T, M, N> &result) {
+    OutputDenseMatrixCore<T, M, N, RowIndices, RowPointers, 0, 0>::compute(
+        mat, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+static inline void COMPILED_SPARSE_OUTPUT_DENSE_MATRIX(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
     Matrix<T, M, N> &result) {
-  OutputDenseMatrixList<T, M, N, RowIndices, RowPointers, M + 1, 0>::compute(
+  OutputDenseMatrixRow<T, M, N, RowIndices, RowPointers, M - 1>::compute(
       mat, result);
 }
 
@@ -174,7 +197,7 @@ inline Matrix<T, M, N> output_dense_matrix(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_CREATE_DENSE<T, M, N, RowIndices, RowPointers>(mat,
+  COMPILED_SPARSE_OUTPUT_DENSE_MATRIX<T, M, N, RowIndices, RowPointers>(mat,
                                                                         result);
 
 #endif
