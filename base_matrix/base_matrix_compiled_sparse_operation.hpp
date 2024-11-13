@@ -1468,6 +1468,45 @@ Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
 }
 
 /* Sparse Matrix multiply Sparse Matrix Transpose */
+// Core outer loop for Sparse Matrix multiply Sparse Matrix Transpose
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t J, std::size_t L,
+          std::size_t L_End>
+struct SparseMatrixMultiplySparseTransposeOuterLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    for (std::size_t o = RowPointers_B::size_list[J];
+         o < RowPointers_B::size_list[J + 1]; o++) {
+      if (RowIndices_A::size_list[L] == RowIndices_B::size_list[o]) {
+        Y(I, J) += A.values[L] * B.values[o];
+      }
+    }
+    SparseMatrixMultiplySparseTransposeOuterLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        J, (L + 1), (L_End - 1)>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t J, std::size_t L>
+struct SparseMatrixMultiplySparseTransposeOuterLoop<T, M, N, K, RowIndices_A,
+                                                    RowPointers_A, RowIndices_B,
+                                                    RowPointers_B, I, J, L, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(Y);
+    // End of outer loop, do nothing
+  }
+};
+
 // Core loop for Sparse Matrix multiply Sparse Matrix Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
@@ -1477,15 +1516,11 @@ struct SparseMatrixMultiplySparseTransposeCore {
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
           Matrix<T, M, K> &Y) {
-    for (std::size_t l = RowPointers_A::size_list[I];
-         l < RowPointers_A::size_list[I + 1]; l++) {
-      for (std::size_t o = RowPointers_B::size_list[J];
-           o < RowPointers_B::size_list[J + 1]; o++) {
-        if (RowIndices_A::size_list[l] == RowIndices_B::size_list[o]) {
-          Y(I, J) += A.values[l] * B.values[o];
-        }
-      }
-    }
+    SparseMatrixMultiplySparseTransposeOuterLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        J, RowPointers_A::size_list[I],
+        (RowPointers_A::size_list[I + 1] -
+         RowPointers_A::size_list[I])>::compute(A, B, Y);
   }
 };
 
