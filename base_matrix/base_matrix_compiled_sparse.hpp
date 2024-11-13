@@ -882,6 +882,114 @@ operator*(const T &scalar,
   return Y;
 }
 
+/* Sparse Matrix Multiply Vector */
+// Start < End (Core)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End>
+struct SparseMatrixMultiplyVectorLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b, T &sum) {
+    sum += A.values[Start] * b[RowIndices_A::size_list[Start]];
+    SparseMatrixMultiplyVectorLoop<T, M, N, RowIndices_A, RowPointers_A, J,
+                                   Start + 1, End>::compute(A, b, sum);
+  }
+};
+
+// Start == End (End of Core Loop)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t End>
+struct SparseMatrixMultiplyVectorLoop<T, M, N, RowIndices_A, RowPointers_A, J,
+                                      End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b, T &sum) {
+    static_cast<void>(A);
+    static_cast<void>(b);
+    static_cast<void>(sum);
+    // End of loop, do nothing
+  }
+};
+
+// Core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J>
+struct SparseMatrixMultiplyVectorCore {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b, Vector<T, M> &y) {
+    T sum = static_cast<T>(0);
+    SparseMatrixMultiplyVectorLoop<
+        T, M, N, RowIndices_A, RowPointers_A, J, RowPointers_A::size_list[J],
+        RowPointers_A::size_list[J + 1]>::compute(A, b, sum);
+    y[J] = sum;
+  }
+};
+
+// List loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J>
+struct SparseMatrixMultiplyVectorList {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b, Vector<T, M> &y) {
+    SparseMatrixMultiplyVectorCore<T, M, N, RowIndices_A, RowPointers_A,
+                                   J>::compute(A, b, y);
+    SparseMatrixMultiplyVectorList<T, M, N, RowIndices_A, RowPointers_A,
+                                   J - 1>::compute(A, b, y);
+  }
+};
+
+// End of list loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct SparseMatrixMultiplyVectorList<T, M, N, RowIndices_A, RowPointers_A, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b, Vector<T, M> &y) {
+    SparseMatrixMultiplyVectorCore<T, M, N, RowIndices_A, RowPointers_A,
+                                   0>::compute(A, b, y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const Vector<T, N> &b, Vector<T, M> &y) {
+  SparseMatrixMultiplyVectorList<T, M, N, RowIndices_A, RowPointers_A,
+                                 M - 1>::compute(A, b, y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Vector<T, M>
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Vector<T, N> &b) {
+  Vector<T, M> y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; j++) {
+    T sum = static_cast<T>(0);
+    for (std::size_t k = RowPointers_A::size_list[j];
+         k < RowPointers_A::size_list[j + 1]; k++) {
+      sum += A.values[k] * b[RowIndices_A::size_list[k]];
+    }
+    y[j] = sum;
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR<T, M, N, RowIndices_A, RowPointers_A>(
+      A, b, y);
+
+#endif
+
+  return y;
+}
+
 } // namespace Matrix
 } // namespace Base
 

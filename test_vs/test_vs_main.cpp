@@ -500,6 +500,12 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Scalar_mul_SparseCc_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix multiply scalar.");
 
+    Vector<T, 3> SparseCc_mul_vector = SparseCc * b;
+    Vector<T, 3> SparseCc_mul_vector_answer({1, 27, 16});
+
+    tester.expect_near(SparseCc_mul_vector.data, SparseCc_mul_vector_answer.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix multiply Vector.");
+
     Matrix<T, 3, 3> C_Add_A = SparseCc + DenseA;
 
     Matrix<T, 3, 3> C_Add_A_answer({
