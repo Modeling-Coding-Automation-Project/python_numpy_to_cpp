@@ -489,7 +489,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(C_Add_A.data, C_Add_A_answer.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix add Matrix.");
 
-    Matrix<T, 3, 3> DenseC = SA * DenseB;
+    Matrix<T, 3, 3> DenseC = SparseCc * DenseB;
 
     //std::cout << "DenseC = " << std::endl;
     //for (size_t j = 0; j < DenseC.cols(); ++j) {
