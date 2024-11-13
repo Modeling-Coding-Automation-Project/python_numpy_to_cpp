@@ -420,8 +420,8 @@ Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
 }
 
 template <typename T, std::size_t N, std::size_t K, std::size_t V>
-ColVector<T, K> colV_mul_SB(const ColVector<T, N> &a,
-                            const SparseMatrix<T, N, K, V> &B) {
+ColVector<T, K> colVector_a_mul_SparseB(const ColVector<T, N> &a,
+                                        const SparseMatrix<T, N, K, V> &B) {
   ColVector<T, K> y;
 
   for (std::size_t j = 0; j < N; j++) {
