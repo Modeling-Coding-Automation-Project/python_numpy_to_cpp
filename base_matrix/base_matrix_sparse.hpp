@@ -588,8 +588,8 @@ Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
 
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
 Matrix<T, K, M>
-matrix_multiply_T_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
-                                    const SparseMatrix<T, M, K, V> &B) {
+matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
+                                            const SparseMatrix<T, M, K, V> &B) {
   Matrix<T, K, M> Y;
 
   for (std::size_t j = 0; j < M; j++) {
