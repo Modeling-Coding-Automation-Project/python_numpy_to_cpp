@@ -2367,6 +2367,151 @@ Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
   return Y;
 }
 
+/* Dense Transpose Matrix multiply Sparse Matrix */
+// Inner loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          std::size_t KIndex, std::size_t I, std::size_t Start, std::size_t End>
+struct DenseTransposeMultiplySparseInnerLoop {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    Y(I, RowIndices_B::size_list[Start]) += B.values[Start] * A(J, I);
+    DenseTransposeMultiplySparseInnerLoop<T, M, N, K, RowIndices_B,
+                                          RowPointers_B, J, KIndex, I,
+                                          Start + 1, End>::compute(A, B, Y);
+  }
+};
+
+// End of inner loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          std::size_t KIndex, std::size_t I, std::size_t End>
+struct DenseTransposeMultiplySparseInnerLoop<
+    T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, End, End> {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(Y);
+    // End of loop, do nothing
+  }
+};
+
+// Middle loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          std::size_t KIndex, std::size_t I>
+struct DenseTransposeMultiplySparseMiddleLoop {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DenseTransposeMultiplySparseInnerLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I,
+        RowPointers_B::size_list[J],
+        RowPointers_B::size_list[J + 1]>::compute(A, B, Y);
+    DenseTransposeMultiplySparseMiddleLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I - 1>::compute(A,
+                                                                            B,
+                                                                            Y);
+  }
+};
+
+// End of middle loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          std::size_t KIndex>
+struct DenseTransposeMultiplySparseMiddleLoop<T, M, N, K, RowIndices_B,
+                                              RowPointers_B, J, KIndex, 0> {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DenseTransposeMultiplySparseInnerLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, 0,
+        RowPointers_B::size_list[J],
+        RowPointers_B::size_list[J + 1]>::compute(A, B, Y);
+  }
+};
+
+// Outer loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          std::size_t KIndex>
+struct DenseTransposeMultiplySparseOuterLoop {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DenseTransposeMultiplySparseMiddleLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, M - 1>::compute(A,
+                                                                            B,
+                                                                            Y);
+    DenseTransposeMultiplySparseOuterLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, J - 1, KIndex>::compute(A, B,
+                                                                         Y);
+  }
+};
+
+// End of outer loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B, std::size_t KIndex>
+struct DenseTransposeMultiplySparseOuterLoop<T, M, N, K, RowIndices_B,
+                                             RowPointers_B, 0, KIndex> {
+  static void
+  compute(const Matrix<T, N, M> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DenseTransposeMultiplySparseMiddleLoop<
+        T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex, M - 1>::compute(A,
+                                                                            B,
+                                                                            Y);
+  }
+};
+
+// Main function
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B>
+static inline void COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE(
+    const Matrix<T, N, M> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+    Matrix<T, M, K> &Y) {
+  DenseTransposeMultiplySparseOuterLoop<T, M, N, K, RowIndices_B, RowPointers_B,
+                                        N - 1, K - 1>::compute(A, B, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_B, typename RowPointers_B>
+Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
+    const Matrix<T, N, M> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, K> Y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < N; j++) {
+    for (std::size_t k = RowPointers_B::size_list[j];
+         k < RowPointers_B::size_list[j + 1]; k++) {
+      for (std::size_t i = 0; i < M; i++) {
+        Y(i, RowIndices_B::size_list[k]) += B.values[k] * A(j, i);
+      }
+    }
+  }
+
+#else
+
+  COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE<T, M, N, K, RowIndices_B,
+                                                  RowPointers_B>(A, B, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
