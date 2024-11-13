@@ -574,6 +574,32 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
+/* Sparse Matrix Add Sparse Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Matrix<T, M, N>
+operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &B) {
+  Matrix<T, M, M> Y = B.create_dense();
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_A::size_list[j];
+         k < RowPointers_A::size_list[j + 1]; ++k) {
+      Y(j, RowIndices_A::size_list[k]) += A.values[k];
+    }
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 

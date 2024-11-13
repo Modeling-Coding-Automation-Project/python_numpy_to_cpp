@@ -588,6 +588,17 @@ void check_base_matrix_calc(void) {
 
     Matrix<T, 3, 3> DenseK = DiagJ * SA;
 
+    Matrix<T, 3, 3> Sparse_add_Sparse = SparseCc + SparseCc;
+
+    Matrix<T, 3, 3> Sparse_add_Sparse_answer({
+        {2, 0, 0},
+        {6, 0, 16},
+        {0, 4, 8}
+        });
+
+    tester.expect_near(Sparse_add_Sparse.data, Sparse_add_Sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix add SparseMatrix.");
+
     //std::cout << "DenseK = " << std::endl;
     //for (size_t j = 0; j < DenseK.cols(); ++j) {
     //    for (size_t i = 0; i < DenseK.rows(); ++i) {
