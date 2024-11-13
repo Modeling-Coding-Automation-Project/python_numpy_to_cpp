@@ -13,7 +13,7 @@ auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
               const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
-      Base::Matrix::matrix_multiply_A_mul_BT(A.matrix, B.matrix));
+      Base::Matrix::matrix_multiply_A_mul_BTranspose(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t K>
@@ -61,7 +61,7 @@ auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
               const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
-      Base::Matrix::matrix_multiply_SparseA_mul_BT(A.matrix, B.matrix));
+      Base::Matrix::matrix_multiply_SparseA_mul_BTranspose(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t V>

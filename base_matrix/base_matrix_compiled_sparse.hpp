@@ -1362,7 +1362,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE_TRANSPOSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K>
-Matrix<T, M, K> matrix_multiply_SparseA_mul_BT(
+Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;

@@ -239,7 +239,7 @@ void check_base_matrix_calc(void) {
         "check GMRES k.");
 
     /* 転置積 */
-    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BT(H, E);
+    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E);
     //std::cout << "Trans = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 2; ++i) {
@@ -694,7 +694,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(DenseK.data, DenseK_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply SparseMatrix.");
 
-    Matrix<T, 3, 3> Sparse_mul_Dense_T = matrix_multiply_SparseA_mul_BT(SparseCc, DenseG);
+    Matrix<T, 3, 3> Sparse_mul_Dense_T = matrix_multiply_SparseA_mul_BTranspose(SparseCc, DenseG);
 
     Matrix<T, 3, 3> Sparse_mul_Dense_T_answer({
         {1, 5, 9},

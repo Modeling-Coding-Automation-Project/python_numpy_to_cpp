@@ -1470,8 +1470,8 @@ COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(const Matrix<T, M, K> &A,
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-Matrix<T, M, N> matrix_multiply_A_mul_BT(const Matrix<T, M, K> &A,
-                                         const Matrix<T, N, K> &B) {
+Matrix<T, M, N> matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
+                                                 const Matrix<T, N, K> &B) {
   Matrix<T, M, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION

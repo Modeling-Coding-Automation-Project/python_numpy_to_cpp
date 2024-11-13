@@ -473,8 +473,8 @@ Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 Matrix<T, M, K>
-matrix_multiply_SparseA_mul_BT(const SparseMatrix<T, M, N, V> &A,
-                               const Matrix<T, K, N> &B) {
+matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
+                                       const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < K; i++) {
