@@ -153,7 +153,7 @@ auto AT_mul_B(const Matrix<DefSparse, T, N, M, V> &A,
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
-      matrix_multiply_SparseAT_mul_SparseB(A.matrix, B.matrix));
+      matrix_multiply_SparseATranspose_mul_SparseB(A.matrix, B.matrix));
 }
 
 } // namespace PythonNumpy

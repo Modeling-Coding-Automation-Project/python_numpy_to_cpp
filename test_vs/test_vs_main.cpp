@@ -617,6 +617,18 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_mul_Sparse.data, Sparse_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
 
+    Matrix<T, 3, 4> SparseTranspose_mul_Sparse =
+        matrix_multiply_SparseATranspose_mul_SparseB(SparseCc, SEc);
+
+    Matrix<T, 3, 4> SparseTranspose_mul_Sparse_answer({
+        {10, 0, 24, 3},
+        {0, 4, 8, 0},
+        {24, 8, 80, 8}
+        });
+
+    tester.expect_near(SparseTranspose_mul_Sparse.data, SparseTranspose_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix transpose multiply SparseMatrix.");
+
     DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
 
     Matrix<T, 3, 3> Sparse_add_Diag = SparseCc + DiagJ;

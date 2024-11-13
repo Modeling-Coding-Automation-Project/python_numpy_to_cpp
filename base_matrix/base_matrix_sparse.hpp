@@ -533,9 +533,8 @@ matrix_multiply_SparseA_mul_SparseBT(const SparseMatrix<T, M, N, V> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K>
-matrix_multiply_SparseAT_mul_SparseB(const SparseMatrix<T, N, M, V> &A,
-                                     const SparseMatrix<T, N, K, W> &B) {
+Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
+    const SparseMatrix<T, N, M, V> &A, const SparseMatrix<T, N, K, W> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < N; i++) {

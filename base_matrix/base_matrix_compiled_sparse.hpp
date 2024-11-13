@@ -1578,6 +1578,193 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
+/* Sparse Matrix Transpose Multiply Sparse Matrix */
+// Inner loop for Sparse Matrix Transpose Multiply Sparse Matrix
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t Start,
+          std::size_t L, std::size_t LEnd>
+struct SparseMatrixTransposeMultiplySparseInnerLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    Y(RowIndices_A::size_list[Start], RowIndices_B::size_list[L]) +=
+        A.values[Start] * B.values[L];
+    SparseMatrixTransposeMultiplySparseInnerLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        Start, L + 1, LEnd>::compute(A, B, Y);
+  }
+};
+
+// End of Inner loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t Start,
+          std::size_t LEnd>
+struct SparseMatrixTransposeMultiplySparseInnerLoop<
+    T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+    Start, LEnd, LEnd> {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(Y);
+    // End of inner loop, do nothing
+  }
+};
+
+// Outer loop for Sparse Matrix Transpose Multiply Sparse Matrix
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t Start,
+          std::size_t End>
+struct SparseMatrixTransposeMultiplySparseLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    SparseMatrixTransposeMultiplySparseInnerLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        Start, RowPointers_B::size_list[I],
+        RowPointers_B::size_list[I + 1]>::compute(A, B, Y);
+    SparseMatrixTransposeMultiplySparseLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        Start + 1, End>::compute(A, B, Y);
+  }
+};
+
+// End of Outer loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t End>
+struct SparseMatrixTransposeMultiplySparseLoop<T, M, N, K, RowIndices_A,
+                                               RowPointers_A, RowIndices_B,
+                                               RowPointers_B, I, End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(Y);
+    // End of outer loop, do nothing
+  }
+};
+
+// Core loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I>
+struct SparseMatrixTransposeMultiplySparseCore {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    SparseMatrixTransposeMultiplySparseLoop<
+        T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, I,
+        RowPointers_A::size_list[I],
+        RowPointers_A::size_list[I + 1]>::compute(A, B, Y);
+  }
+};
+
+// List loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I>
+struct SparseMatrixTransposeMultiplySparseList {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    SparseMatrixTransposeMultiplySparseCore<T, M, N, K, RowIndices_A,
+                                            RowPointers_A, RowIndices_B,
+                                            RowPointers_B, I>::compute(A, B, Y);
+    SparseMatrixTransposeMultiplySparseList<T, M, N, K, RowIndices_A,
+                                            RowPointers_A, RowIndices_B,
+                                            RowPointers_B, I - 1>::compute(A, B,
+                                                                           Y);
+  }
+};
+
+// End of list loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B>
+struct SparseMatrixTransposeMultiplySparseList<
+    T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    SparseMatrixTransposeMultiplySparseCore<T, M, N, K, RowIndices_A,
+                                            RowPointers_A, RowIndices_B,
+                                            RowPointers_B, 0>::compute(A, B, Y);
+  }
+};
+
+// Column loop
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B>
+struct SparseMatrixTransposeMultiplySparseColumn {
+  static void
+  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    SparseMatrixTransposeMultiplySparseList<T, M, N, K, RowIndices_A,
+                                            RowPointers_A, RowIndices_B,
+                                            RowPointers_B, N - 1>::compute(A, B,
+                                                                           Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+static inline void COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE(
+    const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+    Matrix<T, M, K> &Y) {
+  SparseMatrixTransposeMultiplySparseColumn<T, M, N, K, RowIndices_A,
+                                            RowPointers_A, RowIndices_B,
+                                            RowPointers_B>::compute(A, B, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
+    const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, K> Y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; i++) {
+    for (std::size_t k = RowPointers_A::size_list[i];
+         k < RowPointers_A::size_list[i + 1]; k++) {
+      for (std::size_t j = RowPointers_B::size_list[i];
+           j < RowPointers_B::size_list[i + 1]; j++) {
+        Y(RowIndices_A::size_list[k], RowIndices_B::size_list[j]) +=
+            A.values[k] * B.values[j];
+      }
+    }
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B>(
+      A, B, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
