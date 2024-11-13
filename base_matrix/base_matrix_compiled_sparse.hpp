@@ -608,12 +608,20 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = -B;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
-         ++k) {
-      Y(j, this->row_indices[k]) += this->values[k];
+    for (std::size_t k = RowPointers_A::size_list[j];
+         k < RowPointers_A::size_list[j + 1]; ++k) {
+      Y(j, RowIndices_A::size_list[k]) += A.values[k];
     }
   }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+
+#endif
 
   return Y;
 }

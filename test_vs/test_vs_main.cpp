@@ -534,7 +534,7 @@ void check_base_matrix_calc(void) {
 
     Matrix<T, 3, 3> DenseG({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7} });
 
-    Matrix<T, 3, 3> DenseH = SA - DenseG;
+    Matrix<T, 3, 3> DenseH = SparseCc - DenseG;
     //Matrix<T, 3, 3> DenseH = DenseG - SA;
 
     //std::cout << "DenseH = " << std::endl;
