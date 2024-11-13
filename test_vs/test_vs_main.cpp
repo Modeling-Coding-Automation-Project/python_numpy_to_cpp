@@ -574,6 +574,18 @@ void check_base_matrix_calc(void) {
         "check SparseMatrix multiply SparseMatrix.");
 
     DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
+
+    Matrix<T, 3, 3> Sparse_add_Diag = SparseCc + DiagJ;
+
+    Matrix<T, 3, 3> Sparse_add_Diag_answer({
+        {11, 0, 0},
+        {3, 20, 8},
+        {0, 2, 34}
+        });
+
+    tester.expect_near(Sparse_add_Diag.data, Sparse_add_Diag_answer.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix add DiagMatrix.");
+
     Matrix<T, 3, 3> DenseK = DiagJ * SA;
 
     //std::cout << "DenseK = " << std::endl;
