@@ -462,6 +462,22 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3> DenseB({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     SparseMatrix<T, 3, 3, 5> SA(A_value, A_row_indices, A_row_pointers);
 
+    Matrix<T, 3, 3> A_33({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+
+    SparseMatrix<T, 3, 3, 5> Cn({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F },
+        { 0, 0, 2, 1, 2 },
+        { 0, 1, 3, 5 });
+
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> Cc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+
+    Matrix<T, 3, 3> Cc_mul_A = Cc.transpose();
+    Matrix<T, 3, 3> Cn_mul_A = Cn.transpose();
+
+    tester.expect_near(Cc_mul_A.data, Cn_mul_A.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix transpose.");
+
     Matrix<T, 3, 3> DenseC = SA * DenseB;
 
     //std::cout << "DenseC = " << std::endl;
@@ -1516,4 +1532,3 @@ int main() {
 
     return 0;
 }
-
