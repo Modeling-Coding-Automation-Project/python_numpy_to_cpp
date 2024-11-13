@@ -30,7 +30,7 @@ auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
-      Base::Matrix::matrix_multiply_A_mul_SparseBT(A.matrix, B.matrix));
+      Base::Matrix::matrix_multiply_A_mul_SparseBTranspose(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N>
