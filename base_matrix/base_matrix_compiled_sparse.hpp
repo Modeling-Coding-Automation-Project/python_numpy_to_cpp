@@ -576,10 +576,10 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 /* Sparse Matrix Add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
 Matrix<T, M, N>
 operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &B) {
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, M, M> Y = B.create_dense();
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -596,6 +596,24 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
 
 #endif
+
+  return Y;
+}
+
+/* Sparse Matrix Subtract Dense Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Matrix<T, M, N>
+operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, M, N> &B) {
+  Matrix<T, M, N> Y = -B;
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+         ++k) {
+      Y(j, this->row_indices[k]) += this->values[k];
+    }
+  }
 
   return Y;
 }
