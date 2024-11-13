@@ -420,7 +420,7 @@ struct SparseMatrixMultiplyDenseColumn<T, M, N, K, RowIndices_A, RowPointers_A,
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K>
-static inline void COMPILED_SPARSE_MATRIX_CREATE_DENSE(
+static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
   SparseMatrixMultiplyDenseColumn<T, M, N, K, RowIndices_A, RowPointers_A,
@@ -449,8 +449,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_CREATE_DENSE<T, M, N, RowIndices_A, RowPointers_A, K>(
-      A, B, Y);
+  COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE<T, M, N, RowIndices_A, RowPointers_A,
+                                        K>(A, B, Y);
 
 #endif
 
