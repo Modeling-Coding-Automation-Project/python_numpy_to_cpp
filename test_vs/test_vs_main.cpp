@@ -725,6 +725,13 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_sub_Sparse.data, Sparse_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix sub SparseMatrix.");
 
+    Matrix<T, 3, 3> Transpose_Diag_mul_Sparse = matrix_multiply_Transpose_DiagA_mul_SparseB(DiagJ, SparseCc);
+
+    Matrix<T, 3, 3> Transpose_Diag_mul_Sparse_answer({ {10, 60, 0}, {0, 0, 60}, {0, 160, 120} });
+
+    tester.expect_near(Transpose_Diag_mul_Sparse.data, Transpose_Diag_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check Transpose DiagMatrix multiply SparseMatrix.");
+
     Matrix<T, 3, 3> Sparse_mul_Dense_T = matrix_multiply_SparseA_mul_BTranspose(SparseCc, DenseG);
 
     Matrix<T, 3, 3> Sparse_mul_Dense_T_answer({

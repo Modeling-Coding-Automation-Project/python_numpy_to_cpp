@@ -1780,6 +1780,28 @@ operator*(const DiagMatrix<T, M> &A,
   return Y;
 }
 
+/* Transpose (Diag Matrix multiply Sparse Matrix) */
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, K, M> Y;
+
+  for (std::size_t j = 0; j < M; j++) {
+    for (std::size_t k = RowPointers_B::size_list[j];
+         k < RowPointers_B::size_list[j + 1]; k++) {
+      for (std::size_t i = 0; i < M; i++) {
+        if (i == j) {
+          Y(RowIndices_B::size_list[k], i) += B.values[k] * A[i];
+        }
+      }
+    }
+  }
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
