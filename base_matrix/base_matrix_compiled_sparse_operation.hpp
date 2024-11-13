@@ -7,10 +7,8 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <initializer_list>
-#include <utility>
 #include <vector>
 
 namespace Base {
