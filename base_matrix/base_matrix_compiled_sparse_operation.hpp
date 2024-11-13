@@ -396,7 +396,33 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
-/* Sparse Matrix Add Diag Matrix */
+/* Dense Matrix add Sparse Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Matrix<T, M, N>
+operator+(const Matrix<T, M, N> &B,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  Matrix<T, M, N> Y = B;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_A::size_list[j];
+         k < RowPointers_A::size_list[j + 1]; ++k) {
+      Y(j, RowIndices_A::size_list[k]) += A.values[k];
+    }
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+
+#endif
+
+  return Y;
+}
+
+/* Sparse Matrix add Diag Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 Matrix<T, M, M>
@@ -422,7 +448,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
-/* Diag Matrix Add Sparse Matrix */
+/* Diag Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 Matrix<T, M, M>
@@ -448,7 +474,7 @@ operator+(const DiagMatrix<T, M> &B,
   return Y;
 }
 
-/* Sparse Matrix Add Sparse Matrix */
+/* Sparse Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
 Matrix<T, M, N>
