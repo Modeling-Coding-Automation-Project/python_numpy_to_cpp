@@ -858,6 +858,30 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
+/* Scalar Multiply Sparse Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
+operator*(const T &scalar,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < RowIndices_A::size; i++) {
+    Y.values[i] = scalar * A.values[i];
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A, RowPointers_A>(
+      A, scalar, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 

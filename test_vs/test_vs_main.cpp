@@ -492,6 +492,14 @@ void check_base_matrix_calc(void) {
     tester.expect_near(SparseCc_mul_scalar_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix multiply scalar.");
 
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> Scalar_mul_SparseCc = static_cast<T>(3) * SparseCc;
+    Matrix<T, 3, 3> Scalar_mul_SparseCc_dense = Scalar_mul_SparseCc.create_dense();
+
+    tester.expect_near(Scalar_mul_SparseCc_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix multiply scalar.");
+
     Matrix<T, 3, 3> C_Add_A = SparseCc + DenseA;
 
     Matrix<T, 3, 3> C_Add_A_answer({
