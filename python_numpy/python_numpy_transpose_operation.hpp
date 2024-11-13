@@ -104,7 +104,7 @@ auto AT_mul_B(const Matrix<DefDense, T, N, M> &A,
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
-      Base::Matrix::matrix_multiply_AT_mul_SparseB(A.matrix, B.matrix));
+      Base::Matrix::matrix_multiply_ATranspose_mul_SparseB(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t K, std::size_t N>

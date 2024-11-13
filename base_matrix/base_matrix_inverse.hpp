@@ -387,7 +387,7 @@ Vector<T, N> sparse_gmres_k_rect(const SparseMatrix<T, M, N, V> &In_SA,
   Vector<T, M> b_ax_temp = b - (In_SA * x_1);
 
   Matrix<T, N, N> A =
-      matrix_multiply_AT_mul_SparseB(In_SA.create_dense(), In_SA);
+      matrix_multiply_ATranspose_mul_SparseB(In_SA.create_dense(), In_SA);
 
   ColVector<T, M> b_ax_temp_col(b_ax_temp);
   ColVector<T, N> b_SA = colVector_a_mul_SparseB(b_ax_temp_col, In_SA);

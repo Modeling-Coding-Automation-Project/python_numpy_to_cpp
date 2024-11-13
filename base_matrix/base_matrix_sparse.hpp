@@ -658,8 +658,8 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
 Matrix<T, M, K>
-matrix_multiply_AT_mul_SparseB(const Matrix<T, N, M> &A,
-                               const SparseMatrix<T, N, K, V> &B) {
+matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
+                                       const SparseMatrix<T, N, K, V> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {

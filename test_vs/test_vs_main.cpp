@@ -744,7 +744,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(DenseL.data, DenseL_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix multiply SparseMatrix transpose.");
 
-    Matrix<T, 3, 3> DenseM = matrix_multiply_AT_mul_SparseB(DenseG, SA);
+    Matrix<T, 3, 3> DenseM = matrix_multiply_ATranspose_mul_SparseB(DenseG, SA);
 
     //std::cout << "DenseM = " << std::endl;
     //for (size_t j = 0; j < DenseM.cols(); ++j) {
