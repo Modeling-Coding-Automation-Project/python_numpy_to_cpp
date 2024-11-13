@@ -462,21 +462,32 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3> DenseB({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     SparseMatrix<T, 3, 3, 5> SA(A_value, A_row_indices, A_row_pointers);
 
-    Matrix<T, 3, 3> A_33({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<T, 3, 3> DenseA({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
 
-    SparseMatrix<T, 3, 3, 5> Cn({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F },
+    SparseMatrix<T, 3, 3, 5> SparseCn({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F },
         { 0, 0, 2, 1, 2 },
         { 0, 1, 3, 5 });
 
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> Cc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
-    Matrix<T, 3, 3> Cc_mul_A = Cc.transpose();
-    Matrix<T, 3, 3> Cn_mul_A = Cn.transpose();
+    Matrix<T, 3, 3> Cc_mul_A = SparseCc.transpose();
+    Matrix<T, 3, 3> Cn_mul_A = SparseCn.transpose();
 
     tester.expect_near(Cc_mul_A.data, Cn_mul_A.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix transpose.");
+
+    Matrix<T, 3, 3> C_Add_A = SparseCc + DenseA;
+
+    Matrix<T, 3, 3> C_Add_A_answer({
+        {2, 2, 3},
+        {8, 4, 14},
+        {9, 10, 11}
+        });
+
+    tester.expect_near(C_Add_A.data, C_Add_A_answer.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix add Matrix.");
 
     Matrix<T, 3, 3> DenseC = SA * DenseB;
 
