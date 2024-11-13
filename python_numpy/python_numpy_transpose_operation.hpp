@@ -78,7 +78,7 @@ auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
-      matrix_multiply_SparseA_mul_SparseBT(A.matrix, B.matrix));
+      matrix_multiply_SparseA_mul_SparseBTranspose(A.matrix, B.matrix));
 }
 
 /* (transpose matrix) * (matrix) */

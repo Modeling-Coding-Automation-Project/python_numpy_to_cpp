@@ -1280,8 +1280,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
-/* Sparse Matrix Transpose Multiply Sparse Matrix */
-// Inner loop for Sparse Matrix Transpose Multiply Sparse Matrix
+/* Sparse Matrix Transpose multiply Sparse Matrix */
+// Inner loop for Sparse Matrix Transpose multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, std::size_t I, std::size_t Start,
@@ -1318,7 +1318,7 @@ struct SparseMatrixTransposeMultiplySparseInnerLoop<
   }
 };
 
-// Outer loop for Sparse Matrix Transpose Multiply Sparse Matrix
+// Outer loop for Sparse Matrix Transpose multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, std::size_t I, std::size_t Start,
@@ -1463,6 +1463,32 @@ Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
       A, B, Y);
 
 #endif
+
+  return Y;
+}
+
+/* Sparse Matrix multiply Sparse Matrix Transpose */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, K> Y;
+
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = 0; j < K; j++) {
+      for (std::size_t l = RowPointers_A::size_list[i];
+           l < RowPointers_A::size_list[i + 1]; l++) {
+        for (std::size_t o = RowPointers_B::size_list[j];
+             o < RowPointers_B::size_list[j + 1]; o++) {
+          if (RowIndices_A::size_list[l] == RowIndices_B::size_list[o]) {
+            Y(i, j) += A.values[l] * B.values[o];
+          }
+        }
+      }
+    }
+  }
 
   return Y;
 }
