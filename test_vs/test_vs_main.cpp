@@ -594,7 +594,11 @@ void check_base_matrix_calc(void) {
     tester.expect_near(DenseH.data, DenseH_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix subtract Matrix.");
 
-    Matrix<T, 3, 4> DenseI = SA * SE;
+    CompiledSparseMatrix<T, 3, 4,
+        RowIndices<0, 0, 2, 3, 1, 2>,
+        RowPointers<0, 1, 4, 6>> SEc({1, 3, 8, 1, 2, 4});
+
+    Matrix<T, 3, 4> Sparse_mul_Sparse = SparseCc * SEc;
 
     //std::cout << "DenseI = " << std::endl;
     //for (size_t j = 0; j < DenseI.cols(); ++j) {
@@ -605,12 +609,12 @@ void check_base_matrix_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<T, 3, 4> DenseI_answer({
+    Matrix<T, 3, 4> Sparse_mul_Sparse_answer({
         {1, 0, 0, 0},
         {3, 16, 32, 0},
         {6, 8, 32, 2}
         });
-    tester.expect_near(DenseI.data, DenseI_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_mul_Sparse.data, Sparse_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
 
     DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
