@@ -1635,6 +1635,151 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
+/* Diag Matrix multiply Sparse Matrix */
+// Conditional operation False
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t KStart_End,
+          std::size_t I_J>
+struct DiagMatrixMultiplySparseConditionalOperation {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(Y);
+    // Do nothing
+  }
+};
+
+// Conditional operation True
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t I, std::size_t KStart_End>
+struct DiagMatrixMultiplySparseConditionalOperation<
+    T, M, K, RowIndices_B, RowPointers_B, I, KStart_End, 0> {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    Y(I, RowIndices_B::size_list[KStart_End]) += B.values[KStart_End] * A[I];
+  }
+};
+
+// Core loop (Inner loop)
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t I,
+          std::size_t KStart, std::size_t KEnd>
+struct DiagMatrixMultiplySparseInnerLoop {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DiagMatrixMultiplySparseConditionalOperation<
+        T, M, K, RowIndices_B, RowPointers_B, I, KStart, (I - J)>::compute(A, B,
+                                                                           Y);
+    DiagMatrixMultiplySparseInnerLoop<T, M, K, RowIndices_B, RowPointers_B, J,
+                                      I, KStart + 1, KEnd>::compute(A, B, Y);
+  }
+};
+
+// End of inner loop
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t I,
+          std::size_t KEnd>
+struct DiagMatrixMultiplySparseInnerLoop<T, M, K, RowIndices_B, RowPointers_B,
+                                         J, I, KEnd, KEnd> {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DiagMatrixMultiplySparseConditionalOperation<
+        T, M, K, RowIndices_B, RowPointers_B, I, KEnd, (I - J)>::compute(A, B,
+                                                                         Y);
+  }
+};
+
+// Core loop
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t I>
+struct DiagMatrixMultiplySparseCore {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DiagMatrixMultiplySparseInnerLoop<
+        T, M, K, RowIndices_B, RowPointers_B, J, I, RowPointers_B::size_list[J],
+        RowPointers_B::size_list[J + 1] - 1>::compute(A, B, Y);
+  }
+};
+
+// List loop
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J>
+struct DiagMatrixMultiplySparseList {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DiagMatrixMultiplySparseCore<T, M, K, RowIndices_B, RowPointers_B, J,
+                                 J>::compute(A, B, Y);
+    DiagMatrixMultiplySparseList<T, M, K, RowIndices_B, RowPointers_B,
+                                 J - 1>::compute(A, B, Y);
+  }
+};
+
+// End of list loop
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+struct DiagMatrixMultiplySparseList<T, M, K, RowIndices_B, RowPointers_B, 0> {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, K> &Y) {
+    DiagMatrixMultiplySparseCore<T, M, K, RowIndices_B, RowPointers_B, 0,
+                                 0>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+static inline void COMPILED_DIAG_MATRIX_MULTIPLY_SPARSE(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+    Matrix<T, M, K> &Y) {
+  DiagMatrixMultiplySparseList<T, M, K, RowIndices_B, RowPointers_B,
+                               M - 1>::compute(A, B, Y);
+}
+
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+Matrix<T, M, K>
+operator*(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, K> Y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; j++) {
+    for (std::size_t k = RowPointers_B::size_list[j];
+         k < RowPointers_B::size_list[j + 1]; k++) {
+      for (std::size_t i = 0; i < M; i++) {
+        if (i == j) {
+          Y(i, RowIndices_B::size_list[k]) += B.values[k] * A[i];
+        }
+      }
+    }
+  }
+
+#else
+
+  COMPILED_DIAG_MATRIX_MULTIPLY_SPARSE<T, M, K, RowIndices_B, RowPointers_B>(
+      A, B, Y);
+
+#endif
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 

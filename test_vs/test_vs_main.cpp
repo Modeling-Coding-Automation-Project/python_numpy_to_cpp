@@ -692,6 +692,17 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_mul_Diag.data, Sparse_mul_Diag_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply DiagMatrix.");
 
+    Matrix<T, 3, 3> Diag_mul_Sparse = DiagJ * SparseCc;
+
+    Matrix<T, 3, 3> Diag_mul_Sparse_answer({
+        {10, 0, 0},
+        {60, 0, 160},
+        {0, 60, 120}
+        });
+
+    tester.expect_near(Diag_mul_Sparse.data, Diag_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix multiply SparseMatrix.");
+
     Matrix<T, 3, 3> Sparse_add_Sparse = SparseCc + SparseCc;
 
     Matrix<T, 3, 3> Sparse_add_Sparse_answer({
