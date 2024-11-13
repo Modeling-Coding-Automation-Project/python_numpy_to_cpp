@@ -315,7 +315,7 @@ inline Matrix<T, N, M> output_transpose_matrix(
   return result;
 }
 
-/* Sparse Matrix multiply Matrix */
+/* Sparse Matrix multiply Dense Matrix */
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t J,
@@ -457,7 +457,7 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return Y;
 }
 
-/* Sparse Matrix multiply Dense Matrix */
+/* Sparse Matrix add Dense Matrix */
 // Core loop for addition
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t J, std::size_t K,
@@ -646,6 +646,97 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 #else
 
   COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+
+#endif
+
+  return Y;
+}
+
+/* Sparse Matrix Subtract Sparse Matrix */
+// Core loop for addition
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K,
+          std::size_t Start, std::size_t End>
+struct SparseMatrixSubDenseLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          Matrix<T, M, N> &Y) {
+    Y(J, RowIndices_A::size_list[Start]) -= A.values[Start];
+    SparseMatrixSubDenseLoop<T, M, N, RowIndices_A, RowPointers_A, J, K,
+                             Start + 1, End>::compute(A, Y);
+  }
+};
+
+// End of core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct SparseMatrixSubDenseLoop<T, M, N, RowIndices_A, RowPointers_A, J, K, End,
+                                End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          Matrix<T, M, N> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(Y);
+    // End of loop, do nothing
+  }
+};
+
+// Row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J>
+struct SparseMatrixSubDenseRow {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          Matrix<T, M, N> &Y) {
+    SparseMatrixSubDenseLoop<T, M, N, RowIndices_A, RowPointers_A, J, 0,
+                             RowPointers_A::size_list[J],
+                             RowPointers_A::size_list[J + 1]>::compute(A, Y);
+    SparseMatrixSubDenseRow<T, M, N, RowIndices_A, RowPointers_A,
+                            J - 1>::compute(A, Y);
+  }
+};
+
+// End of row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct SparseMatrixSubDenseRow<T, M, N, RowIndices_A, RowPointers_A, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          Matrix<T, M, N> &Y) {
+    SparseMatrixSubDenseLoop<T, M, N, RowIndices_A, RowPointers_A, 0, 0,
+                             RowPointers_A::size_list[0],
+                             RowPointers_A::size_list[1]>::compute(A, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_SPARSE_MATRIX_SUB_DENSE(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    Matrix<T, M, N> &Y) {
+  SparseMatrixSubDenseRow<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(
+      A, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
+Matrix<T, M, N>
+operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, N> Y = A.create_dense();
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_B::size_list[j];
+         k < RowPointers_B::size_list[j + 1]; ++k) {
+      Y(j, RowIndices_B::size_list[k]) -= B.values[k];
+    }
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_SUB_DENSE<T, M, N, RowIndices_B, RowPointers_B>(B, Y);
 
 #endif
 

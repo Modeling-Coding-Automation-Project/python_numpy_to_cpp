@@ -610,6 +610,17 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_add_Sparse.data, Sparse_add_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix add SparseMatrix.");
 
+    Matrix<T, 3, 3> Sparse_sub_Sparse = SparseCc - SparseCc;
+
+    Matrix<T, 3, 3> Sparse_sub_Sparse_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(Sparse_sub_Sparse.data, Sparse_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix sub SparseMatrix.");
+
     //std::cout << "DenseK = " << std::endl;
     //for (size_t j = 0; j < DenseK.cols(); ++j) {
     //    for (size_t i = 0; i < DenseK.rows(); ++i) {
