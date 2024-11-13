@@ -478,6 +478,20 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Cc_mul_A.data, Cn_mul_A.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix transpose.");
 
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> SparseCc_mul_scalar = SparseCc * static_cast<T>(3);
+    Matrix<T, 3, 3> SparseCc_mul_scalar_dense = SparseCc_mul_scalar.create_dense();
+
+    Matrix<T, 3, 3> SparseCc_mul_scalar_answer({
+        {3, 0, 0},
+        {9, 0, 24},
+        {0, 6, 12}
+        });
+
+    tester.expect_near(SparseCc_mul_scalar_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix multiply scalar.");
+
     Matrix<T, 3, 3> C_Add_A = SparseCc + DenseA;
 
     Matrix<T, 3, 3> C_Add_A_answer({

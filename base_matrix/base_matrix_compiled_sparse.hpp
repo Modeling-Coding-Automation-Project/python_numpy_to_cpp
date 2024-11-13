@@ -107,7 +107,6 @@ public:
   std::vector<T> values;
 #else
   std::array<T, RowIndices::size> values;
-  std::array<T, RowPointers::size_list[M]> test_pointers;
 #endif
 };
 
@@ -737,6 +736,70 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 #else
 
   COMPILED_SPARSE_MATRIX_SUB_DENSE<T, M, N, RowIndices_B, RowPointers_B>(B, Y);
+
+#endif
+
+  return Y;
+}
+
+/* Sparse Matrix Multiply Scalar */
+// Core loop for scalar multiplication
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I, std::size_t End>
+struct SparseMatrixMultiplyScalarLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &scalar,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    Y.values[I] = scalar * A.values[I];
+    SparseMatrixMultiplyScalarLoop<T, M, N, RowIndices_A, RowPointers_A, I + 1,
+                                   End>::compute(A, scalar, Y);
+  }
+};
+
+// End of loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t End>
+struct SparseMatrixMultiplyScalarLoop<T, M, N, RowIndices_A, RowPointers_A, End,
+                                      End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &scalar,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(scalar);
+    static_cast<void>(Y);
+    // End of loop, do nothing
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const T &scalar,
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+  SparseMatrixMultiplyScalarLoop<T, M, N, RowIndices_A, RowPointers_A, 0,
+                                 RowIndices_A::size>::compute(A, scalar, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &scalar) {
+  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < RowIndices_A::size; i++) {
+    Y.values[i] = scalar * A.values[i];
+  }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A, RowPointers_A>(
+      A, scalar, Y);
 
 #endif
 
