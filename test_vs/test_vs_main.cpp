@@ -734,7 +734,7 @@ void check_base_matrix_calc(void) {
         "check SparseMatrix multiply Vector.");
 
     ColVector<T, 3> b_col(b);
-    ColVector<T, 3> Dense_m = colV_mul_SB(b_col, SA);
+    ColVector<T, 3> Dense_m = colVector_a_mul_SparseB(b_col, SparseCc);
 
     //std::cout << "b_col * SA = ";
     //for (size_t i = 0; i < Dense_m.size(); ++i) {

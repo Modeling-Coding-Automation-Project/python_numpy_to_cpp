@@ -990,6 +990,105 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   return y;
 }
 
+/* ColVector multiply Sparse Matrix */
+// Core loop
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t Start,
+          std::size_t End>
+struct ColVectorMultiplySparseLoop {
+  static void
+  compute(const ColVector<T, N> &a,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          ColVector<T, K> &y) {
+    y[RowIndices_B::size_list[Start]] += B.values[Start] * a[J];
+    ColVectorMultiplySparseLoop<T, N, K, RowIndices_B, RowPointers_B, J,
+                                Start + 1, End>::compute(a, B, y);
+  }
+};
+
+// End of core loop
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t End>
+struct ColVectorMultiplySparseLoop<T, N, K, RowIndices_B, RowPointers_B, J, End,
+                                   End> {
+  static void
+  compute(const ColVector<T, N> &a,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          ColVector<T, K> &y) {
+    static_cast<void>(a);
+    static_cast<void>(B);
+    static_cast<void>(y);
+    // End of loop, do nothing
+  }
+};
+
+// List loop
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J>
+struct ColVectorMultiplySparseList {
+  static void
+  compute(const ColVector<T, N> &a,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          ColVector<T, K> &y) {
+    ColVectorMultiplySparseLoop<T, N, K, RowIndices_B, RowPointers_B, J,
+                                RowPointers_B::size_list[J],
+                                RowPointers_B::size_list[J + 1]>::compute(a, B,
+                                                                          y);
+    ColVectorMultiplySparseList<T, N, K, RowIndices_B, RowPointers_B,
+                                J - 1>::compute(a, B, y);
+  }
+};
+
+// End of list loop
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+struct ColVectorMultiplySparseList<T, N, K, RowIndices_B, RowPointers_B, 0> {
+  static void
+  compute(const ColVector<T, N> &a,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          ColVector<T, K> &y) {
+    ColVectorMultiplySparseLoop<T, N, K, RowIndices_B, RowPointers_B, 0,
+                                RowPointers_B::size_list[0],
+                                RowPointers_B::size_list[1]>::compute(a, B, y);
+  }
+};
+
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+static inline void COMPILED_COLVECTOR_MULTIPLY_SPARSE(
+    const ColVector<T, N> &a,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+    ColVector<T, K> &y) {
+  ColVectorMultiplySparseList<T, N, K, RowIndices_B, RowPointers_B,
+                              N - 1>::compute(a, B, y);
+}
+
+template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+ColVector<T, K> colVector_a_mul_SparseB(
+    const ColVector<T, N> &a,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+  ColVector<T, K> y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t j = 0; j < N; j++) {
+    for (std::size_t k = RowPointers_B::size_list[j];
+         k < RowPointers_B::size_list[j + 1]; k++) {
+      y[RowIndices_B::size_list[k]] += B.values[k] * a[j];
+    }
+  }
+
+#else
+
+  COMPILED_COLVECTOR_MULTIPLY_SPARSE<T, N, K, RowIndices_B, RowPointers_B>(a, B,
+                                                                           y);
+
+#endif
+
+  return y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
