@@ -134,6 +134,7 @@
     <ClInclude Include="..\base_matrix\base_matrix.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_cholesky_decomposition.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse_operation.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_complex.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_concatenate.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_diagonal.hpp" />

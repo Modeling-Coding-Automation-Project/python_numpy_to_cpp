@@ -104,5 +104,8 @@
     <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse_operation.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
