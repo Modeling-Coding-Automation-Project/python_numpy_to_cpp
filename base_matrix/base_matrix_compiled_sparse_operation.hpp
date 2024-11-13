@@ -1494,12 +1494,123 @@ Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
 }
 
 /* Sparse Matrix multiply Diag Matrix */
+// Core loop for Sparse Matrix multiply Diag Matrix
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct SparseMatrixMultiplyDiagLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, T &sum) {
+    if (RowIndices_A::size_list[Start] == I) {
+      sum += A.values[Start] * B[I];
+    }
+    SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, I,
+                                 Start + 1, End>::compute(A, B, sum);
+  }
+};
+
+// End of Core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t I, std::size_t End>
+struct SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, I,
+                                    End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, T &sum) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(sum);
+    // End of loop, do nothing
+  }
+};
+
+// Core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t I>
+struct SparseMatrixMultiplyDiagCore {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    T sum = static_cast<T>(0);
+    SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, I,
+                                 RowPointers_A::size_list[J],
+                                 RowPointers_A::size_list[J + 1]>::compute(A, B,
+                                                                           sum);
+    Y(J, I) = sum;
+  }
+};
+
+// List loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t I>
+struct SparseMatrixMultiplyDiagList {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    SparseMatrixMultiplyDiagCore<T, M, N, RowIndices_A, RowPointers_A, J,
+                                 I>::compute(A, B, Y);
+    SparseMatrixMultiplyDiagList<T, M, N, RowIndices_A, RowPointers_A, J - 1,
+                                 I>::compute(A, B, Y);
+  }
+};
+
+// End of list loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I>
+struct SparseMatrixMultiplyDiagList<T, M, N, RowIndices_A, RowPointers_A, 0,
+                                    I> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    SparseMatrixMultiplyDiagCore<T, M, N, RowIndices_A, RowPointers_A, 0,
+                                 I>::compute(A, B, Y);
+  }
+};
+
+// Column loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I>
+struct SparseMatrixMultiplyDiagColumn {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    SparseMatrixMultiplyDiagList<T, M, N, RowIndices_A, RowPointers_A, M - 1,
+                                 I>::compute(A, B, Y);
+    SparseMatrixMultiplyDiagColumn<T, M, N, RowIndices_A, RowPointers_A,
+                                   I - 1>::compute(A, B, Y);
+  }
+};
+
+// End of column loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct SparseMatrixMultiplyDiagColumn<T, M, N, RowIndices_A, RowPointers_A, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    SparseMatrixMultiplyDiagList<T, M, N, RowIndices_A, RowPointers_A, M - 1,
+                                 0>::compute(A, B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+  SparseMatrixMultiplyDiagColumn<T, M, N, RowIndices_A, RowPointers_A,
+                                 N - 1>::compute(A, B, Y);
+}
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 Matrix<T, M, N>
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const DiagMatrix<T, N> &B) {
   Matrix<T, M, N> Y;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t i = 0; i < N; i++) {
     for (std::size_t j = 0; j < M; j++) {
@@ -1513,6 +1624,13 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
       }
     }
   }
+
+#else
+
+  COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG<T, M, N, RowIndices_A, RowPointers_A>(
+      A, B, Y);
+
+#endif
 
   return Y;
 }
