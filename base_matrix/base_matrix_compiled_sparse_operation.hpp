@@ -1493,6 +1493,30 @@ Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
   return Y;
 }
 
+/* Sparse Matrix multiply Diag Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Matrix<T, M, N>
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B) {
+  Matrix<T, M, N> Y;
+
+  for (std::size_t i = 0; i < N; i++) {
+    for (std::size_t j = 0; j < M; j++) {
+      T sum = static_cast<T>(0);
+      for (std::size_t k = RowPointers_A::size_list[j];
+           k < RowPointers_A::size_list[j + 1]; k++) {
+        if (RowIndices_A::size_list[k] == i) {
+          sum += A.values[k] * B[i];
+        }
+        Y(j, i) = sum;
+      }
+    }
+  }
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 

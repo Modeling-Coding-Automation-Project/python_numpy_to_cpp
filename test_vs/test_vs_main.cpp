@@ -681,7 +681,16 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Diag_sub_Sparse.data, Diag_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix sub SparseMatrix.");
 
-    Matrix<T, 3, 3> DenseK = DiagJ * SA;
+    Matrix<T, 3, 3> Sparse_mul_Diag = SparseCc * DiagJ;
+
+    Matrix<T, 3, 3> Sparse_mul_Diag_answer({
+        {10, 0, 0},
+        {30, 0, 240},
+        {0, 40, 120}
+        });
+
+    tester.expect_near(Sparse_mul_Diag.data, Sparse_mul_Diag_answer.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix multiply DiagMatrix.");
 
     Matrix<T, 3, 3> Sparse_add_Sparse = SparseCc + SparseCc;
 
@@ -705,23 +714,6 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_sub_Sparse.data, Sparse_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix sub SparseMatrix.");
 
-    //std::cout << "DenseK = " << std::endl;
-    //for (size_t j = 0; j < DenseK.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseK.rows(); ++i) {
-    //        std::cout << DenseK(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<T, 3, 3> DenseK_answer({
-        {10, 0, 0},
-        {60, 0, 160},
-        {0, 60, 120}
-        });
-    tester.expect_near(DenseK.data, DenseK_answer.data, NEAR_LIMIT_STRICT,
-        "check DiagMatrix multiply SparseMatrix.");
-
     Matrix<T, 3, 3> Sparse_mul_Dense_T = matrix_multiply_SparseA_mul_BTranspose(SparseCc, DenseG);
 
     Matrix<T, 3, 3> Sparse_mul_Dense_T_answer({
@@ -733,7 +725,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Sparse_mul_Dense_T.data, Sparse_mul_Dense_T_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply Matrix transpose.");
 
-    Matrix<T, 3, 3> DenseL = matrix_multiply_A_mul_SparseBT(DenseG, SA);
+    Matrix<T, 3, 3> DenseL = matrix_multiply_A_mul_SparseBTranspose(DenseG, SA);
 
     //std::cout << "DenseL = " << std::endl;
     //for (size_t j = 0; j < DenseL.cols(); ++j) {
