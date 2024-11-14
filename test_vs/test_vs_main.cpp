@@ -846,7 +846,7 @@ void check_base_matrix_calc(void) {
         });
 
     tester.expect_near(A_mul_A_sparse.data, A_mul_A_sparse_answer.data, NEAR_LIMIT_STRICT,
-        "check Matrix multiply CompiledSparseMatrix.");
+        "check DenseMatrix to CompiledSparseMatrix.");
 
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 0, 2, 1, 2>,
@@ -868,6 +868,19 @@ void check_base_matrix_calc(void) {
 
     tester.expect_near(SparseCc_value, SparseCc_value_answer, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix get value.");
+
+    auto Diag_to_Sparse = create_compiled_sparse(DiagJ);
+
+    Matrix<T, 3, 3> A_mul_Diag_sparse = DenseG * Diag_to_Sparse;
+
+    Matrix<T, 3, 3> A_mul_Diag_sparse_answer({
+        {10, 40, 90},
+        {50, 80, 180},
+        {90, 160, 210}
+        });
+
+    tester.expect_near(A_mul_Diag_sparse.data, A_mul_Diag_sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix to CompiledSparseMatrix.");
 
     /* スパース行列の逆行列計算 */
     x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);

@@ -489,6 +489,27 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
   return Y;
 }
 
+/* Create Sparse Matrix from Diag Matrix */
+template <std::size_t M>
+using DiagMatrixRowIndices = typename ToRowIndices<MatrixRowNumbers<M>>::type;
+
+template <std::size_t M>
+using DiagMatrixRowPointers =
+    typename ToRowIndices<MatrixRowNumbers<(M + 1)>>::type;
+
+template <typename T, std::size_t M>
+auto create_compiled_sparse(const DiagMatrix<T, M> &A)
+    -> CompiledSparseMatrix<T, M, M, DiagMatrixRowIndices<M>,
+                            DiagMatrixRowPointers<M>> {
+  CompiledSparseMatrix<T, M, M, DiagMatrixRowIndices<M>,
+                       DiagMatrixRowPointers<M>>
+      Y;
+
+  Y.values = A.data;
+
+  return Y;
+}
+
 /* Set Sparse Matrix Value */
 // Core conditional operation for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
