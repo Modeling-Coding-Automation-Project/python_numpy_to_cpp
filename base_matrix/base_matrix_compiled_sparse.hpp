@@ -319,6 +319,11 @@ template <std::size_t... Seq> struct IndexSequence {
   static constexpr std::size_t list[size] = {Seq...};
 };
 
+template <std::size_t... Seq> struct InvalidSequence {
+  static constexpr std::size_t size = sizeof...(Seq);
+  static constexpr std::size_t list[size] = {Seq...};
+};
+
 template <std::size_t N, std::size_t... Seq>
 struct MakeIndexSequence : MakeIndexSequence<N - 1, N - 1, Seq...> {};
 
@@ -338,6 +343,16 @@ template <typename Seq1, typename Seq2> struct Concatenate;
 template <std::size_t... Seq1, std::size_t... Seq2>
 struct Concatenate<IndexSequence<Seq1...>, IndexSequence<Seq2...>> {
   using type = IndexSequence<Seq1..., Seq2...>;
+};
+
+template <std::size_t... Seq1, std::size_t... Seq2>
+struct Concatenate<IndexSequence<Seq1...>, InvalidSequence<Seq2...>> {
+  using type = IndexSequence<Seq1...>;
+};
+
+template <std::size_t... Seq1, std::size_t... Seq2>
+struct Concatenate<InvalidSequence<Seq1...>, IndexSequence<Seq2...>> {
+  using type = IndexSequence<Seq2...>;
 };
 
 template <typename IndexSequence_1, typename IndexSequence_2>
@@ -546,23 +561,42 @@ template <typename... Columns> struct SparseAvailableColumns {
 template <typename... Columns>
 using SparseAvailable = SparseAvailableColumns<Columns...>;
 
+template <typename SparseAvailable, bool Active,
+          std::size_t ColumnElementNumber>
+struct AssignSparseMatrixColumn;
+
 template <typename SparseAvailable, std::size_t ColumnElementNumber>
-struct AssignSparseMatrixColumn {
+struct AssignSparseMatrixColumn<SparseAvailable, true, ColumnElementNumber> {
   using type = typename Concatenate<
-      IndexSequence<ColumnElementNumber>,
-      typename AssignSparseMatrixColumn<SparseAvailable,
-                                        ColumnElementNumber - 1>::type>::type;
+      typename AssignSparseMatrixColumn<
+          SparseAvailable, SparseAvailable::lists[0][ColumnElementNumber - 1],
+          ColumnElementNumber - 1>::type,
+      IndexSequence<ColumnElementNumber>>::type;
+};
+
+template <typename SparseAvailable, std::size_t ColumnElementNumber>
+struct AssignSparseMatrixColumn<SparseAvailable, false, ColumnElementNumber> {
+  using type = typename AssignSparseMatrixColumn<
+      SparseAvailable, SparseAvailable::lists[0][ColumnElementNumber - 1],
+      ColumnElementNumber - 1>::type;
 };
 
 template <typename SparseAvailable>
-struct AssignSparseMatrixColumn<SparseAvailable, 0> {
+struct AssignSparseMatrixColumn<SparseAvailable, false, 0> {
+  using type = InvalidSequence<0>;
+};
+
+template <typename SparseAvailable>
+struct AssignSparseMatrixColumn<SparseAvailable, true, 0> {
   using type = IndexSequence<0>;
 };
 
 template <typename SparseAvailable>
 struct RowIndicesSequenceFromSparseAvailable {
   using type = typename AssignSparseMatrixColumn<
-      SparseAvailable, SparseAvailable::number_of_columns>::type;
+      SparseAvailable,
+      SparseAvailable::lists[0][SparseAvailable::number_of_columns - 1],
+      SparseAvailable::number_of_columns - 1>::type;
 };
 
 template <typename SparseAvailable>
