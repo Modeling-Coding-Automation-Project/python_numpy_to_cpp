@@ -492,6 +492,115 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
 }
 
 /* Set Sparse Matrix Value */
+// Core conditional operation for setting sparse matrix value
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t L>
+struct SetSparseMatrixValueCoreConditional {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    static_cast<void>(A);
+    static_cast<void>(value);
+    // End of conditional operation, do nothing
+  }
+};
+
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K>
+struct SetSparseMatrixValueCoreConditional<
+    ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, J, K, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    if (RowToSet == RowIndices_A::list[K]) {
+      A.values[K] = value;
+    }
+  }
+};
+
+// Core inner loop for setting sparse matrix value
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K,
+          std::size_t K_End>
+struct SetSparseMatrixValueInnerLoop {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    SetSparseMatrixValueCoreConditional<
+        ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, J, K,
+        (RowToSet - RowIndices_A::list[K])>::compute(A, value);
+
+    SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
+                                  RowPointers_A, J, (K + 1),
+                                  (K_End - 1)>::compute(A, value);
+  }
+};
+
+// End of inner loop
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K>
+struct SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N,
+                                     RowIndices_A, RowPointers_A, J, K, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    static_cast<void>(A);
+    static_cast<void>(value);
+    // End of inner loop, do nothing
+  }
+};
+
+// Core outer loop for setting sparse matrix value
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t J_End>
+struct SetSparseMatrixValueOuterLoop {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    if (ColumnToSet == J) {
+      SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N,
+                                    RowIndices_A, RowPointers_A, J,
+                                    RowPointers_A::list[J],
+                                    (RowPointers_A::list[J + 1] -
+                                     RowPointers_A::list[J])>::compute(A,
+                                                                       value);
+    }
+
+    SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
+                                  RowPointers_A, (J + 1),
+                                  (J_End - 1)>::compute(A, value);
+  }
+};
+
+// End of outer loop
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J>
+struct SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N,
+                                     RowIndices_A, RowPointers_A, J, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    static_cast<void>(A);
+    static_cast<void>(value);
+    // End of outer loop, do nothing
+  }
+};
+
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_SPARSE_SET_MATRIX_VALUE(
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A, T value) {
+  SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
+                                RowPointers_A, 0, M>::compute(A, value);
+}
+
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
@@ -499,6 +608,8 @@ inline void set_sparse_matrix_value(
     CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A, T value) {
   static_assert(ColumnToSet < M, "Column number must be less than M");
   static_assert(RowToSet < N, "Row number must be less than N");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; ++j) {
     if (ColumnToSet == j) {
@@ -512,6 +623,13 @@ inline void set_sparse_matrix_value(
       }
     }
   }
+
+#else
+
+  COMPILED_SPARSE_SET_MATRIX_VALUE<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
+                                   RowPointers_A>(A, value);
+
+#endif
 }
 
 } // namespace Matrix
