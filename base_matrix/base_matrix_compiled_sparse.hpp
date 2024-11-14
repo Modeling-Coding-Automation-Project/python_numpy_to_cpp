@@ -399,6 +399,68 @@ template <std::size_t M, std::size_t N>
 using DenseMatrixRowPointers =
     typename ToRowIndices<MatrixColumnRowPointers<M, N>>::type;
 
+/* Substitute Dense Matrix to Sparse Matrix */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I, std::size_t J_idx>
+struct DenseToSparseMatrixSubstituteColumn {
+  static void
+  compute(const Matrix<T, M, N> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    Y.values[I * N + J_idx] = A(I, J_idx);
+    DenseToSparseMatrixSubstituteColumn<T, M, N, RowIndices_A, RowPointers_A, I,
+                                        J_idx - 1>::compute(A, Y);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I>
+struct DenseToSparseMatrixSubstituteColumn<T, M, N, RowIndices_A, RowPointers_A,
+                                           I, 0> {
+  static void
+  compute(const Matrix<T, M, N> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    Y.values[I * N] = A(I, 0);
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t I_idx>
+struct DenseToSparseMatrixSubstituteRow {
+  static void
+  compute(const Matrix<T, M, N> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    DenseToSparseMatrixSubstituteColumn<T, M, N, RowIndices_A, RowPointers_A,
+                                        I_idx, N - 1>::compute(A, Y);
+    DenseToSparseMatrixSubstituteRow<T, M, N, RowIndices_A, RowPointers_A,
+                                     I_idx - 1>::compute(A, Y);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct DenseToSparseMatrixSubstituteRow<T, M, N, RowIndices_A, RowPointers_A,
+                                        0> {
+  static void
+  compute(const Matrix<T, M, N> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    DenseToSparseMatrixSubstituteColumn<T, M, N, RowIndices_A, RowPointers_A, 0,
+                                        N - 1>::compute(A, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+static inline void COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE(
+    const Matrix<T, M, N> &A,
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+  DenseToSparseMatrixSubstituteRow<T, M, N, RowIndices_A, RowPointers_A,
+                                   M - 1>::compute(A, Y);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 auto create_compiled_sparse(const Matrix<T, M, N> &A)
     -> CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
@@ -407,6 +469,8 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
                        DenseMatrixRowPointers<M, N>>
       Y;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   std::size_t consecutive_index = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < N; j++) {
@@ -414,6 +478,13 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
       consecutive_index++;
     }
   }
+
+#else
+
+  COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE<T, M, N, DenseMatrixRowIndices<M, N>,
+                                          DenseMatrixRowPointers<M, N>>(A, Y);
+
+#endif
 
   return Y;
 }

@@ -835,6 +835,19 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Dense_m.data, Dense_m_answer.data, NEAR_LIMIT_STRICT,
         "check Column Vector multiply SparseMatrix.");
 
+    auto Dense_to_sparse = create_compiled_sparse(DenseG);
+
+    Matrix<T, 3, 3> A_mul_A_sparse = DenseG * Dense_to_sparse;
+
+    Matrix<T, 3, 3> A_mul_A_sparse_answer({
+        {38, 34, 36},
+        {79, 74, 81},
+        {112, 106, 124}
+        });
+
+    tester.expect_near(A_mul_A_sparse.data, A_mul_A_sparse_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix multiply CompiledSparseMatrix.");
+
     /* スパース行列の逆行列計算 */
     x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
