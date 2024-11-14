@@ -9,6 +9,8 @@
 #include <cmath>
 #include <cstddef>
 #include <initializer_list>
+#include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -17,27 +19,26 @@ namespace Matrix {
 
 const double COMPILED_SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 
-template <std::size_t... Sizes> struct size_list_array {
+template <std::size_t... Sizes> struct list_array {
   static constexpr std::size_t size = sizeof...(Sizes);
   static constexpr std::size_t value[size] = {Sizes...};
 };
 
 template <std::size_t... Sizes>
-constexpr std::size_t
-    size_list_array<Sizes...>::value[size_list_array<Sizes...>::size];
+constexpr std::size_t list_array<Sizes...>::value[list_array<Sizes...>::size];
 
 template <typename Array> class CompiledSparseMatrixList {
 public:
-  typedef const std::size_t *size_list_type;
-  static constexpr size_list_type size_list = Array::value;
+  typedef const std::size_t *list_type;
+  static constexpr list_type list = Array::value;
   static constexpr std::size_t size = Array::size;
 };
 
 template <std::size_t... Sizes>
-using RowIndices = CompiledSparseMatrixList<size_list_array<Sizes...>>;
+using RowIndices = CompiledSparseMatrixList<list_array<Sizes...>>;
 
 template <std::size_t... Sizes>
-using RowPointers = CompiledSparseMatrixList<size_list_array<Sizes...>>;
+using RowPointers = CompiledSparseMatrixList<list_array<Sizes...>>;
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
@@ -119,7 +120,7 @@ struct OutputDenseMatrixLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
-    result(J, RowIndices::size_list[Start]) = mat.values[Start];
+    result(J, RowIndices::list[Start]) = mat.values[Start];
     OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, Start + 1,
                           End>::compute(mat, result);
   }
@@ -146,8 +147,8 @@ struct OutputDenseMatrixCore {
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
     OutputDenseMatrixLoop<T, M, N, RowIndices, RowPointers, J, K,
-                          RowPointers::size_list[J],
-                          RowPointers::size_list[J + 1]>::compute(mat, result);
+                          RowPointers::list[J],
+                          RowPointers::list[J + 1]>::compute(mat, result);
   }
 };
 
@@ -195,9 +196,9 @@ inline Matrix<T, M, N> output_dense_matrix(
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers::size_list[j];
-         k < RowPointers::size_list[j + 1]; k++) {
-      result(j, RowIndices::size_list[k]) = mat.values[k];
+    for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
+         k++) {
+      result(j, RowIndices::list[k]) = mat.values[k];
     }
   }
 
@@ -220,7 +221,7 @@ struct OutputTransposeMatrixLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, N, M> &result) {
-    result(RowIndices::size_list[Start], J) = mat.values[Start];
+    result(RowIndices::list[Start], J) = mat.values[Start];
     OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, Start + 1,
                               End>::compute(mat, result);
   }
@@ -248,9 +249,8 @@ struct OutputTransposeMatrixCore {
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, N, M> &result) {
     OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, J, K,
-                              RowPointers::size_list[J],
-                              RowPointers::size_list[J + 1]>::compute(mat,
-                                                                      result);
+                              RowPointers::list[J],
+                              RowPointers::list[J + 1]>::compute(mat, result);
   }
 };
 
@@ -298,9 +298,9 @@ inline Matrix<T, N, M> output_transpose_matrix(
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers::size_list[j];
-         k < RowPointers::size_list[j + 1]; k++) {
-      result(RowIndices::size_list[k], j) = mat.values[k];
+    for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
+         k++) {
+      result(RowIndices::list[k], j) = mat.values[k];
     }
   }
 
@@ -313,6 +313,43 @@ inline Matrix<T, N, M> output_transpose_matrix(
 
   return result;
 }
+
+/* Create Sparse Matrix from Dense Matrix */
+template <std::size_t... Seq> struct IndexSequence {
+  static constexpr std::size_t size = sizeof...(Seq);
+  static constexpr std::size_t values[size] = {Seq...};
+};
+
+template <std::size_t N, std::size_t... Seq>
+struct MakeIndexSequence : MakeIndexSequence<N - 1, N - 1, Seq...> {};
+
+template <std::size_t... Seq> struct MakeIndexSequence<0, Seq...> {
+  using type = IndexSequence<Seq...>;
+};
+
+template <std::size_t N> struct LogicList {
+  using type = typename MakeIndexSequence<N>::type;
+};
+
+template <typename Seq> struct ToRowIndices;
+
+template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
+  using type = RowIndices<Seq...>;
+};
+
+template <std::size_t N>
+using MatrixRowNumbers =
+    typename ToRowIndices<typename LogicList<N>::type>::type;
+
+template <typename Seq1, typename Seq2> struct Concatenate;
+
+template <std::size_t... Seq1, std::size_t... Seq2>
+struct Concatenate<IndexSequence<Seq1...>, IndexSequence<Seq2...>> {
+  using type = IndexSequence<Seq1..., Seq2...>;
+};
+
+template <typename Seq1, typename Seq2>
+using ConcatenateMatrixRowNumbers = typename Concatenate<Seq1, Seq2>::type;
 
 } // namespace Matrix
 } // namespace Base
