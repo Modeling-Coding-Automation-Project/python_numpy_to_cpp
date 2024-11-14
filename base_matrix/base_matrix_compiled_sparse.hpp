@@ -548,8 +548,15 @@ using SparseAvailable = SparseAvailableColumns<Columns...>;
 
 template <typename SparseAvailable, std::size_t ColumnElementNumber>
 struct AssignSparseMatrixColumn {
-  using type = typename Concatenate<IndexSequence<ColumnElementNumber, 0>,
-                                    IndexSequence<1, 1>>::type;
+  using type = typename Concatenate<
+      IndexSequence<ColumnElementNumber>,
+      typename AssignSparseMatrixColumn<SparseAvailable,
+                                        ColumnElementNumber - 1>::type>::type;
+};
+
+template <typename SparseAvailable>
+struct AssignSparseMatrixColumn<SparseAvailable, 0> {
+  using type = IndexSequence<0>;
 };
 
 template <typename SparseAvailable>
