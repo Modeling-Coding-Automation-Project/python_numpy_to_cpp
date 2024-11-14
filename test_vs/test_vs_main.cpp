@@ -848,6 +848,20 @@ void check_base_matrix_calc(void) {
     tester.expect_near(A_mul_A_sparse.data, A_mul_A_sparse_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix multiply CompiledSparseMatrix.");
 
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> SparseCc_set = SparseCc;
+
+    set_sparse_matrix_value<2, 0>(SparseCc_set, static_cast<T>(100));
+    set_sparse_matrix_value<2, 2>(SparseCc_set, static_cast<T>(100));
+
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> SparseCc_set_answer({ 1, 3, 8, 2, 100 });
+
+    tester.expect_near(SparseCc_set.values, SparseCc_set_answer.values, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix set value.");
+
     /* スパース行列の逆行列計算 */
     x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 

@@ -103,6 +103,8 @@ public:
 
   Matrix<T, N, M> transpose() const { return output_transpose_matrix(*this); }
 
+  void set(T value) { set_sparse_matrix_value(*this, value); }
+
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
@@ -487,6 +489,29 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
 #endif
 
   return Y;
+}
+
+/* Set Sparse Matrix Value */
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+inline void set_sparse_matrix_value(
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A, T value) {
+  static_assert(ColumnToSet < M, "Column number must be less than M");
+  static_assert(RowToSet < N, "Row number must be less than N");
+
+  for (std::size_t j = 0; j < M; ++j) {
+    if (ColumnToSet == j) {
+
+      for (std::size_t k = RowPointers_A::list[j];
+           k < RowPointers_A::list[j + 1]; ++k) {
+        if (RowToSet == RowIndices_A::list[k]) {
+
+          A.values[k] = value;
+        }
+      }
+    }
+  }
 }
 
 } // namespace Matrix
