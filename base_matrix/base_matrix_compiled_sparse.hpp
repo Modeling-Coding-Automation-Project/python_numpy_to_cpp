@@ -554,6 +554,38 @@ struct SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N,
   }
 };
 
+// Conditional operation for ColumnSet != J
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t C_J, std::size_t J,
+          std::size_t J_End>
+struct SetSparseMatrixValueOuterConditional {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+    static_cast<void>(A);
+    static_cast<void>(value);
+    // End of conditional operation, do nothing
+  }
+};
+
+// Conditional operation for ColumnSet == J
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t J_End>
+struct SetSparseMatrixValueOuterConditional<
+    ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, 0, J, J_End> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T value) {
+
+    SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
+                                  RowPointers_A, J, RowPointers_A::list[J],
+                                  (RowPointers_A::list[J + 1] -
+                                   RowPointers_A::list[J])>::compute(A, value);
+  }
+};
+
 // Core outer loop for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
@@ -562,14 +594,10 @@ struct SetSparseMatrixValueOuterLoop {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           T value) {
-    if (ColumnToSet == J) {
-      SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N,
-                                    RowIndices_A, RowPointers_A, J,
-                                    RowPointers_A::list[J],
-                                    (RowPointers_A::list[J + 1] -
-                                     RowPointers_A::list[J])>::compute(A,
-                                                                       value);
-    }
+
+    SetSparseMatrixValueOuterConditional<
+        ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A,
+        (ColumnToSet - J), J, J_End>::compute(A, value);
 
     SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
                                   RowPointers_A, (J + 1),
