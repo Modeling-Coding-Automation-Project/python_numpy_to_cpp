@@ -331,12 +331,6 @@ template <std::size_t N> struct LogicList {
   using type = typename MakeIndexSequence<N>::type;
 };
 
-template <typename Seq> struct ToRowIndices;
-
-template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
-  using type = RowIndices<Seq...>;
-};
-
 template <std::size_t N> using MatrixRowNumbers = typename LogicList<N>::type;
 
 template <typename Seq1, typename Seq2> struct Concatenate;
@@ -349,6 +343,12 @@ struct Concatenate<IndexSequence<Seq1...>, IndexSequence<Seq2...>> {
 template <typename IndexSequence_1, typename IndexSequence_2>
 using ConcatenateMatrixRowNumbers =
     typename Concatenate<IndexSequence_1, IndexSequence_2>::type;
+
+template <typename Seq> struct ToRowIndices;
+
+template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
+  using type = RowIndices<Seq...>;
+};
 
 } // namespace Matrix
 } // namespace Base
