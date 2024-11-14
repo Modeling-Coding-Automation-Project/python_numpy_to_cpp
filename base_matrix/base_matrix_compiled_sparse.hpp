@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <initializer_list>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -509,6 +508,40 @@ auto create_compiled_sparse(const DiagMatrix<T, M> &A)
 
   return Y;
 }
+
+/* Create Sparse Matrix from Matrix Element List */
+template <bool... Flags> struct available_list_array {
+  static constexpr std::size_t size = sizeof...(Flags);
+  static constexpr bool value[size] = {Flags...};
+};
+
+template <bool... Flags>
+constexpr bool
+    available_list_array<Flags...>::value[available_list_array<Flags...>::size];
+
+template <typename Array> class CompiledSparseMatrixElementList {
+public:
+  typedef const bool *list_type;
+  static constexpr list_type list = Array::value;
+  static constexpr std::size_t size = Array::size;
+};
+
+template <bool... Flags>
+using SparseColumnAvailable =
+    CompiledSparseMatrixElementList<available_list_array<Flags...>>;
+
+template <typename... Columns> struct SparseAvailable {
+  static constexpr std::size_t num_columns = sizeof...(Columns);
+
+  // Helper struct to extract the list from each SparseColumnAvailable
+  template <typename Column> struct ExtractList {
+    static constexpr typename Column::list_type value = Column::list;
+  };
+
+  // Array of lists from each SparseColumnAvailable
+  static constexpr const bool *lists[num_columns] = {
+      ExtractList<Columns>::value...};
+};
 
 /* Set Sparse Matrix Value */
 // Core conditional operation for setting sparse matrix value
