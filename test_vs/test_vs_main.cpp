@@ -864,7 +864,7 @@ void check_base_matrix_calc(void) {
 
     T SparseCc_value = get_sparse_matrix_value<1, 0>(SparseCc_set);
 
-    T SparseCc_value_answer = static_cast < T>(3.0F);
+    T SparseCc_value_answer = static_cast <T>(3.0F);
 
     tester.expect_near(SparseCc_value, SparseCc_value_answer, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix get value.");
