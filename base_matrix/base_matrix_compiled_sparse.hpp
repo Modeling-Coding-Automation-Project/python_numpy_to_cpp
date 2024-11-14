@@ -359,15 +359,19 @@ struct RepeatConcatenateIndexSequence {
       typename RepeatConcatenateIndexSequence<M - 1, MatrixRowNumbers>::type>;
 };
 
-template <std::size_t M, std::size_t N>
-using MatrixColumnRowNumbers =
-    typename RepeatConcatenateIndexSequence<M, MatrixRowNumbers<N>>::type;
-
 template <typename Seq> struct ToRowIndices;
 
 template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
   using type = RowIndices<Seq...>;
 };
+
+template <std::size_t M, std::size_t N>
+using MatrixColumnRowNumbers =
+    typename RepeatConcatenateIndexSequence<M, MatrixRowNumbers<N>>::type;
+
+template <std::size_t M, std::size_t N>
+using DenseMatrixRowIndices =
+    typename ToRowIndices<MatrixColumnRowNumbers<M, N>>::type;
 
 } // namespace Matrix
 } // namespace Base
