@@ -862,6 +862,13 @@ void check_base_matrix_calc(void) {
     tester.expect_near(SparseCc_set.values, SparseCc_set_answer.values, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix set value.");
 
+    T SparseCc_value = get_sparse_matrix_value<1, 0>(SparseCc_set);
+
+    T SparseCc_value_answer = static_cast < T>(3.0F);
+
+    tester.expect_near(SparseCc_value, SparseCc_value_answer, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix get value.");
+
     /* スパース行列の逆行列計算 */
     x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 

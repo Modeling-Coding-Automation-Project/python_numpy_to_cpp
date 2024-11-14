@@ -660,6 +660,33 @@ inline void set_sparse_matrix_value(
 #endif
 }
 
+/* Get Sparse Matrix Value */
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+inline T get_sparse_matrix_value(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  static_assert(ColumnToSet < M, "Column number must be less than M");
+  static_assert(RowToSet < N, "Row number must be less than N");
+
+  T value = static_cast<T>(0);
+
+  for (std::size_t j = 0; j < M; ++j) {
+    if (ColumnToSet == j) {
+
+      for (std::size_t k = RowPointers_A::list[j];
+           k < RowPointers_A::list[j + 1]; ++k) {
+        if (RowToSet == RowIndices_A::list[k]) {
+
+          value = A.values[k];
+        }
+      }
+    }
+  }
+
+  return value;
+}
+
 } // namespace Matrix
 } // namespace Base
 
