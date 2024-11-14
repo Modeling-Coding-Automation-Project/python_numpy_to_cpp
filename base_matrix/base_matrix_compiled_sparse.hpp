@@ -327,11 +327,12 @@ template <std::size_t... Seq> struct MakeIndexSequence<0, Seq...> {
   using type = IndexSequence<Seq...>;
 };
 
-template <std::size_t N> struct LogicList {
+template <std::size_t N> struct IntegerSequenceList {
   using type = typename MakeIndexSequence<N>::type;
 };
 
-template <std::size_t N> using MatrixRowNumbers = typename LogicList<N>::type;
+template <std::size_t N>
+using MatrixRowNumbers = typename IntegerSequenceList<N>::type;
 
 template <typename Seq1, typename Seq2> struct Concatenate;
 
@@ -372,6 +373,31 @@ using MatrixColumnRowNumbers =
 template <std::size_t M, std::size_t N>
 using DenseMatrixRowIndices =
     typename ToRowIndices<MatrixColumnRowNumbers<M, N>>::type;
+
+template <std::size_t M, std::size_t N, std::size_t... Seq>
+struct MakePointerList : MakePointerList<M - 1, N, (M * N), Seq...> {};
+
+template <std::size_t N, std::size_t... Seq>
+struct MakePointerList<0, N, Seq...> {
+  using type = IndexSequence<0, Seq...>;
+};
+
+template <std::size_t M, std::size_t N> struct MatrixDensePointerList {
+  using type = typename MakePointerList<M, N>::type;
+};
+
+template <std::size_t M, std::size_t N>
+using MatrixColumnRowPointers = typename MatrixDensePointerList<M, N>::type;
+
+template <typename Seq> struct ToRowPointers;
+
+template <std::size_t... Seq> struct ToRowPointers<IndexSequence<Seq...>> {
+  using type = RowPointers<Seq...>;
+};
+
+template <std::size_t M, std::size_t N>
+using DenseMatrixRowPointers =
+    typename ToRowIndices<MatrixColumnRowPointers<M, N>>::type;
 
 } // namespace Matrix
 } // namespace Base
