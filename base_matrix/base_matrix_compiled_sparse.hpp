@@ -399,6 +399,17 @@ template <std::size_t M, std::size_t N>
 using DenseMatrixRowPointers =
     typename ToRowIndices<MatrixColumnRowPointers<M, N>>::type;
 
+template <typename T, std::size_t M, std::size_t N>
+auto create_compiled_sparse(const Matrix<T, M, N> &A)
+    -> CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
+                            DenseMatrixRowPointers<M, N>> {
+  CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
+                       DenseMatrixRowPointers<M, N>>
+      Y;
+
+  return Y;
+}
+
 } // namespace Matrix
 } // namespace Base
 
