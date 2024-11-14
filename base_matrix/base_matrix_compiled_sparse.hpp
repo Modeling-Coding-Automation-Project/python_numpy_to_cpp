@@ -103,8 +103,6 @@ public:
 
   Matrix<T, N, M> transpose() const { return output_transpose_matrix(*this); }
 
-  void set(T value) { set_sparse_matrix_value(*this, value); }
-
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
@@ -499,7 +497,7 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
 struct SetSparseMatrixValueCoreConditional {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
     // End of conditional operation, do nothing
@@ -513,7 +511,7 @@ struct SetSparseMatrixValueCoreConditional<
     ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, J, K, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     if (RowToSet == RowIndices_A::list[K]) {
       A.values[K] = value;
     }
@@ -528,7 +526,7 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
 struct SetSparseMatrixValueInnerLoop {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     SetSparseMatrixValueCoreConditional<
         ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, J, K,
         (RowToSet - RowIndices_A::list[K])>::compute(A, value);
@@ -547,7 +545,7 @@ struct SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N,
                                      RowIndices_A, RowPointers_A, J, K, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
     // End of inner loop, do nothing
@@ -562,7 +560,7 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
 struct SetSparseMatrixValueOuterConditional {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
     // End of conditional operation, do nothing
@@ -577,7 +575,7 @@ struct SetSparseMatrixValueOuterConditional<
     ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A, 0, J, J_End> {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
 
     SetSparseMatrixValueInnerLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
                                   RowPointers_A, J, RowPointers_A::list[J],
@@ -593,7 +591,7 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
 struct SetSparseMatrixValueOuterLoop {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
 
     SetSparseMatrixValueOuterConditional<
         ColumnToSet, RowToSet, T, M, N, RowIndices_A, RowPointers_A,
@@ -613,7 +611,7 @@ struct SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N,
                                      RowIndices_A, RowPointers_A, J, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          T value) {
+          const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
     // End of outer loop, do nothing
@@ -624,7 +622,8 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 static inline void COMPILED_SPARSE_SET_MATRIX_VALUE(
-    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A, T value) {
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const T &value) {
   SetSparseMatrixValueOuterLoop<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
                                 RowPointers_A, 0, M>::compute(A, value);
 }
@@ -633,7 +632,8 @@ template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void set_sparse_matrix_value(
-    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A, T value) {
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const T &value) {
   static_assert(ColumnToSet < M, "Column number must be less than M");
   static_assert(RowToSet < N, "Row number must be less than N");
 
