@@ -527,21 +527,47 @@ public:
 };
 
 template <bool... Flags>
-using SparseColumnAvailable =
+using ColumnAvailable =
     CompiledSparseMatrixElementList<available_list_array<Flags...>>;
 
-template <typename... Columns> struct SparseAvailable {
-  static constexpr std::size_t num_columns = sizeof...(Columns);
+template <typename... Columns> struct SparseAvailableColumns {
+  static constexpr std::size_t number_of_columns = sizeof...(Columns);
 
-  // Helper struct to extract the list from each SparseColumnAvailable
+  // Helper struct to extract the list from each ColumnAvailable
   template <typename Column> struct ExtractList {
     static constexpr typename Column::list_type value = Column::list;
   };
 
-  // Array of lists from each SparseColumnAvailable
-  static constexpr const bool *lists[num_columns] = {
+  // Array of lists from each ColumnAvailable
+  static constexpr const bool *lists[number_of_columns] = {
       ExtractList<Columns>::value...};
 };
+
+template <typename... Columns>
+using SparseAvailable = SparseAvailableColumns<Columns...>;
+
+template <typename SparseAvailable, std::size_t ColumnElementNumber>
+struct AssignSparseMatrixColumn {
+  using type = typename Concatenate<IndexSequence<ColumnElementNumber, 0>,
+                                    IndexSequence<1, 1>>::type;
+};
+
+template <typename SparseAvailable>
+struct RowIndicesSequenceFromSparseAvailable {
+  using type = typename AssignSparseMatrixColumn<
+      SparseAvailable, SparseAvailable::number_of_columns>::type;
+};
+
+template <typename SparseAvailable>
+using RowIndicesFromSparseAvailable =
+    typename ToRowIndices<typename RowIndicesSequenceFromSparseAvailable<
+        SparseAvailable>::type>::type;
+
+// template <typename T, std::size_t M, std::size_t N, typename
+// SparseAvailable> auto create_compiled_sparse(std::initializer_list<T>
+// values)
+//     -> CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
+//                             DenseMatrixRowPointers<M, N>> {}
 
 /* Set Sparse Matrix Value */
 // Core conditional operation for setting sparse matrix value
