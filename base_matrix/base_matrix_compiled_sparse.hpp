@@ -317,7 +317,7 @@ inline Matrix<T, N, M> output_transpose_matrix(
 /* Create Sparse Matrix from Dense Matrix */
 template <std::size_t... Seq> struct IndexSequence {
   static constexpr std::size_t size = sizeof...(Seq);
-  static constexpr std::size_t values[size] = {Seq...};
+  static constexpr std::size_t list[size] = {Seq...};
 };
 
 template <std::size_t N, std::size_t... Seq>
@@ -337,9 +337,7 @@ template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
   using type = RowIndices<Seq...>;
 };
 
-template <std::size_t N>
-using MatrixRowNumbers =
-    typename ToRowIndices<typename LogicList<N>::type>::type;
+template <std::size_t N> using MatrixRowNumbers = typename LogicList<N>::type;
 
 template <typename Seq1, typename Seq2> struct Concatenate;
 
@@ -348,8 +346,9 @@ struct Concatenate<IndexSequence<Seq1...>, IndexSequence<Seq2...>> {
   using type = IndexSequence<Seq1..., Seq2...>;
 };
 
-template <typename Seq1, typename Seq2>
-using ConcatenateMatrixRowNumbers = typename Concatenate<Seq1, Seq2>::type;
+template <typename IndexSequence_1, typename IndexSequence_2>
+using ConcatenateMatrixRowNumbers =
+    typename Concatenate<IndexSequence_1, IndexSequence_2>::type;
 
 } // namespace Matrix
 } // namespace Base
