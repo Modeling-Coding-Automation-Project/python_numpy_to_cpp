@@ -407,6 +407,14 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
                        DenseMatrixRowPointers<M, N>>
       Y;
 
+  std::size_t consecutive_index = 0;
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = 0; j < N; j++) {
+      Y.values[consecutive_index] = A(i, j);
+      consecutive_index++;
+    }
+  }
+
   return Y;
 }
 
