@@ -608,7 +608,10 @@ struct AssignSparseMatrixColumnLoop {
           SparseAvailable, ColumnElementNumber,
           SparseAvailable::lists[ColumnElementNumber]
                                 [SparseAvailable::number_of_columns - 1],
-          ColumnElementNumber>::type>::type;
+          (SparseAvailable::number_of_columns - 1)>::type>::type;
+  // using type =
+  //     typename AssignSparseMatrixColumnLoop<SparseAvailable,
+  //                                           ColumnElementNumber - 1>::type;
 };
 
 template <typename SparseAvailable>
@@ -619,7 +622,7 @@ struct AssignSparseMatrixColumnLoop<SparseAvailable, 0> {
 template <typename SparseAvailable>
 struct RowIndicesSequenceFromSparseAvailable {
   using type = typename AssignSparseMatrixColumnLoop<
-      SparseAvailable, SparseAvailable::number_of_columns - 1>::type;
+      SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
 };
 
 template <typename SparseAvailable>
