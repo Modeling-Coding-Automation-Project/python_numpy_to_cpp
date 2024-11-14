@@ -344,6 +344,25 @@ template <typename IndexSequence_1, typename IndexSequence_2>
 using ConcatenateMatrixRowNumbers =
     typename Concatenate<IndexSequence_1, IndexSequence_2>::type;
 
+template <std::size_t M, typename MatrixRowNumbers>
+struct RepeatConcatenateIndexSequence;
+
+template <typename MatrixRowNumbers>
+struct RepeatConcatenateIndexSequence<1, MatrixRowNumbers> {
+  using type = MatrixRowNumbers;
+};
+
+template <std::size_t M, typename MatrixRowNumbers>
+struct RepeatConcatenateIndexSequence {
+  using type = ConcatenateMatrixRowNumbers<
+      MatrixRowNumbers,
+      typename RepeatConcatenateIndexSequence<M - 1, MatrixRowNumbers>::type>;
+};
+
+template <std::size_t M, std::size_t N>
+using MatrixColumnRowNumbers =
+    typename RepeatConcatenateIndexSequence<M, MatrixRowNumbers<N>>::type;
+
 template <typename Seq> struct ToRowIndices;
 
 template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
