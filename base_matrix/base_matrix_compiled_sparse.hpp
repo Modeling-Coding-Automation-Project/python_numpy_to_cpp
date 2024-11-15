@@ -561,6 +561,7 @@ template <typename... Columns> struct SparseAvailableColumns {
 template <typename... Columns>
 using SparseAvailable = SparseAvailableColumns<Columns...>;
 
+/* Create Row Indices */
 template <typename SparseAvailable, std::size_t ColumnElementNumber,
           bool Active, std::size_t RowElementNumber>
 struct AssignSparseMatrixRowLoop;
@@ -630,33 +631,78 @@ using RowIndicesFromSparseAvailable =
     typename ToRowIndices<typename RowIndicesSequenceFromSparseAvailable<
         SparseAvailable>::type>::type;
 
-// template <typename SparseAvailable, std::size_t ColumnElementNumber>
-// struct CountSparseMatrixColumnLoop {
-//   using type = typename Concatenate<
-//       typename CountSparseMatrixColumnLoop<SparseAvailable,
-//                                            ColumnElementNumber - 1>::type,
-//       typename AssignSparseMatrixRowLoop<
-//           SparseAvailable, ColumnElementNumber,
-//           SparseAvailable::lists[ColumnElementNumber]
-//                                 [SparseAvailable::number_of_columns - 1],
-//           (SparseAvailable::number_of_columns - 1)>::type>::type;
-// };
+/* Create Row Indices */
+template <typename SparseAvailable, std::size_t ElementCount,
+          std::size_t ColumnElementNumber, bool Active,
+          std::size_t RowElementNumber>
+struct CountSparseMatrixRowLoop;
 
-// template <typename SparseAvailable>
-// struct CountSparseMatrixColumnLoop<SparseAvailable, 0> {
-//   using type = IndexSequence<0>;
-// };
+template <typename SparseAvailable, std::size_t ElementCount,
+          std::size_t ColumnElementNumber, std::size_t RowElementNumber>
+struct CountSparseMatrixRowLoop<SparseAvailable, ElementCount,
+                                ColumnElementNumber, true, RowElementNumber> {
+  using type = typename CountSparseMatrixRowLoop<
+      SparseAvailable, (ElementCount + 1), ColumnElementNumber,
+      SparseAvailable::lists[ColumnElementNumber][RowElementNumber - 1],
+      RowElementNumber - 1>::type;
+};
 
-// template <typename SparseAvailable>
-// struct RowPointersSequenceFromSparseAvailable {
-//   using type = typename CountSparseMatrixColumnLoop<
-//       SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
-// };
+template <typename SparseAvailable, std::size_t ElementCount,
+          std::size_t ColumnElementNumber, std::size_t RowElementNumber>
+struct CountSparseMatrixRowLoop<SparseAvailable, ElementCount,
+                                ColumnElementNumber, false, RowElementNumber> {
+  using type = typename CountSparseMatrixRowLoop<
+      SparseAvailable, ElementCount, ColumnElementNumber,
+      SparseAvailable::lists[ColumnElementNumber][RowElementNumber - 1],
+      RowElementNumber - 1>::type;
+};
 
-// template <typename SparseAvailable>
-// using RowPointersFromSparseAvailable =
-//     typename ToRowPointers<typename RowPointersSequenceFromSparseAvailable<
-//         SparseAvailable>::type>::type;
+template <typename SparseAvailable, std::size_t ElementCount,
+          std::size_t ColumnElementNumber>
+struct CountSparseMatrixRowLoop<SparseAvailable, ElementCount,
+                                ColumnElementNumber, false, 0> {
+  using type = IndexSequence<ElementCount>;
+};
+
+template <typename SparseAvailable, std::size_t ElementCount,
+          std::size_t ColumnElementNumber>
+struct CountSparseMatrixRowLoop<SparseAvailable, ElementCount,
+                                ColumnElementNumber, true, 0> {
+  using type = IndexSequence<(ElementCount + 1)>;
+};
+
+template <typename SparseAvailable, std::size_t ColumnElementNumber>
+struct CountSparseMatrixColumnLoop {
+  using type = typename Concatenate<
+      typename CountSparseMatrixColumnLoop<SparseAvailable,
+                                           ColumnElementNumber - 1>::type,
+      typename CountSparseMatrixRowLoop<
+          SparseAvailable, 0, ColumnElementNumber,
+          SparseAvailable::lists[ColumnElementNumber]
+                                [SparseAvailable::number_of_columns - 1],
+          (SparseAvailable::number_of_columns - 1)>::type>::type;
+};
+
+template <typename SparseAvailable>
+struct CountSparseMatrixColumnLoop<SparseAvailable, 0> {
+  using type = typename Concatenate<
+      IndexSequence<0>,
+      typename CountSparseMatrixRowLoop<
+          SparseAvailable, 0, 0,
+          SparseAvailable::lists[0][SparseAvailable::number_of_columns - 1],
+          (SparseAvailable::number_of_columns - 1)>::type>::type;
+};
+
+template <typename SparseAvailable>
+struct RowPointersSequenceFromSparseAvailable {
+  using type = typename CountSparseMatrixColumnLoop<
+      SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
+};
+
+template <typename SparseAvailable>
+using RowPointersFromSparseAvailable =
+    typename ToRowPointers<typename RowPointersSequenceFromSparseAvailable<
+        SparseAvailable>::type>::type;
 
 // template <typename T, std::size_t M, std::size_t N, typename
 // SparseAvailable> auto create_compiled_sparse(std::initializer_list<T>
