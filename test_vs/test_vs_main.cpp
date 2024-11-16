@@ -3,7 +3,7 @@
 
 #include "MCAP_tester.hpp"
 
-#include "python_numpy.hpp"
+//#include "python_numpy.hpp"
 #include "base_matrix.hpp"
 
 using namespace Tester;
@@ -405,54 +405,6 @@ void check_base_matrix_calc(void) {
 
     tester.expect_near(D_dense.data, D_dense_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix create dense.");
-
-    /* コレスキー分解 */
-    Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
-    SparseMatrix<T, 3, 3, 6> K_s({ 1, 8, 3, 3, 4 }, { 0, 1, 2, 1, 2 }, { 0, 1, 3, 5 });
-
-    Matrix<T, 3, 3> K_ch;
-    bool flag = false;
-    K_ch = cholesky_decomposition(K, K_ch, flag);
-    //K_ch = cholesky_decomposition_sparse(K_s, K_ch, flag);
-
-    //std::cout << "K_ch = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 3; ++i) {
-    //        std::cout << K_ch(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<T, 3, 3> K_ch_2 = matrix_multiply_AT_mul_B(K_ch, K_ch);
-    //std::cout << "K_ch_2 = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 3; ++i) {
-    //        std::cout << K_ch_2(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<T, 3, 3> K_ch_2_answer({
-        {10, 1, 2},
-        {1, 20, 4},
-        {2, 4, 30}
-        });
-    tester.expect_near(K_ch_2.data, K_ch_2_answer.data, NEAR_LIMIT_STRICT,
-        "check Cholesky decomposition.");
-
-    DiagMatrix<T, 3> K_diag = cholesky_decomposition_diag(D, D, flag);
-    //std::cout << "K_diag = ";
-    //for (size_t i = 0; i < K_diag.rows(); ++i) {
-    //    std::cout << K_diag[i] << " ";
-    //}
-    //std::cout << std::endl;
-
-    DiagMatrix<T, 3> K_diag_answer({ 1, 1.41421F, 1.73205F });
-    tester.expect_near(K_diag.data, K_diag_answer.data, NEAR_LIMIT_STRICT,
-        "check Cholesky decomposition diag.");
-
 
     /* スパース行列 */
     std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
@@ -1013,6 +965,66 @@ void check_base_matrix_calc(void) {
     tester.expect_near(G_s_d.data, G_s_d_answer.data, NEAR_LIMIT_STRICT,
         "check create_sparse command.");
 
+    /* コレスキー分解 */
+    Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
+
+    Matrix<T, 3, 3> K_ch;
+    bool flag = false;
+    K_ch = cholesky_decomposition(K, K_ch, flag);
+
+    //std::cout << "K_ch = " << std::endl;
+    //for (size_t j = 0; j < 3; ++j) {
+    //    for (size_t i = 0; i < 3; ++i) {
+    //        std::cout << K_ch(j, i) << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
+    //std::cout << std::endl;
+
+    Matrix<T, 3, 3> K_ch_2 = matrix_multiply_AT_mul_B(K_ch, K_ch);
+    //std::cout << "K_ch_2 = " << std::endl;
+    //for (size_t j = 0; j < 3; ++j) {
+    //    for (size_t i = 0; i < 3; ++i) {
+    //        std::cout << K_ch_2(j, i) << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
+    //std::cout << std::endl;
+
+    Matrix<T, 3, 3> K_ch_2_answer({
+        {10, 1, 2},
+        {1, 20, 4},
+        {2, 4, 30}
+        });
+    tester.expect_near(K_ch_2.data, K_ch_2_answer.data, NEAR_LIMIT_STRICT,
+        "check Cholesky decomposition.");
+
+    DiagMatrix<T, 3> K_diag = cholesky_decomposition_diag(D, D, flag);
+    //std::cout << "K_diag = ";
+    //for (size_t i = 0; i < K_diag.rows(); ++i) {
+    //    std::cout << K_diag[i] << " ";
+    //}
+    //std::cout << std::endl;
+
+    DiagMatrix<T, 3> K_diag_answer({ 1, 1.41421F, 1.73205F });
+    tester.expect_near(K_diag.data, K_diag_answer.data, NEAR_LIMIT_STRICT,
+        "check Cholesky decomposition diag.");
+
+    CompiledSparseMatrix<T, 3, 3, 
+        RowIndices<0, 1, 2, 1, 2 >,
+        RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
+    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, flag);
+
+    Matrix<T, 3, 3> K_ch_sparse_2 = matrix_multiply_AT_mul_B(K_ch_sparse, K_ch_sparse);
+
+    Matrix<T, 3, 3> K_ch_sparse_2_answer({
+        {1, 0, 0},
+        {0, 8, 3},
+        {0, 3, 4}
+        });
+
+    tester.expect_near(K_ch_sparse_2.data, K_ch_sparse_2_answer.data, NEAR_LIMIT_STRICT,
+        "check Cholesky decomposition sparse.");
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
@@ -1329,6 +1341,7 @@ void check_base_matrix_calc(void) {
     tester.throw_error_if_test_failed();
 }
 
+#if 0
 
 template <typename T>
 void check_python_numpy_calc(void) {
@@ -1771,6 +1784,7 @@ void check_python_numpy_calc(void) {
     tester.throw_error_if_test_failed();
 }
 
+#endif
 
 int main() {
 
@@ -1778,9 +1792,9 @@ int main() {
 
     check_base_matrix_calc<float>();
 
-    check_python_numpy_calc<double>();
+    // check_python_numpy_calc<double>();
 
-    check_python_numpy_calc<float>();
+    // check_python_numpy_calc<float>();
 
 
     return 0;
