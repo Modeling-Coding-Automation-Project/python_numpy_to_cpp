@@ -694,12 +694,26 @@ struct CountSparseMatrixColumnLoop<SparseAvailable, 0> {
 };
 
 template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
+struct AccumulateElementNumberLoop {
+  static constexpr std::size_t compute() {
+    return CountSparseMatrixColumnLoop::list[ColumnElementNumber] +
+           AccumulateElementNumberLoop<CountSparseMatrixColumnLoop,
+                                       ColumnElementNumber - 1>::compute();
+  }
+};
+
+template <typename CountSparseMatrixColumnLoop>
+struct AccumulateElementNumberLoop<CountSparseMatrixColumnLoop, 0> {
+  static constexpr std::size_t compute() { return 0; }
+};
+
+template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
 struct AccumulateSparseMatrixElementNumberLoop {
   using type = typename Concatenate<
       typename AccumulateSparseMatrixElementNumberLoop<
           CountSparseMatrixColumnLoop, ColumnElementNumber - 1>::type,
-      IndexSequence<CountSparseMatrixColumnLoop::list[ColumnElementNumber]>>::
-      type;
+      IndexSequence<AccumulateElementNumberLoop<
+          CountSparseMatrixColumnLoop, ColumnElementNumber>::compute()>>::type;
 };
 
 template <typename CountSparseMatrixColumnLoop>
