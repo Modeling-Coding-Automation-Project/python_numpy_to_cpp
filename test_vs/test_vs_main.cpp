@@ -882,7 +882,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(A_mul_Diag_sparse.data, A_mul_Diag_sparse_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix to CompiledSparseMatrix.");
 
-    auto C_from_list = create_compiled_sparse<T, 3, 3,
+    auto C_from_list = create_compiled_sparse<T,
         SparseAvailable<
             ColumnAvailable<true, false, false>,
             ColumnAvailable<true, false, true>,

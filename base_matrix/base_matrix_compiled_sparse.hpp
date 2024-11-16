@@ -556,6 +556,10 @@ template <typename... Columns> struct SparseAvailableColumns {
   // Array of lists from each ColumnAvailable
   static constexpr const bool *lists[number_of_columns] = {
       ExtractList<Columns>::value...};
+
+  // Function to get the size of a specific column
+  static constexpr std::size_t column_size =
+      std::tuple_element<0, std::tuple<Columns...>>::type::size;
 };
 
 template <typename... Columns>
@@ -734,12 +738,15 @@ using RowPointersFromSparseAvailable =
             SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type,
         SparseAvailable>::type>::type;
 
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+template <typename T, typename SparseAvailable>
 auto create_compiled_sparse(std::initializer_list<T> values)
-    -> CompiledSparseMatrix<T, M, N,
+    -> CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
+                            SparseAvailable::column_size,
                             RowIndicesFromSparseAvailable<SparseAvailable>,
                             RowPointersFromSparseAvailable<SparseAvailable>> {
-  CompiledSparseMatrix<T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+  CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
+                       SparseAvailable::column_size,
+                       RowIndicesFromSparseAvailable<SparseAvailable>,
                        RowPointersFromSparseAvailable<SparseAvailable>>
       Y;
 
