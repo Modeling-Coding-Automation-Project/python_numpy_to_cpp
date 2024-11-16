@@ -16,8 +16,6 @@
 namespace Base {
 namespace Matrix {
 
-const double COMPILED_SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
-
 template <std::size_t... Sizes> struct list_array {
   static constexpr std::size_t size = sizeof...(Sizes);
   static constexpr std::size_t value[size] = {Sizes...};
