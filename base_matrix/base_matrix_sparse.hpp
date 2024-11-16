@@ -75,6 +75,7 @@ public:
                const std::initializer_list<std::size_t> &row_pointers)
       : values{}, row_indices{}, row_pointers{} {
 
+    // This may cause runtime error if the size of values is larger than V.
     std::copy(values.begin(), values.end(), this->values.begin());
     std::copy(row_indices.begin(), row_indices.end(),
               this->row_indices.begin());
@@ -92,6 +93,7 @@ public:
                const std::vector<std::size_t> &row_pointers)
       : values{}, row_indices{}, row_pointers{} {
 
+    // This may cause runtime error if the size of values is larger than V.
     std::copy(values.begin(), values.end(), this->values.begin());
     std::copy(row_indices.begin(), row_indices.end(),
               this->row_indices.begin());

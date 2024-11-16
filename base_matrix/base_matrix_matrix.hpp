@@ -36,6 +36,7 @@ public:
 
   Matrix(const std::vector<T> &input)
       : data(N, std::vector<T>(M, static_cast<T>(0))) {
+    // This may cause runtime error if the size of values is larger than M.
     std::copy(input.begin(), input.end(), this->data[0].begin());
   }
 
@@ -69,6 +70,7 @@ public:
   Matrix(const std::array<std::array<T, N>, M> &input) : data(input) {}
 
   Matrix(const std::vector<T> &input) : data{} {
+    // This may cause runtime error if the size of values is larger than M.
     std::copy(input.begin(), input.end(), this->data[0].begin());
   }
 

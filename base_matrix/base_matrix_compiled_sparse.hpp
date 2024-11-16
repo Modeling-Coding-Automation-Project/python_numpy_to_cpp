@@ -58,6 +58,8 @@ public:
 
   CompiledSparseMatrix(const std::initializer_list<T> &values) : values{} {
 
+    // This may cause runtime error if the size of values is larger than
+    // RowIndices::size.
     std::copy(values.begin(), values.end(), this->values.begin());
   }
 
@@ -66,6 +68,8 @@ public:
 
   CompiledSparseMatrix(const std::vector<T> &values) : values{} {
 
+    // This may cause runtime error if the size of values is larger than
+    // RowIndices::size.
     std::copy(values.begin(), values.end(), this->values.begin());
   }
 
@@ -750,6 +754,8 @@ auto create_compiled_sparse(std::initializer_list<T> values)
                        RowPointersFromSparseAvailable<SparseAvailable>>
       Y;
 
+  // This may cause runtime error if the size of values is larger than
+  // RowIndices::size.
   std::copy(values.begin(),
             values.begin() +
                 RowIndicesFromSparseAvailable<SparseAvailable>::size,

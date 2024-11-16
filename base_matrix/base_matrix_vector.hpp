@@ -31,6 +31,7 @@ public:
 
   Vector(const std::initializer_list<T> &input) : data{} {
 
+    // This may cause runtime error if the size of values is larger than N.
     std::copy(input.begin(), input.end(), this->data.begin());
   }
 
@@ -38,6 +39,7 @@ public:
 
   Vector(const std::vector<T> &input) : data{} {
 
+    // This may cause runtime error if the size of values is larger than N.
     std::copy(input.begin(), input.end(), this->data.begin());
   }
 
