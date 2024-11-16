@@ -1034,8 +1034,7 @@ void check_base_matrix_calc(void) {
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
-    //QRDecomposition<T, 3, 3> qr(C_dense, static_cast<T>(1.0e-10F));
-    QRDecompositionSparse<T, 3, 3, 5> qr(SA, static_cast<T>(1.0e-10F));
+    QRDecomposition<T, 3, 3> qr(C_dense, static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> Q = qr.get_Q();
     Matrix<T, 3, 3> R = qr.get_R();
@@ -1056,6 +1055,20 @@ void check_base_matrix_calc(void) {
         });
     tester.expect_near(Q.data, Q_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition Q.");
+
+    QRDecompositionSparse<T, 3, 3, 5> qr_s(SA, static_cast<T>(1.0e-10F));
+
+    Matrix<T, 3, 3> Q_s = qr_s.get_Q();
+    Matrix<T, 3, 3> R_s = qr_s.get_R();
+
+    Matrix<T, 3, 3> Q_s_answer({
+        {-0.316228F, 0, 0.948683F},
+        {-0.948683F, 0, -0.316228F},
+        {0, -1, 0}
+        });
+
+    tester.expect_near(Q_s.data, Q_s_answer.data, NEAR_LIMIT_STRICT,
+        "check QR Decomposition Sparse Q.");
 
     //std::cout << "R = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {

@@ -11,6 +11,53 @@
 namespace Base {
 namespace Matrix {
 
+/* Given's Rotation */
+template <typename T, std::size_t M, std::size_t N>
+static inline void
+qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
+                  Matrix<T, M, N> &R_matrix, T division_min) {
+  T c;
+  T s;
+
+  if (std::abs(R_matrix(i, j)) > std::abs(R_matrix(j, j))) {
+    T t = -R_matrix(j, j) / avoid_zero_divide(R_matrix(i, j), division_min);
+    s = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+    c = s * t;
+
+    for (std::size_t k = j; k < N; ++k) {
+      T x = R_matrix(j, k);
+      T y = R_matrix(i, k);
+      R_matrix(j, k) = c * x - s * y;
+      R_matrix(i, k) = s * x + c * y;
+    }
+
+    for (std::size_t k = 0; k < M; ++k) {
+      T u = Q_matrix(k, j);
+      T v = Q_matrix(k, i);
+      Q_matrix(k, j) = c * u - s * v;
+      Q_matrix(k, i) = s * u + c * v;
+    }
+  } else {
+    T t = -R_matrix(i, j) / avoid_zero_divide(R_matrix(j, j), division_min);
+    c = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+    s = c * t;
+
+    for (std::size_t k = j; k < N; ++k) {
+      T x = R_matrix(j, k);
+      T y = R_matrix(i, k);
+      R_matrix(j, k) = c * x - s * y;
+      R_matrix(i, k) = s * x + c * y;
+    }
+
+    for (std::size_t k = 0; k < M; ++k) {
+      T u = Q_matrix(k, j);
+      T v = Q_matrix(k, i);
+      Q_matrix(k, j) = c * u - s * v;
+      Q_matrix(k, i) = s * u + c * v;
+    }
+  }
+}
+
 template <typename T, std::size_t M, std::size_t N> class QRDecomposition {
 public:
   QRDecomposition() : _division_min(static_cast<T>(0)) {}
@@ -75,48 +122,8 @@ private:
   }
 
   void _givensRotation(std::size_t i, std::size_t j) {
-    T c;
-    T s;
-
-    if (std::abs(this->_R_matrix(i, j)) > std::abs(this->_R_matrix(j, j))) {
-      T t = -this->_R_matrix(j, j) /
-            avoid_zero_divide(this->_R_matrix(i, j), this->_division_min);
-      s = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
-      c = s * t;
-
-      for (std::size_t k = j; k < N; ++k) {
-        T x = this->_R_matrix(j, k);
-        T y = this->_R_matrix(i, k);
-        this->_R_matrix(j, k) = c * x - s * y;
-        this->_R_matrix(i, k) = s * x + c * y;
-      }
-
-      for (std::size_t k = 0; k < M; ++k) {
-        T u = this->_Q_matrix(k, j);
-        T v = this->_Q_matrix(k, i);
-        this->_Q_matrix(k, j) = c * u - s * v;
-        this->_Q_matrix(k, i) = s * u + c * v;
-      }
-    } else {
-      T t = -this->_R_matrix(i, j) /
-            avoid_zero_divide(this->_R_matrix(j, j), this->_division_min);
-      c = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
-      s = c * t;
-
-      for (std::size_t k = j; k < N; ++k) {
-        T x = this->_R_matrix(j, k);
-        T y = this->_R_matrix(i, k);
-        this->_R_matrix(j, k) = c * x - s * y;
-        this->_R_matrix(i, k) = s * x + c * y;
-      }
-
-      for (std::size_t k = 0; k < M; ++k) {
-        T u = this->_Q_matrix(k, j);
-        T v = this->_Q_matrix(k, i);
-        this->_Q_matrix(k, j) = c * u - s * v;
-        this->_Q_matrix(k, i) = s * u + c * v;
-      }
-    }
+    qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
+                      this->_division_min);
   }
 };
 
@@ -168,48 +175,8 @@ private:
   }
 
   void _givensRotation(std::size_t i, std::size_t j) {
-    T c;
-    T s;
-
-    if (std::abs(this->_R_matrix(i, j)) > std::abs(this->_R_matrix(j, j))) {
-      T t = -this->_R_matrix(j, j) /
-            avoid_zero_divide(this->_R_matrix(i, j), this->_division_min);
-      s = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
-      c = s * t;
-
-      for (std::size_t k = j; k < N; ++k) {
-        T x = this->_R_matrix(j, k);
-        T y = this->_R_matrix(i, k);
-        this->_R_matrix(j, k) = c * x - s * y;
-        this->_R_matrix(i, k) = s * x + c * y;
-      }
-
-      for (std::size_t k = 0; k < M; ++k) {
-        T u = this->_Q_matrix(k, j);
-        T v = this->_Q_matrix(k, i);
-        this->_Q_matrix(k, j) = c * u - s * v;
-        this->_Q_matrix(k, i) = s * u + c * v;
-      }
-    } else {
-      T t = -this->_R_matrix(i, j) /
-            avoid_zero_divide(this->_R_matrix(j, j), this->_division_min);
-      c = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
-      s = c * t;
-
-      for (std::size_t k = j; k < N; ++k) {
-        T x = this->_R_matrix(j, k);
-        T y = this->_R_matrix(i, k);
-        this->_R_matrix(j, k) = c * x - s * y;
-        this->_R_matrix(i, k) = s * x + c * y;
-      }
-
-      for (std::size_t k = 0; k < M; ++k) {
-        T u = this->_Q_matrix(k, j);
-        T v = this->_Q_matrix(k, i);
-        this->_Q_matrix(k, j) = c * u - s * v;
-        this->_Q_matrix(k, i) = s * u + c * v;
-      }
-    }
+    qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
+                      this->_division_min);
   }
 };
 
