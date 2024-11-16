@@ -882,6 +882,24 @@ void check_base_matrix_calc(void) {
     tester.expect_near(A_mul_Diag_sparse.data, A_mul_Diag_sparse_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix to CompiledSparseMatrix.");
 
+    auto C_from_list = create_compiled_sparse<T, 3, 3,
+        SparseAvailable<
+            ColumnAvailable<true, false, false>,
+            ColumnAvailable<true, false, true>,
+            ColumnAvailable<false, true, true>>
+        >({ 1, 3, 8, 2, 4 });
+
+    Matrix<T, 3, 3> A_mul_C_from_list = DenseG * C_from_list;
+
+    Matrix<T, 3, 3> A_mul_C_from_list_answer({
+        {7, 6, 28},
+        {17, 12, 56},
+        {33, 14, 92}
+        });
+
+    tester.expect_near(A_mul_C_from_list.data, A_mul_C_from_list_answer.data, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix from list.");
+
     /* スパース行列の逆行列計算 */
     x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
