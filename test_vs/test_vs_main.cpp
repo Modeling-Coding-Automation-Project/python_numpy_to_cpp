@@ -1056,7 +1056,8 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Q.data, Q_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition Q.");
 
-    QRDecompositionSparse<T, 3, 3, 5> qr_s(SA, static_cast<T>(1.0e-10F));
+    QRDecompositionSparse<T, 3, 3, RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> qr_s(SparseCc, static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> Q_s = qr_s.get_Q();
     Matrix<T, 3, 3> R_s = qr_s.get_R();

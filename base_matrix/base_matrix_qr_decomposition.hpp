@@ -144,12 +144,15 @@ private:
   T _division_min;
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
 class QRDecompositionSparse {
 public:
   QRDecompositionSparse() : _division_min(static_cast<T>(0)) {}
 
-  QRDecompositionSparse(const SparseMatrix<T, M, N, V> &A, T division_min)
+  QRDecompositionSparse(
+      const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+      T division_min)
       : _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix(A.create_dense()),
         _division_min(division_min) {
     this->_decompose(A);
@@ -163,12 +166,14 @@ private:
   Matrix<T, M, N> _R_matrix;
   T _division_min;
 
-  void _decompose(const SparseMatrix<T, M, N, V> &A) {
+  void _decompose(
+      const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
     for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t k = A.row_pointers[i]; k < A.row_pointers[i + 1]; k++) {
-        if ((i >= A.row_indices[k] + 1) &&
+      for (std::size_t k = RowPointers_A::list[i];
+           k < RowPointers_A::list[i + 1]; k++) {
+        if ((i >= RowIndices_A::list[k] + 1) &&
             (!near_zero(A.values[k], this->_division_min))) {
-          this->_givensRotation(i, A.row_indices[k]);
+          this->_givensRotation(i, RowIndices_A::list[k]);
         }
       }
     }
