@@ -6,7 +6,6 @@
 #include "base_matrix_lu_decomposition.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
-#include "base_matrix_sparse.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
 #include <array>
@@ -47,8 +46,9 @@ public:
 
   EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                   T division_min)
-      : iteration_max(iteration_max), _division_min(division_min),
-        _eigen_values{}, _eigen_vectors(Matrix<T, M, M>::ones()) {
+      : iteration_max(iteration_max),
+        _division_min(division_min), _eigen_values{},
+        _eigen_vectors(Matrix<T, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_values_with_qr_method(matrix);
