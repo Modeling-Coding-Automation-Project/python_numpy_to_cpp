@@ -734,11 +734,22 @@ using RowPointersFromSparseAvailable =
             SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type,
         SparseAvailable>::type>::type;
 
-// template <typename T, std::size_t M, std::size_t N, typename
-// SparseAvailable> auto create_compiled_sparse(std::initializer_list<T>
-// values)
-//     -> CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
-//                             DenseMatrixRowPointers<M, N>> {}
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto create_compiled_sparse(std::initializer_list<T> values)
+    -> CompiledSparseMatrix<T, M, N,
+                            RowIndicesFromSparseAvailable<SparseAvailable>,
+                            RowPointersFromSparseAvailable<SparseAvailable>> {
+  CompiledSparseMatrix<T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+                       RowPointersFromSparseAvailable<SparseAvailable>>
+      Y;
+
+  for (std::size_t i = 0;
+       i < RowIndicesFromSparseAvailable<SparseAvailable>::size; i++) {
+    Y.values[i] = values.begin()[i];
+  }
+
+  return Y;
+}
 
 /* Set Sparse Matrix Value */
 // Core conditional operation for setting sparse matrix value
