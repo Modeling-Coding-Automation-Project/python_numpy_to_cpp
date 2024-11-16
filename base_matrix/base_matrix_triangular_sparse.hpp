@@ -1,12 +1,15 @@
 #ifndef BASE_MATRIX_TRIANGULAR_SPARSE_HPP
 #define BASE_MATRIX_TRIANGULAR_SPARSE_HPP
 
+#include "base_matrix_compiled_sparse.hpp"
+#include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_vector.hpp"
 #include <cstddef>
 #include <vector>
+
 
 namespace Base {
 namespace Matrix {
