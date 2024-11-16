@@ -743,10 +743,10 @@ auto create_compiled_sparse(std::initializer_list<T> values)
                        RowPointersFromSparseAvailable<SparseAvailable>>
       Y;
 
-  for (std::size_t i = 0;
-       i < RowIndicesFromSparseAvailable<SparseAvailable>::size; i++) {
-    Y.values[i] = values.begin()[i];
-  }
+  std::copy(values.begin(),
+            values.begin() +
+                RowIndicesFromSparseAvailable<SparseAvailable>::size,
+            Y.values.begin());
 
   return Y;
 }
