@@ -1,9 +1,10 @@
 #ifndef BASE_MATRIX_INVERSE_HPP
 #define BASE_MATRIX_INVERSE_HPP
 
+#include "base_matrix_compiled_sparse.hpp"
+#include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_matrix.hpp"
-#include "base_matrix_sparse.hpp"
 #include "base_matrix_vector.hpp"
 #include <cmath>
 #include <cstddef>
@@ -263,11 +264,12 @@ Matrix<T, M, M> gmres_k_matrix_inv(const Matrix<T, M, M> In_A, T decay_rate,
 }
 
 /* Sparse GMRES K */
-template <typename T, std::size_t M, std::size_t V>
-Vector<T, M> sparse_gmres_k(const SparseMatrix<T, M, M, V> &SA,
-                            const Vector<T, M> &b, const Vector<T, M> &x_1,
-                            T decay_rate, T division_min, T &rho,
-                            std::size_t &rep_num) {
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+Vector<T, M> sparse_gmres_k(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, T decay_rate,
+    T division_min, T &rho, std::size_t &rep_num) {
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -365,11 +367,12 @@ Vector<T, M> sparse_gmres_k(const SparseMatrix<T, M, M, V> &SA,
 }
 
 /* Sparse GMRES K for rectangular matrix */
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-Vector<T, N> sparse_gmres_k_rect(const SparseMatrix<T, M, N, V> &In_SA,
-                                 const Vector<T, M> &b, const Vector<T, N> &x_1,
-                                 T decay_rate, T division_min, T &rho,
-                                 std::size_t &rep_num) {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+Vector<T, N> sparse_gmres_k_rect(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const Vector<T, M> &b, const Vector<T, N> &x_1, T decay_rate,
+    T division_min, T &rho, std::size_t &rep_num) {
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -481,10 +484,11 @@ Vector<T, N> sparse_gmres_k_rect(const SparseMatrix<T, M, N, V> &In_SA,
 }
 
 /* Sparse GMRES K for matrix inverse */
-template <typename T, std::size_t M, std::size_t V>
-Matrix<T, M, M> sparse_gmres_k_matrix_inv(const SparseMatrix<T, M, M, V> In_A,
-                                          T decay_rate, T division_min,
-                                          const Matrix<T, M, M> X_1) {
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+Matrix<T, M, M> sparse_gmres_k_matrix_inv(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> In_A,
+    T decay_rate, T division_min, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
   Vector<T, M> rho_vec;

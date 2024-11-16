@@ -853,7 +853,8 @@ void check_base_matrix_calc(void) {
         "check CompiledSparseMatrix from list.");
 
     /* スパース行列の逆行列計算 */
-    x_gmres_k = sparse_gmres_k(SA, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    x_gmres_k = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -866,8 +867,12 @@ void check_base_matrix_calc(void) {
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer_2.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix GMRES k.");
 
-    SparseMatrix<T, 4, 3, 6> SB({ 1, 3, 2, 8, 4, 1 }, { 0, 1, 2, 1, 2, 1 }, { 0, 2, 3, 5, 6 });
-    x_gmres_k = sparse_gmres_k_rect(SB, b_2, x_gmres_k_rect_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    CompiledSparseMatrix<T, 4, 3,
+        RowIndices<0, 1, 2, 1, 2, 1>,
+        RowPointers<0, 2, 3, 5, 6>> SBc({ 1, 3, 2, 8, 4, 1 });
+
+    x_gmres_k = sparse_gmres_k_rect(SBc, b_2, x_gmres_k_rect_0,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -880,7 +885,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer_3.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix GMRES k rect.");
 
-    Matrix<T, 4, 3> SB_dense = SB.create_dense();
+    Matrix<T, 4, 3> SB_dense = SBc.create_dense();
 
     //std::cout << "SB_dense = " << std::endl;
     //for (size_t j = 0; j < SB_dense.cols(); ++j) {
@@ -900,7 +905,8 @@ void check_base_matrix_calc(void) {
     tester.expect_near(SB_dense.data, SB_dense_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix create dense.");
 
-    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SA, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
+    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SparseCc, 
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
 
     //std::cout << "S_inv = " << std::endl;
     //for (size_t j = 0; j < S_inv.cols(); ++j) {
