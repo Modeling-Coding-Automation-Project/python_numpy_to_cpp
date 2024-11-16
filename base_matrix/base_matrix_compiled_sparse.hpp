@@ -722,14 +722,14 @@ struct AccumulateSparseMatrixElementNumberLoop<CountSparseMatrixColumnLoop, 0> {
 };
 
 template <typename CountSparseMatrixColumnLoop, typename SparseAvailable>
-struct AccumulateTestStruct {
+struct AccumulateSparseMatrixElementNumberStruct {
   using type = typename AccumulateSparseMatrixElementNumberLoop<
       CountSparseMatrixColumnLoop, SparseAvailable::number_of_columns>::type;
 };
 
 template <typename SparseAvailable>
 using RowPointersFromSparseAvailable =
-    typename ToRowPointers<typename AccumulateTestStruct<
+    typename ToRowPointers<typename AccumulateSparseMatrixElementNumberStruct<
         typename CountSparseMatrixColumnLoop<
             SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type,
         SparseAvailable>::type>::type;
