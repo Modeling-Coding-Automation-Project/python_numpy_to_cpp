@@ -36,6 +36,11 @@ struct ConcatenateSparseAvailable<SparseAvailableColumns<Columns1...>,
   using type = SparseAvailableColumns<Columns1..., Columns2...>;
 };
 
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableVertically =
+    typename ConcatenateSparseAvailable<SparseAvailable_A,
+                                        SparseAvailable_B>::type;
+
 /* Create Dense Available */
 // Generate true flags
 // base case: N = 0
