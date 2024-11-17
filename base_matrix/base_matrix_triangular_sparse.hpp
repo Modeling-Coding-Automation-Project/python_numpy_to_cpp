@@ -165,7 +165,7 @@ using LowerTriangularRowPointers = typename ToRowPointers<
     typename AccumulateLowerTriangularElementNumberStruct<
         typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
 
-/* Set values for Triangular Sparse Matrix */
+/* Set values for Upper Triangular Sparse Matrix */
 // Calculate consecutive index at compile time
 template <std::size_t I, std::size_t J, std::size_t N> struct ConsecutiveIndex {
   static constexpr std::size_t value = (I * (2 * N - I + 1)) / 2 + (J - I);
@@ -231,6 +231,75 @@ static inline void SET_UPPER_TRIANGULAR_VALUES(
                          UpperTriangularRowPointers<M, N>> &A,
     const Matrix<T, M, N> &B) {
   SetUpperRow<T, M, N, M - 1>::compute(A, B);
+}
+
+/* Set values for Lower Triangular Sparse Matrix */
+// Calculate consecutive index at compile time for lower triangular matrix
+template <std::size_t I, std::size_t J, std::size_t N>
+struct ConsecutiveIndexLower {
+  static constexpr std::size_t value = (I * (I + 1)) / 2 + J;
+};
+
+// Specialization for the base case
+template <std::size_t N> struct ConsecutiveIndexLower<0, 0, N> {
+  static constexpr std::size_t value = 0;
+};
+
+// Set values in the lower triangular matrix
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J>
+struct SetLowerValues {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                               LowerTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    constexpr std::size_t index = ConsecutiveIndexLower<I, J, N>::value;
+    A.values[index] = B(I, J);
+    SetLowerValues<T, M, N, I, J - 1>::compute(A, B);
+  }
+};
+
+// Specialization for the end of a row
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct SetLowerValues<T, M, N, I, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                               LowerTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    constexpr std::size_t index = ConsecutiveIndexLower<I, 0, N>::value;
+    A.values[index] = B(I, 0);
+  }
+};
+
+// Set values for each row
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct SetLowerRow {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                               LowerTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    SetLowerValues<T, M, N, I, I>::compute(A, B);
+    SetLowerRow<T, M, N, I - 1>::compute(A, B);
+  }
+};
+
+// Specialization for the first row
+template <typename T, std::size_t M, std::size_t N>
+struct SetLowerRow<T, M, N, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                               LowerTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    SetLowerValues<T, M, N, 0, 0>::compute(A, B);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N>
+static inline void SET_LOWER_TRIANGULAR_VALUES(
+    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                         LowerTriangularRowPointers<M, N>> &A,
+    const Matrix<T, M, N> &B) {
+  SetLowerRow<T, M, N, M - 1>::compute(A, B);
 }
 
 template <typename T, std::size_t M, std::size_t N> class TriangularSparse {
@@ -331,6 +400,8 @@ public:
                          LowerTriangularRowPointers<M, N>>
         Y;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
@@ -340,6 +411,12 @@ public:
         consecutive_index++;
       }
     }
+
+#else
+
+    SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+
+#endif
 
     return Y;
   }
@@ -351,6 +428,8 @@ public:
     // Currently, only support M <= N.
     static_assert(M <= N, "M must be smaller than or equal to N");
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
@@ -359,6 +438,12 @@ public:
         consecutive_index++;
       }
     }
+
+#else
+
+    SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
+
+#endif
   }
 };
 
