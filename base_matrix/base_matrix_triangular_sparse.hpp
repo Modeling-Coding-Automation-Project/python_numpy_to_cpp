@@ -147,6 +147,8 @@ public:
   static auto create_upper(void)
       -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                               UpperTriangularRowPointers<M, N>> {
+    // Currently, only support M >= N.
+    static_assert(M >= N, "M must be greater than or equal to N");
 
     CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                          UpperTriangularRowPointers<M, N>>
@@ -158,6 +160,8 @@ public:
   static auto create_upper(const Matrix<T, M, N> &A)
       -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                               UpperTriangularRowPointers<M, N>> {
+    // Currently, only support M >= N.
+    static_assert(M >= N, "M must be greater than or equal to N");
 
     CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                          UpperTriangularRowPointers<M, N>>
