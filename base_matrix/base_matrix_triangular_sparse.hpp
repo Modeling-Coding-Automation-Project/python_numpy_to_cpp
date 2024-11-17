@@ -33,28 +33,24 @@ template <std::size_t Start, std::size_t End> struct TriangularSequenceList {
 };
 
 template <std::size_t Start, std::size_t End>
-using TriangularRowNumbers = typename TriangularSequenceList<Start, End>::type;
+using TriangularRowNumbersColumn =
+    typename TriangularSequenceList<Start, End>::type;
 
 /* Create Upper Triangular Sparse Matrix Row Indices */
-// template <typename IndexSequence_1, typename IndexSequence_2>
-// using ConcatenateUpperTriangularRowNumbers =
-//     typename Concatenate<IndexSequence_1, IndexSequence_2>::type;
+template <std::size_t M, std::size_t N>
+struct ConcatenateUpperTriangularRowNumbers {
+  using type = typename Concatenate<
+      typename ConcatenateUpperTriangularRowNumbers<(M - 1), N>::type,
+      typename TriangularRowNumbersColumn<M, N>>::type;
+};
 
-// template <std::size_t M, std::size_t N>
-// struct UpperTriangularRepeatConcatenateIndexSequence;
+template <std::size_t N> struct ConcatenateUpperTriangularRowNumbers<1, N> {
+  using type = typename TriangularRowNumbersColumn<1, N>;
+};
 
-// template <std::size_t N>
-// struct UpperTriangularRepeatConcatenateIndexSequence<1, N> {
-//   using type = MatrixRowNumbers;
-// };
-
-// template <std::size_t M, std::size_t N>
-// struct UpperTriangularRepeatConcatenateIndexSequence {
-//   using type = ConcatenateUpperTriangularRowNumbers<
-//       MatrixRowNumbers<N>,
-//       typename UpperTriangularRepeatConcatenateIndexSequence<M - 1,
-//       N>::type>;
-// };
+template <std::size_t M, std::size_t N>
+using TriangularRowNumbers =
+    typename ConcatenateUpperTriangularRowNumbers<M, N>::type;
 
 // template <std::size_t M, std::size_t N>
 // using UpperTriangularColumnRowNumbers =
