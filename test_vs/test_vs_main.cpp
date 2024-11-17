@@ -1128,6 +1128,9 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3> Dense_33({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11} });
     auto Dense_33_Triangular = TriangularSparse<T, 3, 3>::create_upper(Dense_33);
 
+    set_sparse_matrix_value<1, 1>(Dense_33_Triangular, static_cast<T>(0));
+    TriangularSparse<T, 3, 3>::set_values_upper(Dense_33_Triangular, Dense_33);
+
     Matrix<T, 3, 3> Dense_33_mul_33 = Dense_33_Triangular * Dense_33;
 
     Matrix<T, 3, 3> Dense_33_mul_33_answer({
@@ -1830,6 +1833,15 @@ int main() {
 
     // check_python_numpy_calc<float>();
 
+
+    using namespace Base::Matrix;
+
+    using Test = LowerTriangularRowIndices<4, 6>;
+
+    for (size_t i = 0; i < Test::size; ++i) {
+        std::cout << Test::list[i] << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }

@@ -123,7 +123,7 @@ template <std::size_t N> struct ConcatenateLowerTriangularRowNumbers<1, N> {
 
 template <std::size_t M, std::size_t N>
 using LowerTriangularRowNumbers =
-    typename ConcatenateLowerTriangularRowNumbers<((N < M) ? N : M), N>::type;
+    typename ConcatenateLowerTriangularRowNumbers<M, ((M < N) ? M : N)>::type;
 
 template <std::size_t M, std::size_t N>
 using LowerTriangularRowIndices =
@@ -181,9 +181,12 @@ public:
   }
 
   static void set_values_upper(
-      SparseMatrix<T, M, N,
-                   CalculateTriangularSize<M, ((N < M) ? N : M)>::value> &A,
+      CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                           UpperTriangularRowPointers<M, N>> &A,
       const Matrix<T, M, N> &B) {
+    // Currently, only support M >= N.
+    static_assert(M >= N, "M must be greater than or equal to N");
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
