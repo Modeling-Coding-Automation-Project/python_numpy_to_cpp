@@ -32,6 +32,32 @@ template <std::size_t Start, std::size_t End> struct TriangularSequenceList {
       typename MakeTriangularIndexSequence<Start, End, (End - Start)>::type;
 };
 
+/* Count for Triangular */
+template <std::size_t Start, std::size_t End, std::size_t E_S>
+struct MakeTriangularCountSequence {
+  using type =
+      typename Concatenate<IndexSequence<End>,
+                           typename MakeTriangularCountSequence<
+                               Start, (End - 1), (E_S - 1)>::type>::type;
+};
+
+template <std::size_t Start, std::size_t End>
+struct MakeTriangularCountSequence<Start, End, 0> {
+  using type = IndexSequence<End>;
+};
+
+template <std::size_t Start, std::size_t End> struct TriangularCountList {
+  using type =
+      typename MakeTriangularCountSequence<Start, End, (End - Start)>::type;
+};
+
+template <std::size_t M, std::size_t N> struct TriangularCountNumbers {
+  using type =
+      typename Concatenate<IndexSequence<0>,
+                           typename TriangularCountList<
+                               ((N - ((N < M) ? N : M)) + 1), N>::type>::type;
+};
+
 /* Create Upper Triangular Sparse Matrix Row Indices */
 template <std::size_t M, std::size_t N>
 struct ConcatenateUpperTriangularRowNumbers {
