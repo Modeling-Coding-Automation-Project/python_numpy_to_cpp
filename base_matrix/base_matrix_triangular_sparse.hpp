@@ -49,12 +49,8 @@ template <std::size_t N> struct ConcatenateUpperTriangularRowNumbers<1, N> {
 };
 
 template <std::size_t M, std::size_t N>
-using TriangularRowNumbers =
-    typename ConcatenateUpperTriangularRowNumbers<M, N>::type;
-
-// template <std::size_t M, std::size_t N>
-// using UpperTriangularColumnRowNumbers =
-//     typename UpperTriangularRepeatConcatenateIndexSequence<M, N>::type;
+using UpperTriangularRowNumbers =
+    typename ConcatenateUpperTriangularRowNumbers<((N < M) ? N : M), N>::type;
 
 // template <std::size_t M, std::size_t N>
 // using UpperTriangularRowIndices =
