@@ -78,6 +78,19 @@ template <std::size_t M, std::size_t N>
 using UpperTriangularRowIndices =
     typename ToRowIndices<UpperTriangularRowNumbers<M, N>>::type;
 
+/* Create Upper Triangular Sparse Matrix Row Pointers */
+template <typename TriangularCountNumbers, std::size_t M>
+struct AccumulateTriangularElementNumberStruct {
+  using type =
+      typename AccumulateSparseMatrixElementNumberLoop<TriangularCountNumbers,
+                                                       M>::type;
+};
+
+template <std::size_t M, std::size_t N>
+using UpperTriangularRowPointers =
+    typename ToRowPointers<typename AccumulateTriangularElementNumberStruct<
+        typename TriangularCountNumbers<M, N>::type, M>::type>::type;
+
 /* Calculate triangular matrix size */
 template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
   static constexpr std::size_t value =
