@@ -165,15 +165,73 @@ using LowerTriangularRowPointers = typename ToRowPointers<
     typename AccumulateLowerTriangularElementNumberStruct<
         typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
 
-/* Calculate triangular matrix size */
-template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
-  static constexpr std::size_t value =
-      (Y > 0) ? Y + CalculateTriangularSize<X, Y - 1>::value : 0;
+/* Set values for Triangular Sparse Matrix */
+// Calculate consecutive index at compile time
+template <std::size_t I, std::size_t J, std::size_t N> struct ConsecutiveIndex {
+  static constexpr std::size_t value = (I * (2 * N - I + 1)) / 2 + (J - I);
 };
 
-template <std::size_t X> struct CalculateTriangularSize<X, 0> {
+// Specialization for the base case
+template <std::size_t N> struct ConsecutiveIndex<0, 0, N> {
   static constexpr std::size_t value = 0;
 };
+
+// Set values in the upper triangular matrix
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J>
+struct SetUpperValues {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                               UpperTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    constexpr std::size_t index = ConsecutiveIndex<I, J, N>::value;
+    A.values[index] = B(I, J);
+    SetUpperValues<T, M, N, I, J - 1>::compute(A, B);
+  }
+};
+
+// Specialization for the end of a row
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct SetUpperValues<T, M, N, I, I> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                               UpperTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    constexpr std::size_t index = ConsecutiveIndex<I, I, N>::value;
+    A.values[index] = B(I, I);
+  }
+};
+
+// Set values for each row
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct SetUpperRow {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                               UpperTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    SetUpperValues<T, M, N, I, N - 1>::compute(A, B);
+    SetUpperRow<T, M, N, I - 1>::compute(A, B);
+  }
+};
+
+// Specialization for the first row
+template <typename T, std::size_t M, std::size_t N>
+struct SetUpperRow<T, M, N, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                               UpperTriangularRowPointers<M, N>> &A,
+          const Matrix<T, M, N> &B) {
+    SetUpperValues<T, M, N, 0, N - 1>::compute(A, B);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N>
+static inline void SET_UPPER_TRIANGULAR_VALUES(
+    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                         UpperTriangularRowPointers<M, N>> &A,
+    const Matrix<T, M, N> &B) {
+  SetUpperRow<T, M, N, M - 1>::compute(A, B);
+}
 
 template <typename T, std::size_t M, std::size_t N> class TriangularSparse {
 public:
@@ -203,6 +261,8 @@ public:
                          UpperTriangularRowPointers<M, N>>
         Y;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
@@ -212,6 +272,12 @@ public:
         consecutive_index++;
       }
     }
+
+#else
+
+    SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+
+#endif
 
     return Y;
   }
@@ -223,6 +289,8 @@ public:
     // Currently, only support M >= N.
     static_assert(M >= N, "M must be greater than or equal to N");
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
@@ -231,6 +299,12 @@ public:
         consecutive_index++;
       }
     }
+
+#else
+
+    SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
+
+#endif
   }
 
   /* Lower */
