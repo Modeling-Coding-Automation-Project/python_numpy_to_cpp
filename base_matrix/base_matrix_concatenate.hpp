@@ -166,7 +166,7 @@ struct CreateSparsePointersRowLoop {
 
 template <typename RowIndices, std::size_t N, std::size_t RowIndicesIndex>
 struct CreateSparsePointersRowLoop<RowIndices, N, RowIndicesIndex, 0> {
-  using type = typename GenerateFalseColumnAvailable<N>;
+  using type = GenerateFalseColumnAvailable<N>;
 };
 
 template <std::size_t N, typename RowIndices, typename RowPointers,
