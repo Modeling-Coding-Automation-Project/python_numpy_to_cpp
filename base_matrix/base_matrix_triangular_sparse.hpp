@@ -129,6 +129,42 @@ template <std::size_t M, std::size_t N>
 using LowerTriangularRowIndices =
     typename ToRowIndices<LowerTriangularRowNumbers<M, N>>::type;
 
+/* Create Lower Triangular Sparse Matrix Row Pointers */
+template <std::size_t Start, std::size_t End, std::size_t E_S>
+struct MakeLowerTriangularCountSequence {
+  using type =
+      typename Concatenate<IndexSequence<Start>,
+                           typename MakeLowerTriangularCountSequence<
+                               (Start + 1), (End - 1), (E_S - 1)>::type>::type;
+};
+
+template <std::size_t Start, std::size_t End>
+struct MakeLowerTriangularCountSequence<Start, End, 0> {
+  using type = IndexSequence<Start>;
+};
+
+template <std::size_t Start, std::size_t End> struct LowerTriangularCountList {
+  using type = typename MakeLowerTriangularCountSequence<Start, End,
+                                                         (End - Start)>::type;
+};
+
+template <std::size_t M, std::size_t N> struct LowerTriangularCountNumbers {
+  using type = typename Concatenate<
+      IndexSequence<0>,
+      typename LowerTriangularCountList<1, ((M < N) ? M : N)>::type>::type;
+};
+
+template <typename LowerTriangularCountNumbers, std::size_t M>
+struct AccumulateLowerTriangularElementNumberStruct {
+  using type = typename AccumulateSparseMatrixElementNumberLoop<
+      LowerTriangularCountNumbers, M>::type;
+};
+
+template <std::size_t M, std::size_t N>
+using LowerTriangularRowPointers = typename ToRowPointers<
+    typename AccumulateLowerTriangularElementNumberStruct<
+        typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
+
 /* Calculate triangular matrix size */
 template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
   static constexpr std::size_t value =
@@ -201,6 +237,8 @@ public:
   static auto create_lower(void)
       -> SparseMatrix<T, M, N,
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+    // Currently, only support M <= N.
+    static_assert(M <= N, "M must be smaller than or equal to N");
 
     std::size_t consecutive_index = 0;
 
@@ -237,6 +275,8 @@ public:
   static auto create_lower(const Matrix<T, M, N> &A)
       -> SparseMatrix<T, M, N,
                       CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+    // Currently, only support M <= N.
+    static_assert(M <= N, "M must be smaller than or equal to N");
 
     std::size_t consecutive_index = 0;
 
@@ -275,6 +315,9 @@ public:
       SparseMatrix<T, M, N,
                    CalculateTriangularSize<M, ((N < M) ? N : M)>::value> &A,
       const Matrix<T, M, N> &B) {
+    // Currently, only support M <= N.
+    static_assert(M <= N, "M must be smaller than or equal to N");
+
     std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
