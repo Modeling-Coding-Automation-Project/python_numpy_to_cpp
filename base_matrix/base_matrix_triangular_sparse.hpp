@@ -107,76 +107,35 @@ public:
 
   /* Upper */
   static auto create_upper(void)
-      -> SparseMatrix<T, M, N,
-                      CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+      -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                              UpperTriangularRowPointers<M, N>> {
 
-    std::size_t consecutive_index = 0;
+    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                         UpperTriangularRowPointers<M, N>>
+        Y;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-    std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-                          static_cast<T>(0));
-    std::vector<std::size_t> row_indices(
-        CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-        static_cast<std::size_t>(0));
-    std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
-#else
-    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
-        {};
-    std::array<std::size_t,
-               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
-        row_indices = {};
-    std::array<std::size_t, M + 1> row_pointers = {};
-#endif
-
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = i; j < N; j++) {
-        row_indices[consecutive_index] = j;
-
-        consecutive_index++;
-        row_pointers[i + 1] = consecutive_index;
-      }
-    }
-
-    return SparseMatrix<T, M, N,
-                        CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        values, row_indices, row_pointers);
+    return Y;
   }
 
   static auto create_upper(const Matrix<T, M, N> &A)
-      -> SparseMatrix<T, M, N,
-                      CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+      -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                              UpperTriangularRowPointers<M, N>> {
+
+    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                         UpperTriangularRowPointers<M, N>>
+        Y;
 
     std::size_t consecutive_index = 0;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-    std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-                          static_cast<T>(0));
-    std::vector<std::size_t> row_indices(
-        CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-        static_cast<std::size_t>(0));
-    std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
-#else
-    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
-        {};
-    std::array<std::size_t,
-               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
-        row_indices = {};
-    std::array<std::size_t, M + 1> row_pointers = {};
-#endif
-
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = i; j < N; j++) {
-        values[consecutive_index] = A(i, j);
-        row_indices[consecutive_index] = j;
+        Y.values[consecutive_index] = A(i, j);
 
         consecutive_index++;
-        row_pointers[i + 1] = consecutive_index;
       }
     }
 
-    return SparseMatrix<T, M, N,
-                        CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        values, row_indices, row_pointers);
+    return Y;
   }
 
   static void set_values_upper(

@@ -1125,6 +1125,20 @@ void check_base_matrix_calc(void) {
         "check VariableSparseMatrix multiply VariableSparseMatrix.");
 
     /* 三角スパース行列 */
+    Matrix<T, 3, 3> Dense_33({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11} });
+    auto Dense_33_Triangular = TriangularSparse<T, 3, 3>::create_upper(Dense_33);
+
+    Matrix<T, 3, 3> Dense_33_mul_33 = Dense_33_Triangular * Dense_33;
+
+    Matrix<T, 3, 3> Dense_33_mul_33_answer({
+        {38, 44, 50},
+        {93, 106, 119},
+        {99, 110, 121}
+        });
+
+    tester.expect_near(Dense_33_mul_33.data, Dense_33_mul_33_answer.data, NEAR_LIMIT_STRICT,
+        "check Upper TriangularSparse multiply DenseMatrix.");
+
     auto TS = TriangularSparse<T, 4, 4>::create_lower();
     Matrix<T, 4, 4> Test_ts({ {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16} });
     TriangularSparse<T, 4, 4>::set_values_lower(TS, Test_ts);
