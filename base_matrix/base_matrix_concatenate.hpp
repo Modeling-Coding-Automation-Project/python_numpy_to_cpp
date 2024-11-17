@@ -175,12 +175,11 @@ template <std::size_t N, typename RowIndices, typename RowPointers,
 struct CreateSparsePointersLoop {
   using type = typename CreateSparsePointersLoop<
       N, RowIndices, RowPointers, (EndCount - 1),
-      RowPointers::list[RowPointers::size - EndCount],
+      RowPointers::list[RowPointers::size - EndCount], Columns...,
       typename CreateSparsePointersRowLoop<
           RowIndices, N, RowPointers::list[RowPointers::size - EndCount - 1],
           (RowPointers::list[RowPointers::size - EndCount] -
-           RowPointers::list[RowPointers::size - EndCount - 1])>::type,
-      Columns...>::type;
+           RowPointers::list[RowPointers::size - EndCount - 1])>::type>::type;
 };
 
 template <std::size_t N, typename RowIndices, typename RowPointers,
