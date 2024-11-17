@@ -356,6 +356,7 @@ struct Concatenate<InvalidSequence<Seq1...>, IndexSequence<Seq2...>> {
   using type = IndexSequence<Seq2...>;
 };
 
+/* Create Dense Matrix Row Indices and Pointers */
 template <typename IndexSequence_1, typename IndexSequence_2>
 using ConcatenateMatrixRowNumbers =
     typename Concatenate<IndexSequence_1, IndexSequence_2>::type;

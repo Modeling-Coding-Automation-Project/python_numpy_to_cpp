@@ -14,6 +14,56 @@
 namespace Base {
 namespace Matrix {
 
+/* Sequence for Triangular */
+template <std::size_t Start, std::size_t End, std::size_t E_S>
+struct MakeTriangularIndexSequence {
+  using type = typename Concatenate<
+      typename MakeTriangularIndexSequence<Start, (End - 1), (E_S - 1)>::type,
+      IndexSequence<(End - 1)>>::type;
+};
+
+template <std::size_t Start, std::size_t End>
+struct MakeTriangularIndexSequence<Start, End, 0> {
+  using type = IndexSequence<(End - 1)>;
+};
+
+template <std::size_t Start, std::size_t End> struct TriangularSequenceList {
+  using type =
+      typename MakeTriangularIndexSequence<Start, End, (End - Start)>::type;
+};
+
+template <std::size_t Start, std::size_t End>
+using TriangularRowNumbers = typename TriangularSequenceList<Start, End>::type;
+
+/* Create Upper Triangular Sparse Matrix Row Indices */
+// template <typename IndexSequence_1, typename IndexSequence_2>
+// using ConcatenateUpperTriangularRowNumbers =
+//     typename Concatenate<IndexSequence_1, IndexSequence_2>::type;
+
+// template <std::size_t M, std::size_t N>
+// struct UpperTriangularRepeatConcatenateIndexSequence;
+
+// template <std::size_t N>
+// struct UpperTriangularRepeatConcatenateIndexSequence<1, N> {
+//   using type = MatrixRowNumbers;
+// };
+
+// template <std::size_t M, std::size_t N>
+// struct UpperTriangularRepeatConcatenateIndexSequence {
+//   using type = ConcatenateUpperTriangularRowNumbers<
+//       MatrixRowNumbers<N>,
+//       typename UpperTriangularRepeatConcatenateIndexSequence<M - 1,
+//       N>::type>;
+// };
+
+// template <std::size_t M, std::size_t N>
+// using UpperTriangularColumnRowNumbers =
+//     typename UpperTriangularRepeatConcatenateIndexSequence<M, N>::type;
+
+// template <std::size_t M, std::size_t N>
+// using UpperTriangularRowIndices =
+//     typename ToRowIndices<UpperTriangularColumnRowNumbers<M, N>>::type;
+
 /* Calculate triangular matrix size */
 template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
   static constexpr std::size_t value =
