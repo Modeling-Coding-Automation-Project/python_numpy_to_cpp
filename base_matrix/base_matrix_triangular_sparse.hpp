@@ -235,85 +235,44 @@ public:
 
   /* Lower */
   static auto create_lower(void)
-      -> SparseMatrix<T, M, N,
-                      CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+      -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                              LowerTriangularRowPointers<M, N>> {
     // Currently, only support M <= N.
     static_assert(M <= N, "M must be smaller than or equal to N");
 
-    std::size_t consecutive_index = 0;
+    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                         LowerTriangularRowPointers<M, N>>
+        Y;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-    std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-                          static_cast<T>(0));
-    std::vector<std::size_t> row_indices(
-        CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-        static_cast<std::size_t>(0));
-    std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
-#else
-    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
-        {};
-    std::array<std::size_t,
-               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
-        row_indices = {};
-    std::array<std::size_t, M + 1> row_pointers = {};
-#endif
-
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = 0; j < i + 1; j++) {
-        row_indices[consecutive_index] = j;
-
-        consecutive_index++;
-        row_pointers[i + 1] = consecutive_index;
-      }
-    }
-
-    return SparseMatrix<T, M, N,
-                        CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        values, row_indices, row_pointers);
+    return Y;
   }
 
   static auto create_lower(const Matrix<T, M, N> &A)
-      -> SparseMatrix<T, M, N,
-                      CalculateTriangularSize<M, ((N < M) ? N : M)>::value> {
+      -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                              LowerTriangularRowPointers<M, N>> {
     // Currently, only support M <= N.
     static_assert(M <= N, "M must be smaller than or equal to N");
 
-    std::size_t consecutive_index = 0;
+    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                         LowerTriangularRowPointers<M, N>>
+        Y;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-    std::vector<T> values(CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-                          static_cast<T>(0));
-    std::vector<std::size_t> row_indices(
-        CalculateTriangularSize<M, ((N < M) ? N : M)>::value,
-        static_cast<std::size_t>(0));
-    std::vector<std::size_t> row_pointers(M + 1, static_cast<std::size_t>(0));
-#else
-    std::array<T, CalculateTriangularSize<M, ((N < M) ? N : M)>::value> values =
-        {};
-    std::array<std::size_t,
-               CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
-        row_indices = {};
-    std::array<std::size_t, M + 1> row_pointers = {};
-#endif
+    std::size_t consecutive_index = 0;
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < i + 1; j++) {
-        values[consecutive_index] = A(i, j);
-        row_indices[consecutive_index] = j;
+        Y.values[consecutive_index] = A(i, j);
 
         consecutive_index++;
-        row_pointers[i + 1] = consecutive_index;
       }
     }
 
-    return SparseMatrix<T, M, N,
-                        CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        values, row_indices, row_pointers);
+    return Y;
   }
 
   static void set_values_lower(
-      SparseMatrix<T, M, N,
-                   CalculateTriangularSize<M, ((N < M) ? N : M)>::value> &A,
+      CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                           LowerTriangularRowPointers<M, N>> &A,
       const Matrix<T, M, N> &B) {
     // Currently, only support M <= N.
     static_assert(M <= N, "M must be smaller than or equal to N");

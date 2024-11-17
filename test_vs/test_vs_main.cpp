@@ -1834,14 +1834,5 @@ int main() {
     // check_python_numpy_calc<float>();
 
 
-    using namespace Base::Matrix;
-
-    using Test = LowerTriangularRowIndices<4, 6>;
-
-    for (size_t i = 0; i < Test::size; ++i) {
-        std::cout << Test::list[i] << " ";
-    }
-    std::cout << std::endl;
-
     return 0;
 }
