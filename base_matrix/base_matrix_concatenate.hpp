@@ -71,6 +71,47 @@ template <std::size_t M, std::size_t N>
 using DenseAvailable =
     typename RepeatColumnAvailable<M, GenerateTrueColumnAvailable<N>>::type;
 
+/* Create Diag Available */
+// base case: N = 0
+template <std::size_t N, std::size_t Index, bool... Flags>
+struct GenerateIndexedTrueFlags {
+  using type = typename GenerateIndexedTrueFlags<
+      N - 1, Index, (N - 1 == Index ? true : false), Flags...>::type;
+};
+
+// recursive termination case: N = 0
+template <std::size_t Index, bool... Flags>
+struct GenerateIndexedTrueFlags<0, Index, Flags...> {
+  using type = ColumnAvailable<Flags...>;
+};
+
+template <std::size_t N, std::size_t Index>
+using GenerateIndexedTrueColumnAvailable =
+    typename GenerateIndexedTrueFlags<N, Index>::type;
+
+// concatenate indexed true flags vertically
+// base case: N = 0
+template <std::size_t M, std::size_t N, std::size_t Index,
+          typename ColumnAvailable, typename... Columns>
+struct IndexedRepeatColumnAvailable {
+  using type = typename IndexedRepeatColumnAvailable<
+      (M - 1), N, (Index - 1),
+      GenerateIndexedTrueColumnAvailable<N, (Index - 1)>, ColumnAvailable,
+      Columns...>::type;
+};
+
+// recursive termination case: N = 0
+template <std::size_t N, std::size_t Index, typename ColumnAvailable,
+          typename... Columns>
+struct IndexedRepeatColumnAvailable<0, N, Index, ColumnAvailable, Columns...> {
+  using type = SparseAvailableColumns<Columns...>;
+};
+
+// repeat ColumnAvailable M times
+template <std::size_t M>
+using DiagAvailable = typename IndexedRepeatColumnAvailable<
+    M, M, (M - 1), GenerateIndexedTrueColumnAvailable<M, (M - 1)>>::type;
+
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
