@@ -117,6 +117,29 @@ template <std::size_t M>
 using DiagAvailable = typename IndexedRepeatColumnAvailable<
     M, M, (M - 1), GenerateIndexedTrueColumnAvailable<M, (M - 1)>>::type;
 
+/* Create Sparse Available from Indices and Pointers */
+// base case: N = 0
+template <typename ColumnAvailable_A, typename ColumnAvailable_B, std::size_t N,
+          bool... Flags>
+struct GenerateORTrueFlagsLoop {
+  using type = typename GenerateORTrueFlagsLoop<
+      ColumnAvailable_A, ColumnAvailable_B, N - 1,
+      (ColumnAvailable_A::list[N - 1] | ColumnAvailable_B::list[N - 1]),
+      Flags...>::type;
+};
+
+// recursive termination case: N = 0
+template <typename ColumnAvailable_A, typename ColumnAvailable_B, bool... Flags>
+struct GenerateORTrueFlagsLoop<ColumnAvailable_A, ColumnAvailable_B, 0,
+                               Flags...> {
+  using type = ColumnAvailable<Flags...>;
+};
+
+template <typename ColumnAvailable_A, typename ColumnAvailable_B>
+using GenerateORTrueFlagsColumnAvailable =
+    typename GenerateORTrueFlagsLoop<ColumnAvailable_A, ColumnAvailable_B,
+                                     ColumnAvailable_A::size>::type;
+
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
