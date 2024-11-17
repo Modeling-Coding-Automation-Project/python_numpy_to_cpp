@@ -26,6 +26,16 @@ using ConcatenateColumnAvailableVertically =
     typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
                                              ColumnAvailable_B>::type;
 
+/* Concatenate SparseAvailable vertically */
+template <typename SparseAvailable1, typename SparseAvailable2>
+struct ConcatenateSparseAvailable;
+
+template <typename... Columns1, typename... Columns2>
+struct ConcatenateSparseAvailable<SparseAvailableColumns<Columns1...>,
+                                  SparseAvailableColumns<Columns2...>> {
+  using type = SparseAvailableColumns<Columns1..., Columns2...>;
+};
+
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
