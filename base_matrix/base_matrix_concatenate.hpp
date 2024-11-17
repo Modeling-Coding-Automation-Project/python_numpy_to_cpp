@@ -36,6 +36,20 @@ struct ConcatenateSparseAvailable<SparseAvailableColumns<Columns1...>,
   using type = SparseAvailableColumns<Columns1..., Columns2...>;
 };
 
+/* Create Dense Available */
+// base case: N = 0
+template <std::size_t N, bool... Flags> struct GenerateTrueFlags {
+  using type = typename GenerateTrueFlags<N - 1, true, Flags...>::type;
+};
+
+// recursive termination case: N = 0
+template <bool... Flags> struct GenerateTrueFlags<0, Flags...> {
+  using type = ColumnAvailable<Flags...>;
+};
+
+template <std::size_t N>
+using GenerateTrueColumnAvailable = typename GenerateTrueFlags<N>::type;
+
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
