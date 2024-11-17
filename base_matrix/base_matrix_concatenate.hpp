@@ -42,6 +42,20 @@ using ConcatenateSparseAvailableVertically =
                                         SparseAvailable_B>::type;
 
 /* Create Dense Available */
+// Generate false flags
+// base case: N = 0
+template <std::size_t N, bool... Flags> struct GenerateFalseFlags {
+  using type = typename GenerateFalseFlags<N - 1, false, Flags...>::type;
+};
+
+// recursive termination case: N = 0
+template <bool... Flags> struct GenerateFalseFlags<0, Flags...> {
+  using type = ColumnAvailable<Flags...>;
+};
+
+template <std::size_t N>
+using GenerateFalseColumnAvailable = typename GenerateFalseFlags<N>::type;
+
 // Generate true flags
 // base case: N = 0
 template <std::size_t N, bool... Flags> struct GenerateTrueFlags {
@@ -139,6 +153,47 @@ template <typename ColumnAvailable_A, typename ColumnAvailable_B>
 using GenerateORTrueFlagsColumnAvailable =
     typename GenerateORTrueFlagsLoop<ColumnAvailable_A, ColumnAvailable_B,
                                      ColumnAvailable_A::size>::type;
+
+template <typename RowIndices, std::size_t N, std::size_t RowIndicesIndex,
+          std::size_t RowEndCount>
+struct CreateSparsePointersRowLoop {
+  using type = typename GenerateORTrueFlagsLoop<
+      GenerateIndexedTrueColumnAvailable<N, RowIndices::list[RowIndicesIndex]>,
+      typename CreateSparsePointersRowLoop<RowIndices, N, (RowIndicesIndex + 1),
+                                           (RowEndCount - 1)>::type,
+      N>::type;
+};
+
+template <typename RowIndices, std::size_t N, std::size_t RowIndicesIndex>
+struct CreateSparsePointersRowLoop<RowIndices, N, RowIndicesIndex, 0> {
+  using type = typename GenerateFalseColumnAvailable<N>;
+};
+
+template <std::size_t N, typename RowIndices, typename RowPointers,
+          std::size_t EndCount, std::size_t ConsecutiveIndex,
+          typename... Columns>
+struct CreateSparsePointersLoop {
+  using type = typename CreateSparsePointersLoop<
+      N, RowIndices, RowPointers, (EndCount - 1),
+      RowPointers::list[RowPointers::size - EndCount],
+      typename CreateSparsePointersRowLoop<
+          RowIndices, N, RowPointers::list[RowPointers::size - EndCount - 1],
+          (RowPointers::list[RowPointers::size - EndCount] -
+           RowPointers::list[RowPointers::size - EndCount - 1])>::type,
+      Columns...>::type;
+};
+
+template <std::size_t N, typename RowIndices, typename RowPointers,
+          std::size_t ConsecutiveIndex, typename... Columns>
+struct CreateSparsePointersLoop<N, RowIndices, RowPointers, 0, ConsecutiveIndex,
+                                Columns...> {
+  using type = SparseAvailableColumns<Columns...>;
+};
+
+template <std::size_t N, typename RowIndices, typename RowPointers>
+using CreateSparseAvailableFromIndicesAndPointers =
+    typename CreateSparsePointersLoop<N, RowIndices, RowPointers,
+                                      (RowPointers::size - 1), 0>::type;
 
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
