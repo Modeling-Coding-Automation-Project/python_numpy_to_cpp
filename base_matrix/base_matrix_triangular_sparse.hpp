@@ -32,29 +32,25 @@ template <std::size_t Start, std::size_t End> struct TriangularSequenceList {
       typename MakeTriangularIndexSequence<Start, End, (End - Start)>::type;
 };
 
-template <std::size_t Start, std::size_t End>
-using TriangularRowNumbersColumn =
-    typename TriangularSequenceList<Start, End>::type;
-
 /* Create Upper Triangular Sparse Matrix Row Indices */
 template <std::size_t M, std::size_t N>
 struct ConcatenateUpperTriangularRowNumbers {
   using type = typename Concatenate<
       typename ConcatenateUpperTriangularRowNumbers<(M - 1), N>::type,
-      typename TriangularRowNumbersColumn<M, N>>::type;
+      typename TriangularSequenceList<M, N>::type>::type;
 };
 
 template <std::size_t N> struct ConcatenateUpperTriangularRowNumbers<1, N> {
-  using type = typename TriangularRowNumbersColumn<1, N>;
+  using type = typename TriangularSequenceList<1, N>::type;
 };
 
 template <std::size_t M, std::size_t N>
 using UpperTriangularRowNumbers =
     typename ConcatenateUpperTriangularRowNumbers<((N < M) ? N : M), N>::type;
 
-// template <std::size_t M, std::size_t N>
-// using UpperTriangularRowIndices =
-//     typename ToRowIndices<UpperTriangularColumnRowNumbers<M, N>>::type;
+template <std::size_t M, std::size_t N>
+using UpperTriangularRowIndices =
+    typename ToRowIndices<UpperTriangularRowNumbers<M, N>>::type;
 
 /* Calculate triangular matrix size */
 template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
