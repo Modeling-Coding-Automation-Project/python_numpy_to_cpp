@@ -91,6 +91,44 @@ using UpperTriangularRowPointers =
     typename ToRowPointers<typename AccumulateTriangularElementNumberStruct<
         typename TriangularCountNumbers<M, N>::type, M>::type>::type;
 
+/* Create Lower Triangular Sparse Matrix Row Indices */
+template <std::size_t Start, std::size_t End, std::size_t E_S>
+struct MakeLowerTriangularIndexSequence {
+  using type = typename Concatenate<typename MakeLowerTriangularIndexSequence<
+                                        Start, (End - 1), (E_S - 1)>::type,
+                                    IndexSequence<E_S>>::type;
+};
+
+template <std::size_t Start, std::size_t End>
+struct MakeLowerTriangularIndexSequence<Start, End, 0> {
+  using type = IndexSequence<0>;
+};
+
+template <std::size_t Start, std::size_t End>
+struct LowerTriangularSequenceList {
+  using type = typename MakeLowerTriangularIndexSequence<Start, End,
+                                                         (End - Start)>::type;
+};
+
+template <std::size_t M, std::size_t N>
+struct ConcatenateLowerTriangularRowNumbers {
+  using type = typename Concatenate<
+      typename LowerTriangularSequenceList<M, N>::type,
+      typename ConcatenateLowerTriangularRowNumbers<(M - 1), N>::type>::type;
+};
+
+template <std::size_t N> struct ConcatenateLowerTriangularRowNumbers<1, N> {
+  using type = typename LowerTriangularSequenceList<1, N>::type;
+};
+
+template <std::size_t M, std::size_t N>
+using LowerTriangularRowNumbers =
+    typename ConcatenateLowerTriangularRowNumbers<((N < M) ? N : M), N>::type;
+
+template <std::size_t M, std::size_t N>
+using LowerTriangularRowIndices =
+    typename ToRowIndices<LowerTriangularRowNumbers<M, N>>::type;
+
 /* Calculate triangular matrix size */
 template <std::size_t X, std::size_t Y> struct CalculateTriangularSize {
   static constexpr std::size_t value =
