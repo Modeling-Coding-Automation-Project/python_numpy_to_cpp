@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_CONCATENATE_HPP
 #define BASE_MATRIX_CONCATENATE_HPP
 
+#include "base_matrix_compiled_sparse.hpp"
+#include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
@@ -9,6 +11,22 @@
 namespace Base {
 namespace Matrix {
 
+/* Concatenate ColumnAvailable vertically */
+template <typename Column1, typename Column2>
+struct ConcatenateColumnAvailableLists;
+
+template <bool... Flags1, bool... Flags2>
+struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
+                                       ColumnAvailable<Flags2...>> {
+  using type = ColumnAvailable<Flags1..., Flags2...>;
+};
+
+template <typename ColumnAvailable_A, typename ColumnAvailable_B>
+using ConcatenateColumnAvailableVertically =
+    typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
+                                             ColumnAvailable_B>::type;
+
+/* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
                                            const Matrix<T, P, N> &B) {
