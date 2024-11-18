@@ -11,7 +11,7 @@
 namespace Base {
 namespace Matrix {
 
-/* Concatenate ColumnAvailable vertically */
+/* Concatenate ColumnAvailable */
 template <typename Column1, typename Column2>
 struct ConcatenateColumnAvailableLists;
 
@@ -25,6 +25,14 @@ template <typename ColumnAvailable_A, typename ColumnAvailable_B>
 using ConcatenateColumnAvailable =
     typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
                                              ColumnAvailable_B>::type;
+
+/* Get ColumnAvailable from SparseAvailable */
+template <std::size_t N, typename SparseAvailable> struct GetColumnAvailable;
+
+template <std::size_t N, typename... Columns>
+struct GetColumnAvailable<N, SparseAvailable<Columns...>> {
+  using type = typename std::tuple_element<N, std::tuple<Columns...>>::type;
+};
 
 /* Concatenate SparseAvailable vertically */
 template <typename SparseAvailable1, typename SparseAvailable2>
@@ -195,6 +203,33 @@ template <std::size_t N, typename RowIndices, typename RowPointers>
 using CreateSparseAvailableFromIndicesAndPointers =
     typename CreateSparsePointersLoop<N, RowIndices, RowPointers,
                                       (RowPointers::size - 1), 0>::type;
+
+/* Concatenate SparseAvailable horizontally */
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t ColumnCount>
+struct ConcatenateSparseAvailableHorizontallyLoop {
+  using type = typename ConcatenateSparseAvailable<
+      typename ConcatenateSparseAvailableHorizontallyLoop<
+          SparseAvailable_A, SparseAvailable_B, (ColumnCount - 1)>::type,
+      SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
+          typename GetColumnAvailable<ColumnCount, SparseAvailable_A>::type,
+          typename GetColumnAvailable<ColumnCount,
+                                      SparseAvailable_B>::type>::type>>::type;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+struct ConcatenateSparseAvailableHorizontallyLoop<SparseAvailable_A,
+                                                  SparseAvailable_B, 0> {
+  using type = SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
+      typename GetColumnAvailable<0, SparseAvailable_A>::type,
+      typename GetColumnAvailable<0, SparseAvailable_B>::type>::type>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableHorizontally =
+    typename ConcatenateSparseAvailableHorizontallyLoop<
+        SparseAvailable_A, SparseAvailable_B,
+        SparseAvailable_A::number_of_columns - 1>::type;
 
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
