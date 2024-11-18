@@ -616,42 +616,42 @@ auto concatenate_horizontally(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-SparseMatrix<T, M, (M + N), ((N + 1) * M)>
-concatenate_horizontally(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
+auto concatenate_horizontally(const DiagMatrix<T, M> &A,
+                              const Matrix<T, M, N> &B)
+    -> CompiledSparseMatrix<
+        T, M, (M + N),
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, DenseAvailable<M, N>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, DenseAvailable<M, N>>>> {
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-  std::vector<T> values((N + 1) * M);
-  std::vector<std::size_t> row_indices((N + 1) * M);
-  std::vector<std::size_t> row_pointers(M + 1);
-#else
-  std::array<T, ((N + 1) * M)> values;
-  std::array<std::size_t, ((N + 1) * M)> row_indices;
-  std::array<std::size_t, (M + 1)> row_pointers;
-#endif
+  CompiledSparseMatrix<
+      T, M, (M + N),
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DenseAvailable<M, N>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DenseAvailable<M, N>>>>
+      Y;
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (N + M); j++) {
       if (j < N) {
         if (i == j) {
-          values[value_count] = A[i];
-          row_indices[value_count] = j;
+          Y.values[value_count] = A[i];
 
           value_count++;
         }
       } else {
 
-        values[value_count] = B(i, j - N);
-        row_indices[value_count] = j;
+        Y.values[value_count] = B(i, j - N);
 
         value_count++;
       }
     }
-    row_pointers[i + 1] = value_count;
   }
 
-  return SparseMatrix<T, M, (M + N), ((N + 1) * M)>(values, row_indices,
-                                                    row_pointers);
+  return Y;
 }
 
 template <typename T, std::size_t M>
