@@ -936,6 +936,20 @@ void check_base_matrix_calc(void) {
     /* 行列結合 */
     // DenseA, D, SparseCc
 
+    auto A_v_A = concatenate_vertically(DenseA, DenseA);
+
+    Matrix<T, 6, 3> A_v_A_answer({
+    {1, 2, 3},
+    {5, 4, 6},
+    {9, 8, 7},
+    {1, 2, 3},
+    {5, 4, 6},
+    {9, 8, 7}
+        });
+
+    tester.expect_near(A_v_A.data, A_v_A_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Dense.");
+
     auto A_v_B = concatenate_vertically(DenseA, D);
     auto A_v_B_dense = A_v_B.create_dense();
 
@@ -950,6 +964,36 @@ void check_base_matrix_calc(void) {
 
     tester.expect_near(A_v_B_dense.data, A_v_B_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Diag.");
+
+    auto A_v_C = concatenate_vertically(DenseA, SparseCc);
+    auto A_v_C_dense = A_v_C.create_dense();
+
+    Matrix<T, 6, 3> A_v_C_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7},
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(A_v_C_dense.data, A_v_C_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Sparse.");
+
+    auto B_v_A = concatenate_vertically(D, DenseA);
+    auto B_v_A_dense = B_v_A.create_dense();
+
+    Matrix<T, 6, 3> B_v_A_answer({
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3},
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+        });
+
+    tester.expect_near(B_v_A_dense.data, B_v_A_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Diag and Dense.");
 
     Matrix<T, 2, 2> Aa;
     Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
