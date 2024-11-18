@@ -22,7 +22,7 @@ struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
 };
 
 template <typename ColumnAvailable_A, typename ColumnAvailable_B>
-using ConcatenateColumnAvailableVertically =
+using ConcatenateColumnAvailable =
     typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
                                              ColumnAvailable_B>::type;
 
@@ -40,6 +40,8 @@ template <typename SparseAvailable_A, typename SparseAvailable_B>
 using ConcatenateSparseAvailableVertically =
     typename ConcatenateSparseAvailable<SparseAvailable_A,
                                         SparseAvailable_B>::type;
+
+/* Concatenate SparseAvailable horizontally */
 
 /* Create Dense Available */
 // Generate false flags
@@ -469,6 +471,7 @@ auto concatenate_vertically(
   return Y;
 }
 
+/* Functions: Concatenate horizontally */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 Matrix<T, M, N + P> concatenate_horizontally(const Matrix<T, M, N> &A,
                                              const Matrix<T, M, P> &B) {
