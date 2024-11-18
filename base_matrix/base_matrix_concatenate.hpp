@@ -391,6 +391,43 @@ auto concatenate_vertically(
   return Y;
 }
 
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+auto concatenate_vertically(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const DiagMatrix<T, N> &B)
+    -> CompiledSparseMatrix<
+        T, (M + N), N,
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            DiagAvailable<N>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            DiagAvailable<N>>>> {
+
+  CompiledSparseMatrix<
+      T, (M + N), N,
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                      RowPointers_A>,
+          DiagAvailable<N>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                      RowPointers_A>,
+          DiagAvailable<N>>>>
+      Y;
+
+  std::copy(A.values.begin(), A.values.end(), Y.values.begin());
+
+  auto sparse_B = create_compiled_sparse(B);
+  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
+            Y.values.begin() + RowIndices_A::size);
+
+  return Y;
+}
+
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
