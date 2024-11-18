@@ -57,44 +57,6 @@ void check_base_matrix_calc(void) {
     T b_dot_answer = 14.0F;
     tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT, "check Vector dot.");
 
-    /* 行列結合 */
-    Matrix<T, 2, 2> Aa;
-    Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
-    Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
-
-    Matrix<T, 2, 2> Ba;
-    Ba(0, 0) = 5.0F; Ba(0, 1) = 6.0F;
-    Ba(1, 0) = 7.0F; Ba(1, 1) = 8.0F;
-
-    Matrix<T, 3, 2> Ca;
-    Ca(0, 0) = 9.0F; Ca(0, 1) = 10.0F;
-    Ca(1, 0) = 11.0F; Ca(1, 1) = 12.0F;
-    Ca(2, 0) = 11.0F; Ca(2, 1) = 12.0F;
-
-    Matrix<T, 3, 2> Da;
-    Da(0, 0) = 13.0F; Da(0, 1) = 14.0F;
-    Da(1, 0) = 15.0F; Da(1, 1) = 16.0F;
-    Da(2, 0) = 15.0F; Da(2, 1) = 16.0F;
-
-    Matrix<T, 5, 4> C = concatenate_square(Aa, Ba, Ca, Da);
-    //std::cout << "Square = " << std::endl;
-    //for (size_t j = 0; j < C.cols(); ++j) {
-    //    for (size_t i = 0; i < C.rows(); ++i) {
-    //        std::cout << C(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<T, 5, 4> C_answer({
-        {1, 2, 5, 6},
-        {3, 4, 7, 8},
-        {9, 10, 13, 14},
-        {11, 12, 15, 16},
-        {11, 12, 15, 16} });
-    tester.expect_near(C.data, C_answer.data, NEAR_LIMIT_STRICT,
-        "check Matrix concatenate.");
-
     /* スワップ */
     Matrix<T, 3, 3>Test_swap({ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} });
     matrix_row_swap(0, 2, Test_swap);
@@ -971,6 +933,48 @@ void check_base_matrix_calc(void) {
     tester.expect_near(G_s_d.data, G_s_d_answer.data, NEAR_LIMIT_STRICT,
         "check create_sparse command.");
 
+    /* 行列結合 */
+    // DenseA, D, SparseCc
+
+    auto A_v_B = concatenate_vertically(DenseA, D);
+
+    Matrix<T, 2, 2> Aa;
+    Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
+    Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
+
+    Matrix<T, 2, 2> Ba;
+    Ba(0, 0) = 5.0F; Ba(0, 1) = 6.0F;
+    Ba(1, 0) = 7.0F; Ba(1, 1) = 8.0F;
+
+    Matrix<T, 3, 2> Ca;
+    Ca(0, 0) = 9.0F; Ca(0, 1) = 10.0F;
+    Ca(1, 0) = 11.0F; Ca(1, 1) = 12.0F;
+    Ca(2, 0) = 11.0F; Ca(2, 1) = 12.0F;
+
+    Matrix<T, 3, 2> Da;
+    Da(0, 0) = 13.0F; Da(0, 1) = 14.0F;
+    Da(1, 0) = 15.0F; Da(1, 1) = 16.0F;
+    Da(2, 0) = 15.0F; Da(2, 1) = 16.0F;
+
+    Matrix<T, 5, 4> C = concatenate_square(Aa, Ba, Ca, Da);
+    //std::cout << "Square = " << std::endl;
+    //for (size_t j = 0; j < C.cols(); ++j) {
+    //    for (size_t i = 0; i < C.rows(); ++i) {
+    //        std::cout << C(j, i) << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
+    //std::cout << std::endl;
+
+    Matrix<T, 5, 4> C_answer({
+        {1, 2, 5, 6},
+        {3, 4, 7, 8},
+        {9, 10, 13, 14},
+        {11, 12, 15, 16},
+        {11, 12, 15, 16} });
+    tester.expect_near(C.data, C_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix concatenate.");
+
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
 
@@ -1832,6 +1836,33 @@ int main() {
     // check_python_numpy_calc<double>();
 
     // check_python_numpy_calc<float>();
+
+
+    using namespace Base::Matrix;
+
+    using Test = ConcatenateSparseAvailableVertically<
+        DenseAvailable<3, 3>, DiagAvailable<3>>;
+
+    //for (size_t i = 0; i < Test::number_of_columns; ++i) {
+    //    for (size_t j = 0; j < Test::column_size; ++j) {
+    //        std::cout << Test::lists[i][j] << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
+    //std::cout << std::endl;
+
+    CompiledSparseMatrix <double, (3 + 3), 3,
+        RowIndicesFromSparseAvailable<
+            ConcatenateSparseAvailableVertically<
+                DenseAvailable<3, 3>, DiagAvailable<3>
+            >
+        >,
+        RowPointersFromSparseAvailable<
+            ConcatenateSparseAvailableVertically<
+                DenseAvailable<3, 3>, DiagAvailable<3>
+            >
+        >
+    > Y;
 
 
     return 0;
