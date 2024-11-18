@@ -637,7 +637,7 @@ using RowIndicesFromSparseAvailable =
     typename ToRowIndices<typename RowIndicesSequenceFromSparseAvailable<
         SparseAvailable>::type>::type;
 
-/* Create Row Indices */
+/* Create Row Pointers */
 template <typename SparseAvailable, std::size_t ElementCount,
           std::size_t ColumnElementNumber, bool Active,
           std::size_t RowElementNumber>
@@ -685,8 +685,8 @@ struct CountSparseMatrixColumnLoop {
       typename CountSparseMatrixRowLoop<
           SparseAvailable, 0, ColumnElementNumber,
           SparseAvailable::lists[ColumnElementNumber]
-                                [SparseAvailable::number_of_columns - 1],
-          (SparseAvailable::number_of_columns - 1)>::type>::type;
+                                [SparseAvailable::column_size - 1],
+          (SparseAvailable::column_size - 1)>::type>::type;
 };
 
 template <typename SparseAvailable>
@@ -695,8 +695,8 @@ struct CountSparseMatrixColumnLoop<SparseAvailable, 0> {
       IndexSequence<0>,
       typename CountSparseMatrixRowLoop<
           SparseAvailable, 0, 0,
-          SparseAvailable::lists[0][SparseAvailable::number_of_columns - 1],
-          (SparseAvailable::number_of_columns - 1)>::type>::type;
+          SparseAvailable::lists[0][SparseAvailable::column_size - 1],
+          (SparseAvailable::column_size - 1)>::type>::type;
 };
 
 template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
@@ -740,6 +740,7 @@ using RowPointersFromSparseAvailable =
             SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type,
         SparseAvailable>::type>::type;
 
+/* Create Compiled Sparse Matrix from SparseAvailable */
 template <typename T, typename SparseAvailable>
 auto create_compiled_sparse(std::initializer_list<T> values)
     -> CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
