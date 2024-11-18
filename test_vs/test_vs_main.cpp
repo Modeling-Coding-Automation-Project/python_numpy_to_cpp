@@ -937,6 +937,19 @@ void check_base_matrix_calc(void) {
     // DenseA, D, SparseCc
 
     auto A_v_B = concatenate_vertically(DenseA, D);
+    auto A_v_B_dense = A_v_B.create_dense();
+
+    Matrix<T, 6, 3> A_v_B_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7},
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+        });
+
+    tester.expect_near(A_v_B_dense.data, A_v_B_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Diag.");
 
     Matrix<T, 2, 2> Aa;
     Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;

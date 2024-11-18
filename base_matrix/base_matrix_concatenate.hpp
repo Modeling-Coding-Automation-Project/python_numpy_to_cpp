@@ -225,62 +225,48 @@ auto concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B)
           DenseAvailable<M, N>, DiagAvailable<N>>>>
       Y;
 
-  /* A */
-  CompiledSparseMatrix<T, M, N,
-                       RowIndicesFromSparseAvailable<DenseAvailable<M, N>>,
-                       RowPointersFromSparseAvailable<DenseAvailable<M, N>>>
-      sparse_A = create_compiled_sparse(A);
+  auto sparse_A = create_compiled_sparse(A);
   std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
-  /* B */
-  CompiledSparseMatrix<T, M, N, RowIndicesFromSparseAvailable<DiagAvailable<N>>,
-                       RowPointersFromSparseAvailable<DiagAvailable<N>>>
-      sparse_B = create_compiled_sparse(B);
+  auto sparse_B = create_compiled_sparse(B);
   std::copy(sparse_B.values.begin(), sparse_B.values.end(),
             Y.values.begin() + M * N);
 
-  /* Result */
   return Y;
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t V>
-SparseMatrix<T, (M + P), N, ((M * N) + V)>
-concatenate_vertically(const Matrix<T, M, N> &A,
-                       const SparseMatrix<T, P, N, V> &B) {
+          typename RowIndices_B, typename RowPointers_B>
+auto concatenate_vertically(
+    const Matrix<T, M, N> &A,
+    const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B)
+    -> CompiledSparseMatrix<
+        T, (M + P), N,
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_B, RowPointers_B>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_B, RowPointers_B>>>> {
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-  std::vector<T> values((M * N) + V);
-  std::vector<std::size_t> row_indices((M * N) + V);
-  std::vector<std::size_t> row_pointers(M + P + 1);
-#else
-  std::array<T, ((M * N) + V)> values;
-  std::array<std::size_t, ((M * N) + V)> row_indices;
-  std::array<std::size_t, (M + P + 1)> row_pointers;
-#endif
+  CompiledSparseMatrix<
+      T, (M + P), N,
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                    N, RowIndices_B, RowPointers_B>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                    N, RowIndices_B, RowPointers_B>>>>
+      Y;
 
-  /* A */
+  auto sparse_A = create_compiled_sparse(A);
   SparseMatrix<T, M, N, (M * N)> sparse_A = create_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
-  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
-            row_indices.begin());
-  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
-            row_pointers.begin());
 
   /* B */
-  std::copy(B.values.begin(), B.values.end(), values.begin() + M * N);
-  std::copy(B.row_indices.begin(), B.row_indices.end(),
-            row_indices.begin() + M * N);
-
-  std::size_t pointer_index = 1;
-  for (std::size_t i = M + 1; i < (M + P + 1); i++) {
-    row_pointers[i] = row_pointers[M] + B.row_pointers[pointer_index];
-    pointer_index++;
-  }
+  std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M * N);
 
   /* Result */
-  return SparseMatrix<T, (M + P), N, ((M * N) + V)>(values, row_indices,
-                                                    row_pointers);
+  return Y;
 }
 
 template <typename T, std::size_t M, std::size_t P>
