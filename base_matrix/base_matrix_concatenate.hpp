@@ -571,19 +571,19 @@ auto concatenate_horizontally(
         T, M, (N + L),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
             DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>,
+                                      L, RowIndices_B, RowPointers_B>>>,
         RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
             DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>> {
+                                      L, RowIndices_B, RowPointers_B>>>> {
 
   CompiledSparseMatrix<
       T, M, (N + L),
       RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
           DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    N, RowIndices_B, RowPointers_B>>>,
+                                    L, RowIndices_B, RowPointers_B>>>,
       RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
           DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    N, RowIndices_B, RowPointers_B>>>>
+                                    L, RowIndices_B, RowPointers_B>>>>
       Y;
 
   std::size_t value_count = 0;
@@ -694,20 +694,29 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
   return Y;
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-SparseMatrix<T, M, (M + N), (M + V)>
-concatenate_horizontally(const DiagMatrix<T, M> &A,
-                         const SparseMatrix<T, M, N, V> &B) {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+auto concatenate_horizontally(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+    -> CompiledSparseMatrix<
+        T, M, (M + N),
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                  N, RowIndices_B, RowPointers_B>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                  N, RowIndices_B, RowPointers_B>>>> {
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-  std::vector<T> values(M + V);
-  std::vector<std::size_t> row_indices(M + V);
-  std::vector<std::size_t> row_pointers(M + 1);
-#else
-  std::array<T, (M + V)> values;
-  std::array<std::size_t, (M + V)> row_indices;
-  std::array<std::size_t, (M + 1)> row_pointers;
-#endif
+  CompiledSparseMatrix<
+      T, M, (M + N),
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                N, RowIndices_B, RowPointers_B>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                N, RowIndices_B, RowPointers_B>>>>
+      Y;
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
@@ -716,18 +725,16 @@ concatenate_horizontally(const DiagMatrix<T, M> &A,
     for (std::size_t j = 0; j < (N + M); j++) {
       if (j < N) {
         if (i == j) {
-          values[value_count] = A[i];
-          row_indices[value_count] = j;
 
+          Y.values[value_count] = A[i];
           value_count++;
         }
-      } else if ((B.row_pointers[i + 1] - B.row_pointers[i] >
+      } else if ((RowPointers_B::list[i + 1] - RowPointers_B::list[i] >
                   sparse_col_count) &&
-                 (sparse_value_count < V)) {
+                 (sparse_value_count < RowIndices_B::size)) {
 
-        if ((j - N) == B.row_indices[sparse_value_count]) {
-          values[value_count] = B.values[sparse_value_count];
-          row_indices[value_count] = j;
+        if ((j - N) == RowIndices_B::list[sparse_value_count]) {
+          Y.values[value_count] = B.values[sparse_value_count];
 
           value_count++;
           sparse_value_count++;
@@ -735,13 +742,10 @@ concatenate_horizontally(const DiagMatrix<T, M> &A,
         }
       }
     }
-
-    row_pointers[i + 1] = value_count;
     sparse_col_count = 0;
   }
 
-  return SparseMatrix<T, M, (M + N), (M + V)>(values, row_indices,
-                                              row_pointers);
+  return Y;
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
