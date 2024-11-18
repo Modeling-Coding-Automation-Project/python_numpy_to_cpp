@@ -1070,6 +1070,29 @@ void check_base_matrix_calc(void) {
     tester.expect_near(C_v_C_dense.data, C_v_C_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Sparse and Sparse.");
 
+    auto A_h_A = concatenate_horizontally(DenseA, DenseA);
+
+    Matrix<T, 3, 6> A_h_A_answer({
+        {1, 2, 3, 1, 2, 3},
+        {5, 4, 6, 5, 4, 6},
+        {9, 8, 7, 9, 8, 7}
+        });
+
+    tester.expect_near(A_h_A.data, A_h_A_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Dense and Dense.");
+
+    auto A_h_B = concatenate_horizontally(DenseA, D);
+    auto A_h_B_dense = A_h_B.create_dense();
+
+    Matrix<T, 3, 6> A_h_B_answer({
+        {1, 2, 3, 1, 0, 0},
+        {5, 4, 6, 0, 2, 0},
+        {9, 8, 7, 0, 0, 3}
+        });
+
+    tester.expect_near(A_h_B_dense.data, A_h_B_answer.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Dense and Diag.");
+
     Matrix<T, 2, 2> Aa;
     Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
     Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
@@ -1968,33 +1991,6 @@ int main() {
     // check_python_numpy_calc<double>();
 
     // check_python_numpy_calc<float>();
-
-
-    using namespace Base::Matrix;
-
-    using Test = ConcatenateSparseAvailableVertically<
-        DenseAvailable<3, 3>, DiagAvailable<3>>;
-
-    //for (size_t i = 0; i < Test::number_of_columns; ++i) {
-    //    for (size_t j = 0; j < Test::column_size; ++j) {
-    //        std::cout << Test::lists[i][j] << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    CompiledSparseMatrix <double, (3 + 3), 3,
-        RowIndicesFromSparseAvailable<
-            ConcatenateSparseAvailableVertically<
-                DenseAvailable<3, 3>, DiagAvailable<3>
-            >
-        >,
-        RowPointersFromSparseAvailable<
-            ConcatenateSparseAvailableVertically<
-                DenseAvailable<3, 3>, DiagAvailable<3>
-            >
-        >
-    > Y;
 
 
     return 0;
