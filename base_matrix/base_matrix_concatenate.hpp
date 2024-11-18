@@ -655,43 +655,43 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 }
 
 template <typename T, std::size_t M>
-SparseMatrix<T, M, (2 * M), (2 * M)>
-concatenate_horizontally(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
+auto concatenate_horizontally(const DiagMatrix<T, M> &A,
+                              const DiagMatrix<T, M> &B)
+    -> CompiledSparseMatrix<
+        T, M, (2 * M),
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, DiagAvailable<M>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+            DiagAvailable<M>, DiagAvailable<M>>>> {
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-  std::vector<T> values(2 * M);
-  std::vector<std::size_t> row_indices(2 * M);
-  std::vector<std::size_t> row_pointers(M + 1);
-#else
-  std::array<T, (2 * M)> values;
-  std::array<std::size_t, (2 * M)> row_indices;
-  std::array<std::size_t, (M + 1)> row_pointers;
-#endif
+  CompiledSparseMatrix<
+      T, M, (2 * M),
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DiagAvailable<M>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DiagAvailable<M>>>>
+      Y;
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (2 * M); j++) {
       if (j < M) {
         if (i == j) {
-          values[value_count] = A[i];
-          row_indices[value_count] = j;
 
+          Y.values[value_count] = A[i];
           value_count++;
         }
       } else {
         if ((j - M) == i) {
-          values[value_count] = B[i];
-          row_indices[value_count] = j;
 
+          Y.values[value_count] = B[i];
           value_count++;
         }
       }
     }
-    row_pointers[i + 1] = value_count;
   }
 
-  return SparseMatrix<T, M, (2 * M), (2 * M)>(values, row_indices,
-                                              row_pointers);
+  return Y;
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
