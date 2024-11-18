@@ -209,43 +209,38 @@ Matrix<T, M + P, N> concatenate_vertically(const Matrix<T, M, N> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N>
-SparseMatrix<T, (M + N), N, ((M + 1) * N)>
-concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B) {
+auto concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B)
+    -> CompiledSparseMatrix<
+        T, (M + N), N,
+        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            DenseAvailable<M, N>, DiagAvailable<N>>>,
+        RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+            DenseAvailable<M, N>, DiagAvailable<N>>>> {
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-  std::vector<T> values((M + 1) * N);
-  std::vector<std::size_t> row_indices((M + 1) * N);
-  std::vector<std::size_t> row_pointers(M + N + 1);
-#else
-  std::array<T, (M + 1) * N> values;
-  std::array<std::size_t, ((M + 1) * N)> row_indices;
-  std::array<std::size_t, (M + N + 1)> row_pointers;
-#endif
+  CompiledSparseMatrix<
+      T, (M + N), N,
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          DenseAvailable<M, N>, DiagAvailable<N>>>,
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+          DenseAvailable<M, N>, DiagAvailable<N>>>>
+      Y;
 
   /* A */
-  SparseMatrix<T, M, N, (M * N)> sparse_A = create_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), values.begin());
-  std::copy(sparse_A.row_indices.begin(), sparse_A.row_indices.end(),
-            row_indices.begin());
-  std::copy(sparse_A.row_pointers.begin(), sparse_A.row_pointers.end(),
-            row_pointers.begin());
+  CompiledSparseMatrix<T, M, N,
+                       RowIndicesFromSparseAvailable<DenseAvailable<M, N>>,
+                       RowPointersFromSparseAvailable<DenseAvailable<M, N>>>
+      sparse_A = create_compiled_sparse(A);
+  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
   /* B */
-  SparseMatrix<T, N, N, N> sparse_B = create_sparse(B);
+  CompiledSparseMatrix<T, M, N, RowIndicesFromSparseAvailable<DiagAvailable<N>>,
+                       RowPointersFromSparseAvailable<DiagAvailable<N>>>
+      sparse_B = create_compiled_sparse(B);
   std::copy(sparse_B.values.begin(), sparse_B.values.end(),
-            values.begin() + M * N);
-  std::copy(sparse_B.row_indices.begin(), sparse_B.row_indices.end(),
-            row_indices.begin() + M * N);
-
-  std::size_t pointer_index = 1;
-  for (std::size_t i = M + 1; i < (M + N + 1); i++) {
-    row_pointers[i] = row_pointers[M] + sparse_B.row_pointers[pointer_index];
-    pointer_index++;
-  }
+            Y.values.begin() + M * N);
 
   /* Result */
-  return SparseMatrix<T, (M + N), N, ((M + 1) * N)>(values, row_indices,
-                                                    row_pointers);
+  return Y;
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
