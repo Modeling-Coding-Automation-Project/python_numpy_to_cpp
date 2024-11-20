@@ -724,7 +724,7 @@ auto concatenate_horizontally(
   std::size_t sparse_col_count = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (N + M); j++) {
-      if (j < N) {
+      if (j < M) {
         if (i == j) {
 
           Y.values[value_count] = A[i];
@@ -734,7 +734,7 @@ auto concatenate_horizontally(
                   sparse_col_count) &&
                  (sparse_value_count < RowIndices_B::size)) {
 
-        if ((j - N) == RowIndices_B::list[sparse_value_count]) {
+        if ((j - M) == RowIndices_B::list[sparse_value_count]) {
           Y.values[value_count] = B.values[sparse_value_count];
 
           value_count++;

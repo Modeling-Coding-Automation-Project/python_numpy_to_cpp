@@ -2483,6 +2483,33 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(BL_h_AL_dense.matrix.data, BL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Dense.");
 
+    auto BL_h_BL = concatenate_horizontally(BL, BL * static_cast<T>(2));
+    auto BL_h_BL_dense = BL_h_BL.create_dense();
+
+    Matrix<DefDense, T, 4, 8> BL_h_BL_answer({
+        {1, 0, 0, 0, 2, 0, 0, 0},
+        {0, 2, 0, 0, 0, 4, 0, 0},
+        {0, 0, 3, 0, 0, 0, 6, 0},
+        {0, 0, 0, 4, 0, 0, 0, 8}
+    });
+
+    tester.expect_near(BL_h_BL_dense.matrix.data, BL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Diag and Diag.");
+
+    auto BL_h_CL = concatenate_horizontally(BL, CL);
+    auto BL_h_CL_dense = BL_h_CL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> BL_h_CL_answer({
+        {1, 0, 0, 0, 1, 3, 0},
+        {0, 2, 0, 0, 0, 0, 2},
+        {0, 0, 3, 0, 0, 8, 4},
+        {0, 0, 0, 4, 0, 1, 0}
+    });
+
+    tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Diag and Sparse.");
+
+
 
     //auto A_A = concatenate_horizontally(CL, CL);
     //Base::Matrix::Matrix<T, 4, 6> A_A_dense = A_A.matrix.create_dense();
