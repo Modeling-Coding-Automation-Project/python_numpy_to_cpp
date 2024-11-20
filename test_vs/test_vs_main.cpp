@@ -2067,9 +2067,9 @@ void check_python_numpy_left_divide(void) {
     auto A_A_x = A_A_linalg_solver.solve(A, A);
 
     Matrix<DefDense, T, 3, 3> A_A_x_answer({
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 0, 1}
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F }
         });
 
     tester.expect_near(A_A_x.matrix.data, A_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
@@ -2101,6 +2101,32 @@ void check_python_numpy_left_divide(void) {
     tester.expect_near(A_C_x.matrix.data, A_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Dense and Sparse.");
 
+    static auto B_A_linalg_solver = make_LinalgSolver(B, A);
+
+    auto B_A_x = B_A_linalg_solver.solve(B, A);
+
+    Matrix<DefDense, T, 3, 3> B_A_x_answer({
+        { 1.0F, 2.0F, 3.0F },
+        { 2.5F, 2.0F, 3.0F },
+        { 3.0F, 2.66666667F, 2.33333333F }
+    });
+
+    tester.expect_near(B_A_x.matrix.data, B_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Diag and Dense.");
+
+    static auto B_B_linalg_solver = make_LinalgSolver(B, B);
+
+    auto B_B_x = B_B_linalg_solver.solve(B, B);
+    auto B_B_x_dense = B_B_x.create_dense();
+
+    Matrix<DefDense, T, 3, 3> B_B_x_answer({
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F }
+    });
+
+    tester.expect_near(B_B_x_dense.matrix.data, B_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Diag and Diag.");
 
 
 

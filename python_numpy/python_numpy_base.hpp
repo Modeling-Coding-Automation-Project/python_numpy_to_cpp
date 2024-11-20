@@ -151,6 +151,10 @@ public:
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
+  auto create_dense(void) -> Matrix<DefDense, T, M, M> {
+    return Matrix<DefDense, T, M, M>(this->matrix.create_dense());
+  }
+
   auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
 
   /* Variable */
