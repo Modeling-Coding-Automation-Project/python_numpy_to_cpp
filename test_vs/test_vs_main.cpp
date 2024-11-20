@@ -2227,6 +2227,42 @@ void check_python_numpy_left_divide(void) {
     tester.expect_near(CL_CL_x.matrix.data, CL_CL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Sparse and Sparse.");
 
+    /* 逆行列 */
+    static auto A_inv_solver = make_LinalgSolver(A);
+
+    auto A_Inv = A_inv_solver.inv(A);
+
+    Matrix<DefDense, T, 3, 3> A_Inv_answer({
+        {-6.66666667e-01F, 3.33333333e-01F, 0.0F },
+        {6.33333333e-01F, -6.66666667e-01F, 3.00000000e-01F },
+        {1.33333333e-01F, 3.33333333e-01F, -0.2F }
+    });
+
+    tester.expect_near(A_Inv.matrix.data, A_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Dense.");
+
+    static auto B_inv_solver = make_LinalgSolver(B);
+
+    auto B_Inv = B_inv_solver.inv(B);
+
+    Matrix<DefDiag, T, 3> B_Inv_answer({ 1, 0.5F, 0.333333F });
+
+    tester.expect_near(B_Inv.matrix.data, B_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Diag.");
+
+    static auto C_inv_solver = make_LinalgSolver(C);
+
+    auto C_Inv = C_inv_solver.inv(C);
+
+    Matrix<DefDense, T, 3, 3> Inv_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.75F, -0.25F, 0.5F},
+        {-0.375F, 0.125F, 0}
+    });
+
+    tester.expect_near(C_Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }
@@ -2243,35 +2279,7 @@ void check_python_numpy_calc(void) {
 
 #if 0
 
-    /* 逆行列 */
-    static auto inv_solver = make_LinalgSolver(C);
-    auto Inv = inv_solver.inv(C);
-    //std::cout << "Inv = " << std::endl;
-    //for (size_t j = 0; j < Inv.matrix.cols(); ++j) {
-    //    for (size_t i = 0; i < Inv.matrix.rows(); ++i) {
-    //        std::cout << Inv.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
 
-    Matrix<DefDense, T, 3, 3> Inv_answer({ {1, 0, 0}, {0.75F, -0.25F, 0.5F}, {-0.375F, 0.125F, 0} });
-    tester.expect_near(Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver inv.");
-
-    /* 対角用 逆行列 */
-    static auto inv_solver_d = make_LinalgSolver(B);
-    auto Inv_d = inv_solver_d.inv(B);
-    //std::cout << "Inv_d = ";
-    //for (size_t i = 0; i < Inv_d.matrix.rows(); ++i) {
-    //    std::cout << Inv_d.matrix[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
-    Matrix<DefDiag, T, 3> Inv_d_answer({ 1, 0.5F, 0.333333F });
-    tester.expect_near(Inv_d.matrix.data, Inv_d_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver inv diag.");
 
 
 
