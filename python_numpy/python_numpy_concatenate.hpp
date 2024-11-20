@@ -144,10 +144,24 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P,
 auto concatenate_vertically(
     const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
     const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B)
-    -> Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse> {
+    -> Matrix<
+        DefSparse, T, (M + P), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            M,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, SparseAvailable_B>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, SparseAvailable_B>>>> {
 
   /* Result */
-  return Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse>(
+  return Matrix<
+      DefSparse, T, (M + P), N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          M,
+          RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+              SparseAvailable_A, SparseAvailable_B>>,
+          RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+              SparseAvailable_A, SparseAvailable_B>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
