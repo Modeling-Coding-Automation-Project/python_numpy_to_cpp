@@ -2081,12 +2081,28 @@ void check_python_numpy_left_divide(void) {
 
     Matrix<DefDense, T, 3, 3> A_B_x_answer({
         {-6.66666667e-01F, 6.66666667e-01F, 0.0F},
-        {6.33333333e-01F, -1.33333333F,  0.9F},
+        {6.33333333e-01F, -1.33333333F, 0.9F},
         {1.33333333e-01F, 6.66666667e-01F, -0.6F}
-        });
+    });
 
     tester.expect_near(A_B_x.matrix.data, A_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Dense and Diag.");
+
+    static auto A_C_linalg_solver = make_LinalgSolver(A, C);
+
+    auto A_C_x = A_C_linalg_solver.solve(A, C);
+
+    Matrix<DefDense, T, 3, 3> A_C_x_answer({
+        { 3.33333333e-01F, 0.0F, 2.66666667F},
+        {-1.36666667F, 0.6F, -4.13333333F},
+        {1.13333333F, -0.4F, 1.86666667F}
+    });
+
+    tester.expect_near(A_C_x.matrix.data, A_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Sparse.");
+
+
+
 
     //static auto solver = make_LinalgSolver(C, C);
 
