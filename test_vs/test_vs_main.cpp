@@ -2038,7 +2038,7 @@ void check_python_numpy_base(void) {
 }
 
 template <typename T>
-void check_python_numpy_left_divide(void) {
+void check_python_numpy_left_divide_and_inv(void) {
     using namespace PythonNumpy;
 
     MCAPTester<T> tester;
@@ -2268,13 +2268,105 @@ void check_python_numpy_left_divide(void) {
 }
 
 template <typename T>
+void check_python_numpy_concatenate(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
+
+    /* 結合 */
+    auto A_v_A = concatenate_vertically(A, A);
+
+    Matrix<DefDense, T, 6, 3> A_v_A_answer({
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 }
+    });
+
+    tester.expect_near(A_v_A.matrix.data, A_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Dense.");
+
+    auto A_v_B = concatenate_vertically(A, B);
+    auto A_v_B_dense = A_v_B.create_dense();
+
+    Matrix<DefDense, T, 6, 3> A_v_B_answer({
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 }
+    });
+
+    tester.expect_near(A_v_B_dense.matrix.data, A_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Diag.");
+
+    auto A_v_C = concatenate_vertically(A, C);
+    auto A_v_C_dense = A_v_C.create_dense();
+
+    Matrix<DefDense, T, 6, 3> A_v_C_answer({
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+        { 1, 0, 0 },
+        { 3, 0, 8 },
+        { 0, 2, 4 }
+    });
+
+    tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Sparse.");
+
+
+    //auto B_C = concatenate_vertically(B, C);
+    //auto B_C_dense = B_C.matrix.create_dense();
+
+    //auto A_A = concatenate_horizontally(CL, CL);
+    //Base::Matrix::Matrix<T, 4, 6> A_A_dense = A_A.matrix.create_dense();
+    ////std::cout << "A_A_dense = " << std::endl;
+    ////for (size_t j = 0; j < A_A_dense.cols(); ++j) {
+    ////    for (size_t i = 0; i < A_A_dense.rows(); ++i) {
+    ////        std::cout << A_A_dense(j, i) << " ";
+    ////    }
+    ////    std::cout << std::endl;
+    ////}
+    ////std::cout << std::endl;
+
+    //Matrix<DefDense, T, 4, 6> A_A_answer({
+    //    {1, 3, 0, 1, 3, 0},
+    //    {0, 0, 2, 0, 0, 2},
+    //    {0, 8, 4, 0, 8, 4},
+    //    {0, 1, 0, 0, 1, 0} });
+    //tester.expect_near(A_A_dense.data, A_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check concatenate horizontally.");
+
+
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
 void check_python_numpy_calc(void) {
 
     check_python_numpy_base<T>();
 
-    check_python_numpy_left_divide<T>();
+    check_python_numpy_left_divide_and_inv<T>();
 
-
+    check_python_numpy_concatenate<T>();
 
 
 #if 0
@@ -2283,28 +2375,6 @@ void check_python_numpy_calc(void) {
 
 
 
-    /* 結合 */
-    auto B_C = concatenate_vertically(B, C);
-    auto B_C_dense = B_C.matrix.create_dense();
-
-    auto A_A = concatenate_horizontally(CL, CL);
-    Base::Matrix::Matrix<T, 4, 6> A_A_dense = A_A.matrix.create_dense();
-    //std::cout << "A_A_dense = " << std::endl;
-    //for (size_t j = 0; j < A_A_dense.cols(); ++j) {
-    //    for (size_t i = 0; i < A_A_dense.rows(); ++i) {
-    //        std::cout << A_A_dense(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<DefDense, T, 4, 6> A_A_answer({
-        {1, 3, 0, 1, 3, 0},
-        {0, 0, 2, 0, 0, 2},
-        {0, 8, 4, 0, 8, 4},
-        {0, 1, 0, 0, 1, 0} });
-    tester.expect_near(A_A_dense.data, A_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally.");
 
     /* 転置 */
     auto AL_T = CL.transpose();
