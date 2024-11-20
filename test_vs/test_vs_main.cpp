@@ -2188,6 +2188,45 @@ void check_python_numpy_left_divide(void) {
     tester.expect_near(AL_BL_x.matrix.data, AL_BL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Diag.");
 
+    static auto AL_CL_lstsq_solver = make_LinalgLstsqSolver(AL, CL);
+
+    auto AL_CL_x = AL_CL_lstsq_solver.solve(AL, CL);
+
+    Matrix<DefDense, T, 3, 3> AL_CL_x_answer({
+        {-0.63636364F, -2.0F, 0.72727273F },
+        { 0.63636364F, 4.3F, -0.12727273F },
+        { 0.09090909F, -1.2F, -0.21818182F }
+    });
+
+    tester.expect_near(AL_CL_x.matrix.data, AL_CL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgLstsqSolver solve Dense and Sparse.");
+
+    static auto CL_AL_lstsq_solver = make_LinalgLstsqSolver(CL, AL);
+
+    auto CL_AL_x = CL_AL_lstsq_solver.solve(CL, AL);
+
+    Matrix<DefDense, T, 3, 3> CL_AL_x_answer({
+        { 0.91304348F, 1.56521739F, 4.08695652F },
+        { 0.02898551F, 0.14492754F, -0.36231884F },
+        { 2.25362319F, 1.76811594F, 2.57971014F }
+    });
+
+    tester.expect_near(CL_AL_x.matrix.data, CL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgLstsqSolver solve Sparse and Dense.");
+
+    static auto CL_CL_lstsq_solver = make_LinalgLstsqSolver(CL, CL);
+
+    auto CL_CL_x = CL_CL_lstsq_solver.solve(CL, CL);
+
+    Matrix<DefDense, T, 3, 3> CL_CL_x_answer({
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F }
+        });
+
+    tester.expect_near(CL_CL_x.matrix.data, CL_CL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgLstsqSolver solve Sparse and Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }
