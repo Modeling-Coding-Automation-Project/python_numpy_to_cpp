@@ -1962,16 +1962,14 @@ void check_base_matrix_calc(void) {
     check_eigen_values_and_vectors<T>();
 }
 
-
 template <typename T>
-void check_python_numpy_calc(void) {
+void check_python_numpy_base(void) {
     using namespace PythonNumpy;
 
     MCAPTester<T> tester;
 
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
-    const T NEAR_LIMIT_SOFT = 1.0e-2F;
-
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 配列代入 */
     T in[2][3];
@@ -2000,9 +1998,9 @@ void check_python_numpy_calc(void) {
 
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
-            ColumnAvailable<true, false, false>,
-            ColumnAvailable<true, false, true>,
-            ColumnAvailable<false, true, true>>
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
     auto A_add_B = A - B;
@@ -2035,6 +2033,32 @@ void check_python_numpy_calc(void) {
     tester.expect_near(E.matrix.data, E_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply DiagMatrix.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_python_numpy_left_divide(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDense, T, 4, 3> AA({ { 1, 3, 0 }, {0, 0, 2}, {0, 8, 4}, {0, 1, 0} });
+
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
+
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
+
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
 
@@ -2042,10 +2066,27 @@ void check_python_numpy_calc(void) {
 
     auto A_A_x = A_A_linalg_solver.solve(A, A);
 
-    Matrix <DefDense, T, 3, 3> A_A_x_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
-    tester.expect_near(A_A_x.matrix.data, A_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver solve.");
+    Matrix<DefDense, T, 3, 3> A_A_x_answer({
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+        });
 
+    tester.expect_near(A_A_x.matrix.data, A_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Dense.");
+
+    static auto A_B_linalg_solver = make_LinalgSolver(A, B);
+
+    auto A_B_x = A_B_linalg_solver.solve(A, B);
+
+    Matrix<DefDense, T, 3, 3> A_B_x_answer({
+        {-6.66666667e-01F, 6.66666667e-01F, 0.0F},
+        {6.33333333e-01F, -1.33333333F,  0.9F},
+        {1.33333333e-01F, 6.66666667e-01F, -0.6F}
+        });
+
+    tester.expect_near(A_B_x.matrix.data, A_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Diag.");
 
     //static auto solver = make_LinalgSolver(C, C);
 
@@ -2063,6 +2104,18 @@ void check_python_numpy_calc(void) {
     //Matrix <DefDense, T, 3, 3> x_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
     //tester.expect_near(x.matrix.data, x_answer.matrix.data, NEAR_LIMIT_STRICT,
     //    "check LinalgSolver solve.");
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide<T>();
+
+
 
 
 #if 0
@@ -2416,8 +2469,6 @@ void check_python_numpy_calc(void) {
 
 
 #endif
-
-    tester.throw_error_if_test_failed();
 }
 
 
