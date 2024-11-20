@@ -2330,6 +2330,23 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Sparse.");
 
+    auto B_v_A = concatenate_vertically(B, A);
+    auto B_v_A_dense = B_v_A.create_dense();
+
+    Matrix<DefDense, T, 6, 3> B_v_A_answer({
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 },
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 }
+    });
+
+    tester.expect_near(B_v_A_dense.matrix.data, B_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Diag and Dense.");
+
+
+
 
     //auto B_C = concatenate_vertically(B, C);
     //auto B_C_dense = B_C.matrix.create_dense();
