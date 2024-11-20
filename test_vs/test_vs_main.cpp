@@ -2553,26 +2553,48 @@ void check_python_numpy_concatenate(void) {
     tester.throw_error_if_test_failed();
 }
 
-
 template <typename T>
-void check_python_numpy_calc(void) {
+void check_python_numpy_transpose(void) {
+    using namespace PythonNumpy;
 
-    check_python_numpy_base<T>();
+    MCAPTester<T> tester;
 
-    check_python_numpy_left_divide_and_inv<T>();
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    check_python_numpy_concatenate<T>();
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
 
-
-#if 0
-
-
-
-
-
+    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
+    Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailable<
+        ColumnAvailable<true, true, false>,
+        ColumnAvailable<false, false, true>,
+        ColumnAvailable<false, true, true>,
+        ColumnAvailable<false, true, false>>
+        >
+        CL({ 1, 3, 2, 8, 4, 1 });
 
     /* 転置 */
-    auto AL_T = CL.transpose();
+    auto AT = A.transpose();
+
+    Matrix<DefDense, T, 3, 3> AT_answer({
+        {1, 5, 9},
+        {2, 4, 8},
+        {3, 6, 7}
+        });
+
+    tester.expect_near(AT.matrix.data, AT_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check transpose Dense.");
+
+    auto CL_T = CL.transpose();
     //std::cout << "AL_T = " << std::endl;
     //for (size_t j = 0; j < AL_T.cols(); ++j) {
     //    for (size_t i = 0; i < AL_T.rows(); ++i) {
@@ -2582,13 +2604,13 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<DefDense, T, 3, 4> AL_T_answer({
+    Matrix<DefDense, T, 3, 4> CL_T_answer({
         {1, 0, 0, 0},
         {3, 0, 8, 1},
         {0, 2, 4, 0}
         });
-    tester.expect_near(AL_T.matrix.data, AL_T_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check transpose.");
+    tester.expect_near(CL_T.matrix.data, CL_T_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check transpose Sparse.");
 
     auto B_T = B.transpose();
     //std::cout << "B_T = ";
@@ -2600,7 +2622,27 @@ void check_python_numpy_calc(void) {
 
     Matrix<DefDiag, T, 3> B_T_answer({ 1, 2, 3 });
     tester.expect_near(B_T.matrix.data, B_T_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check transpose diag.");
+        "check transpose Diag.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide_and_inv<T>();
+
+    check_python_numpy_concatenate<T>();
+
+    check_python_numpy_transpose<T>();
+
+
+#if 0
+
 
     /* LU分解 */
     static auto LU_solver = make_LinalgSolverLU(A);
