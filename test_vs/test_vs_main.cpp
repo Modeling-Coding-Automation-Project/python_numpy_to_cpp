@@ -2747,6 +2747,230 @@ void check_check_python_numpy_cholesky(void) {
 }
 
 
+template<typename T>
+void check_check_python_numpy_transpose_operation(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
+
+
+        /* 転置積 */
+    auto A_At = A_mul_BTranspose(A, A);
+
+    Matrix<DefDense, T, 3, 3> A_At_answer({
+        {14, 31, 46},
+        {31, 77, 119},
+        {46, 119, 194}
+        });
+
+    tester.expect_near(A_At.matrix.data, A_At_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Dense and Dense.");
+
+    auto A_Bt = A_mul_BTranspose(A, B);
+
+    Matrix<DefDense, T, 3, 3> A_Bt_answer({
+        {1, 4, 9},
+        {5, 8, 18},
+        {9, 16, 21}
+        });
+
+    tester.expect_near(A_Bt.matrix.data, A_Bt_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Dense and Diag.");
+
+    auto A_Ct = A_mul_BTranspose(A, C);
+
+    Matrix<DefDense, T, 3, 3> A_Ct_answer({
+        {1, 27, 16},
+        {5, 63, 32},
+        {9, 83, 44}
+        });
+
+    tester.expect_near(A_Ct.matrix.data, A_Ct_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Dense and Sparse.");
+
+    auto B_At = A_mul_BTranspose(B, A);
+
+    Matrix<DefDense, T, 3, 3> B_At_answer({
+        {1, 5, 9},
+        {4, 8, 16},
+        {9, 18, 21}
+        });
+
+    tester.expect_near(B_At.matrix.data, B_At_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Diag and Dense.");
+
+    auto B_Bt = A_mul_BTranspose(B, B);
+    auto B_Bt_dense = B_Bt.create_dense();
+
+    Matrix<DefDense, T, 3, 3> B_Bt_answer({
+        {1, 0, 0},
+        {0, 4, 0},
+        {0, 0, 9}
+        });
+
+    tester.expect_near(B_Bt_dense.matrix.data, B_Bt_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Diag and Diag.");
+
+    auto B_Ct = A_mul_BTranspose(B, C);
+
+    Matrix<DefDense, T, 3, 3> B_Ct_answer({
+        {1, 3, 0},
+        {0, 0, 4},
+        {0, 24, 12}
+        });
+
+    tester.expect_near(B_Ct.matrix.data, B_Ct_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Diag and Sparse.");
+
+    auto C_At = A_mul_BTranspose(C, A);
+
+    Matrix<DefDense, T, 3, 3> C_At_answer({
+        {1, 5, 9},
+        {27, 63, 83},
+        {16, 32, 44}
+        });
+
+    tester.expect_near(C_At.matrix.data, C_At_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Sparse and Dense.");
+
+    auto C_Bt = A_mul_BTranspose(C, B);
+
+    Matrix<DefDense, T, 3, 3> C_Bt_answer({
+        {1, 0, 0},
+        {3, 0, 24},
+        {0, 4, 12}
+        });
+
+    tester.expect_near(C_Bt.matrix.data, C_Bt_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Sparse and Diag.");
+
+    auto C_Ct = A_mul_BTranspose(C, C);
+
+    Matrix<DefDense, T, 3, 3> C_Ct_answer({
+        {1, 3, 0},
+        {3, 73, 32},
+        {0, 32, 20}
+        });
+
+    tester.expect_near(C_Ct.matrix.data, C_Ct_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Sparse and Sparse.");
+
+    auto At_A = ATranspose_mul_B(A, A);
+
+    Matrix<DefDense, T, 3, 3> At_A_answer({
+        {107, 94, 96},
+        {94, 84, 86},
+        {96, 86, 94}
+        });
+
+    tester.expect_near(At_A.matrix.data, At_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Dense and Dense.");
+
+    auto At_B = ATranspose_mul_B(A, B);
+
+    Matrix<DefDense, T, 3, 3> At_B_answer({
+        {1, 10, 27},
+        {2, 8, 24},
+        {3, 12, 21}
+        });
+
+    tester.expect_near(At_B.matrix.data, At_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Dense and Diag.");
+
+    auto At_C = ATranspose_mul_B(A, C);
+
+    Matrix<DefDense, T, 3, 3> At_C_answer({
+        {16, 18, 76},
+        {14, 16, 64},
+        {21, 14, 76}
+        });
+
+    tester.expect_near(At_C.matrix.data, At_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Dense and Sparse.");
+
+    auto Bt_A = ATranspose_mul_B(B, A);
+
+    Matrix<DefDense, T, 3, 3> Bt_A_answer({
+        {1, 2, 3},
+        {10, 8, 12},
+        {27, 24, 21}
+        });
+
+    tester.expect_near(Bt_A.matrix.data, Bt_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Diag and Dense.");
+
+    auto Bt_B = ATranspose_mul_B(B, B);
+    auto Bt_B_dense = Bt_B.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Bt_B_answer({
+        {1, 0, 0},
+        {0, 4, 0},
+        {0, 0, 9}
+        });
+
+    tester.expect_near(Bt_B_dense.matrix.data, Bt_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Diag and Diag.");
+
+    auto Bt_C = ATranspose_mul_B(B, C);
+
+    Matrix<DefDense, T, 3, 3> Bt_C_answer({
+        {1, 0, 0},
+        {6, 0, 16},
+        {0, 6, 12}
+        });
+
+    tester.expect_near(Bt_C.matrix.data, Bt_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Diag and Sparse.");
+
+    auto Ct_A = ATranspose_mul_B(C, A);
+
+    Matrix<DefDense, T, 3, 3> Ct_A_answer({
+        {16, 14, 21},
+        {18, 16, 14},
+        {76, 64, 76}
+        });
+
+    tester.expect_near(Ct_A.matrix.data, Ct_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Sparse and Dense.");
+
+    auto Ct_B = ATranspose_mul_B(C, B);
+
+    Matrix<DefDense, T, 3, 3> Ct_B_answer({
+        {1, 6, 0},
+        {0, 0, 6},
+        {0, 16, 12}
+        });
+
+    tester.expect_near(Ct_B.matrix.data, Ct_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Sparse and Diag.");
+
+    auto Ct_C = ATranspose_mul_B(C, C);
+
+    Matrix<DefDense, T, 3, 3> Ct_C_answer({
+        {10, 0, 24},
+        {0, 4, 8},
+        {24, 8, 80}
+        });
+
+    tester.expect_near(Ct_C.matrix.data, Ct_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Sparse and Sparse.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
 template <typename T>
 void check_python_numpy_calc(void) {
 
@@ -2762,39 +2986,14 @@ void check_python_numpy_calc(void) {
 
     check_check_python_numpy_cholesky<T>();
 
+    check_check_python_numpy_transpose_operation<T>();
+
 
 #if 0
 
 
 
 
-    /* 転置積 */
-    auto AB = AT_mul_B(C, B);
-
-    //std::cout << "AB = " << std::endl;
-    //for (size_t j = 0; j < AB.cols(); ++j) {
-    //    for (size_t i = 0; i < AB.rows(); ++i) {
-    //        std::cout << AB.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<DefDense, T, 3, 3> AB_answer({ {1, 6, 0}, {0, 0, 6}, {0, 16, 12} });
-    tester.expect_near(AB.matrix.data, AB_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check AT_mul_B.");
-
-    auto AB_d = AT_mul_B(B, B);
-    //std::cout << "AB_d = ";
-    //for (size_t i = 0; i < AB_d.rows(); ++i) {
-    //    std::cout << AB_d.matrix[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
-    Matrix<DefDiag, T, 3> AB_d_answer({ 1, 4, 9 });
-    tester.expect_near(AB_d.matrix.data, AB_d_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check AT_mul_B diag.");
 
     /* QR分解 */
     static auto QR_solver = make_LinalgSolverQR(C);

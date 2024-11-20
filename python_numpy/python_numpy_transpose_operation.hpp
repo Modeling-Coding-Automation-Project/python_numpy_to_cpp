@@ -9,24 +9,26 @@ namespace PythonNumpy {
 
 /* (matrix) * (transposed matrix) */
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
-              const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, N> {
+auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
+                      const Matrix<DefDense, T, N, K> &B)
+    -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
       Base::Matrix::matrix_multiply_A_mul_BTranspose(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t K>
-auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
-              const Matrix<DefDiag, T, K> &B) -> Matrix<DefDense, T, M, K> {
+auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
+                      const Matrix<DefDiag, T, K> &B)
+    -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(A.matrix * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V>
-auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
-              const Matrix<DefSparse, T, N, K, V> &B)
+          typename SparseAvailable>
+auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
+                      const Matrix<DefSparse, T, N, K, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
@@ -34,47 +36,50 @@ auto A_mul_BT(const Matrix<DefDense, T, M, K> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto A_mul_BT(const Matrix<DefDiag, T, M> &A,
-              const Matrix<DefDense, T, N, M> &B) -> Matrix<DefDense, T, M, N> {
+auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
+                      const Matrix<DefDense, T, N, M> &B)
+    -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(A.matrix * B.matrix.transpose());
 }
 
 template <typename T, std::size_t M>
-auto A_mul_BT(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
-    -> Matrix<DefDiag, T, M> {
+auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
+                      const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M> {
 
   return Matrix<DefDiag, T, M>(A.matrix * B.matrix);
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto A_mul_BT(const Matrix<DefDiag, T, M> &A,
-              const Matrix<DefSparse, T, N, M, V> &B)
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
+                      const Matrix<DefSparse, T, N, M, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(A.matrix * B.matrix.transpose());
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V>
-auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
-              const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, N> {
+          typename SparseAvailable>
+auto A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
+                      const Matrix<DefDense, T, N, K> &B)
+    -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
       Base::Matrix::matrix_multiply_SparseA_mul_BTranspose(A.matrix, B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V>
-auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
-              const Matrix<DefDiag, T, K> &B) -> Matrix<DefDense, T, M, K> {
+template <typename T, std::size_t M, std::size_t K, typename SparseAvailable>
+auto A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
+                      const Matrix<DefDiag, T, K> &B)
+    -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(A.matrix * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V, std::size_t W>
-auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
-              const Matrix<DefSparse, T, N, K, W> &B)
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable_A> &A,
+                      const Matrix<DefSparse, T, N, K, SparseAvailable_B> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
@@ -83,24 +88,26 @@ auto A_mul_BT(const Matrix<DefSparse, T, M, K, V> &A,
 
 /* (transpose matrix) * (matrix) */
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-auto AT_mul_B(const Matrix<DefDense, T, N, M> &A,
-              const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, K> {
+auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
+                      const Matrix<DefDense, T, N, K> &B)
+    -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
       Base::Matrix::matrix_multiply_AT_mul_B(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto AT_mul_B(const Matrix<DefDense, T, N, M> &A,
-              const Matrix<DefDiag, T, N> &B) -> Matrix<DefDense, T, M, N> {
+auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
+                      const Matrix<DefDiag, T, N> &B)
+    -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(A.matrix.transpose() * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V>
-auto AT_mul_B(const Matrix<DefDense, T, N, M> &A,
-              const Matrix<DefSparse, T, N, K, V> &B)
+          typename SparseAvailable>
+auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
+                      const Matrix<DefSparse, T, N, K, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
@@ -108,48 +115,51 @@ auto AT_mul_B(const Matrix<DefDense, T, N, M> &A,
 }
 
 template <typename T, std::size_t K, std::size_t N>
-auto AT_mul_B(const Matrix<DefDiag, T, N> &A,
-              const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, N, K> {
+auto ATranspose_mul_B(const Matrix<DefDiag, T, N> &A,
+                      const Matrix<DefDense, T, N, K> &B)
+    -> Matrix<DefDense, T, N, K> {
 
   return Matrix<DefDense, T, N, K>(A.matrix * B.matrix);
 }
 
 template <typename T, std::size_t M>
-auto AT_mul_B(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
-    -> Matrix<DefDiag, T, M> {
+auto ATranspose_mul_B(const Matrix<DefDiag, T, M> &A,
+                      const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M> {
 
   return Matrix<DefDiag, T, M>(A.matrix * B.matrix);
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto AT_mul_B(const Matrix<DefDiag, T, M> &A,
-              const Matrix<DefSparse, T, N, M, V> &B)
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto ATranspose_mul_B(const Matrix<DefDiag, T, M> &A,
+                      const Matrix<DefSparse, T, N, M, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(A.matrix * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V>
-auto AT_mul_B(const Matrix<DefSparse, T, N, M, V> &A,
-              const Matrix<DefDense, T, N, K> &B) -> Matrix<DefDense, T, M, K> {
+          typename SparseAvailable>
+auto ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable> &A,
+                      const Matrix<DefDense, T, N, K> &B)
+    -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
       Base::Matrix::matrix_multiply_SparseAT_mul_B(A.matrix, B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto AT_mul_B(const Matrix<DefSparse, T, N, M, V> &A,
-              const Matrix<DefDiag, T, N> &B) -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable> &A,
+                      const Matrix<DefDiag, T, N> &B)
+    -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(
       matrix_multiply_Transpose_DiagA_mul_SparseB(B.matrix, A.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t V, std::size_t W>
-auto AT_mul_B(const Matrix<DefSparse, T, N, M, V> &A,
-              const Matrix<DefSparse, T, N, K, W> &B)
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable_A> &A,
+                      const Matrix<DefSparse, T, N, K, SparseAvailable_B> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(
