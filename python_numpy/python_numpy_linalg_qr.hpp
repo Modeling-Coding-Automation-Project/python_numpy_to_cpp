@@ -53,17 +53,16 @@ public:
   }
 
   /* Get Q, R */
-  auto get_R(void) -> Matrix<DefSparse, T, M, N,
-                             Base::Matrix::CalculateTriangularSize<
-                                 M, ((N < M) ? N : M)>::value> const {
+  auto get_R(void) -> CreateSparseAvailableFromIndicesAndPointers<
+      N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+      Base::Matrix::UpperTriangularRowPointers<M, N>> const {
 
     Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
         this->_R_triangular, this->_QR_decomposer.get_R());
 
-    return Matrix<
-        DefSparse, T, M, N,
-        Base::Matrix::CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        this->_R_triangular);
+    return Base::Matrix::CompiledSparseMatrix<
+        T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+        Base::Matrix::UpperTriangularRowPointers<M, N>>(this->_R_triangular);
   }
 
   auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
@@ -73,9 +72,9 @@ public:
 private:
   /* Properties */
   Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;
-  Base::Matrix::SparseMatrix<
-      T, M, N,
-      Base::Matrix::CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+  Base::Matrix::CompiledSparseMatrix<
+      T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+      Base::Matrix::UpperTriangularRowPointers<M, N>>
       _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
 
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_QR);
@@ -122,24 +121,25 @@ private:
   Matrix<DefDiag, T, M> _R;
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 class LinalgSolverQRSparse {
 public:
   /* Constructor */
   LinalgSolverQRSparse() {}
 
-  LinalgSolverQRSparse(const Matrix<DefSparse, T, M, N, V> &A) {
+  LinalgSolverQRSparse(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->solve(A);
   }
 
   /* Copy Constructor */
-  LinalgSolverQRSparse(const LinalgSolverQRSparse<T, M, N, V> &other)
+  LinalgSolverQRSparse(
+      const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other)
       : _QR_decomposer(other._QR_decomposer),
         _R_triangular(other._R_triangular), _division_min(other._division_min) {
   }
 
-  LinalgSolverQRSparse<T, M, N, V> &
-  operator=(const LinalgSolverQRSparse<T, M, N, V> &other) {
+  LinalgSolverQRSparse<T, M, N, SparseAvailable> &
+  operator=(const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other) {
     if (this != &other) {
       this->_QR_decomposer = other._QR_decomposer;
       this->_R_triangular = other._R_triangular;
@@ -149,13 +149,14 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverQRSparse(LinalgSolverQRSparse<T, M, N, V> &&other) noexcept
+  LinalgSolverQRSparse(
+      LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept
       : _QR_decomposer(std::move(other._QR_decomposer)),
         _R_triangular(std::move(other._R_triangular)),
         _division_min(std::move(other._division_min)) {}
 
-  LinalgSolverQRSparse<T, M, N, V> &
-  operator=(LinalgSolverQRSparse<T, M, N, V> &&other) noexcept {
+  LinalgSolverQRSparse<T, M, N, SparseAvailable> &
+  operator=(LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_QR_decomposer = std::move(other._QR_decomposer);
       this->_R_triangular = std::move(other._R_triangular);
@@ -165,23 +166,26 @@ public:
   }
 
   /* Solve function */
-  void solve(const Matrix<DefSparse, T, M, N, V> &A) {
-    this->_QR_decomposer = Base::Matrix::QRDecompositionSparse<T, M, N, V>(
+  void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
+    this->_QR_decomposer = Base::Matrix::QRDecompositionSparse<
+        T, M, N, Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>,
+        Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>>(
         A.matrix, this->_division_min);
   }
 
   /* Get Q, R */
-  auto get_R(void) -> Matrix<DefSparse, T, M, N,
-                             Base::Matrix::CalculateTriangularSize<
-                                 M, ((N < M) ? N : M)>::value> const {
+  auto get_R(void)
+      -> Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+                    Base::Matrix::UpperTriangularRowPointers<M, N>>> const {
 
     Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
         this->_R_triangular, this->_QR_decomposer.get_R());
 
-    return Matrix<
-        DefSparse, T, M, N,
-        Base::Matrix::CalculateTriangularSize<M, ((N < M) ? N : M)>::value>(
-        this->_R_triangular);
+    return Base::Matrix::CompiledSparseMatrix<
+        T, M, N, Base::Matrix::UpperTriangularRowIndices<M, M>,
+        Base::Matrix::UpperTriangularRowPointers<M, N>>(this->_R_triangular);
   }
 
   auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
@@ -190,11 +194,14 @@ public:
 
 private:
   /* Variable */
-  Base::Matrix::QRDecompositionSparse<T, M, N, V> _QR_decomposer;
+  Base::Matrix::QRDecompositionSparse<
+      T, M, N, Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>,
+      Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>>
+      _QR_decomposer;
 
-  Base::Matrix::SparseMatrix<
-      T, M, N,
-      Base::Matrix::CalculateTriangularSize<M, ((N < M) ? N : M)>::value>
+  Base::Matrix::CompiledSparseMatrix<
+      T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+      Base::Matrix::UpperTriangularRowPointers<M, N>>
       _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
 
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_QR);
@@ -215,11 +222,11 @@ auto make_LinalgSolverQR(const Matrix<DefDiag, T, M> &A)
   return LinalgSolverQRDiag<T, M>(A);
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto make_LinalgSolverQR(const Matrix<DefSparse, T, M, N, V> &A)
-    -> LinalgSolverQRSparse<T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto make_LinalgSolverQR(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
+    -> LinalgSolverQRSparse<T, M, N, SparseAvailable> {
 
-  return LinalgSolverQRSparse<T, M, N, V>(A);
+  return LinalgSolverQRSparse<T, M, N, SparseAvailable>(A);
 }
 
 } // namespace PythonNumpy

@@ -2971,28 +2971,23 @@ void check_check_python_numpy_transpose_operation(void) {
     tester.throw_error_if_test_failed();
 }
 
-template <typename T>
-void check_python_numpy_calc(void) {
+template<typename T>
+void check_python_numpy_qr(void) {
+    using namespace PythonNumpy;
 
-    check_python_numpy_base<T>();
+    MCAPTester<T> tester;
 
-    check_python_numpy_left_divide_and_inv<T>();
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    check_python_numpy_concatenate<T>();
-
-    check_python_numpy_transpose<T>();
-
-    check_python_numpy_lu<T>();
-
-    check_check_python_numpy_cholesky<T>();
-
-    check_check_python_numpy_transpose_operation<T>();
-
-
-#if 0
-
-
-
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
 
 
     /* QR分解 */
@@ -3011,6 +3006,39 @@ void check_python_numpy_calc(void) {
     Matrix<DefDense, T, 3, 3> A_QR_answer({ {1, 0, 0}, {3, 0, 8}, {0, 2, 4} });
     tester.expect_near(A_QR.matrix.data, A_QR_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR Q multiply R.");
+
+
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide_and_inv<T>();
+
+    check_python_numpy_concatenate<T>();
+
+    check_python_numpy_transpose<T>();
+
+    check_python_numpy_lu<T>();
+
+    check_check_python_numpy_cholesky<T>();
+
+    check_check_python_numpy_transpose_operation<T>();
+
+    check_python_numpy_qr<T>();
+
+
+#if 0
+
+
+
+
+
 
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
