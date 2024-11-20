@@ -2047,11 +2047,7 @@ void check_python_numpy_left_divide(void) {
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
-    Matrix<DefDense, T, 4, 3> AA({ { 1, 3, 0 }, {0, 0, 2}, {0, 8, 4}, {0, 1, 0} });
-
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
-    Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
-
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
         ColumnAvailable<true, false, false>,
@@ -2154,6 +2150,44 @@ void check_python_numpy_left_divide(void) {
     tester.expect_near(C_C_x.matrix.data, C_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Sparse and Sparse.");
 
+    /* 矩形　左除算 */
+    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
+    Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailable<
+            ColumnAvailable<true, true, false>,
+            ColumnAvailable<false, false, true>,
+            ColumnAvailable<false, true, true>,
+            ColumnAvailable<false, true, false>>
+        >
+        CL({ 1, 3, 2, 8, 4, 1 });
+
+    static auto AL_AL_lstsq_solver = make_LinalgLstsqSolver(AL, AL);
+
+    auto AL_AL_x = AL_AL_lstsq_solver.solve(AL, AL);
+
+    Matrix<DefDense, T, 3, 3> AL_AL_x_answer({
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F }
+    });
+
+    tester.expect_near(AL_AL_x.matrix.data, AL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgLstsqSolver solve Dense and Dense.");
+
+    static auto AL_BL_lstsq_solver = make_LinalgLstsqSolver(AL, BL);
+
+    auto AL_BL_x = AL_BL_lstsq_solver.solve(AL, BL);
+
+    Matrix<DefDense, T, 3, 4> AL_BL_x_answer({
+        {-6.36363636e-01F, 7.27272727e-01F, 0.0F, -3.63636364e-01F },
+        {6.36363636e-01F, -1.32727273e+00F, 0.9F, -3.63636364e-02F },
+        {9.09090909e-02F, 5.81818182e-01F, -0.6F, 5.09090909e-01F }
+    });
+
+    tester.expect_near(AL_BL_x.matrix.data, AL_BL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgLstsqSolver solve Dense and Diag.");
+
 
     tester.throw_error_if_test_failed();
 }
@@ -2169,41 +2203,6 @@ void check_python_numpy_calc(void) {
 
 
 #if 0
-    /* 対角　左除算 */
-    static auto solver_diag = make_LinalgSolver(B, B);
-
-    auto x_d = solver_diag.solve(B, B);
-    //std::cout << "x_d = ";
-    //for (size_t i = 0; i < x_d.matrix.rows(); ++i) {
-    //    std::cout << x_d.matrix[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
-    Matrix<DefDiag, T, 3> x_d_answer({ 1, 1, 1 });
-    tester.expect_near(x_d.matrix.data, x_d_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver solve diag.");
-
-    /* 矩形　左除算 */
-    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
-    Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
-    Matrix<DefSparse, T, 4, 3, 6> CL(Matrix<DefDense, T, 4, 3>({ {1, 3, 0 }, { 0, 0, 2 }, { 0, 8, 4 }, { 0, 1, 0 } }).matrix);
-
-    static auto lstsq_solver = make_LinalgLstsqSolver(CL, CL);
-
-    auto XX = lstsq_solver.solve(CL, CL);
-    //std::cout << "XX = " << std::endl;
-    //for (size_t j = 0; j < XX.matrix.cols(); ++j) {
-    //    for (size_t i = 0; i < XX.matrix.rows(); ++i) {
-    //        std::cout << XX.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<DefDense, T, 3, 3> XX_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
-    tester.expect_near(XX.matrix.data, XX_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgLstsqSolver solve.");
 
     /* 逆行列 */
     static auto inv_solver = make_LinalgSolver(C);
