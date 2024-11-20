@@ -20,9 +20,23 @@ auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N>
 auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
                             const Matrix<DefDiag, T, N> &B)
-    -> Matrix<DefSparse, T, (M + N), N, SparseAvailable_NoUse> {
+    -> Matrix<
+        DefSparse, T, (M + N), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            N,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, DiagAvailable<N>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, DiagAvailable<N>>>>> {
 
-  return Matrix<DefSparse, T, (M + N), N, SparseAvailable_NoUse>(
+  return Matrix<
+      DefSparse, T, (M + N), N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N,
+          RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+              DenseAvailable<M, N>, DiagAvailable<N>>>,
+          RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+              DenseAvailable<M, N>, DiagAvailable<N>>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
