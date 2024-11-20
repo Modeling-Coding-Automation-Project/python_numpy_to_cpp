@@ -9,11 +9,22 @@
 namespace PythonNumpy {
 
 /* Compiled Sparse Matrix Templates */
+template <std::size_t... Sizes>
+using RowIndices = Base::Matrix::RowIndices<Sizes...>;
+
+template <std::size_t... Sizes>
+using RowPointers = Base::Matrix::RowPointers<Sizes...>;
+
 template <bool... Flags>
 using ColumnAvailable = Base::Matrix::ColumnAvailable<Flags...>;
 
 template <typename... Columns>
 using SparseAvailable = Base::Matrix::SparseAvailable<Columns...>;
+
+template <std::size_t M, std::size_t N>
+using DenseAvailable = Base::Matrix::DenseAvailable<M, N>;
+
+template <std::size_t M> using DiagAvailable = Base::Matrix::DiagAvailable<M>;
 
 template <typename SparseAvailable>
 using RowIndicesFromSparseAvailable =
@@ -22,6 +33,21 @@ using RowIndicesFromSparseAvailable =
 template <typename SparseAvailable>
 using RowPointersFromSparseAvailable =
     Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>;
+
+template <std::size_t N, typename RowIndices, typename RowPointers>
+using CreateSparseAvailableFromIndicesAndPointers =
+    Base::Matrix::CreateSparseAvailableFromIndicesAndPointers<N, RowIndices,
+                                                              RowPointers>;
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableVertically =
+    Base::Matrix::ConcatenateSparseAvailableVertically<SparseAvailable_A,
+                                                       SparseAvailable_B>;
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableHorizontally =
+    Base::Matrix::ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                                         SparseAvailable_B>;
 
 using SparseAvailable_NoUse =
     SparseAvailable<ColumnAvailable<true, false>, ColumnAvailable<false, true>>;

@@ -20,61 +20,64 @@ auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N>
 auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
                             const Matrix<DefDiag, T, N> &B)
-    -> Matrix<DefSparse, T, (M + N), N, ((M + 1) * N)> {
+    -> Matrix<DefSparse, T, (M + N), N, SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, (M + N), N, ((M + 1) * N)>(
+  return Matrix<DefSparse, T, (M + N), N, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t V>
-auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
-                            const Matrix<DefSparse, T, P, N, V> &B)
-    -> Matrix<DefSparse, T, (M + P), N, ((M * N) + V)> {
+          typename SparseAvailable_B>
+auto concatenate_vertically(
+    const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse> {
 
   /* Result */
-  return Matrix<DefSparse, T, (M + P), N, ((M * N) + V)>(
+  return Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t P>
 auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
                             const Matrix<DefDense, T, P, M> &B)
-    -> Matrix<DefSparse, T, (M + P), M, ((P + 1) * M)> {
+    -> Matrix<DefSparse, T, (M + P), M, SparseAvailable_NoUse> {
 
   /* Result */
-  return Matrix<DefSparse, T, (M + P), M, ((P + 1) * M)>(
+  return Matrix<DefSparse, T, (M + P), M, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M>
 auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
                             const Matrix<DefDiag, T, M> &B)
-    -> Matrix<DefSparse, T, (2 * M), M, (2 * M)> {
+    -> Matrix<DefSparse, T, (2 * M), M, SparseAvailable_NoUse> {
 
   /* Result */
-  return Matrix<DefSparse, T, (2 * M), M, (2 * M)>(
+  return Matrix<DefSparse, T, (2 * M), M, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t P, std::size_t V>
-auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
-                            const Matrix<DefSparse, T, P, M, V> &B)
-    -> Matrix<DefSparse, T, (M + P), M, (M + V)> {
+template <typename T, std::size_t M, std::size_t P, typename SparseAvailable_B>
+auto concatenate_vertically(
+    const Matrix<DefDiag, T, M> &A,
+    const Matrix<DefSparse, T, P, M, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, (M + P), M, SparseAvailable_NoUse> {
 
   /* Result */
-  return Matrix<DefSparse, T, (M + P), M, (M + V)>(
+  return Matrix<DefSparse, T, (M + P), M, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t V, std::size_t W>
-auto concatenate_vertically(const Matrix<DefSparse, T, M, N, V> &A,
-                            const Matrix<DefSparse, T, P, N, W> &B)
-    -> Matrix<DefSparse, T, (M + P), N, (V + W)> {
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto concatenate_vertically(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse> {
 
   /* Result */
-  return Matrix<DefSparse, T, (M + P), N, (V + W)>(
+  return Matrix<DefSparse, T, (M + P), N, SparseAvailable_NoUse>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
@@ -90,56 +93,59 @@ auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N>
 auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
                               const Matrix<DefDiag, T, M> &B)
-    -> Matrix<DefSparse, T, M, (M + N), ((N + 1) * M)> {
+    -> Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (M + N), ((N + 1) * M)>(
+  return Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          std::size_t V>
-auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
-                              const Matrix<DefSparse, T, M, L, V> &B)
-    -> Matrix<DefSparse, T, M, (N + L), ((M * N) + V)> {
+          typename SparseAvailable_B>
+auto concatenate_horizontally(
+    const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefSparse, T, M, L, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (N + L), ((M * N) + V)>(
+  return Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N>
 auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
                               const Matrix<DefDense, T, M, N> &B)
-    -> Matrix<DefSparse, T, M, (M + N), ((N + 1) * M)> {
+    -> Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (M + N), ((N + 1) * M)>(
+  return Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M>
 auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
                               const Matrix<DefDiag, T, M> &B)
-    -> Matrix<DefSparse, T, M, (2 * M), (2 * M)> {
+    -> Matrix<DefSparse, T, M, (2 * M), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (2 * M), (2 * M)>(
+  return Matrix<DefSparse, T, M, (2 * M), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
-                              const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefSparse, T, M, (M + N), (M + V)> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_B>
+auto concatenate_horizontally(
+    const Matrix<DefDiag, T, M> &A,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (M + N), (M + V)>(
+  return Matrix<DefSparse, T, M, (M + N), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          std::size_t V, std::size_t W>
-auto concatenate_horizontally(const Matrix<DefSparse, T, M, N, V> &A,
-                              const Matrix<DefSparse, T, M, L, W> &B)
-    -> Matrix<DefSparse, T, M, (N + L), (V + W)> {
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto concatenate_horizontally(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefSparse, T, M, L, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse> {
 
-  return Matrix<DefSparse, T, M, (N + L), (V + W)>(
+  return Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
