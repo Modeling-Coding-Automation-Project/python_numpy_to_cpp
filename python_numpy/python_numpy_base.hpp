@@ -8,6 +8,12 @@
 
 namespace PythonNumpy {
 
+/* Compiled Sparse Matrix Templates */
+template <std::size_t... Sizes>
+using RowIndices = Base::Matrix::RowIndices<Sizes...>;
+template <std::size_t... Sizes>
+using RowPointers = Base::Matrix::RowPointers<Sizes...>;
+
 class DefDense {};
 
 class DefDiag {};
@@ -15,7 +21,7 @@ class DefDiag {};
 class DefSparse {};
 
 template <typename C, typename T, std::size_t M, std::size_t N = 1,
-          std::size_t V = 1>
+          typename RowIndices = void, typename RowPointers = void>
 class Matrix;
 
 template <typename T, std::size_t M, std::size_t N>
@@ -138,29 +144,31 @@ public:
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-class Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+class Matrix<DefSparse, T, M, N, RowIndices, RowPointers> {
 public:
   /* Constructor */
   Matrix() {}
 
-  Matrix(const std::initializer_list<T> &values,
-         const std::initializer_list<std::size_t> &row_indices,
-         const std::initializer_list<std::size_t> &row_pointers)
-      : matrix(values, row_indices, row_pointers) {}
+  Matrix(const std::initializer_list<T> &values) : matrix(values) {}
 
-  Matrix(Base::Matrix::SparseMatrix<T, M, N, V> &input) : matrix(input) {}
+  Matrix(Base::Matrix::CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+             &input)
+      : matrix(input) {}
 
-  Matrix(Base::Matrix::SparseMatrix<T, M, N, V> &&input) noexcept
+  Matrix(Base::Matrix::CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+             &&input) noexcept
       : matrix(std::move(input)) {}
 
   Matrix(Base::Matrix::Matrix<T, M, N> &input) : matrix(input) {}
 
   /* Copy Constructor */
-  Matrix(const Matrix<DefSparse, T, M, N, V> &input) : matrix(input.matrix) {}
+  Matrix(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &input)
+      : matrix(input.matrix) {}
 
-  Matrix<DefSparse, T, M, N, V> &
-  operator=(const Matrix<DefSparse, T, M, N, V> &input) {
+  Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &
+  operator=(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &input) {
     if (this != &input) {
       this->matrix = input.matrix;
     }
@@ -168,11 +176,11 @@ public:
   }
 
   /* Move Constructor */
-  Matrix(Matrix<DefSparse, T, M, N, V> &&input) noexcept
+  Matrix(Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &&input) noexcept
       : matrix(std::move(input.matrix)) {}
 
-  Matrix<DefSparse, T, M, N, V> &
-  operator=(Matrix<DefSparse, T, M, N, V> &&input) noexcept {
+  Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &operator=(
+      Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &&input) noexcept {
     if (this != &input) {
       this->matrix = std::move(input.matrix);
     }
@@ -193,7 +201,7 @@ public:
   }
 
   /* Variable */
-  Base::Matrix::SparseMatrix<T, M, N, V> matrix;
+  Base::Matrix::CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> matrix;
 };
 
 /* Matrix Addition */
@@ -213,9 +221,10 @@ auto operator+(const Matrix<DefDense, T, M, N> &A,
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
 auto operator+(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
@@ -237,34 +246,38 @@ auto operator+(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
 auto operator+(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
   static_assert(M == N, "Argument is not square matrix.");
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator+(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDense, T, M, N> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator+(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, N> {
   static_assert(M == N, "Argument is not square matrix.");
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator+(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
@@ -287,9 +300,10 @@ auto operator-(const Matrix<DefDense, T, M, N> &A,
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
 auto operator-(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
@@ -311,34 +325,38 @@ auto operator-(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
 auto operator-(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
   static_assert(M == N, "Argument is not square matrix.");
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator-(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDense, T, M, N> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator-(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, N> {
   static_assert(M == N, "Argument is not square matrix.");
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator-(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
@@ -373,18 +391,24 @@ auto operator*(const Matrix<DefDiag, T, M> &B, const T &a)
   return Matrix<DefDiag, T, M>(std::move(B.matrix * a));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const T &a, const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator*(const T &a,
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
+    -> Matrix<DefSparse, T, M, N, RowIndices, RowPointers> {
 
-  return Matrix<DefSparse, T, M, N, V>(std::move(a * B.matrix));
+  return Matrix<DefSparse, T, M, N, RowIndices, RowPointers>(
+      std::move(a * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &B, const T &a)
-    -> Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator*(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B,
+               const T &a)
+    -> Matrix<DefSparse, T, M, N, RowIndices, RowPointers> {
 
-  return Matrix<DefSparse, T, M, N, V>(std::move(B.matrix * a));
+  return Matrix<DefSparse, T, M, N, RowIndices, RowPointers>(
+      std::move(B.matrix * a));
 }
 
 /* Matrix Multiply Matrix */
@@ -404,9 +428,9 @@ auto operator*(const Matrix<DefDense, T, M, N> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V>
+          typename RowIndices, typename RowPointers>
 auto operator*(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, N, K, V> &B)
+               const Matrix<DefSparse, T, N, K, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
@@ -427,34 +451,37 @@ auto operator*(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
 auto operator*(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix * B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
+          typename RowIndices, typename RowPointers>
+auto operator*(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDense, T, N, K> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+auto operator*(const Matrix<DefSparse, T, M, N, RowIndices, RowPointers> &A,
                const Matrix<DefDiag, T, N> &B) -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix * B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, N, K, W> &B)
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B>
+auto operator*(const Matrix<DefSparse, T, M, N, RowIndices_A, RowPointers_A> &A,
+               const Matrix<DefSparse, T, N, K, RowIndices_B, RowPointers_B> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));

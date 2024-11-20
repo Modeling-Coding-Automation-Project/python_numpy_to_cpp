@@ -3,7 +3,7 @@
 
 #include "MCAP_tester.hpp"
 
-//#include "python_numpy.hpp"
+#include "python_numpy.hpp"
 #include "base_matrix.hpp"
 
 using namespace Tester;
@@ -1962,7 +1962,6 @@ void check_base_matrix_calc(void) {
     check_eigen_values_and_vectors<T>();
 }
 
-#if 0
 
 template <typename T>
 void check_python_numpy_calc(void) {
@@ -1972,6 +1971,7 @@ void check_python_numpy_calc(void) {
 
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
 
     /* 配列代入 */
     T in[2][3];
@@ -2033,6 +2033,8 @@ void check_python_numpy_calc(void) {
     Matrix<DefDiag, T, 3> E_answer({ 1, 4, 9 });
     tester.expect_near(E.matrix.data, E_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply DiagMatrix.");
+
+#if 0
 
 
     /* 左除算 */
@@ -2402,10 +2404,12 @@ void check_python_numpy_calc(void) {
         "check LinalgSolverEig eigen vectors imag, strict.");
 
 
+#endif
+
     tester.throw_error_if_test_failed();
 }
 
-#endif
+
 
 int main() {
 
