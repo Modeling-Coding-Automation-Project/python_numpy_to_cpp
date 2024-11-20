@@ -23,6 +23,9 @@ template <typename SparseAvailable>
 using RowPointersFromSparseAvailable =
     Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>;
 
+using SparseAvailable_NoUse =
+    SparseAvailable<ColumnAvailable<true, false>, ColumnAvailable<false, true>>;
+
 /* Matrix class definition */
 class DefDense {};
 

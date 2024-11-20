@@ -2003,7 +2003,7 @@ void check_python_numpy_calc(void) {
             ColumnAvailable<true, false, false>,
             ColumnAvailable<true, false, true>,
             ColumnAvailable<false, true, true>>
-        > C({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        > C({ 1, 3, 8, 2, 4 });
 
     auto A_add_B = A - B;
 
@@ -2035,14 +2035,21 @@ void check_python_numpy_calc(void) {
     tester.expect_near(E.matrix.data, E_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply DiagMatrix.");
 
-#if 0
-
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
 
-    static auto solver = make_LinalgSolver(C, C);
+    static auto A_A_linalg_solver = make_LinalgSolver(A, A);
 
-    auto x = solver.solve(C, C);
+    auto A_A_x = A_A_linalg_solver.solve(A, A);
+
+    Matrix <DefDense, T, 3, 3> A_A_x_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
+    tester.expect_near(A_A_x.matrix.data, A_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve.");
+
+
+    //static auto solver = make_LinalgSolver(C, C);
+
+    //auto x = solver.solve(C, C);
     //auto x = solver.get_answer();
     //std::cout << "x = " << std::endl;
     //for (size_t j = 0; j < x.matrix.cols(); ++j) {
@@ -2053,10 +2060,12 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix <DefDense, T, 3, 3> x_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
-    tester.expect_near(x.matrix.data, x_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver solve.");
+    //Matrix <DefDense, T, 3, 3> x_answer({ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} });
+    //tester.expect_near(x.matrix.data, x_answer.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check LinalgSolver solve.");
 
+
+#if 0
     /* 対角　左除算 */
     static auto solver_diag = make_LinalgSolver(B, B);
 
