@@ -179,8 +179,6 @@ public:
          RowPointersFromSparseAvailable<SparseAvailable>> &&input) noexcept
       : matrix(std::move(input)) {}
 
-  Matrix(Base::Matrix::Matrix<T, M, N> &input) : matrix(input) {}
-
   /* Copy Constructor */
   Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
       : matrix(input.matrix) {}
