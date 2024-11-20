@@ -1998,11 +1998,12 @@ void check_python_numpy_calc(void) {
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
 
-    Matrix<DefSparse, T, 3, 3, 5> C(
-        { 1.0F, 3.0F, 8.0F, 2.0F, 4.0F },
-        { 0, 0, 2, 1, 2 },
-        { 0, 1, 3, 5 }
-    );
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+            ColumnAvailable<true, false, false>,
+            ColumnAvailable<true, false, true>,
+            ColumnAvailable<false, true, true>>
+        > C({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     auto A_add_B = A - B;
 
@@ -2035,7 +2036,6 @@ void check_python_numpy_calc(void) {
         "check DiagMatrix multiply DiagMatrix.");
 
 #if 0
-
 
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
@@ -2122,6 +2122,8 @@ void check_python_numpy_calc(void) {
     Matrix<DefDiag, T, 3> Inv_d_answer({ 1, 0.5F, 0.333333F });
     tester.expect_near(Inv_d.matrix.data, Inv_d_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv diag.");
+
+
 
     /* 結合 */
     auto B_C = concatenate_vertically(B, C);
@@ -2417,9 +2419,9 @@ int main() {
 
     check_base_matrix_calc<float>();
 
-    // check_python_numpy_calc<double>();
+    check_python_numpy_calc<double>();
 
-    // check_python_numpy_calc<float>();
+    check_python_numpy_calc<float>();
 
 
     return 0;
