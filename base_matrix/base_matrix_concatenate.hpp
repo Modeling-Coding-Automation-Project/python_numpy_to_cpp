@@ -637,7 +637,7 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (N + M); j++) {
-      if (j < N) {
+      if (j < M) {
         if (i == j) {
           Y.values[value_count] = A[i];
 
@@ -645,7 +645,7 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
         }
       } else {
 
-        Y.values[value_count] = B(i, j - N);
+        Y.values[value_count] = B(i, j - M);
 
         value_count++;
       }
