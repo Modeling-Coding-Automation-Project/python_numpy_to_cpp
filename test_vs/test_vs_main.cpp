@@ -3012,32 +3012,23 @@ void check_python_numpy_qr(void) {
     tester.throw_error_if_test_failed();
 }
 
+template<typename T>
+void check_python_numpy_eig(void) {
+    using namespace PythonNumpy;
 
-template <typename T>
-void check_python_numpy_calc(void) {
+    MCAPTester<T> tester;
 
-    check_python_numpy_base<T>();
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    check_python_numpy_left_divide_and_inv<T>();
-
-    check_python_numpy_concatenate<T>();
-
-    check_python_numpy_transpose<T>();
-
-    check_python_numpy_lu<T>();
-
-    check_check_python_numpy_cholesky<T>();
-
-    check_check_python_numpy_transpose_operation<T>();
-
-    check_python_numpy_qr<T>();
-
-
-#if 0
-
-
-
-
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
 
 
     /* 実数値のみの固有値 */
@@ -3173,10 +3164,31 @@ void check_python_numpy_calc(void) {
     tester.expect_near(A_mul_V_imag.matrix.data, V_mul_D_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen vectors imag, strict.");
 
-
-#endif
+    tester.throw_error_if_test_failed();
 }
 
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide_and_inv<T>();
+
+    check_python_numpy_concatenate<T>();
+
+    check_python_numpy_transpose<T>();
+
+    check_python_numpy_lu<T>();
+
+    check_check_python_numpy_cholesky<T>();
+
+    check_check_python_numpy_transpose_operation<T>();
+
+    check_python_numpy_qr<T>();
+
+    check_python_numpy_eig<T>();
+}
 
 
 int main() {
