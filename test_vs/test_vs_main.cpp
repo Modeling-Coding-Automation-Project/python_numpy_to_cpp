@@ -2691,28 +2691,36 @@ void check_python_numpy_lu(void) {
     tester.throw_error_if_test_failed();
 }
 
+template<typename T>
+void check_check_python_numpy_cholesky(void) {
+    using namespace PythonNumpy;
 
-template <typename T>
-void check_python_numpy_calc(void) {
+    MCAPTester<T> tester;
 
-    check_python_numpy_base<T>();
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    check_python_numpy_left_divide_and_inv<T>();
-
-    check_python_numpy_concatenate<T>();
-
-    check_python_numpy_transpose<T>();
-
-    check_python_numpy_lu<T>();
-
-
-#if 0
-
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
 
 
     /* コレスキー分解 */
-    Matrix<DefDense, T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
-    Matrix<DefSparse, T, 3, 3, 6> K_s({ 1, 8, 3, 3, 4 }, { 0, 1, 2, 1, 2 }, { 0, 1, 3, 5 });
+    Matrix<DefDense, T, 3, 3> K({
+        {10, 1, 2},
+        {1, 20, 4},
+        {2, 4, 30}
+    });
+    Matrix<DefSparse, T, 3, 3, SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, true, true>,
+        ColumnAvailable<false, true, true>>
+        >K_s({ 1, 8, 3, 3, 4 });
 
     static auto Chol_solver = make_LinalgSolverCholesky(K);
 
@@ -2734,6 +2742,31 @@ void check_python_numpy_calc(void) {
         });
     tester.expect_near(A_ch_d.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverCholesky solve.");
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide_and_inv<T>();
+
+    check_python_numpy_concatenate<T>();
+
+    check_python_numpy_transpose<T>();
+
+    check_python_numpy_lu<T>();
+
+    check_check_python_numpy_cholesky<T>();
+
+
+#if 0
+
+
+
 
     /* 転置積 */
     auto AB = AT_mul_B(C, B);
