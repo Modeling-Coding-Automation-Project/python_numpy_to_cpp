@@ -9,13 +9,13 @@
 using namespace Tester;
 
 template <typename T>
-void check_base_matrix_calc(void) {
+void check_matrix_vector_creation(void) {
     using namespace Base::Matrix;
 
     MCAPTester<T> tester;
 
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
-    const T NEAR_LIMIT_SOFT = 1.0e-2F;
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 行列の作成 */
     Matrix<T, 2, 3> A;
@@ -57,6 +57,28 @@ void check_base_matrix_calc(void) {
     T b_dot_answer = 14.0F;
     tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT, "check Vector dot.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_matrix_swap(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<T, 2, 3> A;
+    A(0, 0) = 1.0F; A(0, 1) = 2.0F; A(0, 2) = 3.0F;
+    A(1, 0) = 4.0F; A(1, 1) = 5.0F; A(1, 2) = 6.0F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
     /* スワップ */
     Matrix<T, 3, 3>Test_swap({ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} });
     matrix_row_swap(0, 2, Test_swap);
@@ -72,6 +94,32 @@ void check_base_matrix_calc(void) {
     Matrix<T, 3, 3>Test_swap_answer({ {3, 2, 1}, {6, 5, 4}, {9, 8, 7} });
     tester.expect_near(Test_swap.data, Test_swap_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix row swap.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_matrix_multiply(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<T, 2, 3> A;
+    A(0, 0) = 1.0F; A(0, 1) = 2.0F; A(0, 2) = 3.0F;
+    A(1, 0) = 4.0F; A(1, 1) = 5.0F; A(1, 2) = 6.0F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
+    Vector<T, 2> c;
+    c[0] = 4.0F;
+    c[1] = 5.0F;
 
     /* 行列とベクトルの積 */
     Vector<T, 2> x = A * b;
@@ -146,6 +194,24 @@ void check_base_matrix_calc(void) {
     tester.expect_near(G.data, G_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix multiply Matrix.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_lu_decomposition(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
     /* LU分解 */
     Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
@@ -183,6 +249,33 @@ void check_base_matrix_calc(void) {
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition solve.");
 
+    T det = lu.get_determinant();
+    //std::cout << "det = " << det << std::endl;
+    //std::cout << std::endl;
+
+    T det_answer = -95.0F;
+    tester.expect_near(det, det_answer, NEAR_LIMIT_STRICT,
+        "check Matrix determinant.");
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_gmres_k_and_inverse(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
+    Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
+
     /* GMRES k */
     T rho;
     size_t rep_num;
@@ -199,38 +292,6 @@ void check_base_matrix_calc(void) {
     Vector<T, 3> x_gmres_k_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer.data, NEAR_LIMIT_STRICT,
         "check GMRES k.");
-
-    /* 転置積 */
-    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E);
-    //std::cout << "Trans = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 2; ++i) {
-    //        std::cout << Trans(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<T, 3, 2> Trans_answer({
-        {32, 68},
-        {30, 81},
-        {33, 81}
-        });
-    tester.expect_near(Trans.data, Trans_answer.data, NEAR_LIMIT_STRICT,
-        "check Matrix multiply Matrix transpose.");
-
-    Vector<T, 3> b_T = matrix_multiply_AT_mul_b(H, b);
-
-    //std::cout << "b_T = ";
-    //for (size_t i = 0; i < xx.size(); ++i) {
-    //    std::cout << b_T[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
-    Vector<T, 3> b_T_answer({ 35, 21, 38 });
-    tester.expect_near(b_T.data, b_T_answer.data, NEAR_LIMIT_STRICT,
-        "check Matrix transpose multiply Vector.");
 
     /* GMRES k rect */
     Vector<T, 4> b_2;
@@ -281,15 +342,78 @@ void check_base_matrix_calc(void) {
     tester.expect_near(H_inv.data, H_inv_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix inverse.");
 
-    /* 行列式、トレース */
-    T det = lu.get_determinant();
-    //std::cout << "det = " << det << std::endl;
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_matrix_transpose_multiply(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
+    Matrix<T, 2, 3> E;
+    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
+    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
+
+    Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
+
+    /* 転置積 */
+    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E);
+    //std::cout << "Trans = " << std::endl;
+    //for (size_t j = 0; j < 3; ++j) {
+    //    for (size_t i = 0; i < 2; ++i) {
+    //        std::cout << Trans(j, i) << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
     //std::cout << std::endl;
 
-    T det_answer = -95.0F;
-    tester.expect_near(det, det_answer, NEAR_LIMIT_STRICT,
-        "check Matrix determinant.");
+    Matrix<T, 3, 2> Trans_answer({
+        {32, 68},
+        {30, 81},
+        {33, 81}
+        });
+    tester.expect_near(Trans.data, Trans_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix multiply Matrix transpose.");
 
+    Vector<T, 3> b_T = matrix_multiply_AT_mul_b(H, b);
+
+    //std::cout << "b_T = ";
+    //for (size_t i = 0; i < xx.size(); ++i) {
+    //    std::cout << b_T[i] << " ";
+    //}
+    //std::cout << std::endl;
+    //std::cout << std::endl;
+
+    Vector<T, 3> b_T_answer({ 35, 21, 38 });
+    tester.expect_near(b_T.data, b_T_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix transpose multiply Vector.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_determinant_and_trace(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
+
+    /* 行列式、トレース */
     T trace = H.get_trace();
     //std::cout << "trace = " << trace << std::endl;
     //std::cout << std::endl;
@@ -297,6 +421,26 @@ void check_base_matrix_calc(void) {
     T trace_answer = 13.0F;
     tester.expect_near(trace, trace_answer, NEAR_LIMIT_STRICT,
         "check Matrix trace.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_diag_matrix(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
+    Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
     /* 対角行列 */
     DiagMatrix<T, 3> D;
@@ -368,6 +512,24 @@ void check_base_matrix_calc(void) {
     tester.expect_near(D_dense.data, D_dense_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix create dense.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_sparse_matrix(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Vector<T, 3> b;
+    b[0] = 1.0F;
+    b[1] = 2.0F;
+    b[2] = 3.0F;
+
     /* スパース行列 */
     std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
     std::vector<size_t> A_row_indices({ 0, 0, 2, 1, 2 });
@@ -415,7 +577,7 @@ void check_base_matrix_calc(void) {
         "check CompiledSparseMatrix multiply scalar.");
 
     Vector<T, 3> SparseCc_mul_vector = SparseCc * b;
-    Vector<T, 3> SparseCc_mul_vector_answer({1, 27, 16});
+    Vector<T, 3> SparseCc_mul_vector_answer({ 1, 27, 16 });
 
     tester.expect_near(SparseCc_mul_vector.data, SparseCc_mul_vector_answer.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix multiply Vector.");
@@ -526,7 +688,7 @@ void check_base_matrix_calc(void) {
 
     CompiledSparseMatrix<T, 3, 4,
         RowIndices<0, 0, 2, 3, 1, 2>,
-        RowPointers<0, 1, 4, 6>> SEc({1, 3, 8, 1, 2, 4});
+        RowPointers<0, 1, 4, 6>> SEc({ 1, 3, 8, 1, 2, 4 });
 
     Matrix<T, 3, 4> Sparse_mul_Sparse = SparseCc * SEc;
 
@@ -560,7 +722,7 @@ void check_base_matrix_calc(void) {
         "check SparseMatrix transpose multiply SparseMatrix.");
 
     Matrix<T, 3, 3> Sparse_mul_SparseTranspose =
-    matrix_multiply_SparseA_mul_SparseBTranspose(SparseCc, SparseCc);
+        matrix_multiply_SparseA_mul_SparseBTranspose(SparseCc, SparseCc);
 
     Matrix<T, 3, 3> Sparse_mul_SparseTranspose_answer({
         {1, 3, 0},
@@ -798,9 +960,9 @@ void check_base_matrix_calc(void) {
 
     auto C_from_list = create_compiled_sparse<T,
         SparseAvailable<
-            ColumnAvailable<true, false, false>,
-            ColumnAvailable<true, false, true>,
-            ColumnAvailable<false, true, true>>
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
         >({ 1, 3, 8, 2, 4 });
 
     Matrix<T, 3, 3> A_mul_C_from_list = DenseG * C_from_list;
@@ -815,7 +977,10 @@ void check_base_matrix_calc(void) {
         "check CompiledSparseMatrix from list.");
 
     /* スパース行列の逆行列計算 */
-    x_gmres_k = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
+    T rho;
+    size_t rep_num;
+    Vector<T, 3> x_gmres_k_0;
+    Vector<T, 3> x_gmres_k = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
         static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
     //std::cout << "x_gmres_k = ";
@@ -833,6 +998,18 @@ void check_base_matrix_calc(void) {
         RowIndices<0, 1, 2, 1, 2, 1>,
         RowPointers<0, 2, 3, 5, 6>> SBc({ 1, 3, 2, 8, 4, 1 });
 
+    Vector<T, 4> b_2;
+    b_2[0] = 1.0F;
+    b_2[1] = 2.0F;
+    b_2[2] = 3.0F;
+    b_2[3] = 4.0F;
+    Matrix<T, 4, 3> H_2;
+    H_2(0, 0) = 1.0F; H_2(0, 1) = 2.0F; H_2(0, 2) = 9.0F;
+    H_2(1, 0) = 8.0F; H_2(1, 1) = 5.0F; H_2(1, 2) = 4.0F;
+    H_2(2, 0) = 6.0F; H_2(2, 1) = 3.0F; H_2(2, 2) = 7.0F;
+    H_2(3, 0) = 10.0F; H_2(3, 1) = 12.0F; H_2(3, 2) = 11.0F;
+
+    Vector<T, 3> x_gmres_k_rect_0;
     x_gmres_k = sparse_gmres_k_rect(SBc, b_2, x_gmres_k_rect_0,
         static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
 
@@ -867,7 +1044,8 @@ void check_base_matrix_calc(void) {
     tester.expect_near(SB_dense.data, SB_dense_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix create dense.");
 
-    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SparseCc, 
+    Matrix<T, 3, 3> X_temp = Matrix<T, 3, 3>::identity();
+    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SparseCc,
         static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
 
     //std::cout << "S_inv = " << std::endl;
@@ -913,6 +1091,10 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Dense_T.data, Dense_T_answer.data, NEAR_LIMIT_STRICT,
         "create Sparse and check SparseMatrix multiply Matrix.");
 
+    DiagMatrix<T, 3> D;
+    D[0] = 1.0F;
+    D[1] = 2.0F;
+    D[2] = 3.0F;
 
     SparseMatrix<T, 3, 3, 3> G_s = create_sparse(D);
     Matrix<T, 3, 3> G_s_d = G_s.create_dense();
@@ -933,9 +1115,31 @@ void check_base_matrix_calc(void) {
     tester.expect_near(G_s_d.data, G_s_d_answer.data, NEAR_LIMIT_STRICT,
         "check create_sparse command.");
 
-    /* 行列結合 */
-    // DenseA, D, SparseCc
 
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_matrix_cocatenation(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<T, 3, 3> DenseA({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+
+    DiagMatrix<T, 3> D;
+    D[0] = 1.0F;
+    D[1] = 2.0F;
+    D[2] = 3.0F;
+
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+
+    /* 行列結合 */
     auto A_v_A = concatenate_vertically(DenseA, DenseA);
 
     Matrix<T, 6, 3> A_v_A_answer({
@@ -1125,76 +1329,76 @@ void check_base_matrix_calc(void) {
         {0, 2, 0, 0, 4, 0},
         {0, 0, 3, 0, 0, 6}
         });
-
+    
     tester.expect_near(B_h_B_dense.data, B_h_B_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Diag.");
-
+    
     auto B_h_C = concatenate_horizontally(D, SparseCc);
     auto B_h_C_dense = B_h_C.create_dense();
-
+    
     Matrix<T, 3, 6> B_h_C_answer({
         {1, 0, 0, 1, 0, 0},
         {0, 2, 0, 3, 0, 8},
         {0, 0, 3, 0, 2, 4}
         });
-
+    
     tester.expect_near(B_h_C_dense.data, B_h_C_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Sparse.");
-
+    
     auto C_h_A = concatenate_horizontally(SparseCc, DenseA);
     auto C_h_A_dense = C_h_A.create_dense();
-
+    
     Matrix<T, 3, 6> C_h_A_answer({
         {1, 0, 0, 1, 2, 3},
         {3, 0, 8, 5, 4, 6},
         {0, 2, 4, 9, 8, 7}
         });
-
+    
     tester.expect_near(C_h_A_dense.data, C_h_A_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Dense.");
-
+    
     auto C_h_B = concatenate_horizontally(SparseCc, D);
     auto C_h_B_dense = C_h_B.create_dense();
-
+    
     Matrix<T, 3, 6> C_h_B_answer({
         {1, 0, 0, 1, 0, 0},
         {3, 0, 8, 0, 2, 0},
         {0, 2, 4, 0, 0, 3}
         });
-
+    
     tester.expect_near(C_h_B_dense.data, C_h_B_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Diag.");
-
+    
     auto C_h_C = concatenate_horizontally(SparseCc, SparseCc * static_cast<T>(2));
     auto C_h_C_dense = C_h_C.create_dense();
-
+    
     Matrix<T, 3, 6> C_h_C_answer({
         {1, 0, 0, 2, 0, 0},
         {3, 0, 8, 6, 0, 16},
         {0, 2, 4, 0, 4, 8}
         });
-
+    
     tester.expect_near(C_h_C_dense.data, C_h_C_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Sparse.");
-
+    
     Matrix<T, 2, 2> Aa;
     Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
     Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
-
+    
     Matrix<T, 2, 2> Ba;
     Ba(0, 0) = 5.0F; Ba(0, 1) = 6.0F;
     Ba(1, 0) = 7.0F; Ba(1, 1) = 8.0F;
-
+    
     Matrix<T, 3, 2> Ca;
     Ca(0, 0) = 9.0F; Ca(0, 1) = 10.0F;
     Ca(1, 0) = 11.0F; Ca(1, 1) = 12.0F;
     Ca(2, 0) = 11.0F; Ca(2, 1) = 12.0F;
-
+    
     Matrix<T, 3, 2> Da;
     Da(0, 0) = 13.0F; Da(0, 1) = 14.0F;
     Da(1, 0) = 15.0F; Da(1, 1) = 16.0F;
     Da(2, 0) = 15.0F; Da(2, 1) = 16.0F;
-
+    
     Matrix<T, 5, 4> C = concatenate_square(Aa, Ba, Ca, Da);
     //std::cout << "Square = " << std::endl;
     //for (size_t j = 0; j < C.cols(); ++j) {
@@ -1204,7 +1408,7 @@ void check_base_matrix_calc(void) {
     //    std::cout << std::endl;
     //}
     //std::cout << std::endl;
-
+    
     Matrix<T, 5, 4> C_answer({
         {1, 2, 5, 6},
         {3, 4, 7, 8},
@@ -1213,6 +1417,24 @@ void check_base_matrix_calc(void) {
         {11, 12, 15, 16} });
     tester.expect_near(C.data, C_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix concatenate.");
+    
+    
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_cholesky_decomposition(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    DiagMatrix<T, 3> D;
+    D[0] = 1.0F;
+    D[1] = 2.0F;
+    D[2] = 3.0F;
 
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
@@ -1259,7 +1481,7 @@ void check_base_matrix_calc(void) {
     tester.expect_near(K_diag.data, K_diag_answer.data, NEAR_LIMIT_STRICT,
         "check Cholesky decomposition diag.");
 
-    CompiledSparseMatrix<T, 3, 3, 
+    CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 1, 2, 1, 2 >,
         RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
     Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, flag);
@@ -1274,6 +1496,24 @@ void check_base_matrix_calc(void) {
 
     tester.expect_near(K_ch_sparse_2.data, K_ch_sparse_2_answer.data, NEAR_LIMIT_STRICT,
         "check Cholesky decomposition sparse.");
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_qr_decomposition(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
+
+    CompiledSparseMatrix<T, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
@@ -1343,6 +1583,23 @@ void check_base_matrix_calc(void) {
     tester.expect_near(R_d.data, R_d_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition Diag R.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_variable_sparse_matrix(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+    std::vector<size_t> A_row_indices({ 0, 0, 2, 1, 2 });
+    std::vector<size_t> A_row_pointers({ 0, 1, 3, 5 });
+
     /* 可変スパース行列 */
     VariableSparseMatrix<T, 3, 3> CV;
     std::memcpy(&CV.values[0], &A_value[0], 5 * sizeof(CV.values[0]));
@@ -1366,6 +1623,20 @@ void check_base_matrix_calc(void) {
         });
     tester.expect_near(VS_test.data, VS_test_answer.data, NEAR_LIMIT_STRICT,
         "check VariableSparseMatrix multiply VariableSparseMatrix.");
+
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_triangular_matrix(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
 
     /* 三角スパース行列 */
     Matrix<T, 3, 3> Dense_33({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11} });
@@ -1407,6 +1678,22 @@ void check_base_matrix_calc(void) {
     tester.expect_near(Test_lower.data, Test_lower_answer.data, NEAR_LIMIT_STRICT,
         "check TriangularSparse create lower.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_complex(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    T rho;
+    size_t rep_num;
+
     /* 複素数 */
     Complex<T> a_comp(1, 2);
     Complex<T> b_comp(3, 4);
@@ -1440,6 +1727,18 @@ void check_base_matrix_calc(void) {
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k imag.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void check_eigen_values_and_vectors(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 実数値のみの固有値 */
     Matrix<T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
@@ -1514,7 +1813,7 @@ void check_base_matrix_calc(void) {
 #else
     std::array<Complex<T>, 3> eigen_values_comp
 #endif
-    = eigen_solver_comp.get_eigen_values();
+        = eigen_solver_comp.get_eigen_values();
 
     //std::cout << "eigen_values_comp = ";
     //for (size_t i = 0; i < eigen_values_comp.size(); ++i) {
@@ -1619,6 +1918,48 @@ void check_base_matrix_calc(void) {
 
 
     tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void check_base_matrix_calc(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    check_matrix_vector_creation<T>();
+
+    check_matrix_swap<T>();
+
+    check_matrix_multiply<T>();
+
+    check_lu_decomposition<T>();
+
+    check_gmres_k_and_inverse<T>();
+
+    check_matrix_transpose_multiply<T>();
+
+    check_determinant_and_trace<T>();
+
+    check_determinant_and_trace<T>();
+
+    check_diag_matrix<T>();
+
+    check_sparse_matrix<T>();
+
+    check_matrix_cocatenation<T>();
+
+    check_cholesky_decomposition<T>();
+
+    check_qr_decomposition<T>();
+
+    check_variable_sparse_matrix<T>();
+
+    check_triangular_matrix<T>();
+
+    check_complex<T>();
+
+    check_eigen_values_and_vectors<T>();
 }
 
 #if 0
