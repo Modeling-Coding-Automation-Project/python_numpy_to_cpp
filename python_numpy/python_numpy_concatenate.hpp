@@ -353,6 +353,33 @@ auto concatenate_horizontally(
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename SparseAvailable_A>
+auto concatenate_horizontally(
+    const Matrix<DefSparse, T, M, L, SparseAvailable_A> &A,
+    const Matrix<DefDense, T, M, N> &B)
+    -> Matrix<DefSparse, T, M, (N + L),
+              CreateSparseAvailableFromIndicesAndPointers<
+                  (N + L),
+                  RowIndicesFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<
+                          SparseAvailable_A, DenseAvailable<M, N>>>,
+                  RowPointersFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<
+                          SparseAvailable_A, DenseAvailable<M, N>>>>> {
+
+  /* Result */
+  return Matrix<
+      DefSparse, T, M, (N + L),
+      CreateSparseAvailableFromIndicesAndPointers<
+          (N + L),
+          RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, DenseAvailable<M, N>>>,
+          RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, DenseAvailable<M, N>>>>>(
+      Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename SparseAvailable_A, typename SparseAvailable_B>
 auto concatenate_horizontally(
     const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
