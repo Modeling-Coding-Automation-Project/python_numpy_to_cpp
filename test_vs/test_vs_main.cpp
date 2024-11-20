@@ -2628,21 +2628,23 @@ void check_python_numpy_transpose(void) {
     tester.throw_error_if_test_failed();
 }
 
-
 template <typename T>
-void check_python_numpy_calc(void) {
+void check_python_numpy_lu(void) {
+    using namespace PythonNumpy;
 
-    check_python_numpy_base<T>();
+    MCAPTester<T> tester;
 
-    check_python_numpy_left_divide_and_inv<T>();
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    check_python_numpy_concatenate<T>();
-
-    check_python_numpy_transpose<T>();
-
-
-#if 0
-
+    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
     static auto LU_solver = make_LinalgSolverLU(A);
@@ -2657,7 +2659,12 @@ void check_python_numpy_calc(void) {
     //}
     //std::cout << std::endl;
 
-    Matrix<DefDense, T, 3, 3> A_LU_answer({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDense, T, 3, 3> A_LU_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+    });
+
     tester.expect_near(A_LU.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U.");
 
@@ -2666,6 +2673,28 @@ void check_python_numpy_calc(void) {
     T det_answer = 30;
     tester.expect_near(LU_solver.get_det(), det_answer, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU det.");
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void check_python_numpy_calc(void) {
+
+    check_python_numpy_base<T>();
+
+    check_python_numpy_left_divide_and_inv<T>();
+
+    check_python_numpy_concatenate<T>();
+
+    check_python_numpy_transpose<T>();
+
+    check_python_numpy_lu<T>();
+
+
+#if 0
+
+
 
     /* コレスキー分解 */
     Matrix<DefDense, T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });

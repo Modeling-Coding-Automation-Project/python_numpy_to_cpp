@@ -9,7 +9,8 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_LU = 1.0e-10;
 
-template <typename T, std::size_t M, std::size_t V> class LinalgSolverLU {
+template <typename T, std::size_t M, typename SparseAvailable>
+class LinalgSolverLU {
 public:
   /* Constructor */
   LinalgSolverLU() {}
@@ -18,13 +19,16 @@ public:
 
   LinalgSolverLU(const Matrix<DefDiag, T, M> &A) { this->solve(A); }
 
-  LinalgSolverLU(const Matrix<DefSparse, T, M, M, V> &A) { this->solve(A); }
+  LinalgSolverLU(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
+    this->solve(A);
+  }
 
   /* Copy Constructor */
-  LinalgSolverLU(const LinalgSolverLU<T, M, V> &other)
+  LinalgSolverLU(const LinalgSolverLU<T, M, SparseAvailable> &other)
       : _LU_decomposer(other._LU_decomposer) {}
 
-  LinalgSolverLU<T, M, V> &operator=(const LinalgSolverLU<T, M, V> &other) {
+  LinalgSolverLU<T, M, SparseAvailable> &
+  operator=(const LinalgSolverLU<T, M, SparseAvailable> &other) {
     if (this != &other) {
       this->_LU_decomposer = other._LU_decomposer;
     }
@@ -32,10 +36,11 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverLU(LinalgSolverLU<T, M, V> &&other) noexcept
+  LinalgSolverLU(LinalgSolverLU<T, M, SparseAvailable> &&other) noexcept
       : _LU_decomposer(std::move(other._LU_decomposer)) {}
 
-  LinalgSolverLU<T, M, V> &operator=(LinalgSolverLU<T, M, V> &&other) noexcept {
+  LinalgSolverLU<T, M, SparseAvailable> &
+  operator=(LinalgSolverLU<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_LU_decomposer = std::move(other._LU_decomposer);
     }
@@ -52,34 +57,38 @@ public:
     this->_LU_decomposer = Base::Matrix::LUDecomposition<T, M>(A.matrix);
   }
 
-  void solve(const Matrix<DefSparse, T, M, M, V> &A) {
+  void solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<T, M>(
         A.matrix.create_dense(), this->_division_min);
   }
 
   /* Get */
-  auto get_L()
-      -> Matrix<DefSparse, T, M, M,
-                Base::Matrix::CalculateTriangularSize<M, M>::value> const {
+  auto get_L() -> Matrix<DefSparse, T, M, M,
+                         CreateSparseAvailableFromIndicesAndPointers<
+                             M, LowerTriangularRowIndices<M, M>,
+                             LowerTriangularRowPointers<M, M>>> const {
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_lower(
         this->_L_triangular, this->_LU_decomposer.get_L());
 
     return Matrix<DefSparse, T, M, M,
-                  Base::Matrix::CalculateTriangularSize<M, M>::value>(
-        this->_L_triangular);
+                  CreateSparseAvailableFromIndicesAndPointers<
+                      M, LowerTriangularRowIndices<M, M>,
+                      LowerTriangularRowPointers<M, M>>>(this->_L_triangular);
   }
 
-  auto get_U()
-      -> Matrix<DefSparse, T, M, M,
-                Base::Matrix::CalculateTriangularSize<M, M>::value> const {
+  auto get_U() -> Matrix<DefSparse, T, M, M,
+                         CreateSparseAvailableFromIndicesAndPointers<
+                             M, UpperTriangularRowIndices<M, M>,
+                             UpperTriangularRowPointers<M, M>>> const {
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_upper(
         this->_U_triangular, this->_LU_decomposer.get_U());
 
     return Matrix<DefSparse, T, M, M,
-                  Base::Matrix::CalculateTriangularSize<M, M>::value>(
-        this->_U_triangular);
+                  CreateSparseAvailableFromIndicesAndPointers<
+                      M, UpperTriangularRowIndices<M, M>,
+                      UpperTriangularRowPointers<M, M>>>(this->_U_triangular);
   }
 
   T get_det() { return this->_LU_decomposer.get_determinant(); }
@@ -87,36 +96,40 @@ public:
 private:
   /* Variable */
   Base::Matrix::LUDecomposition<T, M> _LU_decomposer;
-  Base::Matrix::SparseMatrix<T, M, M,
-                             Base::Matrix::CalculateTriangularSize<M, M>::value>
+  Base::Matrix::CompiledSparseMatrix<
+      T, M, M, Base::Matrix::LowerTriangularRowIndices<M, M>,
+      Base::Matrix::LowerTriangularRowPointers<M, M>>
       _L_triangular = Base::Matrix::TriangularSparse<T, M, M>::create_lower();
-  Base::Matrix::SparseMatrix<T, M, M,
-                             Base::Matrix::CalculateTriangularSize<M, M>::value>
+  Base::Matrix::CompiledSparseMatrix<
+      T, M, M, Base::Matrix::UpperTriangularRowIndices<M, M>,
+      Base::Matrix::UpperTriangularRowPointers<M, M>>
       _U_triangular = Base::Matrix::TriangularSparse<T, M, M>::create_upper();
 
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_LU);
 };
 
 /* make LinalgSolverLU */
-template <typename T, std::size_t M, std::size_t V = 1>
+template <typename T, std::size_t M,
+          typename SparseAvailable = SparseAvailable_NoUse>
 auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolverLU<T, M, V> {
+    -> LinalgSolverLU<T, M, SparseAvailable> {
 
-  return LinalgSolverLU<T, M, V>(A);
+  return LinalgSolverLU<T, M, SparseAvailable>(A);
 }
 
-template <typename T, std::size_t M, std::size_t V = 1>
+template <typename T, std::size_t M,
+          typename SparseAvailable = SparseAvailable_NoUse>
 auto make_LinalgSolverLU(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolverLU<T, M, V> {
+    -> LinalgSolverLU<T, M, SparseAvailable> {
 
-  return LinalgSolverLU<T, M, V>(A);
+  return LinalgSolverLU<T, M, SparseAvailable>(A);
 }
 
-template <typename T, std::size_t M, std::size_t V>
-auto make_LinalgSolverLU(const Matrix<DefSparse, T, M, M, V> &A)
-    -> LinalgSolverLU<T, M, V> {
+template <typename T, std::size_t M, typename SparseAvailable>
+auto make_LinalgSolverLU(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+    -> LinalgSolverLU<T, M, SparseAvailable> {
 
-  return LinalgSolverLU<T, M, V>(A);
+  return LinalgSolverLU<T, M, SparseAvailable>(A);
 }
 
 } // namespace PythonNumpy

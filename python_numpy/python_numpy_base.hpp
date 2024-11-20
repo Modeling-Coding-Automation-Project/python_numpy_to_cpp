@@ -49,6 +49,20 @@ using ConcatenateSparseAvailableHorizontally =
     Base::Matrix::ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                                          SparseAvailable_B>;
 
+template <std::size_t M, std::size_t N>
+using LowerTriangularRowIndices = Base::Matrix::LowerTriangularRowIndices<M, N>;
+
+template <std::size_t M, std::size_t N>
+using LowerTriangularRowPointers =
+    Base::Matrix::LowerTriangularRowPointers<M, N>;
+
+template <std::size_t M, std::size_t N>
+using UpperTriangularRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
+
+template <std::size_t M, std::size_t N>
+using UpperTriangularRowPointers =
+    Base::Matrix::UpperTriangularRowPointers<M, N>;
+
 using SparseAvailable_NoUse =
     SparseAvailable<ColumnAvailable<true, false>, ColumnAvailable<false, true>>;
 
