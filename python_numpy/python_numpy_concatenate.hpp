@@ -379,14 +379,56 @@ auto concatenate_horizontally(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A>
+auto concatenate_horizontally(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDiag, T, M> &B)
+    -> Matrix<DefSparse, T, M, (M + N),
+              CreateSparseAvailableFromIndicesAndPointers<
+                  (M + N),
+                  RowIndicesFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                                             DiagAvailable<M>>>,
+                  RowPointersFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<
+                          SparseAvailable_A, DiagAvailable<M>>>>> {
+
+  /* Result */
+  return Matrix<
+      DefSparse, T, M, (M + N),
+      CreateSparseAvailableFromIndicesAndPointers<
+          (M + N),
+          RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, DiagAvailable<M>>>,
+          RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, DiagAvailable<M>>>>>(
+      Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename SparseAvailable_A, typename SparseAvailable_B>
 auto concatenate_horizontally(
     const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
     const Matrix<DefSparse, T, M, L, SparseAvailable_B> &B)
-    -> Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse> {
+    -> Matrix<DefSparse, T, M, (N + L),
+              CreateSparseAvailableFromIndicesAndPointers<
+                  (N + L),
+                  RowIndicesFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<
+                          SparseAvailable_A, SparseAvailable_B>>,
+                  RowPointersFromSparseAvailable<
+                      ConcatenateSparseAvailableHorizontally<
+                          SparseAvailable_A, SparseAvailable_B>>>> {
 
-  return Matrix<DefSparse, T, M, (N + L), SparseAvailable_NoUse>(
+  /* Result */
+  return Matrix<
+      DefSparse, T, M, (N + L),
+      CreateSparseAvailableFromIndicesAndPointers<
+          (N + L),
+          RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, SparseAvailable_B>>,
+          RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+              SparseAvailable_A, SparseAvailable_B>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
 

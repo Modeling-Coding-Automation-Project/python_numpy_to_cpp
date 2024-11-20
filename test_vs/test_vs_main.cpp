@@ -2522,27 +2522,32 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Dense.");
 
+    auto CL_h_BL = concatenate_horizontally(CL, BL);
+    auto CL_h_BL_dense = CL_h_BL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> CL_h_BL_answer({
+        {1, 3, 0, 1, 0, 0, 0},
+        {0, 0, 2, 0, 2, 0, 0},
+        {0, 8, 4, 0, 0, 3, 0},
+        {0, 1, 0, 0, 0, 0, 4}
+    });
+
+    tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Sparse and Diag.");
+
+    auto CL_h_CL = concatenate_horizontally(CL, CL);
+    auto CL_h_CL_dense = CL_h_CL.create_dense();
 
 
-    //auto A_A = concatenate_horizontally(CL, CL);
-    //Base::Matrix::Matrix<T, 4, 6> A_A_dense = A_A.matrix.create_dense();
-    ////std::cout << "A_A_dense = " << std::endl;
-    ////for (size_t j = 0; j < A_A_dense.cols(); ++j) {
-    ////    for (size_t i = 0; i < A_A_dense.rows(); ++i) {
-    ////        std::cout << A_A_dense(j, i) << " ";
-    ////    }
-    ////    std::cout << std::endl;
-    ////}
-    ////std::cout << std::endl;
+    Matrix<DefDense, T, 4, 6> CL_h_CL_answer({
+        {1, 3, 0, 1, 3, 0},
+        {0, 0, 2, 0, 0, 2},
+        {0, 8, 4, 0, 8, 4},
+        {0, 1, 0, 0, 1, 0}
+    });
 
-    //Matrix<DefDense, T, 4, 6> A_A_answer({
-    //    {1, 3, 0, 1, 3, 0},
-    //    {0, 0, 2, 0, 0, 2},
-    //    {0, 8, 4, 0, 8, 4},
-    //    {0, 1, 0, 0, 1, 0} });
-    //tester.expect_near(A_A_dense.data, A_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check concatenate horizontally.");
-
+    tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Sparse and Sparse.");
 
 
     tester.throw_error_if_test_failed();
