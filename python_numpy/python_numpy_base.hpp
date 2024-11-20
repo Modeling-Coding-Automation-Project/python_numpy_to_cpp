@@ -9,12 +9,6 @@
 namespace PythonNumpy {
 
 /* Compiled Sparse Matrix Templates */
-template <std::size_t... Sizes>
-using RowIndices = Base::Matrix::RowIndices<Sizes...>;
-
-template <std::size_t... Sizes>
-using RowPointers = Base::Matrix::RowPointers<Sizes...>;
-
 template <bool... Flags>
 using ColumnAvailable = Base::Matrix::ColumnAvailable<Flags...>;
 
