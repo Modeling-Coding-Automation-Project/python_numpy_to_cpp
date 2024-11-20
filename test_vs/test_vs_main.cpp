@@ -2647,9 +2647,9 @@ void check_python_numpy_lu(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
-    static auto LU_solver = make_LinalgSolverLU(A);
+    static auto A_LU_solver = make_LinalgSolverLU(A);
 
-    auto A_LU = LU_solver.get_L() * LU_solver.get_U();
+    auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
     //std::cout << "A_LU = " << std::endl;
     //for (size_t j = 0; j < A_LU.cols(); ++j) {
     //    for (size_t i = 0; i < A_LU.rows(); ++i) {
@@ -2666,13 +2666,27 @@ void check_python_numpy_lu(void) {
     });
 
     tester.expect_near(A_LU.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolverLU L multiply U.");
+        "check LinalgSolverLU L multiply U Dense.");
 
     //std::cout << "det = " << LU_solver.get_det() << std::endl << std::endl;
 
     T det_answer = 30;
-    tester.expect_near(LU_solver.get_det(), det_answer, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_LU_solver.get_det(), det_answer, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU det.");
+
+    auto B_LU_solver = make_LinalgSolverLU(B);
+
+    auto B_LU = B_LU_solver.get_L() * B_LU_solver.get_U();
+
+    Matrix<DefDense, T, 3, 3> B_LU_answer({
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+    });
+
+    tester.expect_near(B_LU.matrix.data, B_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverLU L multiply U Diag.");
+
 
     tester.throw_error_if_test_failed();
 }
