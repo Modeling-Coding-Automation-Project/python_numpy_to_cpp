@@ -2285,6 +2285,18 @@ void check_python_numpy_concatenate(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
+    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
+    Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailable<
+        ColumnAvailable<true, true, false>,
+        ColumnAvailable<false, false, true>,
+        ColumnAvailable<false, true, true>,
+        ColumnAvailable<false, true, false>>
+        >
+        CL({ 1, 3, 2, 8, 4, 1 });
+
+
     /* 結合 */
     auto A_v_A = concatenate_vertically(A, A);
 
@@ -2375,6 +2387,36 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(B_v_C_dense.matrix.data, B_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Diag and Sparse.");
 
+    auto C_v_A = concatenate_vertically(C, A);
+    auto C_v_A_dense = C_v_A.create_dense();
+
+    Matrix<DefDense, T, 6, 3> C_v_A_answer({
+        { 1, 0, 0 },
+        { 3, 0, 8 },
+        { 0, 2, 4 },
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+    });
+
+    tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Sparse and Dense.");
+
+    auto C_v_B = concatenate_vertically(C, B);
+    auto C_v_B_dense = C_v_B.create_dense();
+
+    Matrix<DefDense, T, 6, 3> C_v_B_answer({
+        { 1, 0, 0 },
+        { 3, 0, 8 },
+        { 0, 2, 4 },
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 }
+    });
+
+    tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Sparse and Diag.");
+
     auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
     auto C_v_C_dense = C_v_C.create_dense();
 
@@ -2390,6 +2432,17 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Sparse and Sparse.");
 
+    auto AL_h_AL = concatenate_horizontally(AL, AL);
+
+    Matrix<DefDense, T, 4, 6> AL_h_AL_answer({
+        {1, 2, 3, 1, 2, 3},
+        {5, 4, 6, 5, 4, 6},
+        {9, 8, 7, 9, 8, 7},
+        {2, 2, 3, 2, 2, 3}
+    });
+
+    tester.expect_near(AL_h_AL.matrix.data, AL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Dense and Dense.");
 
 
     //auto A_A = concatenate_horizontally(CL, CL);
