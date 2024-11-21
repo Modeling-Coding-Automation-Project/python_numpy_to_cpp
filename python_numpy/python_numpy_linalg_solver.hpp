@@ -2,6 +2,7 @@
 #define PYTHON_NUMPY_LINALG_SOLVER_HPP
 
 #include "python_numpy_base.hpp"
+#include "python_numpy_templates.hpp"
 #include <array>
 #include <cstddef>
 #include <utility>

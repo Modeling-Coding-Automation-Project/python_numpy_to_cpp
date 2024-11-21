@@ -158,6 +158,7 @@
     <ClInclude Include="..\python_numpy\python_numpy_linalg_lu.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_qr.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_solver.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_templates.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_transpose_operation.hpp" />
     <ClInclude Include="MCAP_tester\include\MCAP_tester.hpp" />
   </ItemGroup>

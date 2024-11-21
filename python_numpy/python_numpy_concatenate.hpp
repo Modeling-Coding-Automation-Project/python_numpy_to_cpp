@@ -3,6 +3,7 @@
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
+#include "python_numpy_templates.hpp"
 #include <cstddef>
 
 namespace PythonNumpy {
