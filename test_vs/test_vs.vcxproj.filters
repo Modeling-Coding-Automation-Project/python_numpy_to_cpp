@@ -110,5 +110,8 @@
     <ClInclude Include="..\python_numpy\python_numpy_templates.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_templates.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

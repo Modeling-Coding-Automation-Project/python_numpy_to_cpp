@@ -145,6 +145,7 @@
     <ClInclude Include="..\base_matrix\base_matrix_matrix.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_qr_decomposition.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_sparse.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_templates.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_triangular_sparse.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_utility.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_variable_sparse.hpp" />

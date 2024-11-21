@@ -5,6 +5,7 @@
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
+#include "base_matrix_templates.hpp"
 #include "base_matrix_vector.hpp"
 #include <array>
 #include <cstddef>

@@ -14,6 +14,7 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_qr_decomposition.hpp"
 #include "base_matrix_sparse.hpp"
+#include "base_matrix_templates.hpp"
 #include "base_matrix_triangular_sparse.hpp"
 #include "base_matrix_utility.hpp"
 #include "base_matrix_variable_sparse.hpp"
