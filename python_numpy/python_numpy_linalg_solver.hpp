@@ -122,12 +122,9 @@ public:
   auto solve(const Matrix<DefDense, T, M, M> &A,
              const Matrix<DefDense, T, M, K> &B) -> Matrix<DefDense, T, M, K> {
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -135,12 +132,9 @@ public:
   auto solve(const Matrix<DefDense, T, M, M> &A, const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
 
-    for (std::size_t i = 0; i < M; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
@@ -149,14 +143,11 @@ public:
              const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -196,12 +187,9 @@ public:
   auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
              const Matrix<DefDense, T, M, K> &B) -> Matrix<DefDense, T, M, K> {
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -209,14 +197,11 @@ public:
   auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
              const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, M> {
 
-    Base::Matrix::Matrix<T, M, M> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, M> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < M; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
@@ -225,14 +210,11 @@ public:
              const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
