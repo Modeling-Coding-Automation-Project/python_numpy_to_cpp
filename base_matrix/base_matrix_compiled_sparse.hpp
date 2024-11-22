@@ -79,40 +79,6 @@ public:
   }
 
   /* Function */
-  T &operator()(std::size_t col, std::size_t row) {
-    if (col >= M) {
-      col = M - 1;
-    }
-
-    for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
-           ++k) {
-        if (RowIndices::list[k] == row) {
-          return this->values[k];
-        }
-      }
-    }
-
-    return this->values[0];
-  }
-
-  const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
-    }
-
-    for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
-           ++k) {
-        if (RowIndices::list[k] == row) {
-          return this->values[k];
-        }
-      }
-    }
-
-    return this->values[0];
-  }
-
   Matrix<T, M, N> create_dense() const { return output_dense_matrix(*this); }
 
   Matrix<T, N, M> transpose() const { return output_transpose_matrix(*this); }
