@@ -711,6 +711,37 @@ using LowerTriangularRowPointers = typename ToRowPointers<
     typename AccumulateLowerTriangularElementNumberStruct<
         typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
 
+/* SparseAvailable Addition and Subtraction */
+// helper template to calculate the logical OR
+template <bool A, bool B> struct LogicalOr {
+  static constexpr bool value = A || B;
+};
+
+// helper template to calculate the matrix product
+template <typename MatrixA, typename MatrixB>
+struct MatrixAddSubSparseAvailableHelper;
+
+// partial specialization for ColumnAvailable
+template <bool... ValuesA, bool... ValuesB>
+struct MatrixAddSubSparseAvailableHelper<ColumnAvailable<ValuesA...>,
+                                         ColumnAvailable<ValuesB...>> {
+  using type = ColumnAvailable<LogicalOr<ValuesA, ValuesB>::value...>;
+};
+
+// partial specialization for SparseAvailable
+template <typename... ColumnsA, typename... ColumnsB>
+struct MatrixAddSubSparseAvailableHelper<SparseAvailable<ColumnsA...>,
+                                         SparseAvailable<ColumnsB...>> {
+  using type = SparseAvailable<
+      typename MatrixAddSubSparseAvailableHelper<ColumnsA, ColumnsB>::type...>;
+};
+
+// template to check if the matrix product is available
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using MatrixAddSubSparseAvailable =
+    typename MatrixAddSubSparseAvailableHelper<SparseAvailable_A,
+                                               SparseAvailable_B>::type;
+
 } // namespace Matrix
 } // namespace Base
 
