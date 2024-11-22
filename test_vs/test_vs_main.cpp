@@ -3089,7 +3089,6 @@ void check_python_numpy_qr(void) {
 
     static auto QR_solver_diag = make_LinalgSolverQR(B);
 
-    auto Q_diag = QR_solver_diag.get_Q();
     auto R_diag = QR_solver_diag.get_R();
     auto R_diag_dense = R_diag.create_dense();
 
