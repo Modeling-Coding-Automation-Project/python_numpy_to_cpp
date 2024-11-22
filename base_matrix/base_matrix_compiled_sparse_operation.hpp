@@ -2395,16 +2395,10 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  for (std::size_t i = 0; i < N; i++) {
-    for (std::size_t j = 0; j < M; j++) {
-      T sum = static_cast<T>(0);
-      for (std::size_t k = RowPointers_A::list[j];
-           k < RowPointers_A::list[j + 1]; k++) {
-        if (RowIndices_A::list[k] == i) {
-          sum += A.values[k] * B[i];
-        }
-        Y(j, i) = sum;
-      }
+  for (std::size_t j = 0; j < M; j++) {
+    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+         k++) {
+      Y(j, RowIndices_A::list[k]) = A.values[k] * B[RowIndices_A::list[k]];
     }
   }
 
@@ -2545,11 +2539,7 @@ operator*(const DiagMatrix<T, M> &A,
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
          k++) {
-      for (std::size_t i = 0; i < M; i++) {
-        if (i == j) {
-          Y(i, RowIndices_B::list[k]) += B.values[k] * A[i];
-        }
-      }
+      Y(j, RowIndices_B::list[k]) = B.values[k] * A[j];
     }
   }
 
