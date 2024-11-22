@@ -2007,7 +2007,51 @@ void check_python_numpy_base(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
-    auto A_add_B = A - B;
+    Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
+
+    auto Sparse_add_Diag = C + DiagJ;
+    auto Sparse_add_Diag_dense = Sparse_add_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_add_Diag_answer({
+        {11, 0, 0},
+        {3, 20, 8},
+        {0, 2, 34}
+        });
+
+    tester.expect_near(Sparse_add_Diag_dense.matrix.data, Sparse_add_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix add DiagMatrix.");
+
+    auto Diag_add_Sparse = DiagJ + C;
+    auto Diag_add_Sparse_dense = Diag_add_Sparse.create_dense();
+
+    tester.expect_near(Diag_add_Sparse_dense.matrix.data, Sparse_add_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix add SparseMatrix.");
+
+    auto Sparse_sub_Diag = C - DiagJ;
+    auto Sparse_sub_Diag_dense = Sparse_sub_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_sub_Diag_answer({
+        {-9, 0, 0},
+        {3, -20, 8},
+        {0, 2, -26}
+        });
+
+    tester.expect_near(Sparse_sub_Diag_dense.matrix.data, Sparse_sub_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix sub DiagMatrix.");
+
+    auto Diag_sub_Sparse = DiagJ - C;
+    auto Diag_sub_Sparse_dense = Diag_sub_Sparse.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Diag_sub_Sparse_answer({
+        {9, 0, 0},
+        {-3, 20, -8},
+        {0, -2, 26}
+        });
+
+    tester.expect_near(Diag_sub_Sparse_dense.matrix.data, Diag_sub_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix sub SparseMatrix.");
+
+
 
     auto D = C + C;
 

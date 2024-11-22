@@ -63,6 +63,11 @@ using UpperTriangularRowPointers =
 using SparseAvailable_NoUse =
     SparseAvailable<ColumnAvailable<true, false>, ColumnAvailable<false, true>>;
 
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using MatrixAddSubSparseAvailable =
+    Base::Matrix::MatrixAddSubSparseAvailable<SparseAvailable_A,
+                                              SparseAvailable_B>;
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_TEMPLATES_HPP
