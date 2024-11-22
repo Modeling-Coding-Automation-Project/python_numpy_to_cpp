@@ -34,7 +34,20 @@ void check_matrix_vector_creation(void) {
 
     Vector<T, 3> b_add_b = b + b;
 
+    Vector<T, 3> b_add_b_answer({ 2, 4, 6 });
+
+    tester.expect_near(b_add_b.data, b_add_b_answer.data, NEAR_LIMIT_STRICT,
+        "check Vector add.");
+
     Matrix<T, 2, 3> A_add_A = A + A;
+
+    Matrix<T, 2, 3> A_add_A_answer({
+        {2, 4, 6},
+        {8, 10, 12}
+        });
+
+    tester.expect_near(A_add_A.data, A_add_A_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix add.");
 
     Vector<T, 3> r = b * static_cast<T>(3.0F);
     //std::cout << "scalar calc ";
@@ -320,19 +333,8 @@ void check_gmres_k_and_inverse(void) {
 
     /* 逆行列 */
     Matrix<T, 3, 3> H_inv;
-    Matrix<T, 3, 3> X_temp = Matrix<T, 3, 3>::identity();
-
-    //H_inv = gmres_k_matrix_inv(H, 0.0, 1.0e-10, X_temp);
+ 
     H_inv = H.inv();
-
-    //std::cout << "H_inv = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 3; ++i) {
-    //        std::cout << H_inv(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
 
     Matrix<T, 3, 3> H_inv_answer({
         {-0.242105F, -0.136842F, 0.389474F},
@@ -448,7 +450,12 @@ void check_diag_matrix(void) {
     D[1] = 2.0F;
     D[2] = 3.0F;
 
-    DiagMatrix<T, 3> D_add_D = D * D;
+    DiagMatrix<T, 3> D_mul_D = D * D;
+
+    DiagMatrix<T, 3> D_mul_D_answer({ 1, 4, 9 });
+
+    tester.expect_near(D_mul_D.data, D_mul_D_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix multiply DiagMatrix.");
 
     Vector<T, 3> D_d = D * b;
 
@@ -1064,15 +1071,12 @@ void check_sparse_matrix(void) {
     //std::cout << std::endl;
 
     Matrix<T, 3, 3> S_inv_answer({
-        {1, 0, 0},
-        {0.75, -0.25, 0.5},
-        {-0.375, 0.125, 0}
+        {1.0F, 0.0F, 0.0F},
+        {0.75F, -0.25F, 0.5F},
+        {-0.375F, 0.125F, 0.0F}
         });
     tester.expect_near(S_inv.data, S_inv_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix inverse.");
-
-    SparseMatrix<T, 4, 3, 6> SB_test({ 1, 3, 2, 8, 4, 1 }, { 0, 1, 2, 1, 2, 1 }, { 0, 2, 3, 5, 6 });
-    SparseMatrix<T, 4, 3, 6> SB_test_2 = std::move(SB_test);
 
 
     /* スパース行列を作成 */
@@ -1549,12 +1553,11 @@ void check_qr_decomposition(void) {
         RowPointers<0, 1, 3, 5>> qr_s(SparseCc, static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> Q_s = qr_s.get_Q();
-    Matrix<T, 3, 3> R_s = qr_s.get_R();
 
     Matrix<T, 3, 3> Q_s_answer({
-        {-0.316228F, 0, 0.948683F},
-        {-0.948683F, 0, -0.316228F},
-        {0, -1, 0}
+        {-0.316228F, 0.0F, 0.948683F},
+        {-0.948683F, 0.0F, -0.316228F},
+        {0.0F, -1.0F, 0.0F}
         });
 
     tester.expect_near(Q_s.data, Q_s_answer.data, NEAR_LIMIT_STRICT,
@@ -1731,9 +1734,9 @@ void check_complex(void) {
     tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k real.");
 
-    Vector<T, 3> x_gmres_k_comp_imag = get_real_vector_from_complex_vector(x_gmres_k_comp);
+    Vector<T, 3> x_gmres_k_comp_imag = get_imag_vector_from_complex_vector(x_gmres_k_comp);
     Vector<T, 3> x_gmres_k_comp_answer_imag({ -0.178525226390686F, 0.248382923673997F, 0.046571798188875F });
-    tester.expect_near(x_gmres_k_comp_real.data, x_gmres_k_comp_answer_real.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(x_gmres_k_comp_imag.data, x_gmres_k_comp_answer_imag.data, NEAR_LIMIT_STRICT,
         "check Complex GMRES k imag.");
 
 
