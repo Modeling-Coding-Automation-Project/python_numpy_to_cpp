@@ -10,7 +10,6 @@
 #include <cmath>
 #include <cstddef>
 
-
 namespace Base {
 namespace Matrix {
 
@@ -92,7 +91,8 @@ public:
         _R_matrix(std::move(other._R_matrix)),
         _division_min(other._division_min) {}
 
-  QRDecomposition<T, M, N> &operator=(QRDecomposition<T, M, N> &&other) {
+  QRDecomposition<T, M, N> &
+  operator=(QRDecomposition<T, M, N> &&other) noexcept {
     if (this != &other) {
       this->_Q_matrix = std::move(other._Q_matrix);
       this->_R_matrix = std::move(other._R_matrix);
