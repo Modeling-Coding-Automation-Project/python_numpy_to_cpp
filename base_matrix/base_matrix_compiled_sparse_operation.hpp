@@ -583,7 +583,8 @@ auto operator+(
   SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
       Y, B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
+                                    RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
@@ -651,7 +652,8 @@ auto operator+(
   SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
       Y, B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
+                                    RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
@@ -862,7 +864,8 @@ auto operator-(
   SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
       Y, -B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
+                                    RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
