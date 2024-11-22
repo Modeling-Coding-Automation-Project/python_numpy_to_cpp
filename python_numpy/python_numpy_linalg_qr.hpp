@@ -54,16 +54,20 @@ public:
   }
 
   /* Get Q, R */
-  auto get_R(void) -> CreateSparseAvailableFromIndicesAndPointers<
-      N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-      Base::Matrix::UpperTriangularRowPointers<M, N>> const {
+  auto get_R(void)
+      -> Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+                    Base::Matrix::UpperTriangularRowPointers<M, N>>> const {
 
     Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
         this->_R_triangular, this->_QR_decomposer.get_R());
 
-    return Base::Matrix::CompiledSparseMatrix<
-        T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-        Base::Matrix::UpperTriangularRowPointers<M, N>>(this->_R_triangular);
+    return Matrix<DefSparse, T, M, N,
+                  CreateSparseAvailableFromIndicesAndPointers<
+                      N, Base::Matrix::UpperTriangularRowIndices<M, N>,
+                      Base::Matrix::UpperTriangularRowPointers<M, N>>>(
+        this->_R_triangular);
   }
 
   auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
