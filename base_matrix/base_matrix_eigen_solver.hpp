@@ -8,10 +8,10 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstring>
 #include <vector>
 
 namespace Base {
@@ -46,9 +46,8 @@ public:
 
   EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                   T division_min)
-      : iteration_max(iteration_max),
-        _division_min(division_min), _eigen_values{},
-        _eigen_vectors(Matrix<T, M, M>::ones()) {
+      : iteration_max(iteration_max), _division_min(division_min),
+        _eigen_values{}, _eigen_vectors(Matrix<T, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_values_with_qr_method(matrix);
@@ -177,12 +176,12 @@ private:
         u_abs += u[i] * u[i];
       }
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -235,12 +234,12 @@ private:
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
@@ -563,12 +562,12 @@ private:
         u_abs += u[i] * u[i];
       }
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -622,12 +621,14 @@ private:
       u[k + 1] = R(k + 1, k);
       T u_abs = complex_abs_sq(u[k]) + complex_abs_sq(u[k + 1]);
 
-      std::memset(&this->_House_comp.values[0], 0,
-                  (M * M) * sizeof(this->_House_comp.values[0]));
-      std::memset(&this->_House_comp.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House_comp.row_indices[0]));
-      std::memset(&this->_House_comp.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House_comp.row_pointers[0]));
+      std::fill(this->_House_comp.values.begin(),
+                this->_House_comp.values.end(), Complex<T>());
+      std::fill(this->_House_comp.row_indices.begin(),
+                this->_House_comp.row_indices.end(),
+                static_cast<std::size_t>(0));
+      std::fill(this->_House_comp.row_pointers.begin(),
+                this->_House_comp.row_pointers.end(),
+                static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {

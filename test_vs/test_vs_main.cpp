@@ -1608,9 +1608,12 @@ void check_variable_sparse_matrix(void) {
 
     /* 可変スパース行列 */
     VariableSparseMatrix<T, 3, 3> CV;
-    std::memcpy(&CV.values[0], &A_value[0], 5 * sizeof(CV.values[0]));
-    std::memcpy(&CV.row_indices[0], &A_row_indices[0], 5 * sizeof(CV.row_indices[0]));
-    std::memcpy(&CV.row_pointers[0], &A_row_pointers[0], 4 * sizeof(CV.row_pointers[0]));
+    std::copy(A_value.begin(),
+        A_value.end(), CV.values.begin());
+    std::copy(A_row_indices.begin(),
+        A_row_indices.end(), CV.row_indices.begin());
+    std::copy(A_row_pointers.begin(),
+        A_row_pointers.end(), CV.row_pointers.begin());
 
     Matrix<T, 3, 3> VS_test = CV * CV;
     //std::cout << "VS_test = " << std::endl;
