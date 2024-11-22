@@ -24,15 +24,14 @@ public:
 #ifdef BASE_MATRIX_USE_STD_VECTOR
 
   EigenSolverReal()
-      : iteration_max(0), _division_min(static_cast<T>(0)),
-        _eigen_values(M, static_cast<T>(0)),
+      : iteration_max(0), _eigen_values(M, static_cast<T>(0)),
+        _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<T, M, M>::ones()) {}
 
   EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                   T division_min)
-      : iteration_max(iteration_max), _division_min(division_min),
-        _eigen_values(M, static_cast<T>(0)),
-        _eigen_vectors(Matrix<T, M, M>::ones()) {
+      : iteration_max(iteration_max), _eigen_values(M, static_cast<T>(0)),
+        _division_min(division_min), _eigen_vectors(Matrix<T, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_values_with_qr_method(matrix);
@@ -41,13 +40,13 @@ public:
 #else
 
   EigenSolverReal()
-      : iteration_max(0), _division_min(static_cast<T>(0)), _eigen_values{},
+      : iteration_max(0), _eigen_values{}, _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<T, M, M>::ones()) {}
 
   EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                   T division_min)
-      : iteration_max(iteration_max), _division_min(division_min),
-        _eigen_values{}, _eigen_vectors(Matrix<T, M, M>::ones()) {
+      : iteration_max(iteration_max), _eigen_values{},
+        _division_min(division_min), _eigen_vectors(Matrix<T, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_values_with_qr_method(matrix);
@@ -395,14 +394,14 @@ public:
 
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0),
-        _division_min(static_cast<T>(0)), _eigen_values(M, static_cast<T>(0)),
+        _eigen_values(M, static_cast<T>(0)), _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
 
   EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                      T division_min)
       : iteration_max(iteration_max),
         iteration_max_for_eigen_vector(iteration_max * 3),
-        _division_min(division_min), _eigen_values(M, static_cast<T>(0)),
+        _eigen_values(M, static_cast<T>(0)), _division_min(division_min),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
@@ -412,15 +411,15 @@ public:
 #else
 
   EigenSolverComplex()
-      : iteration_max(0), iteration_max_for_eigen_vector(0),
-        _division_min(static_cast<T>(0)), _eigen_values{},
+      : iteration_max(0), iteration_max_for_eigen_vector(0), _eigen_values{},
+        _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
 
   EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                      T division_min)
       : iteration_max(iteration_max),
-        iteration_max_for_eigen_vector(iteration_max * 3),
-        _division_min(division_min), _eigen_values{},
+        iteration_max_for_eigen_vector(iteration_max * 3), _eigen_values{},
+        _division_min(division_min),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
