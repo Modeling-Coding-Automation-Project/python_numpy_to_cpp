@@ -419,6 +419,109 @@ operator+(const Matrix<T, M, N> &B,
 }
 
 /* Sparse Matrix add Diag Matrix */
+// Core loop for addition
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t J, std::size_t K, std::size_t Start, std::size_t End>
+struct SparseMatrixAddDiagLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+    set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+        Y, get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) +
+               A.values[Start]);
+    SparseMatrixAddDiagLoop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
+                            RowPointers_Y, J, K, Start + 1, End>::compute(A, Y);
+  }
+};
+
+// End of core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t J, std::size_t K, std::size_t End>
+struct SparseMatrixAddDiagLoop<T, M, N, RowIndices_A, RowPointers_A,
+                               RowIndices_Y, RowPointers_Y, J, K, End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(Y);
+    // End of loop, do nothing
+  }
+};
+
+// Row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t J>
+struct SparseMatrixAddDiagRow {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+    SparseMatrixAddDiagLoop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
+                            RowPointers_Y, J, 0, RowPointers_A::list[J],
+                            RowPointers_A::list[J + 1]>::compute(A, Y);
+    SparseMatrixAddDiagRow<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
+                           RowPointers_Y, J - 1>::compute(A, Y);
+  }
+};
+
+// End of row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
+struct SparseMatrixAddDiagRow<T, M, N, RowIndices_A, RowPointers_A,
+                              RowIndices_Y, RowPointers_Y, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+    SparseMatrixAddDiagLoop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
+                            RowPointers_Y, 0, 0, RowPointers_A::list[0],
+                            RowPointers_A::list[1]>::compute(A, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
+static inline void COMPILED_SPARSE_MATRIX_ADD_DIAG(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  SparseMatrixAddDiagRow<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
+                         RowPointers_Y, M - 1>::compute(A, Y);
+}
+
+/* Set DiagMatrix values to CompiledSparseMatrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y, std::size_t I>
+struct SetDiagMatrixToValuesSparseMatrix {
+  static void
+  apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+        const DiagMatrix<T, M> &B) {
+    set_sparse_matrix_value<I, I>(Y, B[I]);
+    SetDiagMatrixToValuesSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y,
+                                      I - 1>::apply(Y, B);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y>
+struct SetDiagMatrixToValuesSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y,
+                                         0> {
+  static void
+  apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+        const DiagMatrix<T, M> &B) {
+    set_sparse_matrix_value<0, 0>(Y, B[0]);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y>
+static inline void SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX(
+    CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+    const DiagMatrix<T, M> &B) {
+  SetDiagMatrixToValuesSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y,
+                                    M - 1>::apply(Y, B);
+}
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 auto operator+(
@@ -447,6 +550,15 @@ auto operator+(
           DiagAvailable<M>>>>
       Y;
 
+  using RowIndices_Y = RowIndicesFromSparseAvailable<
+      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_A, RowPointers_A>,
+                                  DiagAvailable<M>>>;
+  using RowPointers_Y = RowPointersFromSparseAvailable<
+      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_A, RowPointers_A>,
+                                  DiagAvailable<M>>>;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Matrix<T, M, M> Y_temp = B.create_dense();
@@ -458,15 +570,6 @@ auto operator+(
     }
   }
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
-
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
          ++k) {
@@ -476,18 +579,10 @@ auto operator+(
 
 #else
 
-  //   COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A,
-  //   Y);
+  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
+      Y, B);
 
-  set_sparse_matrix_value<0, 0>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<0, 1>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<0, 2>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<1, 0>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<1, 1>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<1, 2>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<2, 0>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<2, 1>(Y, static_cast<T>(1));
-  set_sparse_matrix_value<2, 2>(Y, static_cast<T>(1));
+  COMPILED_SPARSE_MATRIX_ADD_DIAG<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
 
 #endif
 
