@@ -592,23 +592,65 @@ auto operator+(
 /* Diag Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, M>
-operator+(const DiagMatrix<T, M> &B,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
-  Matrix<T, M, M> Y = B.create_dense();
+auto operator+(
+    const DiagMatrix<T, M> &B,
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
+    -> CompiledSparseMatrix<
+        T, M, M,
+        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            DiagAvailable<M>>>,
+        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            DiagAvailable<M>>>> {
+
+  CompiledSparseMatrix<
+      T, M, M,
+      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                      RowPointers_A>,
+          DiagAvailable<M>>>,
+      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                      RowPointers_A>,
+          DiagAvailable<M>>>>
+      Y;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<
+      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_A, RowPointers_A>,
+                                  DiagAvailable<M>>>;
+  using RowPointers_Y = RowPointersFromSparseAvailable<
+      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
+                                      N, RowIndices_A, RowPointers_A>,
+                                  DiagAvailable<M>>>;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Matrix<T, M, M> Y_temp = B.create_dense();
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
          ++k) {
-      Y(j, RowIndices_A::list[k]) += A.values[k];
+      Y_temp(j, RowIndices_A::list[k]) += A.values[k];
+    }
+  }
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+         ++k) {
+      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
     }
   }
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
+      Y, B);
+
+  COMPILED_SPARSE_MATRIX_ADD_DIAG<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
 
 #endif
 
