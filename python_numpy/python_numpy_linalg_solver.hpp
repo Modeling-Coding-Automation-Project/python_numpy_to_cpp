@@ -466,12 +466,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -481,12 +478,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, M>(X_1);
   }
@@ -497,14 +491,11 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -514,12 +505,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -529,12 +517,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, M>(X_1);
   }
@@ -545,14 +530,11 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+        this->division_min, this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }

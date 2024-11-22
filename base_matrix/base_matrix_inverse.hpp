@@ -269,6 +269,32 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
   return x;
 }
 
+template <typename T, std::size_t M, std::size_t N, std::size_t K>
+void gmres_k_rect_matrix(const Matrix<T, M, N> &A, const Matrix<T, M, K> &B,
+                         Matrix<T, N, K> &X_1, T decay_rate, T division_min,
+                         std::array<T, K> &rho,
+                         std::array<std::size_t, K> &rep_num) {
+
+  for (std::size_t i = 0; i < K; i++) {
+    Vector<T, N> x = gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                                  division_min, rho[i], rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M, std::size_t N>
+void gmres_k_rect_matrix(const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B,
+                         Matrix<T, N, M> &X_1, T decay_rate, T division_min,
+                         std::array<T, M> &rho,
+                         std::array<std::size_t, M> &rep_num) {
+
+  for (std::size_t i = 0; i < M; i++) {
+    Vector<T, N> x = gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                                  division_min, rho[i], rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
 /* GMRES K for matrix inverse */
 template <typename T, std::size_t M>
 Matrix<T, M, M> gmres_k_matrix_inv(const Matrix<T, M, M> In_A, T decay_rate,
@@ -523,6 +549,38 @@ Vector<T, N> sparse_gmres_k_rect(
   }
 
   return x;
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t K,
+          typename RowIndices_A, typename RowPointers_A>
+void sparse_gmres_k_rect_matrix(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1, T decay_rate,
+    T division_min, std::array<T, K> &rho,
+    std::array<std::size_t, K> &rep_num) {
+
+  for (std::size_t i = 0; i < K; i++) {
+    Vector<T, N> x =
+        sparse_gmres_k_rect(In_SA, B.get_row(i), X_1.get_row(i), decay_rate,
+                            division_min, rho[i], rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+void sparse_gmres_k_rect_matrix(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1, T decay_rate,
+    T division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num) {
+
+  for (std::size_t i = 0; i < M; i++) {
+    Vector<T, N> x =
+        sparse_gmres_k_rect(In_SA, B.get_row(i), X_1.get_row(i), decay_rate,
+                            division_min, rho[i], rep_num[i]);
+    X_1.set_row(i, x);
+  }
 }
 
 /* Sparse GMRES K for matrix inverse */
