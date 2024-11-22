@@ -753,7 +753,8 @@ void check_sparse_matrix(void) {
     tester.expect_near(Diag_add_Sparse_dense.data, Sparse_add_Diag_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix add SparseMatrix.");
 
-    Matrix<T, 3, 3> Sparse_sub_Diag = SparseCc - DiagJ;
+    auto Sparse_sub_Diag = SparseCc - DiagJ;
+    Matrix<T, 3, 3> Sparse_sub_Diag_dense = Sparse_sub_Diag.create_dense();
 
     Matrix<T, 3, 3> Sparse_sub_Diag_answer({
         {-9, 0, 0},
@@ -761,7 +762,7 @@ void check_sparse_matrix(void) {
         {0, 2, -26}
         });
 
-    tester.expect_near(Sparse_sub_Diag.data, Sparse_sub_Diag_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_sub_Diag_dense.data, Sparse_sub_Diag_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix sub DiagMatrix.");
 
     Matrix<T, 3, 3> Diag_sub_Sparse = DiagJ - SparseCc;

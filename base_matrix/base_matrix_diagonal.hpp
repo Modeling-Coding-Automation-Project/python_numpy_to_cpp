@@ -103,6 +103,8 @@ public:
     return result;
   }
 
+  DiagMatrix<T, M> operator-() const { return output_minus_matrix(*this); }
+
   T get_trace() const { return output_trace(*this); }
 
   Matrix<T, M, M> create_dense() const { return output_dense(*this); }
@@ -226,6 +228,48 @@ Matrix<T, M, M> operator+(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B) {
 #else
 
   COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
+
+#endif
+
+  return result;
+}
+
+/* Minus */
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t I_idx>
+struct DiagMatrixMinusLoop {
+  static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
+    result[I_idx] = -A[I_idx];
+    DiagMatrixMinusLoop<T, M, I_idx - 1>::compute(A, result);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M> struct DiagMatrixMinusLoop<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
+    result[0] = -A[0];
+  }
+};
+
+template <typename T, std::size_t M>
+static inline void COMPILED_MATRIX_MINUS_DIAG_MATRIX(const DiagMatrix<T, M> &A,
+                                                     DiagMatrix<T, M> &result) {
+  DiagMatrixMinusLoop<T, M, M - 1>::compute(A, result);
+}
+
+template <typename T, std::size_t M>
+inline DiagMatrix<T, M> output_minus_matrix(const DiagMatrix<T, M> &A) {
+  DiagMatrix<T, M> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < M; ++i) {
+    result[i] = -A[i];
+  }
+
+#else
+
+  COMPILED_MATRIX_MINUS_DIAG_MATRIX<T, M>(A, result);
 
 #endif
 
