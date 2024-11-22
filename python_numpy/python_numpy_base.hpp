@@ -191,6 +191,16 @@ public:
     return Matrix<DefDense, T, M, N>(this->matrix.create_dense());
   }
 
+  template <std::size_t COL, std::size_t ROW> T get() const {
+
+    return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
+  }
+
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+
+    return Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+  }
+
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }

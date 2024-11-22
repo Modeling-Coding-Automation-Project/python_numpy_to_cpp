@@ -2015,6 +2015,26 @@ void check_python_numpy_base(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
+    T C_val = C.template get<1, 2>();
+
+    tester.expect_near(C_val, 8, NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value.");
+
+    C.template set<2, 2>(static_cast<T>(100));
+    auto C_set_dense = C.create_dense();
+
+    Matrix<DefDense, T, 3, 3> C_set_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 100}
+        });
+
+    tester.expect_near(C_set_dense.matrix.data, C_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix set value.");
+
+    C.template set<2, 2>(static_cast<T>(4));
+
+
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
 
     auto Sparse_add_Diag = C + DiagJ;
