@@ -3055,22 +3055,58 @@ void check_python_numpy_qr(void) {
 
 
     /* QR分解 */
-    static auto QR_solver = make_LinalgSolverQR(C);
-    auto A_QR = QR_solver.get_Q() * QR_solver.get_R();
+    static auto QR_solver_dense = make_LinalgSolverQR(A);
 
-    //std::cout << "A_QR = " << std::endl;
-    //for (size_t j = 0; j < A_QR.cols(); ++j) {
-    //    for (size_t i = 0; i < A_QR.rows(); ++i) {
-    //        std::cout << A_QR.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto Q = QR_solver_dense.get_Q();
+    auto R = QR_solver_dense.get_R();
+    auto R_dense = R.create_dense();
 
-    Matrix<DefDense, T, 3, 3> A_QR_answer({ {1, 0, 0}, {3, 0, 8}, {0, 2, 4} });
-    tester.expect_near(A_QR.matrix.data, A_QR_answer.matrix.data, NEAR_LIMIT_STRICT,
+    Matrix<DefDense, T, 3, 3> R_answer({
+        { -10.34408043F, -9.087323F, -9.28067029F},
+        {0.0F, 1.19187279F, 1.39574577F},
+        {0.0F, 0.0F, -2.43332132F}
+        });
+
+    tester.expect_near(R_dense.matrix.data, R_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR R Dense.");
+
+    auto QR_result = Q * R;
+
+    Matrix<DefDense, T, 3, 3> QR_result_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+        });
+
+    tester.expect_near(QR_result.matrix.data, QR_result_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR Q multiply R Dense.");
+
+    static auto QR_solver_diag = make_LinalgSolverQR(B);
+
+    auto Q_diag = QR_solver_diag.get_Q();
+    auto R_diag = QR_solver_diag.get_R();
+    auto R_diag_dense = R_diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> R_diag_answer({
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+        });
+
+    tester.expect_near(R_diag_dense.matrix.data, R_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR R Diag.");
+
+    static auto QR_solver_sparse = make_LinalgSolverQR(C);
+    auto C_QR = QR_solver_sparse.get_Q() * QR_solver_sparse.get_R();
+
+    Matrix<DefDense, T, 3, 3> C_QR_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+    });
+    
+    tester.expect_near(C_QR.matrix.data, C_QR_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR Q multiply R.");
-
 
 
     tester.throw_error_if_test_failed();
