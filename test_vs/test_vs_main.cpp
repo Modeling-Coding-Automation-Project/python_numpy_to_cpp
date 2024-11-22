@@ -799,7 +799,8 @@ void check_sparse_matrix(void) {
     tester.expect_near(Diag_mul_Sparse.data, Diag_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply SparseMatrix.");
 
-    Matrix<T, 3, 3> Sparse_add_Sparse = SparseCc + SparseCc;
+    auto Sparse_add_Sparse = SparseCc + SparseCc;
+    auto Sparse_add_Sparse_dense = Sparse_add_Sparse.create_dense();
 
     Matrix<T, 3, 3> Sparse_add_Sparse_answer({
         {2, 0, 0},
@@ -807,10 +808,11 @@ void check_sparse_matrix(void) {
         {0, 4, 8}
         });
 
-    tester.expect_near(Sparse_add_Sparse.data, Sparse_add_Sparse_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_add_Sparse_dense.data, Sparse_add_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix add SparseMatrix.");
 
-    Matrix<T, 3, 3> Sparse_sub_Sparse = SparseCc - SparseCc;
+    auto Sparse_sub_Sparse = SparseCc - SparseCc;
+    auto Sparse_sub_Sparse_dense = Sparse_sub_Sparse.create_dense();
 
     Matrix<T, 3, 3> Sparse_sub_Sparse_answer({
         {0, 0, 0},
@@ -818,7 +820,7 @@ void check_sparse_matrix(void) {
         {0, 0, 0}
         });
 
-    tester.expect_near(Sparse_sub_Sparse.data, Sparse_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_sub_Sparse_dense.data, Sparse_sub_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix sub SparseMatrix.");
 
     Matrix<T, 3, 3> Transpose_Diag_mul_Sparse = matrix_multiply_Transpose_DiagA_mul_SparseB(DiagJ, SparseCc);
@@ -2051,22 +2053,36 @@ void check_python_numpy_base(void) {
     tester.expect_near(Diag_sub_Sparse_dense.matrix.data, Diag_sub_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix sub SparseMatrix.");
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, true, true>,
+        ColumnAvailable<false, true, true>,
+        ColumnAvailable<false, false, true>>
+        > U({ 1, 2, 3, 4, 5, 6 });
 
+    auto Sparse_add_Sparse = C + U;
+    auto Sparse_add_Sparse_dense = Sparse_add_Sparse.create_dense();
 
-    auto D = C + C;
+    Matrix<DefDense, T, 3, 3> Sparse_add_Sparse_answer({
+        {2, 2, 3},
+        {3, 4, 13},
+        {0, 2, 10}
+        });
 
-    //std::cout << "D = " << std::endl;
-    //for (size_t j = 0; j < D.matrix.cols(); ++j) {
-    //    for (size_t i = 0; i < D.matrix.rows(); ++i) {
-    //        std::cout << D.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-
-    Matrix<DefDense, T, 3, 3> D_answer({ {2, 0, 0}, {6, 0, 16}, {0, 4, 8} });
-    tester.expect_near(D.matrix.data, D_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_add_Sparse_dense.matrix.data, Sparse_add_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix add SparseMatrix.");
+
+    auto Sparse_sub_Sparse = C - U;
+    auto Sparse_sub_Sparse_dense = Sparse_sub_Sparse.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_sub_Sparse_answer({
+        {0, -2, -3},
+        {3, -4, 3},
+        {0, 2, -2}
+        });
+
+    tester.expect_near(Sparse_sub_Sparse_dense.matrix.data, Sparse_sub_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix sub SparseMatrix.");
 
     auto E = B * B;
 

@@ -301,12 +301,26 @@ auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
       std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
-auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
-               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
-    -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>>> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
+  return Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N,
+                    RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>,
+                    RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>>>(
+      std::move(A.matrix + B.matrix));
 }
 
 /* Matrix Subtraction */
@@ -404,12 +418,26 @@ auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
       std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
-auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
-               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
-    -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>>> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
+  return Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N,
+                    RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>,
+                    RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>>>(
+      std::move(A.matrix - B.matrix));
 }
 
 /* Matrix Multiply Scalar */
