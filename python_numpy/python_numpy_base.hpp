@@ -536,9 +536,10 @@ auto operator*(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator*(const Matrix<DefDiag, T, M> &A,
                const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
-    -> Matrix<DefDense, T, M, N> {
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix * B.matrix));
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(
+      std::move(A.matrix * B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,

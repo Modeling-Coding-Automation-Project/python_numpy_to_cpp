@@ -2424,7 +2424,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           std::size_t Start, std::size_t End>
 struct DiagMatrixMultiplySparseLoop {
   static void
-  compute(const DiagMatrix<T, N> &A,
+  compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
           CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     Y.values[Start] = B.values[Start] * A[J];
@@ -2439,7 +2439,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
 struct DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, J, K,
                                     End, End> {
   static void
-  compute(const DiagMatrix<T, N> &A,
+  compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
           CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     static_cast<void>(A);
@@ -2454,7 +2454,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B, std::size_t J>
 struct DiagMatrixMultiplySparseRow {
   static void
-  compute(const DiagMatrix<T, N> &A,
+  compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
           CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, J, 0,
@@ -2470,7 +2470,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 struct DiagMatrixMultiplySparseRow<T, M, N, RowIndices_B, RowPointers_B, 0> {
   static void
-  compute(const DiagMatrix<T, N> &A,
+  compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
           CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, 0, 0,
@@ -2482,7 +2482,7 @@ struct DiagMatrixMultiplySparseRow<T, M, N, RowIndices_B, RowPointers_B, 0> {
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 static inline void DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX(
-    const DiagMatrix<T, N> &A,
+    const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
     CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
   DiagMatrixMultiplySparseRow<T, M, N, RowIndices_B, RowPointers_B,
