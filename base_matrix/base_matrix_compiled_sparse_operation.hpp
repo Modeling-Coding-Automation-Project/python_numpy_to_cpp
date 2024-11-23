@@ -243,7 +243,7 @@ struct DenseMatrixMultiplySparseColumn {
           const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
           Matrix<T, M, K> &Y) {
     DenseMatrixMultiplySparseList<T, M, N, K, RowIndices_B, RowPointers_B, J,
-                                  N - 1>::compute(A, B, Y);
+                                  M - 1>::compute(A, B, Y);
     DenseMatrixMultiplySparseColumn<T, M, N, K, RowIndices_B, RowPointers_B,
                                     J - 1>::compute(A, B, Y);
   }
@@ -259,7 +259,7 @@ struct DenseMatrixMultiplySparseColumn<T, M, N, K, RowIndices_B, RowPointers_B,
           const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
           Matrix<T, M, K> &Y) {
     DenseMatrixMultiplySparseList<T, M, N, K, RowIndices_B, RowPointers_B, 0,
-                                  N - 1>::compute(A, B, Y);
+                                  M - 1>::compute(A, B, Y);
   }
 };
 
@@ -270,7 +270,7 @@ static inline void COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE(
     const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
     Matrix<T, M, K> &Y) {
   DenseMatrixMultiplySparseColumn<T, M, N, K, RowIndices_B, RowPointers_B,
-                                  M - 1>::compute(A, B, Y);
+                                  N - 1>::compute(A, B, Y);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
