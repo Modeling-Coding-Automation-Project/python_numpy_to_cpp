@@ -98,5 +98,20 @@
     <ClInclude Include="..\python_numpy\python_numpy_complex.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_macros.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse_operation.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\python_numpy\python_numpy_templates.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base_matrix\base_matrix_templates.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

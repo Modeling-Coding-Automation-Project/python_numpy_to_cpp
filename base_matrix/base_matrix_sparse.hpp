@@ -2,11 +2,12 @@
 #define BASE_MATRIX_SPARSE_HPP
 
 #include "base_matrix_diagonal.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
+#include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstring>
 #include <initializer_list>
 #include <utility>
 #include <vector>
@@ -19,6 +20,8 @@ const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 class SparseMatrix {
 public:
+#ifdef BASE_MATRIX_USE_STD_VECTOR
+
   SparseMatrix()
       : values(V, static_cast<T>(0)),
         row_indices(V, static_cast<std::size_t>(0)),
@@ -62,6 +65,70 @@ public:
       this->row_pointers[i + 1] = row_pointer_count;
     }
   }
+
+#else
+
+  SparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+
+  SparseMatrix(const std::initializer_list<T> &values,
+               const std::initializer_list<std::size_t> &row_indices,
+               const std::initializer_list<std::size_t> &row_pointers)
+      : values{}, row_indices{}, row_pointers{} {
+
+    // This may cause runtime error if the size of values is larger than V.
+    std::copy(values.begin(), values.end(), this->values.begin());
+    std::copy(row_indices.begin(), row_indices.end(),
+              this->row_indices.begin());
+    std::copy(row_pointers.begin(), row_pointers.end(),
+              this->row_pointers.begin());
+  }
+
+  SparseMatrix(const std::array<T, V> &values,
+               const std::array<std::size_t, V> &row_indices,
+               const std::array<std::size_t, (M + 1)> &row_pointers)
+      : values(values), row_indices(row_indices), row_pointers(row_pointers) {}
+
+  SparseMatrix(const std::vector<T> &values,
+               const std::vector<std::size_t> &row_indices,
+               const std::vector<std::size_t> &row_pointers)
+      : values{}, row_indices{}, row_pointers{} {
+
+    // This may cause runtime error if the size of values is larger than V.
+    std::copy(values.begin(), values.end(), this->values.begin());
+    std::copy(row_indices.begin(), row_indices.end(),
+              this->row_indices.begin());
+    std::copy(row_pointers.begin(), row_pointers.end(),
+              this->row_pointers.begin());
+  }
+
+  SparseMatrix(const Matrix<T, M, N> &input)
+      : values{}, row_indices{}, row_pointers{} {
+
+    std::size_t row_index_index = 0;
+    std::size_t row_pointer_count = 0;
+
+    for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t j = 0; j < N; j++) {
+        if (std::abs(input(i, j)) >
+            static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
+          this->values[row_index_index] = input(i, j);
+          this->row_indices[row_index_index] = j;
+
+          row_pointer_count++;
+          row_index_index++;
+
+          if (row_index_index >= V) {
+            this->row_pointers[i + 1] = row_pointer_count;
+            return;
+          }
+        }
+      }
+
+      this->row_pointers[i + 1] = row_pointer_count;
+    }
+  }
+
+#endif
 
   /* Copy Constructor */
   SparseMatrix(const SparseMatrix<T, M, N, V> &other)
@@ -228,19 +295,33 @@ public:
 
   std::size_t cols() const { return M; }
 
-  /* Variable */
+/* Variable */
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
+#else
+  std::array<T, V> values;
+  std::array<std::size_t, V> row_indices;
+  std::array<std::size_t, M + 1> row_pointers;
+#endif
 };
 
 template <typename T, std::size_t M, std::size_t N>
 SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
+
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M * N);
   std::vector<std::size_t> row_indices(M * N);
   std::vector<std::size_t> row_pointers(M + 1);
+#else
+  std::array<T, (M * N)> values;
+  std::array<std::size_t, (M * N)> row_indices;
+  std::array<std::size_t, (M + 1)> row_pointers;
+#endif
 
+  row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < N; j++) {
       values[consecutive_index] = A(i, j);
@@ -258,10 +339,18 @@ SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
 template <typename T, std::size_t M>
 SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
+
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values(M);
   std::vector<std::size_t> row_indices(M);
   std::vector<std::size_t> row_pointers(M + 1);
+#else
+  std::array<T, M> values;
+  std::array<std::size_t, M> row_indices;
+  std::array<std::size_t, M + 1> row_pointers;
+#endif
 
+  row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     values[consecutive_index] = A[i];
     row_indices[consecutive_index] = i;
@@ -333,8 +422,8 @@ Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
 }
 
 template <typename T, std::size_t N, std::size_t K, std::size_t V>
-ColVector<T, K> colV_mul_SB(const ColVector<T, N> &a,
-                            const SparseMatrix<T, N, K, V> &B) {
+ColVector<T, K> colVector_a_mul_SparseB(const ColVector<T, N> &a,
+                                        const SparseMatrix<T, N, K, V> &B) {
   ColVector<T, K> y;
 
   for (std::size_t j = 0; j < N; j++) {
@@ -386,8 +475,8 @@ Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 Matrix<T, M, K>
-matrix_multiply_SparseA_mul_BT(const SparseMatrix<T, M, N, V> &A,
-                               const Matrix<T, K, N> &B) {
+matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
+                                       const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < K; i++) {
@@ -424,9 +513,8 @@ Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K>
-matrix_multiply_SparseA_mul_SparseBT(const SparseMatrix<T, M, N, V> &A,
-                                     const SparseMatrix<T, K, N, W> &B) {
+Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
+    const SparseMatrix<T, M, N, V> &A, const SparseMatrix<T, K, N, W> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < M; i++) {
@@ -446,9 +534,8 @@ matrix_multiply_SparseA_mul_SparseBT(const SparseMatrix<T, M, N, V> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K>
-matrix_multiply_SparseAT_mul_SparseB(const SparseMatrix<T, N, M, V> &A,
-                                     const SparseMatrix<T, N, K, W> &B) {
+Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
+    const SparseMatrix<T, N, M, V> &A, const SparseMatrix<T, N, K, W> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < N; i++) {
@@ -503,8 +590,8 @@ Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
 
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
 Matrix<T, K, M>
-matrix_multiply_T_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
-                                    const SparseMatrix<T, M, K, V> &B) {
+matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
+                                            const SparseMatrix<T, M, K, V> &B) {
   Matrix<T, K, M> Y;
 
   for (std::size_t j = 0; j < M; j++) {
@@ -553,8 +640,8 @@ Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 Matrix<T, N, K>
-matrix_multiply_A_mul_SparseBT(const Matrix<T, M, N> &A,
-                               const SparseMatrix<T, K, N, V> &SB) {
+matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
+                                       const SparseMatrix<T, K, N, V> &SB) {
   Matrix<T, N, K> Y;
 
   for (std::size_t i = 0; i < N; ++i) {
@@ -573,8 +660,8 @@ matrix_multiply_A_mul_SparseBT(const Matrix<T, M, N> &A,
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
 Matrix<T, M, K>
-matrix_multiply_AT_mul_SparseB(const Matrix<T, N, M> &A,
-                               const SparseMatrix<T, N, K, V> &B) {
+matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
+                                       const SparseMatrix<T, N, K, V> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {

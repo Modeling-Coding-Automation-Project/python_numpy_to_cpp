@@ -2,6 +2,7 @@
 #define PYTHON_NUMPY_LINALG_SOLVER_HPP
 
 #include "python_numpy_base.hpp"
+#include "python_numpy_templates.hpp"
 #include <array>
 #include <cstddef>
 #include <utility>
@@ -10,8 +11,8 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-10;
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V,
-          std::size_t W>
+template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
+          typename SparseAvailable_B>
 class LinalgSolver {
 public:
   /* Constructor */
@@ -21,7 +22,9 @@ public:
 
   LinalgSolver(const Matrix<DefDiag, T, M> &A) { this->inv(A); }
 
-  LinalgSolver(const Matrix<DefSparse, T, M, K, V> &A) { this->inv(A); }
+  LinalgSolver(const Matrix<DefSparse, T, M, K, SparseAvailable_A> &A) {
+    this->inv(A);
+  }
 
   LinalgSolver(const Matrix<DefDense, T, M, M> &A,
                const Matrix<DefDense, T, M, K> &B) {
@@ -36,7 +39,7 @@ public:
   }
 
   LinalgSolver(const Matrix<DefDense, T, M, M> &A,
-               const Matrix<DefSparse, T, M, K, V> &B) {
+               const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
 
     this->solve(A, B);
   }
@@ -53,37 +56,39 @@ public:
   }
 
   LinalgSolver(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, K, V> &B) {
+               const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
+  LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                const Matrix<DefDense, T, M, K> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
+  LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                const Matrix<DefDiag, T, M> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
-               const Matrix<DefSparse, T, M, K, W> &B) {
+  LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
 
     this->solve(A, B);
   }
 
   /* Copy Constructor */
-  LinalgSolver(const LinalgSolver<T, M, K, V, W> &other)
+  LinalgSolver(
+      const LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &other)
       : X_1(other.X_1), decay_rate(other.decay_rate),
         division_min(other.division_min), rho(other.rho),
         rep_num(other.rep_num) {}
 
-  LinalgSolver<T, M, K, V, W> &
-  operator=(const LinalgSolver<T, M, K, V, W> &other) {
+  LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(const LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
+                &other) {
     if (this != &other) {
       this->X_1 = other.X_1;
       this->decay_rate = other.decay_rate;
@@ -95,12 +100,14 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolver(LinalgSolver<T, M, K, V, W> &&other) noexcept
+  LinalgSolver(LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
+                   &&other) noexcept
       : X_1(std::move(other.X_1)), decay_rate(std::move(other.decay_rate)),
         division_min(std::move(other.division_min)), rho(std::move(other.rho)),
         rep_num(std::move(other.rep_num)) {}
 
-  LinalgSolver<T, M, K, V, W> &operator=(LinalgSolver<T, M, K, V, W> &&other) {
+  LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &operator=(
+      LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &&other) {
     if (this != &other) {
       this->X_1 = std::move(other.X_1);
       this->decay_rate = std::move(other.decay_rate);
@@ -115,12 +122,9 @@ public:
   auto solve(const Matrix<DefDense, T, M, M> &A,
              const Matrix<DefDense, T, M, K> &B) -> Matrix<DefDense, T, M, K> {
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -128,28 +132,22 @@ public:
   auto solve(const Matrix<DefDense, T, M, M> &A, const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
 
-    for (std::size_t i = 0; i < M; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
 
   auto solve(const Matrix<DefDense, T, M, M> &A,
-             const Matrix<DefSparse, T, M, K, V> &B)
+             const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -157,7 +155,8 @@ public:
   auto solve(const Matrix<DefDiag, T, M> &A, const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix);
+    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
+                                                this->division_min);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -174,56 +173,48 @@ public:
   }
 
   auto solve(const Matrix<DefDiag, T, M> &A,
-             const Matrix<DefSparse, T, M, K, V> &B)
+             const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense);
+    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
+                                                this->division_min);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, M, V> &A,
+  auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
              const Matrix<DefDense, T, M, K> &B) -> Matrix<DefDense, T, M, K> {
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, M, V> &A,
+  auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
              const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, M> {
 
-    Base::Matrix::Matrix<T, M, M> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, M> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < M; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, M, V> &A,
-             const Matrix<DefSparse, T, M, K, W> &B)
+  auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+             const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
@@ -246,7 +237,7 @@ public:
     return Matrix<DefDiag, T, M>(std::move(result));
   }
 
-  auto inv(const Matrix<DefSparse, T, M, M, V> &A)
+  auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
       -> Matrix<DefDense, T, M, M> {
 
     X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(A.matrix, this->decay_rate,
@@ -269,115 +260,125 @@ public:
 };
 
 /* make LinalgSolver for inv */
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolver<T, M, M, V, W> {
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolver<T, M, M, V, W> {
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V,
-          std::size_t W = 1>
-auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A)
-    -> LinalgSolver<T, M, M, V, W> {
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
+auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A);
 }
 
 /* make LinalgSolver */
-template <typename T, std::size_t M, std::size_t K, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A,
                        const Matrix<DefDense, T, M, K> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A,
                        const Matrix<DefDiag, T, M> &B)
-    -> LinalgSolver<T, M, M, V, W> {
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A, B);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B>
 auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A,
-                       const Matrix<DefSparse, T, M, K, V> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+                       const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A,
                        const Matrix<DefDense, T, M, K> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V = 1,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A,
                        const Matrix<DefDiag, T, M> &B)
-    -> LinalgSolver<T, M, M, V, W> {
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A, B);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V,
-          std::size_t W = 1>
+template <typename T, std::size_t M, std::size_t K,
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B>
 auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A,
-                       const Matrix<DefSparse, T, M, K, V> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+                       const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V,
-          std::size_t W = 1>
-auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
+template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
+auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                        const Matrix<DefDense, T, M, K> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1, std::size_t V,
-          std::size_t W = 1>
-auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
+template <typename T, std::size_t M, std::size_t K = 1,
+          typename SparseAvailable_A,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
+auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                        const Matrix<DefDiag, T, M> &B)
-    -> LinalgSolver<T, M, M, V, W> {
+    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, M, V, W>(A, B);
+  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
-template <typename T, std::size_t M, std::size_t K, std::size_t V,
-          std::size_t W>
-auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, V> &A,
-                       const Matrix<DefSparse, T, M, K, W> &B)
-    -> LinalgSolver<T, M, K, V, W> {
+template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+auto make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                       const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+    -> LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgSolver<T, M, K, V, W>(A, B);
+  return LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>(A, B);
 }
 
 /* least-squares solution to a linear matrix equation */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W>
+          typename SparseAvailable_A, typename SparseAvailable_B>
 class LinalgLstsqSolver {
 public:
   /* Constructor */
@@ -396,37 +397,39 @@ public:
   }
 
   LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                    const Matrix<DefSparse, T, M, K, V> &B) {
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
+  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                     const Matrix<DefDense, T, M, K> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
+  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                     const Matrix<DefDiag, T, M> &B) {
 
     this->solve(A, B);
   }
 
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
-                    const Matrix<DefSparse, T, M, K, W> &B) {
+  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
 
     this->solve(A, B);
   }
 
   /* Copy Constructor */
-  LinalgLstsqSolver(const LinalgLstsqSolver<T, M, N, K, V, W> &other)
+  LinalgLstsqSolver(const LinalgLstsqSolver<T, M, N, K, SparseAvailable_A,
+                                            SparseAvailable_B> &other)
       : X_1(other.X_1), decay_rate(other.decay_rate),
         division_min(other.division_min), rho(other.rho),
         rep_num(other.rep_num) {}
 
-  LinalgLstsqSolver<T, M, N, K, V, W> &
-  operator=(const LinalgLstsqSolver<T, M, N, K, V, W> &other) {
+  LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(const LinalgLstsqSolver<T, M, N, K, SparseAvailable_A,
+                                    SparseAvailable_B> &other) {
     if (this != &other) {
       this->X_1 = other.X_1;
       this->decay_rate = other.decay_rate;
@@ -438,13 +441,15 @@ public:
   }
 
   /* Move Constructor */
-  LinalgLstsqSolver(LinalgLstsqSolver<T, M, N, K, V, W> &&other) noexcept
+  LinalgLstsqSolver(LinalgLstsqSolver<T, M, N, K, SparseAvailable_A,
+                                      SparseAvailable_B> &&other) noexcept
       : X_1(std::move(other.X_1)), decay_rate(std::move(other.decay_rate)),
         division_min(std::move(other.division_min)), rho(std::move(other.rho)),
         rep_num(std::move(other.rep_num)) {}
 
-  LinalgLstsqSolver<T, M, N, K, V, W> &
-  operator=(LinalgLstsqSolver<T, M, N, K, V, W> &&other) {
+  LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>
+                &&other) {
     if (this != &other) {
       this->X_1 = std::move(other.X_1);
       this->decay_rate = std::move(other.decay_rate);
@@ -461,12 +466,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -476,78 +478,63 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, M>(X_1);
   }
 
   auto solve(const Matrix<DefDense, T, M, N> &A,
-             const Matrix<DefSparse, T, M, K, V> &B)
+             const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, N, K> {
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::gmres_k_rect(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::gmres_k_rect_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                      this->decay_rate, this->division_min,
+                                      this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, N, V> &A,
+  auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
              const Matrix<DefDense, T, M, K> &B) -> Matrix<DefDense, T, N, K> {
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, N, V> &A,
+  auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
              const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, N, M> {
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B.matrix.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, M>(X_1);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, N, V> &A,
-             const Matrix<DefSparse, T, M, K, W> &B)
+  auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+             const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, N, K> {
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
 
-    for (std::size_t i = 0; i < K; i++) {
-      Base::Matrix::Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-          A.matrix, B_dense.get_row(i), this->X_1.get_row(i), this->decay_rate,
-          this->division_min, this->rho[i], this->rep_num[i]);
-      this->X_1.set_row(i, x);
-    }
+    Base::Matrix::sparse_gmres_k_rect_matrix(
+        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+        this->division_min, this->rho, this->rep_num);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -567,57 +554,72 @@ public:
 
 /* make LinalgLstsqSolver */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V = 1, std::size_t W = 1>
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
                             const Matrix<DefDense, T, M, K> &B)
-    -> LinalgLstsqSolver<T, M, N, K, V, W> {
+    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, K, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K = 1,
-          std::size_t V = 1, std::size_t W = 1>
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
 auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
                             const Matrix<DefDiag, T, M> &B)
-    -> LinalgLstsqSolver<T, M, N, M, V, W> {
+    -> LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, M, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W = 1>
-auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                            const Matrix<DefSparse, T, M, K, V> &B)
-    -> LinalgLstsqSolver<T, M, N, K, V, W> {
+          typename SparseAvailable_A = SparseAvailable_NoUse,
+          typename SparseAvailable_B>
+auto make_LinalgLstsqSolver(
+    const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, K, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W = 1>
-auto make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
-                            const Matrix<DefDense, T, M, K> &B)
-    -> LinalgLstsqSolver<T, M, N, K, V, W> {
+          typename SparseAvailable_A,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
+auto make_LinalgLstsqSolver(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDense, T, M, K> &B)
+    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, K, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K = 1,
-          std::size_t V, std::size_t W = 1>
-auto make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
-                            const Matrix<DefDiag, T, M> &B)
-    -> LinalgLstsqSolver<T, M, N, M, V, W> {
+          typename SparseAvailable_A,
+          typename SparseAvailable_B = SparseAvailable_NoUse>
+auto make_LinalgLstsqSolver(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDiag, T, M> &B)
+    -> LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, M, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W>
-auto make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, V> &A,
-                            const Matrix<DefSparse, T, M, K, W> &B)
-    -> LinalgLstsqSolver<T, M, N, K, V, W> {
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto make_LinalgLstsqSolver(
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
 
-  return LinalgLstsqSolver<T, M, N, K, V, W>(A, B);
+  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
+                                                                             B);
 }
 
 } // namespace PythonNumpy

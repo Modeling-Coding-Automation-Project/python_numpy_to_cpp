@@ -3,6 +3,7 @@
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
+#include "python_numpy_templates.hpp"
 #include <cstddef>
 
 namespace PythonNumpy {
@@ -141,23 +142,25 @@ private:
   Base::Matrix::Matrix<T, M, 1> _eigen_values;
 };
 
-template <typename T, std::size_t M, std::size_t V>
+template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverEigRealSparse {
 public:
   /* Constructor */
   LinalgSolverEigRealSparse() {}
 
-  LinalgSolverEigRealSparse(const Matrix<DefSparse, T, M, M, V> &A) {
+  LinalgSolverEigRealSparse(
+      const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->solve_eigen_values(A);
   }
 
   /* Copy Constructor */
-  LinalgSolverEigRealSparse(const LinalgSolverEigRealSparse<T, M, V> &other)
+  LinalgSolverEigRealSparse(
+      const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other)
       : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min),
         _iteration_max(other._iteration_max) {}
 
-  LinalgSolverEigRealSparse<T, M, V> &
-  operator=(const LinalgSolverEigRealSparse<T, M, V> &other) {
+  LinalgSolverEigRealSparse<T, M, SparseAvailable> &
+  operator=(const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
       this->_division_min = other._division_min;
@@ -167,13 +170,14 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverEigRealSparse(LinalgSolverEigRealSparse<T, M, V> &&other) noexcept
+  LinalgSolverEigRealSparse(
+      LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept
       : _Eigen_solver(std::move(other._Eigen_solver)),
         _division_min(std::move(other._division_min)),
         _iteration_max(std::move(other._iteration_max)) {}
 
-  LinalgSolverEigRealSparse<T, M, V> &
-  operator=(LinalgSolverEigRealSparse<T, M, V> &&other) noexcept {
+  LinalgSolverEigRealSparse<T, M, SparseAvailable> &
+  operator=(LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
       this->_division_min = std::move(other._division_min);
@@ -183,12 +187,14 @@ public:
   }
 
   /* Solve method */
-  void solve_eigen_values(const Matrix<DefSparse, T, M, M, V> &A) {
+  void
+  solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
         A.matrix.create_dense(), this->_iteration_max, this->_division_min);
   }
 
-  void solve_eigen_vectors(const Matrix<DefSparse, T, M, M, V> &A) {
+  void
+  solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
   }
 
@@ -225,11 +231,12 @@ auto make_LinalgSolverEigReal(const Matrix<DefDiag, T, M> &A)
   return LinalgSolverEigRealDiag<T, M>(A);
 }
 
-template <typename T, std::size_t M, std::size_t V>
-auto make_LinalgSolverEigReal(const Matrix<DefSparse, T, M, M, V> &A)
-    -> LinalgSolverEigRealSparse<T, M, V> {
+template <typename T, std::size_t M, typename SparseAvailable>
+auto make_LinalgSolverEigReal(
+    const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+    -> LinalgSolverEigRealSparse<T, M, SparseAvailable> {
 
-  return LinalgSolverEigRealSparse<T, M, V>(A);
+  return LinalgSolverEigRealSparse<T, M, SparseAvailable>(A);
 }
 
 /* Able to handle complex number */
@@ -380,23 +387,24 @@ private:
   Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1> _eigen_values;
 };
 
-template <typename T, std::size_t M, std::size_t V>
+template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverEigSparse {
 public:
   /* Constructor */
   LinalgSolverEigSparse() {}
 
-  LinalgSolverEigSparse(const Matrix<DefSparse, T, M, M, V> &A) {
+  LinalgSolverEigSparse(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->solve_eigen_values(A);
   }
 
   /* Copy Constructor */
-  LinalgSolverEigSparse(const LinalgSolverEigSparse<T, M, V> &other)
+  LinalgSolverEigSparse(
+      const LinalgSolverEigSparse<T, M, SparseAvailable> &other)
       : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min),
         _iteration_max(other._iteration_max) {}
 
-  LinalgSolverEigSparse<T, M, V> &
-  operator=(const LinalgSolverEigSparse<T, M, V> &other) {
+  LinalgSolverEigSparse<T, M, SparseAvailable> &
+  operator=(const LinalgSolverEigSparse<T, M, SparseAvailable> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
       this->_division_min = other._division_min;
@@ -406,13 +414,14 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverEigSparse(LinalgSolverEigSparse<T, M, V> &&other) noexcept
+  LinalgSolverEigSparse(
+      LinalgSolverEigSparse<T, M, SparseAvailable> &&other) noexcept
       : _Eigen_solver(std::move(other._Eigen_solver)),
         _division_min(std::move(other._division_min)),
         _iteration_max(std::move(other._iteration_max)) {}
 
-  LinalgSolverEigSparse<T, M, V> &
-  operator=(LinalgSolverEigSparse<T, M, V> &&other) noexcept {
+  LinalgSolverEigSparse<T, M, SparseAvailable> &
+  operator=(LinalgSolverEigSparse<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
       this->_division_min = std::move(other._division_min);
@@ -422,12 +431,14 @@ public:
   }
 
   /* Solve method */
-  void solve_eigen_values(const Matrix<DefSparse, T, M, M, V> &A) {
+  void
+  solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
         A.matrix.create_dense(), this->_iteration_max, this->_division_min);
   }
 
-  void solve_eigen_vectors(const Matrix<DefSparse, T, M, M, V> &A) {
+  void
+  solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
   }
 
@@ -468,11 +479,11 @@ auto make_LinalgSolverEig(const Matrix<DefDiag, T, M> &A)
   return LinalgSolverEigDiag<T, M>(A);
 }
 
-template <typename T, std::size_t M, std::size_t V>
-auto make_LinalgSolverEig(const Matrix<DefSparse, T, M, M, V> &A)
-    -> LinalgSolverEigSparse<T, M, V> {
+template <typename T, std::size_t M, typename SparseAvailable>
+auto make_LinalgSolverEig(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+    -> LinalgSolverEigSparse<T, M, SparseAvailable> {
 
-  return LinalgSolverEigSparse<T, M, V>(A);
+  return LinalgSolverEigSparse<T, M, SparseAvailable>(A);
 }
 
 } // namespace PythonNumpy

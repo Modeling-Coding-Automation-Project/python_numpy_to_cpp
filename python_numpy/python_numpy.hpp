@@ -9,6 +9,8 @@
 #include "python_numpy_linalg_lu.hpp"
 #include "python_numpy_linalg_qr.hpp"
 #include "python_numpy_linalg_solver.hpp"
+#include "python_numpy_templates.hpp"
 #include "python_numpy_transpose_operation.hpp"
+
 
 #endif // PYTHON_NUMPY_HPP

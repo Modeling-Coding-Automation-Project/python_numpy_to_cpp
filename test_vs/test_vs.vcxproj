@@ -133,15 +133,19 @@
   <ItemGroup>
     <ClInclude Include="..\base_matrix\base_matrix.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_cholesky_decomposition.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_compiled_sparse_operation.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_complex.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_concatenate.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_diagonal.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_eigen_solver.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_inverse.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_lu_decomposition.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_macros.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_matrix.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_qr_decomposition.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_sparse.hpp" />
+    <ClInclude Include="..\base_matrix\base_matrix_templates.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_triangular_sparse.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_utility.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_variable_sparse.hpp" />
@@ -155,6 +159,7 @@
     <ClInclude Include="..\python_numpy\python_numpy_linalg_lu.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_qr.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_solver.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_templates.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_transpose_operation.hpp" />
     <ClInclude Include="MCAP_tester\include\MCAP_tester.hpp" />
   </ItemGroup>

@@ -20,7 +20,31 @@ jobs:
 
     - name: Build C++ application
       run: |
-        g++ -std=c++11 -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+        g++ -std=c++11 -Wall -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+
+    - name: Run the application
+      run: |
+        ./test_vs/app
+
+    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR
+      run: |
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+
+    - name: Run the application
+      run: |
+        ./test_vs/app
+
+    - name: Build C++ application with BASE_MATRIX_USE_FOR_LOOP_OPERATION
+      run: |
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+
+    - name: Run the application
+      run: |
+        ./test_vs/app
+
+    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR, BASE_MATRIX_USE_FOR_LOOP_OPERATION
+      run: |
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
 
     - name: Run the application
       run: |

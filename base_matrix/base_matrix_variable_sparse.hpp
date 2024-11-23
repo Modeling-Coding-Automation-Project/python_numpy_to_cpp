@@ -7,7 +7,6 @@
 #include "base_matrix_vector.hpp"
 #include <cmath>
 #include <cstddef>
-#include <cstring>
 #include <utility>
 #include <vector>
 
@@ -16,10 +15,14 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class VariableSparseMatrix {
 public:
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
         row_indices(M * N, static_cast<std::size_t>(0)),
         row_pointers(M + 1, static_cast<std::size_t>(0)) {}
+#else
+  VariableSparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+#endif
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
@@ -69,10 +72,16 @@ public:
     return this->row_pointers[i];
   }
 
-  /* Variable */
+/* Variable */
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
+#else
+  std::array<T, M * N> values;
+  std::array<std::size_t, M * N> row_indices;
+  std::array<std::size_t, M + 1> row_pointers;
+#endif
 };
 
 /* SparseMatrix * Matrix */

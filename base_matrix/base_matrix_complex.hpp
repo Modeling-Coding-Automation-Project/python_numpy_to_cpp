@@ -11,9 +11,9 @@ namespace Matrix {
 
 template <typename T> class Complex {
 public:
-  Complex() {}
+  Complex() : real(static_cast<T>(0)), imag(static_cast<T>(0)) {}
 
-  Complex(const T &real) : real(real) {}
+  Complex(const T &real) : real(real), imag(static_cast<T>(0)) {}
 
   Complex(const T &real, const T &imag) : real(real), imag(imag) {}
 

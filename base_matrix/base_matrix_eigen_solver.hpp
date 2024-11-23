@@ -4,14 +4,14 @@
 #include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_lu_decomposition.hpp"
+#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
-#include "base_matrix_sparse.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstring>
 #include <vector>
 
 namespace Base {
@@ -21,20 +21,38 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
+#ifdef BASE_MATRIX_USE_STD_VECTOR
+
   EigenSolverReal()
-      : iteration_max(0), _division_min(static_cast<T>(0)),
-        _eigen_values(M, static_cast<T>(0)),
+      : iteration_max(0), _eigen_values(M, static_cast<T>(0)),
+        _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<T, M, M>::ones()) {}
 
   EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                   T division_min)
-      : iteration_max(iteration_max), _division_min(division_min),
-        _eigen_values(M, static_cast<T>(0)),
-        _eigen_vectors(Matrix<T, M, M>::ones()) {
+      : iteration_max(iteration_max), _eigen_values(M, static_cast<T>(0)),
+        _division_min(division_min), _eigen_vectors(Matrix<T, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_values_with_qr_method(matrix);
   }
+
+#else
+
+  EigenSolverReal()
+      : iteration_max(0), _eigen_values{}, _division_min(static_cast<T>(0)),
+        _eigen_vectors(Matrix<T, M, M>::ones()) {}
+
+  EigenSolverReal(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
+                  T division_min)
+      : iteration_max(iteration_max), _eigen_values{},
+        _division_min(division_min), _eigen_vectors(Matrix<T, M, M>::ones()) {
+    static_assert(M > 1, "Matrix must be larger than 2x2.");
+
+    this->_solve_values_with_qr_method(matrix);
+  }
+
+#endif
 
   /* Copy Constructor */
   EigenSolverReal(EigenSolverReal<T, M> &other)
@@ -109,7 +127,11 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
+#else
+  std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
+#endif
 
   Matrix<T, M, M> get_eigen_vectors(void) { return this->_eigen_vectors; }
 
@@ -119,7 +141,11 @@ public:
 private:
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> _eigen_values;
+#else
+  std::array<T, M> _eigen_values;
+#endif
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -149,12 +175,12 @@ private:
         u_abs += u[i] * u[i];
       }
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -207,12 +233,12 @@ private:
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
@@ -356,29 +382,51 @@ private:
         }
       }
 
-      std::memcpy(&this->_eigen_vectors(k)[0], &x[0],
-                  M * sizeof(this->_eigen_vectors(k)[0]));
+      std::copy(x.data.begin(), x.data.end(),
+                this->_eigen_vectors.data[k].begin());
     }
   }
 };
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
+#ifdef BASE_MATRIX_USE_STD_VECTOR
+
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0),
-        _division_min(static_cast<T>(0)), _eigen_values(M, static_cast<T>(0)),
+        _eigen_values(M, static_cast<T>(0)), _division_min(static_cast<T>(0)),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
 
   EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
                      T division_min)
       : iteration_max(iteration_max),
         iteration_max_for_eigen_vector(iteration_max * 3),
-        _division_min(division_min), _eigen_values(M, static_cast<T>(0)),
+        _eigen_values(M, static_cast<T>(0)), _division_min(division_min),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
     static_assert(M > 1, "Matrix must be larger than 2x2.");
 
     this->_solve_with_qr_method(matrix);
   }
+
+#else
+
+  EigenSolverComplex()
+      : iteration_max(0), iteration_max_for_eigen_vector(0), _eigen_values{},
+        _division_min(static_cast<T>(0)),
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
+
+  EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
+                     T division_min)
+      : iteration_max(iteration_max),
+        iteration_max_for_eigen_vector(iteration_max * 3), _eigen_values{},
+        _division_min(division_min),
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
+    static_assert(M > 1, "Matrix must be larger than 2x2.");
+
+    this->_solve_with_qr_method(matrix);
+  }
+
+#endif
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
@@ -459,7 +507,13 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
+#else
+  std::array<Complex<T>, M> get_eigen_values(void) {
+    return this->_eigen_values;
+  }
+#endif
 
   Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
@@ -473,7 +527,11 @@ private:
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
+#ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> _eigen_values;
+#else
+  std::array<Complex<T>, M> _eigen_values;
+#endif
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -503,12 +561,12 @@ private:
         u_abs += u[i] * u[i];
       }
 
-      std::memset(&this->_House.values[0], 0,
-                  (M * M) * sizeof(this->_House.values[0]));
-      std::memset(&this->_House.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House.row_indices[0]));
-      std::memset(&this->_House.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House.row_pointers[0]));
+      std::fill(this->_House.values.begin(), this->_House.values.end(),
+                static_cast<T>(0));
+      std::fill(this->_House.row_indices.begin(),
+                this->_House.row_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->_House.row_pointers.begin(),
+                this->_House.row_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -539,7 +597,7 @@ private:
       R = this->_House * R * this->_House;
     }
 
-    copy_matrix_real_to_complex(this->_Hessen, R);
+    this->_Hessen = convert_matrix_real_to_complex(R);
   }
 
   void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
@@ -562,12 +620,14 @@ private:
       u[k + 1] = R(k + 1, k);
       T u_abs = complex_abs_sq(u[k]) + complex_abs_sq(u[k + 1]);
 
-      std::memset(&this->_House_comp.values[0], 0,
-                  (M * M) * sizeof(this->_House_comp.values[0]));
-      std::memset(&this->_House_comp.row_indices[0], 0,
-                  (M * M) * sizeof(this->_House_comp.row_indices[0]));
-      std::memset(&this->_House_comp.row_pointers[0], 0,
-                  (M + 1) * sizeof(this->_House_comp.row_pointers[0]));
+      std::fill(this->_House_comp.values.begin(),
+                this->_House_comp.values.end(), Complex<T>());
+      std::fill(this->_House_comp.row_indices.begin(),
+                this->_House_comp.row_indices.end(),
+                static_cast<std::size_t>(0));
+      std::fill(this->_House_comp.row_pointers.begin(),
+                this->_House_comp.row_pointers.end(),
+                static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
@@ -671,8 +731,7 @@ private:
 
     for (std::size_t k = 0; k < M; ++k) {
       // A - mu * I
-      Matrix<Complex<T>, M, M> A;
-      copy_matrix_real_to_complex(A, matrix);
+      Matrix<Complex<T>, M, M> A = convert_matrix_real_to_complex(matrix);
 
       Complex<T> mu = this->_eigen_values[k] + this->_small_value;
       for (std::size_t i = 0; i < M; ++i) {
