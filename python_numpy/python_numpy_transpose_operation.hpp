@@ -72,9 +72,9 @@ auto A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable>
 auto A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
                       const Matrix<DefDiag, T, K> &B)
-    -> Matrix<DefDense, T, M, K> {
+    -> Matrix<DefSparse, T, M, K, SparseAvailable> {
 
-  return Matrix<DefDense, T, M, K>(A.matrix * B.matrix);
+  return Matrix<DefSparse, T, M, K, SparseAvailable>(A.matrix * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,

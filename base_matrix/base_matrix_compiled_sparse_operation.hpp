@@ -2284,9 +2284,9 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct SparseMatrixMultiplyDiagLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
-    Y(J, RowIndices_A::list[Start]) =
-        A.values[Start] * B[RowIndices_A::list[Start]];
+          const DiagMatrix<T, N> &B,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+    Y.values[Start] = A.values[Start] * B[RowIndices_A::list[Start]];
     SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, K,
                                  Start + 1, End>::compute(A, B, Y);
   }
@@ -2299,7 +2299,8 @@ struct SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, K,
                                     End, End> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+          const DiagMatrix<T, N> &B,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -2313,7 +2314,8 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct SparseMatrixMultiplyDiagRow {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+          const DiagMatrix<T, N> &B,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
     SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, J, 0,
                                  RowPointers_A::list[J],
                                  RowPointers_A::list[J + 1]>::compute(A, B, Y);
@@ -2328,7 +2330,8 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct SparseMatrixMultiplyDiagRow<T, M, N, RowIndices_A, RowPointers_A, 0> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+          const DiagMatrix<T, N> &B,
+          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
     SparseMatrixMultiplyDiagLoop<T, M, N, RowIndices_A, RowPointers_A, 0, 0,
                                  RowPointers_A::list[0],
                                  RowPointers_A::list[1]>::compute(A, B, Y);
@@ -2339,24 +2342,27 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const DiagMatrix<T, N> &B, Matrix<T, M, N> &Y) {
+    const DiagMatrix<T, N> &B,
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
   SparseMatrixMultiplyDiagRow<T, M, N, RowIndices_A, RowPointers_A,
                               M - 1>::compute(A, B, Y);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, N>
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, N> &B) {
-  Matrix<T, M, N> Y;
+auto operator*(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const DiagMatrix<T, N> &B)
+    -> CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> {
+
+  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
          k++) {
-      Y(j, RowIndices_A::list[k]) = A.values[k] * B[RowIndices_A::list[k]];
+      Y.values[k] = A.values[k] * B[RowIndices_A::list[k]];
     }
   }
 
