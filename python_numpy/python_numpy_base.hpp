@@ -561,9 +561,14 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
 auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                const Matrix<DefSparse, T, N, K, SparseAvailable_B> &B)
-    -> Matrix<DefDense, T, M, K> {
+    -> Matrix<
+        DefSparse, T, M, K,
+        SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>> {
 
-  return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
+  return Matrix<
+      DefSparse, T, M, K,
+      SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>>(
+      std::move(A.matrix * B.matrix));
 }
 
 } // namespace PythonNumpy

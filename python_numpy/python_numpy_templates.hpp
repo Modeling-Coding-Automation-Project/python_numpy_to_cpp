@@ -68,6 +68,11 @@ using MatrixAddSubSparseAvailable =
     Base::Matrix::MatrixAddSubSparseAvailable<SparseAvailable_A,
                                               SparseAvailable_B>;
 
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using SparseAvailableMatrixMultiply =
+    Base::Matrix::SparseAvailableMatrixMultiply<SparseAvailable_A,
+                                                SparseAvailable_B>;
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_TEMPLATES_HPP
