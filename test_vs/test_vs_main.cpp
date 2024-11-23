@@ -796,7 +796,8 @@ void check_sparse_matrix(void) {
     tester.expect_near(Sparse_mul_Diag_dense.data, Sparse_mul_Diag_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply DiagMatrix.");
 
-    Matrix<T, 3, 3> Diag_mul_Sparse = DiagJ * SparseCc;
+    auto Diag_mul_Sparse = DiagJ * SparseCc;
+    Matrix<T, 3, 3> Diag_mul_Sparse_dense = Diag_mul_Sparse.create_dense();
 
     Matrix<T, 3, 3> Diag_mul_Sparse_answer({
         {10, 0, 0},
@@ -804,7 +805,7 @@ void check_sparse_matrix(void) {
         {0, 60, 120}
         });
 
-    tester.expect_near(Diag_mul_Sparse.data, Diag_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Diag_mul_Sparse_dense.data, Diag_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply SparseMatrix.");
 
     auto Sparse_add_Sparse = SparseCc + SparseCc;
@@ -2937,7 +2938,7 @@ void check_check_python_numpy_transpose_operation(void) {
         "check A_mul_BTranspose Sparse and Dense.");
 
     auto C_Bt = A_mul_BTranspose(C, B);
-    Matrix<DefDense, T, 3, 3> C_Bt_dense = C_Bt.create_dense();
+    auto C_Bt_dense = C_Bt.create_dense();
 
     Matrix<DefDense, T, 3, 3> C_Bt_answer({
         {1, 0, 0},
@@ -3016,6 +3017,7 @@ void check_check_python_numpy_transpose_operation(void) {
         "check ATranspose_mul_B Diag and Diag.");
 
     auto Bt_C = ATranspose_mul_B(B, C);
+    auto Bt_C_dense = Bt_C.create_dense();
 
     Matrix<DefDense, T, 3, 3> Bt_C_answer({
         {1, 0, 0},
@@ -3023,7 +3025,7 @@ void check_check_python_numpy_transpose_operation(void) {
         {0, 6, 12}
         });
 
-    tester.expect_near(Bt_C.matrix.data, Bt_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Bt_C_dense.matrix.data, Bt_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check ATranspose_mul_B Diag and Sparse.");
 
     auto Ct_A = ATranspose_mul_B(C, A);

@@ -2385,8 +2385,8 @@ struct DiagMatrixMultiplySparseLoop {
   static void
   compute(const DiagMatrix<T, N> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, M, N> &Y) {
-    Y(J, RowIndices_B::list[Start]) = B.values[Start] * A[J];
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+    Y.values[Start] = B.values[Start] * A[J];
     DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, J, K,
                                  Start + 1, End>::compute(A, B, Y);
   }
@@ -2400,7 +2400,7 @@ struct DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, J, K,
   static void
   compute(const DiagMatrix<T, N> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, M, N> &Y) {
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -2415,7 +2415,7 @@ struct DiagMatrixMultiplySparseRow {
   static void
   compute(const DiagMatrix<T, N> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, M, N> &Y) {
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, J, 0,
                                  RowPointers_B::list[J],
                                  RowPointers_B::list[J + 1]>::compute(A, B, Y);
@@ -2431,7 +2431,7 @@ struct DiagMatrixMultiplySparseRow<T, M, N, RowIndices_B, RowPointers_B, 0> {
   static void
   compute(const DiagMatrix<T, N> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, M, N> &Y) {
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
     DiagMatrixMultiplySparseLoop<T, M, N, RowIndices_B, RowPointers_B, 0, 0,
                                  RowPointers_B::list[0],
                                  RowPointers_B::list[1]>::compute(A, B, Y);
@@ -2443,24 +2443,26 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
 static inline void DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX(
     const DiagMatrix<T, N> &A,
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-    Matrix<T, M, N> &Y) {
+    CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
   DiagMatrixMultiplySparseRow<T, M, N, RowIndices_B, RowPointers_B,
                               M - 1>::compute(A, B, Y);
 }
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-Matrix<T, M, K>
-operator*(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
-  Matrix<T, M, K> Y;
+auto operator*(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B)
+    -> CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> {
+
+  CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
          k++) {
-      Y(j, RowIndices_B::list[k]) = B.values[k] * A[j];
+      Y.values[k] = B.values[k] * A[j];
     }
   }
 
