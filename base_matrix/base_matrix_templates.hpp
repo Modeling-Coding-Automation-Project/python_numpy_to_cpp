@@ -844,6 +844,12 @@ struct SparseAvailableMatrixMultiplyColumnLoop<SparseAvailable_A,
           (SparseAvailable_B::column_size - 1)>::type>;
 };
 
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using SparseAvailableMatrixMultiply =
+    typename SparseAvailableMatrixMultiplyColumnLoop<
+        SparseAvailable_A, SparseAvailable_B,
+        (SparseAvailable_A::column_size - 1)>::type;
+
 } // namespace Matrix
 } // namespace Base
 
