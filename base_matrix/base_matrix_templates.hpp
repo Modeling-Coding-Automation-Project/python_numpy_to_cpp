@@ -742,6 +742,108 @@ using MatrixAddSubSparseAvailable =
     typename MatrixAddSubSparseAvailableHelper<SparseAvailable_A,
                                                SparseAvailable_B>::type;
 
+/* SparseAvailable Multiply */
+// helper template to calculate the logical AND
+template <bool A, bool B> struct LogicalAnd {
+  static constexpr bool value = A && B;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t COL, std::size_t ROW, std::size_t N_Idx>
+struct SparseAvailableMatrixMultiplyElement {
+  static constexpr bool value =
+      LogicalAnd<SparseAvailable_A::lists[COL][N_Idx],
+                 SparseAvailable_B::lists[N_Idx][ROW]>::value;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t COL, std::size_t ROW, std::size_t N_Idx>
+struct SparseAvailableMatrixMultiplyMultiplyLoop {
+  using type = ConcatenateColumnAvailable<
+      typename SparseAvailableMatrixMultiplyMultiplyLoop<
+          SparseAvailable_A, SparseAvailable_B, COL, ROW, (N_Idx - 1)>::type,
+      ColumnAvailable<SparseAvailableMatrixMultiplyElement<
+          SparseAvailable_A, SparseAvailable_B, COL, ROW, N_Idx>::value>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t COL, std::size_t ROW>
+struct SparseAvailableMatrixMultiplyMultiplyLoop<
+    SparseAvailable_A, SparseAvailable_B, COL, ROW, 0> {
+  using type = ColumnAvailable<SparseAvailableMatrixMultiplyElement<
+      SparseAvailable_A, SparseAvailable_B, COL, ROW, 0>::value>;
+};
+
+template <typename ColumnAvailable, std::size_t N_Idx>
+struct ColumnAvailableElementWiseOr {
+  static constexpr bool value = LogicalOr<
+      ColumnAvailable::list[N_Idx],
+      ColumnAvailableElementWiseOr<ColumnAvailable, (N_Idx - 1)>::value>::value;
+};
+
+template <typename ColumnAvailable>
+struct ColumnAvailableElementWiseOr<ColumnAvailable, 0> {
+  static constexpr bool value = ColumnAvailable::list[0];
+};
+
+// ColumnAvailable from SparseAvailable Row vector
+template <typename SparseAvailable, std::size_t ROW, std::size_t M_Idx>
+struct ColumnAvailableFromSparseAvailableColumLoop {
+  using type = ConcatenateColumnAvailable<
+      typename ColumnAvailableFromSparseAvailableColumLoop<SparseAvailable, ROW,
+                                                           (M_Idx - 1)>::type,
+      ColumnAvailable<SparseAvailable::lists[M_Idx][ROW]>>;
+};
+
+template <typename SparseAvailable, std::size_t ROW>
+struct ColumnAvailableFromSparseAvailableColumLoop<SparseAvailable, ROW, 0> {
+  using type = ColumnAvailable<SparseAvailable::lists[0][ROW]>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t COL, std::size_t J_Idx>
+struct SparseAvailableMatrixMultiplyRowLoop {
+  using type = ConcatenateColumnAvailable<
+      typename SparseAvailableMatrixMultiplyRowLoop<
+          SparseAvailable_A, SparseAvailable_B, COL, (J_Idx - 1)>::type,
+      ColumnAvailable<ColumnAvailableElementWiseOr<
+          typename SparseAvailableMatrixMultiplyMultiplyLoop<
+              SparseAvailable_A, SparseAvailable_B, COL, J_Idx,
+              (SparseAvailable_A::column_size - 1)>::type,
+          (SparseAvailable_A::column_size - 1)>::value>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t COL>
+struct SparseAvailableMatrixMultiplyRowLoop<SparseAvailable_A,
+                                            SparseAvailable_B, COL, 0> {
+  using type = ColumnAvailable<ColumnAvailableElementWiseOr<
+      typename SparseAvailableMatrixMultiplyMultiplyLoop<
+          SparseAvailable_A, SparseAvailable_B, COL, 0,
+          (SparseAvailable_A::column_size - 1)>::type,
+      (SparseAvailable_A::column_size - 1)>::value>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t I_Idx>
+struct SparseAvailableMatrixMultiplyColumnLoop {
+  using type = ConcatenateSparseAvailableVertically<
+      typename SparseAvailableMatrixMultiplyColumnLoop<
+          SparseAvailable_A, SparseAvailable_B, (I_Idx - 1)>::type,
+      SparseAvailableColumns<typename SparseAvailableMatrixMultiplyRowLoop<
+          SparseAvailable_A, SparseAvailable_B, I_Idx,
+          (SparseAvailable_B::column_size - 1)>::type>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+struct SparseAvailableMatrixMultiplyColumnLoop<SparseAvailable_A,
+                                               SparseAvailable_B, 0> {
+  using type =
+      SparseAvailableColumns<typename SparseAvailableMatrixMultiplyRowLoop<
+          SparseAvailable_A, SparseAvailable_B, 0,
+          (SparseAvailable_B::column_size - 1)>::type>;
+};
+
 } // namespace Matrix
 } // namespace Base
 
