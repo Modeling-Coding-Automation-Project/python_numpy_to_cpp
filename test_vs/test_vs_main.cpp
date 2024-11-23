@@ -697,23 +697,16 @@ void check_sparse_matrix(void) {
         RowIndices<0, 0, 2, 3, 1, 2>,
         RowPointers<0, 1, 4, 6>> SEc({ 1, 3, 8, 1, 2, 4 });
 
-    Matrix<T, 3, 4> Sparse_mul_Sparse = SparseCc * SEc;
-
-    //std::cout << "DenseI = " << std::endl;
-    //for (size_t j = 0; j < DenseI.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseI.rows(); ++i) {
-    //        std::cout << DenseI(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto Sparse_mul_Sparse = SparseCc * SEc;
+    Matrix<T, 3, 4> Sparse_mul_Sparse_dense = Sparse_mul_Sparse.create_dense();
 
     Matrix<T, 3, 4> Sparse_mul_Sparse_answer({
         {1, 0, 0, 0},
         {3, 16, 32, 0},
         {6, 8, 32, 2}
         });
-    tester.expect_near(Sparse_mul_Sparse.data, Sparse_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+
+    tester.expect_near(Sparse_mul_Sparse_dense.data, Sparse_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
 
     Matrix<T, 3, 4> SparseTranspose_mul_Sparse =
@@ -1976,6 +1969,7 @@ void check_base_matrix_calc(void) {
     check_eigen_values_and_vectors<T>();
 }
 
+
 template <typename T>
 void check_python_numpy_base(void) {
     using namespace PythonNumpy;
@@ -2112,22 +2106,128 @@ void check_python_numpy_base(void) {
     tester.expect_near(Sparse_sub_Sparse_dense.matrix.data, Sparse_sub_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix sub SparseMatrix.");
 
-    auto E = B * B;
+    auto Dense_mul_Dense = AA * AA.transpose();
 
-    //std::cout << "E = " << std::endl;
-    //for (size_t i = 0; i < E.matrix.cols(); ++i) {
-    //    std::cout << E.matrix[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
+    Matrix<DefDense, T, 4, 4> Dense_mul_Dense_answer({
+        { 10, 0, 24, 3 },
+        { 0, 4, 8, 0 },
+        { 24, 8, 80, 8 },
+        { 3, 0, 8, 1 }
+    });
 
-    Matrix<DefDiag, T, 3> E_answer({ 1, 4, 9 });
-    tester.expect_near(E.matrix.data, E_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Dense_mul_Dense.matrix.data, Dense_mul_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DenseMatrix multiply DenseMatrix.");
+
+    auto Dense_mul_Diag = AA * B;
+
+    Matrix<DefDense, T, 4, 3> Dense_mul_Diag_answer({
+        { 1, 6, 0 },
+        { 0, 0, 6 },
+        { 0, 16, 12 },
+        { 0, 2, 0 }
+    });
+
+    tester.expect_near(Dense_mul_Diag.matrix.data, Dense_mul_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DenseMatrix multiply DiagMatrix.");
+
+    auto Dense_mul_Sparse = AA * C;
+
+    Matrix<DefDense, T, 4, 3> Dense_mul_Sparse_answer({
+        { 10, 0, 24 },
+        { 0, 4, 8 },
+        { 24, 8, 80 },
+        { 3, 0, 8 }
+    });
+
+    tester.expect_near(Dense_mul_Sparse.matrix.data, Dense_mul_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DenseMatrix multiply SparseMatrix.");
+
+    auto Diag_mul_Dense = B * AA.transpose();
+
+    Matrix<DefDense, T, 3, 4> Diag_mul_Dense_answer({
+        { 1, 0, 0, 0 },
+        { 6, 0, 16, 2 },
+        { 0, 6, 12, 0 }
+    });
+
+    tester.expect_near(Diag_mul_Dense.matrix.data, Diag_mul_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix multiply DenseMatrix.");
+
+
+    auto Diag_mul_Diag = B * B;
+    auto Diag_mul_Diag_dense = Diag_mul_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Diag_mul_Diag_answer({
+        {1, 0, 0},
+        {0, 4, 0},
+        {0, 0, 9}
+    });
+
+    tester.expect_near(Diag_mul_Diag_dense.matrix.data, Diag_mul_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix multiply DiagMatrix.");
+
+    Matrix<DefSparse, T, 3, 4,
+        SparseAvailable<
+            ColumnAvailable<true, false, false, false>,
+            ColumnAvailable<true, false, true, true>,
+            ColumnAvailable<false, true, true, false>
+        >> CL({1, 3, 8, 1, 2, 4});
+
+    auto Diag_mul_Sparse = B * CL;
+    auto Diag_mul_Sparse_dense = Diag_mul_Sparse.create_dense();
+
+    Matrix<DefDense, T, 3, 4> Diag_mul_Sparse_answer({
+        {1, 0, 0, 0},
+        {6, 0, 16, 2},
+        {0, 6, 12, 0}
+    });
+
+    tester.expect_near(Diag_mul_Sparse_dense.matrix.data, Diag_mul_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix multiply SparseMatrix.");
+
+    auto Sparse_mul_Dense = C * AA.transpose();
+
+    Matrix<DefDense, T, 3, 4> Sparse_mul_Dense_answer({
+        { 1, 0, 0, 0 },
+        { 3, 16, 32, 0 },
+        { 6, 8, 32, 2 }
+    });
+
+    tester.expect_near(Sparse_mul_Dense.matrix.data, Sparse_mul_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix multiply DenseMatrix.");
+
+    Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
+
+    auto Sparse_mul_Diag = CL * BL;
+    auto Sparse_mul_Diag_dense = Sparse_mul_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 4> Sparse_mul_Diag_answer({
+        { 1, 0, 0, 0 },
+        { 3, 0, 24, 4 },
+        { 0, 4, 12, 0 }
+    });
+
+    tester.expect_near(Sparse_mul_Diag_dense.matrix.data, Sparse_mul_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix multiply DiagMatrix.");
+
+    auto Sparse_mul_Sparse = C * CL;
+    auto Sparse_mul_Sparse_dense = Sparse_mul_Sparse.create_dense();
+
+    Matrix<DefDense, T, 3, 4> Sparse_mul_Sparse_answer({
+        { 1, 0, 0, 0 },
+        { 3, 16, 32, 0 },
+        { 6, 8, 32, 2 }
+    });
+
+    tester.expect_near(Sparse_mul_Sparse_dense.matrix.data, Sparse_mul_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix multiply SparseMatrix.");
 
 
     tester.throw_error_if_test_failed();
 }
+
+
+
 
 template <typename T>
 void check_python_numpy_left_divide_and_inv(void) {
@@ -2742,14 +2842,7 @@ void check_python_numpy_lu(void) {
     static auto A_LU_solver = make_LinalgSolverLU(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
-    //std::cout << "A_LU = " << std::endl;
-    //for (size_t j = 0; j < A_LU.cols(); ++j) {
-    //    for (size_t i = 0; i < A_LU.rows(); ++i) {
-    //        std::cout << A_LU.matrix(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto A_LU_dense = A_LU.create_dense();
 
     Matrix<DefDense, T, 3, 3> A_LU_answer({
         {1, 2, 3},
@@ -2757,7 +2850,7 @@ void check_python_numpy_lu(void) {
         {9, 8, 7}
     });
 
-    tester.expect_near(A_LU.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_LU_dense.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U Dense.");
 
     //std::cout << "det = " << LU_solver.get_det() << std::endl << std::endl;
@@ -2769,6 +2862,7 @@ void check_python_numpy_lu(void) {
     auto B_LU_solver = make_LinalgSolverLU(B);
 
     auto B_LU = B_LU_solver.get_L() * B_LU_solver.get_U();
+    auto B_LU_dense = B_LU.create_dense();
 
     Matrix<DefDense, T, 3, 3> B_LU_answer({
         {1, 0, 0},
@@ -2776,7 +2870,7 @@ void check_python_numpy_lu(void) {
         {0, 0, 3}
     });
 
-    tester.expect_near(B_LU.matrix.data, B_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(B_LU_dense.matrix.data, B_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U Diag.");
 
 
@@ -3296,7 +3390,6 @@ void check_python_numpy_eig(void) {
     tester.throw_error_if_test_failed();
 }
 
-
 template <typename T>
 void check_python_numpy_calc(void) {
 
@@ -3329,6 +3422,49 @@ int main() {
     check_python_numpy_calc<double>();
 
     check_python_numpy_calc<float>();
+
+
+    using namespace Base::Matrix;
+
+
+    using Name_A = SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>;
+
+    using Name_B = SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, false, true>>;
+
+    using Name_C = SparseAvailableMatrixMultiply<Name_A, Name_B>;
+
+    for (size_t i = 0; i < Name_C::number_of_columns; ++i) {
+        for (size_t j = 0; j < Name_C::column_size; ++j) {
+            std::cout << Name_C::lists[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+
+    //using Column = SparseAvailableMatrixMultiplyMultiplyLoop<
+    //    Name_A, Name_B, 2, 2, (Name_A::column_size - 1)>::type;
+
+    //using Column = ColumnAvailableFromSparseAvailableColumLoop<
+    //    Name_A, 2, Name_A::column_size - 1>::type;
+
+    //bool a_0 = Column::list[0];
+    //bool a_1 = Column::list[1];
+    //bool a_2 = Column::list[2];
+
+    //bool b = ColumnAvailableElementWiseOr<
+    //    Column, 2>::value;
+
+    //Matrix<int, 3, 3> Test;
+
+    //Test(0, 0) = SparseAvailableMatrixMultiplyElement<
+    //    Name_A, Name_B, 0, 0, 0>::value;
 
 
     return 0;
