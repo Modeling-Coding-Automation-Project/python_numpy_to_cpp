@@ -1811,20 +1811,54 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE(
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-Matrix<T, M, K>
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
-  Matrix<T, M, K> Y;
+auto operator*(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B)
+    -> CompiledSparseMatrix<
+        T, M, K,
+        RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiply<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                        RowPointers_B>>>,
+        RowPointersFromSparseAvailable<SparseAvailableMatrixMultiply<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                        RowPointers_A>,
+            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                        RowPointers_B>>>> {
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<
+      SparseAvailableMatrixMultiply<CreateSparseAvailableFromIndicesAndPointers<
+                                        N, RowIndices_A, RowPointers_A>,
+                                    CreateSparseAvailableFromIndicesAndPointers<
+                                        K, RowIndices_B, RowPointers_B>>>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<
+      SparseAvailableMatrixMultiply<CreateSparseAvailableFromIndicesAndPointers<
+                                        N, RowIndices_A, RowPointers_A>,
+                                    CreateSparseAvailableFromIndicesAndPointers<
+                                        K, RowIndices_B, RowPointers_B>>>;
+
+  CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Matrix<T, M, K> Y_temp;
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
          ++k) {
       for (std::size_t l = RowPointers_B::list[RowIndices_A::list[k]];
            l < RowPointers_B::list[RowIndices_A::list[k] + 1]; ++l) {
-        Y(j, RowIndices_B::list[l]) += A.values[k] * B.values[l];
+        Y_temp(j, RowIndices_B::list[l]) += A.values[k] * B.values[l];
       }
+    }
+  }
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+         ++k) {
+      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
     }
   }
 
