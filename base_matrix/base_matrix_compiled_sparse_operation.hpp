@@ -540,18 +540,6 @@ auto operator+(
             DiagAvailable<M>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  CompiledSparseMatrix<
-      T, M, M,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -560,6 +548,8 @@ auto operator+(
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
+
+  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
@@ -610,18 +600,6 @@ auto operator+(
             DiagAvailable<M>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  CompiledSparseMatrix<
-      T, M, M,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -630,6 +608,8 @@ auto operator+(
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
+
+  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
@@ -681,20 +661,6 @@ auto operator+(
             CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
                                                         RowPointers_B>>>> {
 
-  CompiledSparseMatrix<
-      T, M, N,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -705,6 +671,8 @@ auto operator+(
                                       N, RowIndices_A, RowPointers_A>,
                                   CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_B, RowPointers_B>>>;
+
+  CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
@@ -871,18 +839,6 @@ auto operator-(
             DiagAvailable<M>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  CompiledSparseMatrix<
-      T, M, M,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -891,6 +847,8 @@ auto operator-(
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
+
+  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
@@ -1011,18 +969,6 @@ auto operator-(
             DiagAvailable<M>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  CompiledSparseMatrix<
-      T, M, M,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -1031,6 +977,8 @@ auto operator-(
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
+
+  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
@@ -1152,20 +1100,6 @@ auto operator-(
             CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
                                                         RowPointers_B>>>> {
 
-  CompiledSparseMatrix<
-      T, M, N,
-      RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>,
-      RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>>
-      Y;
-
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
@@ -1176,6 +1110,8 @@ auto operator-(
                                       N, RowIndices_A, RowPointers_A>,
                                   CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_B, RowPointers_B>>>;
+
+  CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> Y;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
