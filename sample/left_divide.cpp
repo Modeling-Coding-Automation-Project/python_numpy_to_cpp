@@ -12,8 +12,11 @@ int main() {
 
   Matrix<DefDiag, double, 3> B({1, 2, 3});
 
-  Matrix<DefSparse, double, 3, 3, 5> C({1, 3, 8, 2, 4}, {0, 0, 2, 1, 2},
-                                       {0, 1, 3, 5});
+  Matrix<DefSparse, double, 3, 3,
+         SparseAvailable<ColumnAvailable<true, false, false>,
+                         ColumnAvailable<true, false, true>,
+                         ColumnAvailable<false, true, true>>>
+      C({1, 3, 8, 2, 4});
 
   static auto solver = make_LinalgSolver(A, C);
   auto result = solver.solve(A, C);

@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 #define BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 
+#include "base_matrix_compiled_sparse.hpp"
+#include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include <cmath>
@@ -84,10 +86,11 @@ DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
   return Y;
 }
 
-template <typename T, std::size_t M, std::size_t V>
-Matrix<T, M, M> cholesky_decomposition_sparse(const SparseMatrix<T, M, M, V> &U,
-                                              const Matrix<T, M, M> &Y_b,
-                                              bool &zero_div_flag) {
+template <typename T, std::size_t M, typename RowIndices_U,
+          typename RowPointers_U>
+Matrix<T, M, M> cholesky_decomposition_sparse(
+    const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
+    const Matrix<T, M, M> &Y_b, bool &zero_div_flag) {
   Matrix<T, M, M> U_dense = U.create_dense();
   Matrix<T, M, M> Y;
 

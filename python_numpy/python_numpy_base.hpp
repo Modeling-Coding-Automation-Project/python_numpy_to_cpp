@@ -2,13 +2,14 @@
 #define PYTHON_NUMPY_BASE_HPP
 
 #include "base_matrix.hpp"
+#include "python_numpy_templates.hpp"
 #include <cstddef>
-#include <cstring>
 #include <initializer_list>
 #include <utility>
 
 namespace PythonNumpy {
 
+/* Matrix class definition */
 class DefDense {};
 
 class DefDiag {};
@@ -16,7 +17,7 @@ class DefDiag {};
 class DefSparse {};
 
 template <typename C, typename T, std::size_t M, std::size_t N = 1,
-          std::size_t V = 1>
+          typename SparseAvailable = void>
 class Matrix;
 
 template <typename T, std::size_t M, std::size_t N>
@@ -77,10 +78,9 @@ public:
   auto create_complex(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, N> {
 
-    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix;
+    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
 
-    Base::Matrix::copy_matrix_real_to_complex(Complex_matrix.matrix,
-                                              this->matrix);
     return Complex_matrix;
   }
 
@@ -134,35 +134,40 @@ public:
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
+  auto create_dense(void) -> Matrix<DefDense, T, M, M> {
+    return Matrix<DefDense, T, M, M>(this->matrix.create_dense());
+  }
+
   auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
 
   /* Variable */
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-class Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Constructor */
   Matrix() {}
 
-  Matrix(const std::initializer_list<T> &values,
-         const std::initializer_list<std::size_t> &row_indices,
-         const std::initializer_list<std::size_t> &row_pointers)
-      : matrix(values, row_indices, row_pointers) {}
+  Matrix(const std::initializer_list<T> &values) : matrix(values) {}
 
-  Matrix(Base::Matrix::SparseMatrix<T, M, N, V> &input) : matrix(input) {}
+  Matrix(Base::Matrix::CompiledSparseMatrix<
+         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+         RowPointersFromSparseAvailable<SparseAvailable>> &input)
+      : matrix(input) {}
 
-  Matrix(Base::Matrix::SparseMatrix<T, M, N, V> &&input) noexcept
+  Matrix(Base::Matrix::CompiledSparseMatrix<
+         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+         RowPointersFromSparseAvailable<SparseAvailable>> &&input) noexcept
       : matrix(std::move(input)) {}
 
-  Matrix(Base::Matrix::Matrix<T, M, N> &input) : matrix(input) {}
-
   /* Copy Constructor */
-  Matrix(const Matrix<DefSparse, T, M, N, V> &input) : matrix(input.matrix) {}
+  Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
+      : matrix(input.matrix) {}
 
-  Matrix<DefSparse, T, M, N, V> &
-  operator=(const Matrix<DefSparse, T, M, N, V> &input) {
+  Matrix<DefSparse, T, M, N, SparseAvailable> &
+  operator=(const Matrix<DefSparse, T, M, N, SparseAvailable> &input) {
     if (this != &input) {
       this->matrix = input.matrix;
     }
@@ -170,11 +175,11 @@ public:
   }
 
   /* Move Constructor */
-  Matrix(Matrix<DefSparse, T, M, N, V> &&input) noexcept
+  Matrix(Matrix<DefSparse, T, M, N, SparseAvailable> &&input) noexcept
       : matrix(std::move(input.matrix)) {}
 
-  Matrix<DefSparse, T, M, N, V> &
-  operator=(Matrix<DefSparse, T, M, N, V> &&input) noexcept {
+  Matrix<DefSparse, T, M, N, SparseAvailable> &
+  operator=(Matrix<DefSparse, T, M, N, SparseAvailable> &&input) noexcept {
     if (this != &input) {
       this->matrix = std::move(input.matrix);
     }
@@ -186,6 +191,16 @@ public:
     return Matrix<DefDense, T, M, N>(this->matrix.create_dense());
   }
 
+  template <std::size_t COL, std::size_t ROW> T get() const {
+
+    return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
+  }
+
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+
+    return Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+  }
+
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }
@@ -195,7 +210,10 @@ public:
   }
 
   /* Variable */
-  Base::Matrix::SparseMatrix<T, M, N, V> matrix;
+  Base::Matrix::CompiledSparseMatrix<
+      T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+      RowPointersFromSparseAvailable<SparseAvailable>>
+      matrix;
 };
 
 /* Matrix Addition */
@@ -215,9 +233,9 @@ auto operator+(const Matrix<DefDense, T, M, N> &A,
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator+(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
@@ -239,37 +257,80 @@ auto operator+(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator+(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefDense, T, M, N> {
+               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
+  return Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N,
+          RowIndicesFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>,
+          RowPointersFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>>>(
+      std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
                const Matrix<DefDense, T, M, N> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
+               const Matrix<DefDiag, T, M> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
+  return Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N,
+          RowIndicesFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>,
+          RowPointersFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>>>(
+      std::move(A.matrix + B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator+(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>>> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix + B.matrix));
+  return Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N,
+                    RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>,
+                    RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>>>(
+      std::move(A.matrix + B.matrix));
 }
 
 /* Matrix Subtraction */
@@ -289,9 +350,9 @@ auto operator-(const Matrix<DefDense, T, M, N> &A,
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator-(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
+               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
@@ -313,37 +374,80 @@ auto operator-(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator-(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefDense, T, M, N> {
+               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
+  return Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N,
+          RowIndicesFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>,
+          RowPointersFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>>>(
+      std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
                const Matrix<DefDense, T, M, N> &B)
     -> Matrix<DefDense, T, M, N> {
 
   return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefDiag, T, M> &B) -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
+               const Matrix<DefDiag, T, M> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable, DiagAvailable<M>>>>> {
   static_assert(M == N, "Argument is not square matrix.");
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
+  return Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N,
+          RowIndicesFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>,
+          RowPointersFromSparseAvailable<
+              MatrixAddSubSparseAvailable<SparseAvailable, DiagAvailable<M>>>>>(
+      std::move(A.matrix - B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator-(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B)
+    -> Matrix<DefSparse, T, M, N,
+              CreateSparseAvailableFromIndicesAndPointers<
+                  N,
+                  RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>,
+                  RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                      SparseAvailable_A, SparseAvailable_B>>>> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix - B.matrix));
+  return Matrix<DefSparse, T, M, N,
+                CreateSparseAvailableFromIndicesAndPointers<
+                    N,
+                    RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>,
+                    RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
+                        SparseAvailable_A, SparseAvailable_B>>>>(
+      std::move(A.matrix - B.matrix));
 }
 
 /* Matrix Multiply Scalar */
@@ -375,18 +479,18 @@ auto operator*(const Matrix<DefDiag, T, M> &B, const T &a)
   return Matrix<DefDiag, T, M>(std::move(B.matrix * a));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const T &a, const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator*(const T &a, const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
 
-  return Matrix<DefSparse, T, M, N, V>(std::move(a * B.matrix));
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(std::move(a * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &B, const T &a)
-    -> Matrix<DefSparse, T, M, N, V> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &B, const T &a)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
 
-  return Matrix<DefSparse, T, M, N, V>(std::move(B.matrix * a));
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(std::move(B.matrix * a));
 }
 
 /* Matrix Multiply Matrix */
@@ -406,9 +510,9 @@ auto operator*(const Matrix<DefDense, T, M, N> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V>
+          typename SparseAvailable>
 auto operator*(const Matrix<DefDense, T, M, N> &A,
-               const Matrix<DefSparse, T, N, K, V> &B)
+               const Matrix<DefSparse, T, N, K, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
@@ -429,37 +533,45 @@ auto operator*(const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B)
   return Matrix<DefDiag, T, M>(std::move(A.matrix * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 auto operator*(const Matrix<DefDiag, T, M> &A,
-               const Matrix<DefSparse, T, M, N, V> &B)
-    -> Matrix<DefDense, T, M, N> {
+               const Matrix<DefSparse, T, M, N, SparseAvailable> &B)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix * B.matrix));
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(
+      std::move(A.matrix * B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
+          typename SparseAvailable>
+auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
                const Matrix<DefDense, T, N, K> &B)
     -> Matrix<DefDense, T, M, K> {
 
   return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t V>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefDiag, T, N> &B) -> Matrix<DefDense, T, M, N> {
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
+               const Matrix<DefDiag, T, N> &B)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
 
-  return Matrix<DefDense, T, M, N>(std::move(A.matrix * B.matrix));
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(
+      std::move(A.matrix * B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          std::size_t V, std::size_t W>
-auto operator*(const Matrix<DefSparse, T, M, N, V> &A,
-               const Matrix<DefSparse, T, N, K, W> &B)
-    -> Matrix<DefDense, T, M, K> {
+          typename SparseAvailable_A, typename SparseAvailable_B>
+auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+               const Matrix<DefSparse, T, N, K, SparseAvailable_B> &B)
+    -> Matrix<
+        DefSparse, T, M, K,
+        SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>> {
 
-  return Matrix<DefDense, T, M, K>(std::move(A.matrix * B.matrix));
+  return Matrix<
+      DefSparse, T, M, K,
+      SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>>(
+      std::move(A.matrix * B.matrix));
 }
 
 } // namespace PythonNumpy
