@@ -3424,48 +3424,5 @@ int main() {
     check_python_numpy_calc<float>();
 
 
-    using namespace Base::Matrix;
-
-
-    using Name_A = SparseAvailable<
-        ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, false, true>,
-        ColumnAvailable<false, true, true>>;
-
-    using Name_B = SparseAvailable<
-        ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, false, false>,
-        ColumnAvailable<false, false, true>>;
-
-    using Name_C = SparseAvailableMatrixMultiply<Name_A, Name_B>;
-
-    for (size_t i = 0; i < Name_C::number_of_columns; ++i) {
-        for (size_t j = 0; j < Name_C::column_size; ++j) {
-            std::cout << Name_C::lists[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-
-
-    //using Column = SparseAvailableMatrixMultiplyMultiplyLoop<
-    //    Name_A, Name_B, 2, 2, (Name_A::column_size - 1)>::type;
-
-    //using Column = ColumnAvailableFromSparseAvailableColumLoop<
-    //    Name_A, 2, Name_A::column_size - 1>::type;
-
-    //bool a_0 = Column::list[0];
-    //bool a_1 = Column::list[1];
-    //bool a_2 = Column::list[2];
-
-    //bool b = ColumnAvailableElementWiseOr<
-    //    Column, 2>::value;
-
-    //Matrix<int, 3, 3> Test;
-
-    //Test(0, 0) = SparseAvailableMatrixMultiplyElement<
-    //    Name_A, Name_B, 0, 0, 0>::value;
-
-
     return 0;
 }
