@@ -26,13 +26,25 @@ jobs:
       run: |
         ./test_vs/app
 
-    - name: activate std::vector use option
+    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR
       run: |
-        sed -i 's@// #define USE_STD_VECTOR@#define USE_STD_VECTOR@g' ./base_matrix/base_matrix_macros.hpp
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
 
-    - name: Build C++ application
+    - name: Run the application
       run: |
-        g++ -std=c++11 -Wall -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+        ./test_vs/app
+
+    - name: Build C++ application with BASE_MATRIX_USE_FOR_LOOP_OPERATION
+      run: |
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
+
+    - name: Run the application
+      run: |
+        ./test_vs/app
+
+    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR, BASE_MATRIX_USE_FOR_LOOP_OPERATION
+      run: |
+        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
 
     - name: Run the application
       run: |
