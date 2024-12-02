@@ -10,12 +10,37 @@ namespace PythonNumpy {
 
 /* Matrix Concatenate */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
+void update_vertically_concatenated_matrix(Matrix<DefDense, T, (M + P), N> &Y,
+                                           const Matrix<DefDense, T, M, N> &A,
+                                           const Matrix<DefDense, T, P, N> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
 auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
                             const Matrix<DefDense, T, P, N> &B)
     -> Matrix<DefDense, T, (M + P), N> {
 
   return Matrix<DefDense, T, (M + P), N>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + N), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            N,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, DiagAvailable<N>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, DiagAvailable<N>>>>> &Y,
+    const Matrix<DefDense, T, M, N> &A, const Matrix<DefDiag, T, N> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N>
@@ -43,6 +68,24 @@ auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename SparseAvailable_B>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + P), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            N,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, SparseAvailable_B>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DenseAvailable<M, N>, SparseAvailable_B>>>> &Y,
+    const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          typename SparseAvailable_B>
 auto concatenate_vertically(
     const Matrix<DefDense, T, M, N> &A,
     const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B)
@@ -55,7 +98,6 @@ auto concatenate_vertically(
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 DenseAvailable<M, N>, SparseAvailable_B>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + P), N,
       CreateSparseAvailableFromIndicesAndPointers<
