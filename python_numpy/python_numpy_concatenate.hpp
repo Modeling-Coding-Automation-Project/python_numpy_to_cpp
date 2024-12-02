@@ -8,7 +8,7 @@
 
 namespace PythonNumpy {
 
-/* Matrix Concatenate */
+/* Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 void update_vertically_concatenated_matrix(Matrix<DefDense, T, (M + P), N> &Y,
                                            const Matrix<DefDense, T, M, N> &A,
@@ -355,6 +355,16 @@ auto concatenate_vertically(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
 }
 
+/* Concatenate horizontally */
+template <typename T, std::size_t M, std::size_t N, std::size_t L>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefDense, T, M, (N + L)> &Y, const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefDense, T, M, L> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
+}
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L>
 auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
                               const Matrix<DefDense, T, M, L> &B)
@@ -362,6 +372,23 @@ auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
 
   return Matrix<DefDense, T, M, (N + L)>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (M + N),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (M + N),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<DenseAvailable<M, N>,
+                                                          DiagAvailable<M>>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DenseAvailable<M, N>, DiagAvailable<M>>>>> &Y,
+    const Matrix<DefDense, T, M, N> &A, const Matrix<DefDiag, T, M> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N>
@@ -377,7 +404,6 @@ auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
                       ConcatenateSparseAvailableHorizontally<
                           DenseAvailable<M, N>, DiagAvailable<M>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (M + N),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -387,6 +413,25 @@ auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               DenseAvailable<M, N>, DiagAvailable<M>>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename SparseAvailable_B>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (N + L),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (N + L),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<DenseAvailable<M, N>,
+                                                          SparseAvailable_B>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DenseAvailable<M, N>, SparseAvailable_B>>>> &Y,
+    const Matrix<DefDense, T, M, N> &A,
+    const Matrix<DefSparse, T, M, L, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
@@ -404,7 +449,6 @@ auto concatenate_horizontally(
                       ConcatenateSparseAvailableHorizontally<
                           DenseAvailable<M, N>, SparseAvailable_B>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (N + L),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -414,6 +458,23 @@ auto concatenate_horizontally(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               DenseAvailable<M, N>, SparseAvailable_B>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (M + N),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (M + N),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DiagAvailable<M>, DenseAvailable<M, N>>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DiagAvailable<M>, DenseAvailable<M, N>>>>> &Y,
+    const Matrix<DefDiag, T, M> &A, const Matrix<DefDense, T, M, N> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N>
@@ -429,7 +490,6 @@ auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
                       ConcatenateSparseAvailableHorizontally<
                           DiagAvailable<M>, DenseAvailable<M, N>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (M + N),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -439,6 +499,23 @@ auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               DiagAvailable<M>, DenseAvailable<M, N>>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (2 * M),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (2 * M),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<DiagAvailable<M>,
+                                                          DiagAvailable<M>>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DiagAvailable<M>, DiagAvailable<M>>>>> &Y,
+    const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M>
@@ -454,7 +531,6 @@ auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
                       ConcatenateSparseAvailableHorizontally<
                           DiagAvailable<M>, DiagAvailable<M>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (2 * M),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -464,6 +540,24 @@ auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               DiagAvailable<M>, DiagAvailable<M>>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_B>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (M + N),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (M + N),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<DiagAvailable<M>,
+                                                          SparseAvailable_B>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       DiagAvailable<M>, SparseAvailable_B>>>> &Y,
+    const Matrix<DefDiag, T, M> &A,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_B>
@@ -493,6 +587,25 @@ auto concatenate_horizontally(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename SparseAvailable_A>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (N + L),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (N + L),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       SparseAvailable_A, DenseAvailable<M, N>>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       SparseAvailable_A, DenseAvailable<M, N>>>>> &Y,
+    const Matrix<DefSparse, T, M, L, SparseAvailable_A> &A,
+    const Matrix<DefDense, T, M, N> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename SparseAvailable_A>
 auto concatenate_horizontally(
     const Matrix<DefSparse, T, M, L, SparseAvailable_A> &A,
     const Matrix<DefDense, T, M, N> &B)
@@ -506,7 +619,6 @@ auto concatenate_horizontally(
                       ConcatenateSparseAvailableHorizontally<
                           SparseAvailable_A, DenseAvailable<M, N>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (N + L),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -516,6 +628,24 @@ auto concatenate_horizontally(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               SparseAvailable_A, DenseAvailable<M, N>>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (M + N),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (M + N),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                                          DiagAvailable<M>>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       SparseAvailable_A, DiagAvailable<M>>>>> &Y,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDiag, T, M> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A>
@@ -532,7 +662,6 @@ auto concatenate_horizontally(
                       ConcatenateSparseAvailableHorizontally<
                           SparseAvailable_A, DiagAvailable<M>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (M + N),
       CreateSparseAvailableFromIndicesAndPointers<
@@ -542,6 +671,25 @@ auto concatenate_horizontally(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
               SparseAvailable_A, DiagAvailable<M>>>>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename SparseAvailable_A, typename SparseAvailable_B>
+void update_horizontally_concatenated_matrix(
+    Matrix<DefSparse, T, M, (N + L),
+           CreateSparseAvailableFromIndicesAndPointers<
+               (N + L),
+               RowIndicesFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                                          SparseAvailable_B>>,
+               RowPointersFromSparseAvailable<
+                   ConcatenateSparseAvailableHorizontally<
+                       SparseAvailable_A, SparseAvailable_B>>>> &Y,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefSparse, T, M, L, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A.matrix,
+                                                        B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
@@ -559,7 +707,6 @@ auto concatenate_horizontally(
                       ConcatenateSparseAvailableHorizontally<
                           SparseAvailable_A, SparseAvailable_B>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, M, (N + L),
       CreateSparseAvailableFromIndicesAndPointers<
