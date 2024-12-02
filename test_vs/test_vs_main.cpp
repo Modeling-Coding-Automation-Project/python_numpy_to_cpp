@@ -2024,15 +2024,17 @@ void check_python_numpy_base(void) {
 
     A(1, 2) = static_cast<T>(6);
 
-    //A.template set<1, 2>(static_cast<T>(100));
+    A.template set<1, 2>(static_cast<T>(100));
 
-    //tester.expect_near(A.matrix.data, A_set_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check Matrix set value.");
+    tester.expect_near(A.matrix.data, A_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix set value template.");
 
-    //T A_template_value = A.template get<1, 2>();
+    T A_template_value = A.template get<1, 2>();
 
-    //tester.expect_near(A_template_value, 100, NEAR_LIMIT_STRICT,
-    //    "check Matrix get value.");
+    tester.expect_near(A_template_value, 100, NEAR_LIMIT_STRICT,
+        "check Matrix get value template.");
+
+    A.template set<1, 2>(static_cast<T>(6));
 
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });

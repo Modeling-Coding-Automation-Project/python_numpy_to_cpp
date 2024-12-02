@@ -59,6 +59,22 @@ public:
   }
 
   /* Function */
+  /* Get Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    return matrix.data[ROW][COL];
+  }
+
+  /* Set Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    matrix.data[ROW][COL] = value;
+  }
+
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }
@@ -187,8 +203,7 @@ public:
     static_assert(COL < M, "Column Index is out of range.");
     static_assert(ROW < M, "Row Index is out of range.");
 
-    return GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix,
-                                                               value);
+    GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix, value);
   }
 
   std::size_t rows() const { return M; }
@@ -271,11 +286,15 @@ public:
   }
 
   template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
 
     return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
   }
 
   template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
 
     Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
   }
