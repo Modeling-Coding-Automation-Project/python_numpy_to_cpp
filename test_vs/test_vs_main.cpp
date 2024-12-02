@@ -2001,8 +2001,40 @@ void check_python_numpy_base(void) {
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDense, T, 4, 3> AA({ { 1, 3, 0 }, {0, 0, 2}, {0, 8, 4}, {0, 1, 0} });
 
+    T a_value = A(1, 2);
+
+    tester.expect_near(a_value, 6, NEAR_LIMIT_STRICT,
+        "check Matrix get value.");
+
+    A(1, 2) = 100;
+
+    Matrix<DefDense, T, 3, 3> A_set_answer({
+        {1, 2, 3},
+        {5, 4, 100},
+        {9, 8, 7}
+        });
+
+    tester.expect_near(A.matrix.data, A_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix set value.");
+
+    A(1, 2) = static_cast<T>(6);
+
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
+
+    T b_value = B(1);
+
+    tester.expect_near(b_value, 2, NEAR_LIMIT_STRICT,
+        "check DiagMatrix get value.");
+
+    B(1) = 100;
+
+    Matrix<DefDiag, T, 3> B_set_answer({ 1, 100, 3 });
+
+    tester.expect_near(B.matrix.data, B_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix set value.");
+
+    B(1) = static_cast<T>(2);
 
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
@@ -2030,7 +2062,7 @@ void check_python_numpy_base(void) {
 
     C.template set<2, 2>(static_cast<T>(4));
 
-
+    /* 演算 */
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
 
     auto Sparse_add_Diag = C + DiagJ;

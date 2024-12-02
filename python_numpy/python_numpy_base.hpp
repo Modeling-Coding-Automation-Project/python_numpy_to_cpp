@@ -63,6 +63,28 @@ public:
 
   std::size_t cols() const { return M; }
 
+  T &operator()(std::size_t col, std::size_t row) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->matrix.data[row][col];
+  }
+
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->matrix.data[row][col];
+  }
+
   static auto zeros(void) -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>();
   }
@@ -129,6 +151,20 @@ public:
   std::size_t rows() const { return M; }
 
   std::size_t cols() const { return M; }
+
+  T &operator()(std::size_t col) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    return this->matrix.data[col];
+  }
+
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    return this->matrix.data[col];
+  }
 
   static auto identity(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
