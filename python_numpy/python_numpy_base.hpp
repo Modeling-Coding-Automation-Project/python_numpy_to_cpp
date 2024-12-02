@@ -59,9 +59,47 @@ public:
   }
 
   /* Function */
+  /* Get Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    return matrix.data[ROW][COL];
+  }
+
+  /* Set Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    matrix.data[ROW][COL] = value;
+  }
+
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }
+
+  T &operator()(std::size_t col, std::size_t row) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->matrix.data[row][col];
+  }
+
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    return this->matrix.data[row][col];
+  }
 
   static auto zeros(void) -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>();
@@ -126,9 +164,65 @@ public:
   }
 
   /* Function */
+  /* Get Diag Matrix value */
+  template <typename U, std::size_t P, std::size_t I_Col, std::size_t I_Col_Row>
+  struct GetSetDiagMatrix {
+    static U get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
+      static_cast<void>(matrix);
+      return static_cast<U>(0);
+    }
+
+    static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
+      static_cast<void>(matrix);
+      static_cast<void>(value);
+    }
+  };
+
+  template <typename U, std::size_t P, std::size_t I_Col>
+  struct GetSetDiagMatrix<U, P, I_Col, 0> {
+    static T get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
+
+      return matrix.data[I_Col];
+    }
+
+    static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
+
+      matrix.data[I_Col] = value;
+    }
+  };
+
+  template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < M, "Row Index is out of range.");
+
+    return GetSetDiagMatrix<T, M, COL, (COL - ROW)>::get_value(this->matrix);
+  }
+
+  /* Set Diag Matrix value */
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < M, "Row Index is out of range.");
+
+    GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix, value);
+  }
+
   std::size_t rows() const { return M; }
 
   std::size_t cols() const { return M; }
+
+  T &operator()(std::size_t col) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    return this->matrix.data[col];
+  }
+
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    return this->matrix.data[col];
+  }
 
   static auto identity(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
@@ -192,18 +286,38 @@ public:
   }
 
   template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
 
     return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
   }
 
   template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
 
-    return Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+    Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
   }
 
   std::size_t rows() const { return N; }
 
   std::size_t cols() const { return M; }
+
+  T &operator()(std::size_t value_index) {
+    if (value_index >= this->matrix.values.size()) {
+      value_index = this->matrix.values.size() - 1;
+    }
+
+    return this->matrix.values[value_index];
+  }
+
+  const T &operator()(std::size_t value_index) const {
+    if (value_index >= this->matrix.values.size()) {
+      value_index = this->matrix.values.size() - 1;
+    }
+
+    return this->matrix.values[value_index];
+  }
 
   auto transpose(void) -> Matrix<DefDense, T, N, M> {
     return Matrix<DefDense, T, N, M>(this->matrix.transpose());
