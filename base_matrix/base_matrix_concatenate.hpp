@@ -15,9 +15,9 @@ namespace Matrix {
 
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
-                                           const Matrix<T, M, N> &A,
-                                           const Matrix<T, P, N> &B) {
+inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
+                                                  const Matrix<T, M, N> &A,
+                                                  const Matrix<T, P, N> &B) {
   for (std::size_t row = 0; row < N; row++) {
     std::copy(A(row).begin(), A(row).end(), Y(row).begin());
     std::copy(B(row).begin(), B(row).end(), Y(row).begin() + M);
@@ -25,7 +25,8 @@ void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-auto concatenate_vertically(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B)
+inline auto concatenate_vertically(const Matrix<T, M, N> &A,
+                                   const Matrix<T, P, N> &B)
     -> Matrix<T, M + P, N> {
   Matrix<T, M + P, N> Y;
 
@@ -35,7 +36,7 @@ auto concatenate_vertically(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B)
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + N), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -53,7 +54,8 @@ void update_vertically_concatenated_matrix(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B)
+inline auto concatenate_vertically(const Matrix<T, M, N> &A,
+                                   const DiagMatrix<T, N> &B)
     -> CompiledSparseMatrix<
         T, (M + N), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -76,7 +78,7 @@ auto concatenate_vertically(const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B)
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_B, typename RowPointers_B>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + P), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -96,7 +98,7 @@ void update_vertically_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_B, typename RowPointers_B>
-auto concatenate_vertically(
+inline auto concatenate_vertically(
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
@@ -124,7 +126,7 @@ auto concatenate_vertically(
 }
 
 template <typename T, std::size_t M, std::size_t P>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + P), M,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -142,7 +144,8 @@ void update_vertically_concatenated_matrix(
 }
 
 template <typename T, std::size_t M, std::size_t P>
-auto concatenate_vertically(const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B)
+inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
+                                   const Matrix<T, P, M> &B)
     -> CompiledSparseMatrix<
         T, (M + P), M,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -164,7 +167,7 @@ auto concatenate_vertically(const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B)
 }
 
 template <typename T, std::size_t M>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (2 * M), M,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -182,8 +185,8 @@ void update_vertically_concatenated_matrix(
 }
 
 template <typename T, std::size_t M>
-auto concatenate_vertically(const DiagMatrix<T, M> &A,
-                            const DiagMatrix<T, M> &B)
+inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
+                                   const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
         T, (2 * M), M,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -206,7 +209,7 @@ auto concatenate_vertically(const DiagMatrix<T, M> &A,
 
 template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
           typename RowPointers_B>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + P), M,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -226,7 +229,7 @@ void update_vertically_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
           typename RowPointers_B>
-auto concatenate_vertically(
+inline auto concatenate_vertically(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, P, M, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
@@ -255,7 +258,7 @@ auto concatenate_vertically(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t P>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + P), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -278,7 +281,7 @@ void update_vertically_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t P>
-auto concatenate_vertically(
+inline auto concatenate_vertically(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, P, N> &B)
     -> CompiledSparseMatrix<
@@ -311,7 +314,7 @@ auto concatenate_vertically(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + N), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -334,7 +337,7 @@ void update_vertically_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto concatenate_vertically(
+inline auto concatenate_vertically(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const DiagMatrix<T, N> &B)
     -> CompiledSparseMatrix<
@@ -368,7 +371,7 @@ auto concatenate_vertically(
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
-void update_vertically_concatenated_matrix(
+inline void update_vertically_concatenated_matrix(
     CompiledSparseMatrix<
         T, (M + P), N,
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
@@ -393,7 +396,7 @@ void update_vertically_concatenated_matrix(
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
-auto concatenate_vertically(
+inline auto concatenate_vertically(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
@@ -430,9 +433,9 @@ auto concatenate_vertically(
 
 /* Functions: Concatenate horizontally */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
-                                             const Matrix<T, M, N> &A,
-                                             const Matrix<T, M, P> &B) {
+inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
+                                                    const Matrix<T, M, N> &A,
+                                                    const Matrix<T, M, P> &B) {
 
   for (std::size_t row = 0; row < N; row++) {
     std::copy(A(row).begin(), A(row).end(), Y(row).begin());
@@ -446,8 +449,9 @@ void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-auto concatenate_horizontally(const Matrix<T, M, N> &A,
-                              const Matrix<T, M, P> &B) -> Matrix<T, M, N + P> {
+inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
+                                     const Matrix<T, M, P> &B)
+    -> Matrix<T, M, N + P> {
   Matrix<T, M, N + P> Y;
 
   update_horizontally_concatenated_matrix(Y, A, B);
@@ -456,7 +460,7 @@ auto concatenate_horizontally(const Matrix<T, M, N> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -483,8 +487,8 @@ void update_horizontally_concatenated_matrix(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto concatenate_horizontally(const Matrix<T, M, N> &A,
-                              const DiagMatrix<T, M> &B)
+inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
+                                     const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -507,7 +511,7 @@ auto concatenate_horizontally(const Matrix<T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (N + L),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -548,7 +552,7 @@ void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
-auto concatenate_horizontally(
+inline auto concatenate_horizontally(
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
@@ -576,7 +580,7 @@ auto concatenate_horizontally(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -605,8 +609,8 @@ void update_horizontally_concatenated_matrix(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto concatenate_horizontally(const DiagMatrix<T, M> &A,
-                              const Matrix<T, M, N> &B)
+inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
+                                     const Matrix<T, M, N> &B)
     -> CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -628,7 +632,7 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 }
 
 template <typename T, std::size_t M>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (2 * M),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -658,8 +662,8 @@ void update_horizontally_concatenated_matrix(
 }
 
 template <typename T, std::size_t M>
-auto concatenate_horizontally(const DiagMatrix<T, M> &A,
-                              const DiagMatrix<T, M> &B)
+inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
+                                     const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
         T, M, (2 * M),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -682,7 +686,7 @@ auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -724,7 +728,7 @@ void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
-auto concatenate_horizontally(
+inline auto concatenate_horizontally(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
@@ -753,7 +757,7 @@ auto concatenate_horizontally(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (N + L),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -798,7 +802,7 @@ void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
-auto concatenate_horizontally(
+inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, L, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, M, N> &B)
     -> CompiledSparseMatrix<
@@ -831,7 +835,7 @@ auto concatenate_horizontally(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (M + N),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -879,7 +883,7 @@ void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto concatenate_horizontally(
+inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
@@ -913,7 +917,7 @@ auto concatenate_horizontally(
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
-void update_horizontally_concatenated_matrix(
+inline void update_horizontally_concatenated_matrix(
     CompiledSparseMatrix<
         T, M, (N + L),
         RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
@@ -970,7 +974,7 @@ void update_horizontally_concatenated_matrix(
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
-auto concatenate_horizontally(
+inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
