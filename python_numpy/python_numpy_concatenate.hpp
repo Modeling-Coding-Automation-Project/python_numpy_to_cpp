@@ -110,6 +110,22 @@ auto concatenate_vertically(
 }
 
 template <typename T, std::size_t M, std::size_t P>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + P), M,
+        CreateSparseAvailableFromIndicesAndPointers<
+            M,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, DenseAvailable<P, M>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, DenseAvailable<P, M>>>>> &Y,
+    const Matrix<DefDiag, T, M> &A, const Matrix<DefDense, T, P, M> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
+}
+
+template <typename T, std::size_t M, std::size_t P>
 auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
                             const Matrix<DefDense, T, P, M> &B)
     -> Matrix<
@@ -121,7 +137,6 @@ auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 DiagAvailable<M>, DenseAvailable<P, M>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + P), M,
       CreateSparseAvailableFromIndicesAndPointers<
@@ -131,6 +146,22 @@ auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
               DiagAvailable<M>, DenseAvailable<P, M>>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (2 * M), M,
+        CreateSparseAvailableFromIndicesAndPointers<
+            M,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, DiagAvailable<M>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, DiagAvailable<M>>>>> &Y,
+    const Matrix<DefDiag, T, M> &A, const Matrix<DefDiag, T, M> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M>
@@ -145,7 +176,6 @@ auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 DiagAvailable<M>, DiagAvailable<M>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (2 * M), M,
       CreateSparseAvailableFromIndicesAndPointers<
@@ -155,6 +185,23 @@ auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
               DiagAvailable<M>, DiagAvailable<M>>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t P, typename SparseAvailable_B>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + P), M,
+        CreateSparseAvailableFromIndicesAndPointers<
+            M,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, SparseAvailable_B>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                DiagAvailable<M>, SparseAvailable_B>>>> &Y,
+    const Matrix<DefDiag, T, M> &A,
+    const Matrix<DefSparse, T, P, M, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t P, typename SparseAvailable_B>
@@ -170,7 +217,6 @@ auto concatenate_vertically(
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 DiagAvailable<M>, SparseAvailable_B>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + P), M,
       CreateSparseAvailableFromIndicesAndPointers<
@@ -180,6 +226,24 @@ auto concatenate_vertically(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
               DiagAvailable<M>, SparseAvailable_B>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
+          std::size_t P>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + P), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            N,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, DenseAvailable<P, N>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, DenseAvailable<P, N>>>>> &Y,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDense, T, P, N> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A,
@@ -196,7 +260,6 @@ auto concatenate_vertically(
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 SparseAvailable_A, DenseAvailable<P, N>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + P), N,
       CreateSparseAvailableFromIndicesAndPointers<
@@ -206,6 +269,23 @@ auto concatenate_vertically(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
               SparseAvailable_A, DenseAvailable<P, N>>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + N), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            N,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, DiagAvailable<N>>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, DiagAvailable<N>>>>> &Y,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefDiag, T, N> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable_A>
@@ -221,7 +301,6 @@ auto concatenate_vertically(
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 SparseAvailable_A, DiagAvailable<N>>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + N), N,
       CreateSparseAvailableFromIndicesAndPointers<
@@ -231,6 +310,24 @@ auto concatenate_vertically(
           RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
               SparseAvailable_A, DiagAvailable<N>>>>>(
       Base::Matrix::concatenate_vertically(A.matrix, B.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          typename SparseAvailable_A, typename SparseAvailable_B>
+void update_vertically_concatenated_matrix(
+    Matrix<
+        DefSparse, T, (M + P), N,
+        CreateSparseAvailableFromIndicesAndPointers<
+            M,
+            RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, SparseAvailable_B>>,
+            RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+                SparseAvailable_A, SparseAvailable_B>>>> &Y,
+    const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
+    const Matrix<DefSparse, T, P, N, SparseAvailable_B> &B) {
+
+  Base::Matrix::update_vertically_concatenated_matrix(Y.matrix, A.matrix,
+                                                      B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
@@ -247,7 +344,6 @@ auto concatenate_vertically(
             RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
                 SparseAvailable_A, SparseAvailable_B>>>> {
 
-  /* Result */
   return Matrix<
       DefSparse, T, (M + P), N,
       CreateSparseAvailableFromIndicesAndPointers<
