@@ -2006,6 +2006,11 @@ void check_python_numpy_base(void) {
     tester.expect_near(a_value, 6, NEAR_LIMIT_STRICT,
         "check Matrix get value.");
 
+    T a_value_outlier = A(100, 100);
+
+    tester.expect_near(a_value_outlier, 7, NEAR_LIMIT_STRICT,
+        "check Matrix get value outlier.");
+
     A(1, 2) = 100;
 
     Matrix<DefDense, T, 3, 3> A_set_answer({
@@ -2027,6 +2032,11 @@ void check_python_numpy_base(void) {
     tester.expect_near(b_value, 2, NEAR_LIMIT_STRICT,
         "check DiagMatrix get value.");
 
+    T b_value_outlier = B(100);
+
+    tester.expect_near(b_value_outlier, 3, NEAR_LIMIT_STRICT,
+        "check DiagMatrix get value outlier.");
+
     B(1) = 100;
 
     Matrix<DefDiag, T, 3> B_set_answer({ 1, 100, 3 });
@@ -2042,6 +2052,30 @@ void check_python_numpy_base(void) {
         ColumnAvailable<true, false, true>,
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
+
+    T c_value = C(2);
+
+    tester.expect_near(c_value, 8, NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value.");
+
+    T c_value_outlier = C(100);
+
+    tester.expect_near(c_value_outlier, 4, NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value outlier.");
+
+    C(2) = 100;
+
+    Matrix<DefDense, T, 3, 3> C_set_dense_1 = C.create_dense();
+    Matrix<DefDense, T, 3, 3> C_set_answer_1({
+        {1, 0, 0},
+        {3, 0, 100},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(C_set_dense_1.matrix.data, C_set_answer_1.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix set value.");
+
+    C(2) = static_cast<T>(8);
 
     T C_val = C.template get<1, 2>();
 

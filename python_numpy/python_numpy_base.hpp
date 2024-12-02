@@ -241,6 +241,22 @@ public:
 
   std::size_t cols() const { return M; }
 
+  T &operator()(std::size_t value_index) {
+    if (value_index >= this->matrix.values.size()) {
+      value_index = this->matrix.values.size() - 1;
+    }
+
+    return this->matrix.values[value_index];
+  }
+
+  const T &operator()(std::size_t value_index) const {
+    if (value_index >= this->matrix.values.size()) {
+      value_index = this->matrix.values.size() - 1;
+    }
+
+    return this->matrix.values[value_index];
+  }
+
   auto transpose(void) -> Matrix<DefDense, T, N, M> {
     return Matrix<DefDense, T, N, M>(this->matrix.transpose());
   }
