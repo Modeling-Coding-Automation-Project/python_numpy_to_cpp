@@ -148,6 +148,49 @@ public:
   }
 
   /* Function */
+  /* Get Diag Matrix value */
+  template <typename U, std::size_t P, std::size_t I_Col, std::size_t I_Col_Row>
+  struct GetSetDiagMatrix {
+    static U get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
+      static_cast<void>(matrix);
+      return static_cast<U>(0);
+    }
+
+    static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
+      static_cast<void>(matrix);
+      static_cast<void>(value);
+    }
+  };
+
+  template <typename U, std::size_t P, std::size_t I_Col>
+  struct GetSetDiagMatrix<U, P, I_Col, 0> {
+    static T get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
+
+      return matrix.data[I_Col];
+    }
+
+    static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
+
+      matrix.data[I_Col] = value;
+    }
+  };
+
+  template <std::size_t COL, std::size_t ROW> T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < M, "Row Index is out of range.");
+
+    return GetSetDiagMatrix<T, M, COL, (COL - ROW)>::get_value(this->matrix);
+  }
+
+  /* Set Diag Matrix value */
+  template <std::size_t COL, std::size_t ROW> void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < M, "Row Index is out of range.");
+
+    return GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix,
+                                                               value);
+  }
+
   std::size_t rows() const { return M; }
 
   std::size_t cols() const { return M; }
@@ -234,7 +277,7 @@ public:
 
   template <std::size_t COL, std::size_t ROW> void set(const T &value) {
 
-    return Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+    Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
   }
 
   std::size_t rows() const { return N; }

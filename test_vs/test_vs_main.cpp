@@ -2024,6 +2024,16 @@ void check_python_numpy_base(void) {
 
     A(1, 2) = static_cast<T>(6);
 
+    //A.template set<1, 2>(static_cast<T>(100));
+
+    //tester.expect_near(A.matrix.data, A_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check Matrix set value.");
+
+    //T A_template_value = A.template get<1, 2>();
+
+    //tester.expect_near(A_template_value, 100, NEAR_LIMIT_STRICT,
+    //    "check Matrix get value.");
+
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
 
@@ -2045,6 +2055,25 @@ void check_python_numpy_base(void) {
         "check DiagMatrix set value.");
 
     B(1) = static_cast<T>(2);
+
+    T B_template_value = B.template get<1, 1>();
+
+    tester.expect_near(B_template_value, 2, NEAR_LIMIT_STRICT,
+        "check DiagMatrix get value template.");
+
+    T B_template_value_2 = B.template get<1, 2>();
+
+    tester.expect_near(B_template_value_2, 0, NEAR_LIMIT_STRICT,
+        "check DiagMatrix get value template 0.");
+
+    B.template set<1, 1>(static_cast<T>(100));
+
+    Matrix<DefDiag, T, 3> B_set_answer_2({ 1, 100, 3 });
+
+    tester.expect_near(B.matrix.data, B_set_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix set value template.");
+
+    B.template set<1, 1>(static_cast<T>(2));
 
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
