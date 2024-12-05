@@ -3138,7 +3138,7 @@ void check_python_numpy_transpose(void) {
     //std::cout << "AL_T = " << std::endl;
     //for (size_t j = 0; j < AL_T.cols(); ++j) {
     //    for (size_t i = 0; i < AL_T.rows(); ++i) {
-    //        std::cout << AL_T.matrix(j, i) << " ";
+    //        std::cout << AL_T(j, i) << " ";
     //    }
     //    std::cout << std::endl;
     //}
@@ -3612,7 +3612,7 @@ void check_python_numpy_eig(void) {
     //std::cout << "eigen_values = " << std::endl;
     //for (size_t j = 0; j < eigen_values.cols(); ++j) {
     //    for (size_t i = 0; i < eigen_values.rows(); ++i) {
-    //        std::cout << eigen_values.matrix(j, i) << " ";
+    //        std::cout << eigen_values(j, i) << " ";
     //    }
     //    std::cout << std::endl;
     //}
@@ -3637,7 +3637,7 @@ void check_python_numpy_eig(void) {
     //std::cout << "eigen_vectors = " << std::endl;
     //for (size_t j = 0; j < eigen_vectors.cols(); ++j) {
     //    for (size_t i = 0; i < eigen_vectors.rows(); ++i) {
-    //        std::cout << eigen_vectors.matrix(j, i) << " ";
+    //        std::cout << eigen_vectors(j, i) << " ";
     //    }
     //    std::cout << std::endl;
     //}
@@ -3659,8 +3659,8 @@ void check_python_numpy_eig(void) {
     //std::cout << "eigen_values_comp = " << std::endl;
     //for (size_t j = 0; j < eigen_values_comp.cols(); ++j) {
     //    for (size_t i = 0; i < eigen_values_comp.rows(); ++i) {
-    //        std::cout << "[" << eigen_values_comp.matrix(j, i).real << " ";
-    //        std::cout << "+ " <<  eigen_values_comp.matrix(j, i).imag << "j] ";
+    //        std::cout << "[" << eigen_values_comp(j, i).real << " ";
+    //        std::cout << "+ " <<  eigen_values_comp(j, i).imag << "j] ";
     //    }
     //    std::cout << std::endl;
     //}
@@ -3693,7 +3693,7 @@ void check_python_numpy_eig(void) {
     //std::cout << "eigen_vectors_comp = " << std::endl;
     //for (size_t j = 0; j < eigen_vectors_comp.cols(); ++j) {
     //    for (size_t i = 0; i < eigen_vectors_comp.rows(); ++i) {
-    //        std::cout << eigen_vectors_comp.matrix(j, i).real << " + " << eigen_vectors_comp.matrix(j, i).imag << "j, ";;
+    //        std::cout << eigen_vectors_comp(j, i).real << " + " << eigen_vectors_comp(j, i).imag << "j, ";;
     //    }
     //    std::cout << std::endl;
     //}
