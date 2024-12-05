@@ -18,7 +18,7 @@ int main() {
   std::cout << "eigen_values_r = " << std::endl;
   for (size_t j = 0; j < eigen_values_r.cols(); ++j) {
     for (size_t i = 0; i < eigen_values_r.rows(); ++i) {
-      std::cout << eigen_values_r.matrix(j, i) << " ";
+      std::cout << eigen_values_r(j, i) << " ";
     }
     std::cout << std::endl;
   }
@@ -27,20 +27,19 @@ int main() {
   std::cout << "eigen_vectors_r = " << std::endl;
   for (size_t j = 0; j < eigen_vectors_r.cols(); ++j) {
     for (size_t i = 0; i < eigen_vectors_r.rows(); ++i) {
-      std::cout << eigen_vectors_r.matrix(j, i) << " ";
+      std::cout << eigen_vectors_r(j, i) << " ";
     }
     std::cout << std::endl;
   }
   std::cout << std::endl;
 
-  auto result =
-      A_r * eigen_vectors_r -
-      eigen_vectors_r * Matrix<DefDiag, double, 3>(eigen_values_r.matrix);
+  auto result = A_r * eigen_vectors_r -
+                eigen_vectors_r * Matrix<DefDiag, double, 3>(eigen_values_r);
 
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
     for (size_t i = 0; i < result.rows(); ++i) {
-      std::cout << result.matrix(j, i) << " ";
+      std::cout << result(j, i) << " ";
     }
     std::cout << std::endl;
   }

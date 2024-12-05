@@ -24,7 +24,7 @@ int main() {
   std::cout << "Q = " << std::endl;
   for (size_t j = 0; j < Q.cols(); ++j) {
     for (size_t i = 0; i < Q.rows(); ++i) {
-      std::cout << Q.matrix(j, i) << " ";
+      std::cout << Q(j, i) << " ";
     }
     std::cout << std::endl;
   }
@@ -34,7 +34,7 @@ int main() {
   std::cout << "R = " << std::endl;
   for (size_t j = 0; j < R_dense.cols(); ++j) {
     for (size_t i = 0; i < R_dense.rows(); ++i) {
-      std::cout << R_dense.matrix(j, i) << " ";
+      std::cout << R_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
@@ -44,7 +44,7 @@ int main() {
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
     for (size_t i = 0; i < result.rows(); ++i) {
-      std::cout << result.matrix(j, i) << " ";
+      std::cout << result(j, i) << " ";
     }
     std::cout << std::endl;
   }

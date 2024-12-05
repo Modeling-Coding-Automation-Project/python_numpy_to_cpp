@@ -22,7 +22,7 @@ int main() {
   std::cout << "vertical = " << std::endl;
   for (size_t j = 0; j < vertical_dense.cols(); ++j) {
     for (size_t i = 0; i < vertical_dense.rows(); ++i) {
-      std::cout << vertical_dense.matrix(j, i) << " ";
+      std::cout << vertical_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
@@ -34,7 +34,20 @@ int main() {
   std::cout << "horizontal = " << std::endl;
   for (size_t j = 0; j < horizontal_dense.cols(); ++j) {
     for (size_t i = 0; i < horizontal_dense.rows(); ++i) {
-      std::cout << horizontal_dense.matrix(j, i) << " ";
+      std::cout << horizontal_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  /* Update */
+  update_horizontally_concatenated_matrix(horizontal, A, 2.0 * B);
+
+  horizontal_dense = horizontal.create_dense();
+  std::cout << "horizontal = " << std::endl;
+  for (size_t j = 0; j < horizontal_dense.cols(); ++j) {
+    for (size_t i = 0; i < horizontal_dense.rows(); ++i) {
+      std::cout << horizontal_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
