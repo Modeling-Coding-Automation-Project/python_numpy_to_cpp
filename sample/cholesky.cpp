@@ -23,7 +23,7 @@ int main() {
   std::cout << "SA = " << std::endl;
   for (size_t j = 0; j < SA_dense.cols(); ++j) {
     for (size_t i = 0; i < SA_dense.rows(); ++i) {
-      std::cout << SA_dense.matrix(j, i) << " ";
+      std::cout << SA_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
@@ -33,7 +33,7 @@ int main() {
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
     for (size_t i = 0; i < result.rows(); ++i) {
-      std::cout << result.matrix(j, i) << " ";
+      std::cout << result(j, i) << " ";
     }
     std::cout << std::endl;
   }
