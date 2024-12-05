@@ -18,8 +18,8 @@ int main() {
   std::cout << "eigen_values_c = " << std::endl;
   for (size_t j = 0; j < eigen_values_c.cols(); ++j) {
     for (size_t i = 0; i < eigen_values_c.rows(); ++i) {
-      std::cout << "[" << eigen_values_c.matrix(j, i).real << ", "
-                << eigen_values_c.matrix(j, i).imag << "j], ";
+      std::cout << "[" << eigen_values_c(j, i).real << ", "
+                << eigen_values_c(j, i).imag << "j], ";
     }
     std::cout << std::endl;
   }
@@ -28,8 +28,8 @@ int main() {
   std::cout << "eigen_vectors_c = " << std::endl;
   for (size_t j = 0; j < eigen_vectors_c.cols(); ++j) {
     for (size_t i = 0; i < eigen_vectors_c.rows(); ++i) {
-      std::cout << "[" << eigen_vectors_c.matrix(j, i).real << ", "
-                << eigen_vectors_c.matrix(j, i).imag << "j], ";
+      std::cout << "[" << eigen_vectors_c(j, i).real << ", "
+                << eigen_vectors_c(j, i).imag << "j], ";
     }
     std::cout << std::endl;
   }
@@ -37,15 +37,15 @@ int main() {
 
   auto A_c_comp = A_c.create_complex();
   auto eigen_values_matrix =
-      Matrix<DefDiag, Complex<double>, 3>(eigen_values_c.matrix);
+      Matrix<DefDiag, Complex<double>, 3>(eigen_values_c);
   auto result =
       A_c_comp * eigen_vectors_c - eigen_vectors_c * eigen_values_matrix;
 
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
     for (size_t i = 0; i < result.rows(); ++i) {
-      std::cout << "[" << result.matrix(j, i).real << ", "
-                << result.matrix(j, i).imag << "j], ";
+      std::cout << "[" << result(j, i).real << ", " << result(j, i).imag
+                << "j], ";
     }
     std::cout << std::endl;
   }
