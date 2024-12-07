@@ -7,6 +7,7 @@
 #include "base_matrix_utility.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>
@@ -108,7 +109,7 @@ public:
     for (std::size_t i = 0; i < N; ++i) {
       sum += this->data[i] * this->data[i];
     }
-    return Base::Math::sqrt(sum);
+    return std::sqrt(sum);
   }
 
 /* Variable */
@@ -474,7 +475,7 @@ T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif
 
-  return Base::Math::sqrt(sum);
+  return std::sqrt(sum);
 }
 
 /* Get Real and Imaginary Vector from Complex Vector */

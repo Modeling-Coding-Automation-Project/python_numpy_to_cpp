@@ -1,9 +1,8 @@
 #ifndef BASE_MATRIX_COMPLEX_HPP
 #define BASE_MATRIX_COMPLEX_HPP
 
-#include "base_math.hpp"
 #include "base_matrix_utility.hpp"
-
+#include <cmath>
 #include <cstddef>
 #include <utility>
 
@@ -208,8 +207,7 @@ Complex<T> complex_divide(T a, const Complex<T> &b_comp, T division_min) {
 template <typename T> T complex_abs(const Complex<T> &a_comp) {
   T result;
 
-  result =
-      Base::Math::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  result = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
   return result;
 }
@@ -225,7 +223,7 @@ template <typename T> T complex_abs_sq(const Complex<T> &a_comp) {
 template <typename T> T complex_phase(const Complex<T> &a_comp) {
   T result;
 
-  result = Base::Math::atan2(a_comp.imag, a_comp.real);
+  result = std::atan2(a_comp.imag, a_comp.real);
 
   return result;
 }
@@ -242,17 +240,14 @@ template <typename T> Complex<T> complex_conjugate(const Complex<T> &a_comp) {
 template <typename T> Complex<T> complex_sqrt(const Complex<T> &a_comp) {
   Complex<T> result;
 
-  T a_abs =
-      Base::Math::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
-  result.real = Base::Math::sqrt((a_comp.real + a_abs) * static_cast<T>(0.5));
+  result.real = std::sqrt((a_comp.real + a_abs) * static_cast<T>(0.5));
 
   if (a_comp.imag >= 0) {
-    result.imag =
-        Base::Math::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
   } else {
-    result.imag =
-        -Base::Math::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = -std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
   }
 
   return result;
@@ -262,8 +257,7 @@ template <typename T>
 Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
   Complex<T> result;
 
-  T a_abs =
-      Base::Math::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
   if (a_abs >= division_min) {
     result.real = a_comp.real / a_abs;
