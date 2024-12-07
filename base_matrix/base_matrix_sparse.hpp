@@ -1,12 +1,13 @@
 #ifndef BASE_MATRIX_SPARSE_HPP
 #define BASE_MATRIX_SPARSE_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>
@@ -47,7 +48,7 @@ public:
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
-        if (std::abs(input(i, j)) >
+        if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[row_index_index] = input(i, j);
           this->row_indices[row_index_index] = j;
@@ -109,7 +110,7 @@ public:
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
-        if (std::abs(input(i, j)) >
+        if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[row_index_index] = input(i, j);
           this->row_indices[row_index_index] = j;

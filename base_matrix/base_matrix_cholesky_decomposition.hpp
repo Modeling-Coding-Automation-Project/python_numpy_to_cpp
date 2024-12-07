@@ -1,11 +1,12 @@
 #ifndef BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 #define BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
@@ -24,7 +25,7 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
       T temp_inv = static_cast<T>(1) / Y(i, i);
 
       for (std::size_t j = 1; j < M; ++j) {
@@ -40,7 +41,7 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
       T temp_inv = static_cast<T>(1) / Y(i, i);
 
       for (std::size_t j = i + 1; j < M; ++j) {
@@ -60,7 +61,7 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
     }
   }
 
@@ -75,7 +76,7 @@ DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
 
   for (std::size_t i = 0; i < M; ++i) {
     if (U[i] >= static_cast<T>(0)) {
-      Y[i] = std::sqrt(U[i]);
+      Y[i] = Base::Math::sqrt(U[i]);
     } else {
       zero_div_flag = true;
       Y = Y_b;
@@ -101,7 +102,7 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
       T temp_inv = static_cast<T>(1) / Y(i, i);
 
       for (std::size_t j = 1; j < M; ++j) {
@@ -117,7 +118,7 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
       T temp_inv = static_cast<T>(1) / Y(i, i);
 
       for (std::size_t j = i + 1; j < M; ++j) {
@@ -137,7 +138,7 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt(temp);
     }
   }
 

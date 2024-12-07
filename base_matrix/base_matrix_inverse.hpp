@@ -1,12 +1,13 @@
 #ifndef BASE_MATRIX_INVERSE_HPP
 #define BASE_MATRIX_INVERSE_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
@@ -81,9 +82,10 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
       }
     }
 
-    T delta = avoid_zero_divide(std::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                          h(n, n - 1) * h(n, n - 1)),
-                                division_min);
+    T delta =
+        avoid_zero_divide(Base::Math::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1)),
+                          division_min);
 
     c[n - 1] = r(n - 1, n - 1) / delta;
     s[n - 1] = h(n, n - 1) / delta;
@@ -92,7 +94,7 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
     b_hat[n] = -s[n - 1] * b_hat[n - 1];
     b_hat[n - 1] *= c[n - 1];
-    rho = std::abs(b_hat[n]);
+    rho = Base::Math::abs(b_hat[n]);
 
     rep_num = n;
 
@@ -225,9 +227,10 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
       }
     }
 
-    T delta = avoid_zero_divide(std::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                          h(n, n - 1) * h(n, n - 1)),
-                                division_min);
+    T delta =
+        avoid_zero_divide(Base::Math::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1)),
+                          division_min);
 
     c[n - 1] = r(n - 1, n - 1) / delta;
     s[n - 1] = h(n, n - 1) / delta;
@@ -236,7 +239,7 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
     b_hat[n] = -s[n - 1] * b_hat[n - 1];
     b_hat[n - 1] *= c[n - 1];
-    rho = std::abs(b_hat[n]);
+    rho = Base::Math::abs(b_hat[n]);
 
     rep_num = n;
 
@@ -377,9 +380,10 @@ Vector<T, M> sparse_gmres_k(
       }
     }
 
-    T delta = avoid_zero_divide(std::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                          h(n, n - 1) * h(n, n - 1)),
-                                division_min);
+    T delta =
+        avoid_zero_divide(Base::Math::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1)),
+                          division_min);
 
     c[n - 1] = r(n - 1, n - 1) / delta;
     s[n - 1] = h(n, n - 1) / delta;
@@ -388,7 +392,7 @@ Vector<T, M> sparse_gmres_k(
     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
     b_hat[n] = -s[n - 1] * b_hat[n - 1];
     b_hat[n - 1] *= c[n - 1];
-    rho = std::abs(b_hat[n]);
+    rho = Base::Math::abs(b_hat[n]);
 
     rep_num = n;
 
@@ -510,9 +514,10 @@ Vector<T, N> sparse_gmres_k_rect(
       }
     }
 
-    T delta = avoid_zero_divide(std::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                          h(n, n - 1) * h(n, n - 1)),
-                                division_min);
+    T delta =
+        avoid_zero_divide(Base::Math::sqrt(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1)),
+                          division_min);
 
     c[n - 1] = r(n - 1, n - 1) / delta;
     s[n - 1] = h(n, n - 1) / delta;
@@ -521,7 +526,7 @@ Vector<T, N> sparse_gmres_k_rect(
     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
     b_hat[n] = -s[n - 1] * b_hat[n - 1];
     b_hat[n - 1] *= c[n - 1];
-    rho = std::abs(b_hat[n]);
+    rho = Base::Math::abs(b_hat[n]);
 
     rep_num = n;
 
@@ -680,9 +685,10 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
       }
     }
 
-    T delta = avoid_zero_divide(std::sqrt(complex_abs_sq(r(n - 1, n - 1)) +
-                                          complex_abs_sq(h(n, n - 1))),
-                                division_min);
+    T delta =
+        avoid_zero_divide(Base::Math::sqrt(complex_abs_sq(r(n - 1, n - 1)) +
+                                           complex_abs_sq(h(n, n - 1))),
+                          division_min);
 
     c[n - 1] = r(n - 1, n - 1) / delta;
     s[n - 1] = h(n, n - 1) / delta;

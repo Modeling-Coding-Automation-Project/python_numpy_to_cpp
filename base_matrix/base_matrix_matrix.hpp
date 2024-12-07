@@ -4,8 +4,8 @@
 #include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>

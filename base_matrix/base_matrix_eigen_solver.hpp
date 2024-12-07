@@ -1,6 +1,7 @@
 #ifndef BASE_MATRIX_EIGEN_SOLVER_HPP
 #define BASE_MATRIX_EIGEN_SOLVER_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_lu_decomposition.hpp"
@@ -8,9 +9,9 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -166,7 +167,7 @@ private:
       if (near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt(x_abs);
 
       u[k + 1] = R(k + 1, k) + sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -227,7 +228,7 @@ private:
       if (near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt(x_abs);
 
       u[k] = R(k, k) + sign(R(k, k)) * x_abs;
       u[k + 1] = R(k + 1, k);
@@ -289,15 +290,15 @@ private:
     T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
     T c2;
     if (c2_2 >= 0) {
-      c2 = std::sqrt(c2_2);
+      c2 = Base::Math::sqrt(c2_2);
     } else {
       c2 = static_cast<T>(0);
     }
 
     T mu1 = static_cast<T>(0.5) * (c1 + c2);
     T mu2 = static_cast<T>(0.5) * (c1 - c2);
-    T dmu1 = std::abs(a22 - mu1);
-    T dmu2 = std::abs(a22 - mu2);
+    T dmu1 = Base::Math::abs(a22 - mu1);
+    T dmu2 = Base::Math::abs(a22 - mu2);
     return (dmu1 <= dmu2) ? mu1 : mu2;
   }
 
@@ -320,7 +321,7 @@ private:
           A(i, i) += mu;
         }
 
-        if (std::abs(A(k - 1, k - 2)) < this->_division_min) {
+        if (Base::Math::abs(A(k - 1, k - 2)) < this->_division_min) {
           break;
         }
       }
@@ -370,7 +371,8 @@ private:
         // conversion check
         bool converged = true;
         for (std::size_t i = 0; i < M; ++i) {
-          if (std::abs(std::abs(x[i]) - std::abs(x_old[i])) >
+          if (Base::Math::abs(Base::Math::abs(x[i]) -
+                              Base::Math::abs(x_old[i])) >
               this->_division_min) {
             converged = false;
             break;
@@ -552,7 +554,7 @@ private:
       if (near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt(x_abs);
 
       u[k + 1] = R(k + 1, k) + sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -614,7 +616,7 @@ private:
       if (near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt(x_abs);
 
       u[k] = R(k, k) + complex_sign(R(k, k), this->_division_min) * x_abs;
       u[k + 1] = R(k + 1, k);
@@ -761,8 +763,10 @@ private:
         // conversion check
         bool converged = true;
         for (std::size_t i = 0; i < M; ++i) {
-          if (std::abs(std::abs(x[i].real) - std::abs(x_old[i].real)) +
-                  std::abs(std::abs(x[i].imag) - std::abs(x_old[i].imag)) >
+          if (Base::Math::abs(Base::Math::abs(x[i].real) -
+                              Base::Math::abs(x_old[i].real)) +
+                  Base::Math::abs(Base::Math::abs(x[i].imag) -
+                                  Base::Math::abs(x_old[i].imag)) >
               this->_division_min) {
             converged = false;
             break;

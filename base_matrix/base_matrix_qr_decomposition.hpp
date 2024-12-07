@@ -1,13 +1,14 @@
 #ifndef BASE_MATRIX_QR_DECOMPOSITION_HPP
 #define BASE_MATRIX_QR_DECOMPOSITION_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_vector.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
@@ -21,9 +22,9 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
   T c;
   T s;
 
-  if (std::abs(R_matrix(i, j)) > std::abs(R_matrix(j, j))) {
+  if (Base::Math::abs(R_matrix(i, j)) > Base::Math::abs(R_matrix(j, j))) {
     T t = -R_matrix(j, j) / avoid_zero_divide(R_matrix(i, j), division_min);
-    s = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+    s = static_cast<T>(1) / Base::Math::sqrt(static_cast<T>(1) + t * t);
     c = s * t;
 
     for (std::size_t k = j; k < N; ++k) {
@@ -41,7 +42,7 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
     }
   } else {
     T t = -R_matrix(i, j) / avoid_zero_divide(R_matrix(j, j), division_min);
-    c = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+    c = static_cast<T>(1) / Base::Math::sqrt(static_cast<T>(1) + t * t);
     s = c * t;
 
     for (std::size_t k = j; k < N; ++k) {

@@ -1,9 +1,10 @@
 #ifndef BASE_MATRIX_LU_DECOMPOSITION_HPP
 #define BASE_MATRIX_LU_DECOMPOSITION_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
@@ -103,9 +104,9 @@ private:
       // Pivoting
       if (near_zero(this->_Upper(i, i), this->_division_min)) {
         std::size_t maxRow = i;
-        T maxVal = std::abs(this->_Upper(i, i));
+        T maxVal = Base::Math::abs(this->_Upper(i, i));
         for (std::size_t k = i + 1; k < M; ++k) {
-          T absVal = std::abs(this->_Upper(k, i));
+          T absVal = Base::Math::abs(this->_Upper(k, i));
           if (absVal > maxVal) {
             maxVal = absVal;
             maxRow = k;
