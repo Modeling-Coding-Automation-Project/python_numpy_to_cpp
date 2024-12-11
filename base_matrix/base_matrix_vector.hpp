@@ -1,15 +1,18 @@
 #ifndef BASE_MATRIX_VECTOR_HPP
 #define BASE_MATRIX_VECTOR_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_utility.hpp"
+
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>
 #include <vector>
+
+#include <cmath>
 
 namespace Base {
 namespace Matrix {
@@ -80,13 +83,13 @@ public:
     return this->data[index];
   }
 
-  std::size_t size() const { return N; }
+  constexpr std::size_t size() const { return N; }
 
-  static Vector<T, N> Ones(void) {
+  static inline Vector<T, N> Ones(void) {
     return Vector<T, N>(std::vector<T>(N, static_cast<T>(1)));
   }
 
-  Vector<T, N> operator*(const Vector<T, N> &vec) const {
+  inline Vector<T, N> operator*(const Vector<T, N> &vec) const {
     Vector<T, N> result;
     for (std::size_t i = 0; i < N; ++i) {
       result[i] = this->data[i] * vec[i];
@@ -94,7 +97,7 @@ public:
     return result;
   }
 
-  T dot(const Vector<T, N> &other) const {
+  inline T dot(const Vector<T, N> &other) const {
     T result = static_cast<T>(0);
     for (std::size_t i = 0; i < N; ++i) {
       result += this->data[i] * other[i];
@@ -102,12 +105,44 @@ public:
     return result;
   }
 
-  T norm() const {
+  inline T norm() const {
     T sum = static_cast<T>(0);
     for (std::size_t i = 0; i < N; ++i) {
       sum += this->data[i] * this->data[i];
     }
-    return std::sqrt(sum);
+
+    return Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  }
+
+  inline T norm(const T &division_min) const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+  }
+
+  inline T norm_inv() const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  }
+
+  inline T norm_inv(const T &division_min) const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
   }
 
 /* Variable */
@@ -124,7 +159,7 @@ public:
 
   ColVector(const Vector<T, N> &vec) : Vector<T, N>(vec) {}
 
-  Vector<T, N> transpose() const {
+  inline Vector<T, N> transpose() const {
     Vector<T, N> result;
 
     std::copy(this->data.begin(), this->data.end(), result.data.begin());
@@ -132,6 +167,23 @@ public:
     return result;
   }
 };
+
+/* Normalize */
+template <typename T, std::size_t N>
+inline void vector_normalize(Vector<T, N> &vec) {
+  T norm_inv = vec.norm_inv();
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
+
+template <typename T, std::size_t N>
+inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
+  T norm_inv = vec.norm_inv(division_min);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
 
 /* Scalar Addition */
 // Vector Add Scalar Core Template: N_idx < N
@@ -157,7 +209,7 @@ static inline void COMPILED_VECTOR_ADD_SCALAR(const Vector<T, N> &vec, T scalar,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
+inline Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -168,7 +220,7 @@ Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
+  Base::Matrix::COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -176,7 +228,7 @@ Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
+inline Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -187,7 +239,7 @@ Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
+  Base::Matrix::COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -219,7 +271,7 @@ static inline void COMPILED_VECTOR_SUB_SCALAR(const Vector<T, N> &vec,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
+inline Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -230,7 +282,7 @@ Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  COMPILED_VECTOR_SUB_SCALAR<T, N>(vec, scalar, result);
+  Base::Matrix::COMPILED_VECTOR_SUB_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -261,7 +313,7 @@ static inline void COMPILED_SCALAR_SUB_VECTOR(const T &scalar,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
+inline Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -272,7 +324,7 @@ Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  COMPILED_SCALAR_SUB_VECTOR<T, N>(scalar, vec, result);
+  Base::Matrix::COMPILED_SCALAR_SUB_VECTOR<T, N>(scalar, vec, result);
 
 #endif
 
@@ -306,7 +358,7 @@ static inline void COMPILED_VECTOR_ADD_VECTOR(const Vector<T, N> &a,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
+inline Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -317,7 +369,7 @@ Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
 
 #else
 
-  COMPILED_VECTOR_ADD_VECTOR<T, N>(a, b, result);
+  Base::Matrix::COMPILED_VECTOR_ADD_VECTOR<T, N>(a, b, result);
 
 #endif
 
@@ -351,7 +403,7 @@ static inline void COMPILED_VECTOR_SUB_VECTOR(const Vector<T, N> &a,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
+inline Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -362,7 +414,7 @@ Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
 
 #else
 
-  COMPILED_VECTOR_SUB_VECTOR<T, N>(a, b, result);
+  Base::Matrix::COMPILED_VECTOR_SUB_VECTOR<T, N>(a, b, result);
 
 #endif
 
@@ -394,7 +446,7 @@ static inline void COMPILED_VECTOR_MULTIPLY_SCALAR(const Vector<T, N> &vec,
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
+inline Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -405,7 +457,7 @@ Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
 
 #else
 
-  COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
+  Base::Matrix::COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -413,7 +465,7 @@ Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
 }
 
 template <typename T, std::size_t N>
-Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
+inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -424,7 +476,7 @@ Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 
 #else
 
-  COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
+  Base::Matrix::COMPILED_VECTOR_MULTIPLY_SCALAR<T, N>(vec, scalar, result);
 
 #endif
 
@@ -457,7 +509,7 @@ COMPILED_COMPLEX_VECTOR_NORM(const Vector<Complex<T>, N> &vec_comp) {
 }
 
 template <typename T, std::size_t N>
-T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
+inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -469,11 +521,95 @@ T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #else
 
-  sum = COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+  sum = Base::Matrix::COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
 
 #endif
 
-  return std::sqrt(sum);
+  return Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp,
+                             const T &division_min) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = Base::Matrix::COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = Base::Matrix::COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
+                                 const T &division_min) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = Base::Matrix::COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+}
+
+/* Complex Normalize */
+template <typename T, std::size_t N>
+inline void complex_vector_normalize(Vector<Complex<T>, N> &vec) {
+  T norm_inv = complex_vector_norm_inv(vec);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
+
+template <typename T, std::size_t N>
+inline void complex_vector_normalize(Vector<Complex<T>, N> &vec,
+                                     const T &division_min) {
+  T norm_inv = complex_vector_norm_inv(vec, division_min);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
 }
 
 /* Get Real and Imaginary Vector from Complex Vector */
@@ -580,7 +716,7 @@ struct GetImagFromComplexVectorCore<T, N, 0> {
 #ifdef BASE_MATRIX_USE_STD_VECTOR
 
 template <typename T, std::size_t N>
-std::vector<T> get_real_vector_from_complex_vector(
+inline std::vector<T> get_real_vector_from_complex_vector(
     const std::vector<Complex<T>> &From_vector) {
 
   std::vector<T> To_vector(N);
@@ -601,7 +737,7 @@ std::vector<T> get_real_vector_from_complex_vector(
 }
 
 template <typename T, std::size_t N>
-std::vector<T> get_imag_vector_from_complex_vector(
+inline std::vector<T> get_imag_vector_from_complex_vector(
     const std::vector<Complex<T>> &From_vector) {
 
   std::vector<T> To_vector(N);
@@ -624,7 +760,7 @@ std::vector<T> get_imag_vector_from_complex_vector(
 #else
 
 template <typename T, std::size_t N>
-std::array<T, N> get_real_vector_from_complex_vector(
+inline std::array<T, N> get_real_vector_from_complex_vector(
     const std::array<Complex<T>, N> &From_vector) {
 
   std::array<T, N> To_vector;
@@ -645,7 +781,7 @@ std::array<T, N> get_real_vector_from_complex_vector(
 }
 
 template <typename T, std::size_t N>
-std::array<T, N> get_imag_vector_from_complex_vector(
+inline std::array<T, N> get_imag_vector_from_complex_vector(
     const std::array<Complex<T>, N> &From_vector) {
 
   std::array<T, N> To_vector;
@@ -668,7 +804,7 @@ std::array<T, N> get_imag_vector_from_complex_vector(
 #endif
 
 template <typename T, std::size_t N>
-Vector<T, N>
+inline Vector<T, N>
 get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
@@ -689,7 +825,7 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 }
 
 template <typename T, std::size_t N>
-Vector<T, N>
+inline Vector<T, N>
 get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;

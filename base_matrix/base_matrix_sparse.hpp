@@ -1,12 +1,13 @@
 #ifndef BASE_MATRIX_SPARSE_HPP
 #define BASE_MATRIX_SPARSE_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <initializer_list>
 #include <utility>
@@ -47,7 +48,7 @@ public:
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
-        if (std::abs(input(i, j)) >
+        if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[row_index_index] = input(i, j);
           this->row_indices[row_index_index] = j;
@@ -109,7 +110,7 @@ public:
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
-        if (std::abs(input(i, j)) >
+        if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[row_index_index] = input(i, j);
           this->row_indices[row_index_index] = j;
@@ -161,7 +162,7 @@ public:
   }
 
   /* Function */
-  Matrix<T, M, N> create_dense() const {
+  inline Matrix<T, M, N> create_dense() const {
     Matrix<T, M, N> result;
 
     for (std::size_t j = 0; j < M; j++) {
@@ -190,7 +191,7 @@ public:
     return this->row_pointers[i];
   }
 
-  Matrix<T, N, M> transpose(void) const {
+  inline Matrix<T, N, M> transpose(void) const {
     Matrix<T, N, M> Y;
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -203,7 +204,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, N> operator+(const Matrix<T, M, N> &B) const {
+  inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B) const {
     Matrix<T, M, N> Y = B;
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -216,7 +217,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B) const {
+  inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B) const {
     Matrix<T, M, M> Y = B.create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -229,7 +230,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, N> operator+(const SparseMatrix<T, M, N, V> &mat) const {
+  inline Matrix<T, M, N> operator+(const SparseMatrix<T, M, N, V> &mat) const {
     Matrix<T, M, N> Y = this->create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -242,7 +243,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, N> operator-(const Matrix<T, M, N> &B) const {
+  inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B) const {
     Matrix<T, M, N> Y = -B;
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -255,7 +256,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B) const {
+  inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B) const {
     Matrix<T, M, M> Y = -(B.create_dense());
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -268,7 +269,7 @@ public:
     return Y;
   }
 
-  Matrix<T, M, N> operator-(const SparseMatrix<T, M, N, V> &mat) const {
+  inline Matrix<T, M, N> operator-(const SparseMatrix<T, M, N, V> &mat) const {
     Matrix<T, M, N> Y = this->create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
@@ -281,7 +282,7 @@ public:
     return Y;
   }
 
-  SparseMatrix<T, M, N, V> operator*(const T &scalar) const {
+  inline SparseMatrix<T, M, N, V> operator*(const T &scalar) const {
     SparseMatrix<T, M, N, V> Y = *this;
 
     for (std::size_t i = 0; i < V; i++) {
@@ -291,9 +292,9 @@ public:
     return Y;
   }
 
-  std::size_t rows() const { return N; }
+  constexpr std::size_t rows() const { return N; }
 
-  std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return M; }
 
 /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
@@ -308,7 +309,7 @@ public:
 };
 
 template <typename T, std::size_t M, std::size_t N>
-SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
+inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR
@@ -337,7 +338,7 @@ SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
 
 /* Create */
 template <typename T, std::size_t M>
-SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
+inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR
@@ -364,8 +365,8 @@ SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
 
 /* Operator */
 template <typename T, std::size_t M, std::size_t V>
-Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
-                          const SparseMatrix<T, M, M, V> &A) {
+inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
+                                 const SparseMatrix<T, M, M, V> &A) {
   Matrix<T, M, M> Y = B.create_dense();
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -378,8 +379,8 @@ Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
 }
 
 template <typename T, std::size_t M, std::size_t V>
-Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
-                          const SparseMatrix<T, M, M, V> &A) {
+inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
+                                 const SparseMatrix<T, M, M, V> &A) {
   Matrix<T, M, M> Y = B.create_dense();
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -393,8 +394,8 @@ Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
 
 /* Scalar * SparseMatrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
-SparseMatrix<T, M, N, V> operator*(const T &scalar,
-                                   const SparseMatrix<T, M, N, V> &A) {
+inline SparseMatrix<T, M, N, V> operator*(const T &scalar,
+                                          const SparseMatrix<T, M, N, V> &A) {
   SparseMatrix<T, M, N, V> Y = A;
 
   for (std::size_t i = 0; i < V; i++) {
@@ -406,8 +407,8 @@ SparseMatrix<T, M, N, V> operator*(const T &scalar,
 
 /* SparseMatrix * Vector */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
-Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
-                       const Vector<T, N> &b) {
+inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
+                              const Vector<T, N> &b) {
   Vector<T, M> y;
 
   for (std::size_t j = 0; j < M; j++) {
@@ -422,8 +423,9 @@ Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
 }
 
 template <typename T, std::size_t N, std::size_t K, std::size_t V>
-ColVector<T, K> colVector_a_mul_SparseB(const ColVector<T, N> &a,
-                                        const SparseMatrix<T, N, K, V> &B) {
+inline ColVector<T, K>
+colVector_a_mul_SparseB(const ColVector<T, N> &a,
+                        const SparseMatrix<T, N, K, V> &B) {
   ColVector<T, K> y;
 
   for (std::size_t j = 0; j < N; j++) {
@@ -438,8 +440,8 @@ ColVector<T, K> colVector_a_mul_SparseB(const ColVector<T, N> &a,
 /* SparseMatrix * Matrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
-                          const Matrix<T, N, K> &B) {
+inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
+                                 const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < K; i++) {
@@ -457,8 +459,8 @@ Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
-                          const SparseMatrix<T, N, K, V> &B) {
+inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
+                                 const SparseMatrix<T, N, K, V> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {
@@ -474,7 +476,7 @@ Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, M, K>
+inline Matrix<T, M, K>
 matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
                                        const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
@@ -495,8 +497,8 @@ matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
 /* SparseMatrix * SparseMatrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
-                          const SparseMatrix<T, N, K, W> &B) {
+inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
+                                 const SparseMatrix<T, N, K, W> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -513,7 +515,7 @@ Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
+inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
     const SparseMatrix<T, M, N, V> &A, const SparseMatrix<T, K, N, W> &B) {
   Matrix<T, M, K> Y;
 
@@ -534,7 +536,7 @@ Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
-Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
+inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
     const SparseMatrix<T, N, M, V> &A, const SparseMatrix<T, N, K, W> &B) {
   Matrix<T, M, K> Y;
 
@@ -551,8 +553,8 @@ Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
 
 /* DiagMatrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
-Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
-                          const DiagMatrix<T, N> &B) {
+inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
+                                 const DiagMatrix<T, N> &B) {
   Matrix<T, M, N> Y;
 
   for (std::size_t i = 0; i < N; i++) {
@@ -571,8 +573,8 @@ Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
-Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
-                          const SparseMatrix<T, M, K, V> &B) {
+inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
+                                 const SparseMatrix<T, M, K, V> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; j++) {
@@ -589,7 +591,7 @@ Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
-Matrix<T, K, M>
+inline Matrix<T, K, M>
 matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
                                             const SparseMatrix<T, M, K, V> &B) {
   Matrix<T, K, M> Y;
@@ -609,8 +611,8 @@ matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
 
 /* Plus, Minus */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
-Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
-                          const SparseMatrix<T, M, N, V> SA) {
+inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
+                                 const SparseMatrix<T, M, N, V> SA) {
   Matrix<T, M, N> Y = B;
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -623,8 +625,8 @@ Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
-Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
-                          const SparseMatrix<T, M, N, V> SA) {
+inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
+                                 const SparseMatrix<T, M, N, V> SA) {
   Matrix<T, M, N> Y = B;
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -639,7 +641,7 @@ Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
 /* Transpose */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, N, K>
+inline Matrix<T, N, K>
 matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
                                        const SparseMatrix<T, K, N, V> &SB) {
   Matrix<T, N, K> Y;
@@ -659,7 +661,7 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
 
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
-Matrix<T, M, K>
+inline Matrix<T, M, K>
 matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
                                        const SparseMatrix<T, N, K, V> &B) {
   Matrix<T, M, K> Y;
@@ -677,7 +679,7 @@ matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
 
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
-Matrix<T, M, K>
+inline Matrix<T, M, K>
 matrix_multiply_SparseAT_mul_B(const SparseMatrix<T, N, M, V> &A,
                                const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;

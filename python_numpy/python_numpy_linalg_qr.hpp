@@ -4,6 +4,7 @@
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_templates.hpp"
+
 #include <cstddef>
 
 namespace PythonNumpy {
@@ -48,13 +49,13 @@ public:
   }
 
   /* Solve function */
-  void solve(const Matrix<DefDense, T, M, N> &A) {
+  inline void solve(const Matrix<DefDense, T, M, N> &A) {
     this->_QR_decomposer =
         Base::Matrix::QRDecomposition<T, M, N>(A.matrix, this->_division_min);
   }
 
   /* Get Q, R */
-  auto get_R(void)
+  inline auto get_R(void)
       -> Matrix<DefSparse, T, M, N,
                 CreateSparseAvailableFromIndicesAndPointers<
                     N, Base::Matrix::UpperTriangularRowIndices<M, N>,
@@ -70,7 +71,7 @@ public:
         this->_R_triangular);
   }
 
-  auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
+  inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
 
@@ -115,9 +116,9 @@ public:
   }
 
   /* Get Q, R */
-  auto get_R(void) -> Matrix<DefDiag, T, M> const { return this->_R; }
+  inline auto get_R(void) -> Matrix<DefDiag, T, M> const { return this->_R; }
 
-  auto get_Q(void) -> Matrix<DefDiag, T, M> const {
+  inline auto get_Q(void) -> Matrix<DefDiag, T, M> const {
     return Matrix<DefDiag, T, M>::identity();
   }
 
@@ -171,7 +172,7 @@ public:
   }
 
   /* Solve function */
-  void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
+  inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->_QR_decomposer = Base::Matrix::QRDecompositionSparse<
         T, M, N, Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>,
         Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>>(
@@ -179,7 +180,7 @@ public:
   }
 
   /* Get Q, R */
-  auto get_R(void)
+  inline auto get_R(void)
       -> Matrix<DefSparse, T, M, N,
                 CreateSparseAvailableFromIndicesAndPointers<
                     N, Base::Matrix::UpperTriangularRowIndices<M, N>,
@@ -193,7 +194,7 @@ public:
         Base::Matrix::UpperTriangularRowPointers<M, N>>(this->_R_triangular);
   }
 
-  auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
+  inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
 
@@ -214,21 +215,22 @@ private:
 
 /* make LinalgSolverQR */
 template <typename T, std::size_t M, std::size_t N>
-auto make_LinalgSolverQR(const Matrix<DefDense, T, M, N> &A)
+inline auto make_LinalgSolverQR(const Matrix<DefDense, T, M, N> &A)
     -> LinalgSolverQR<T, M, N> {
 
   return LinalgSolverQR<T, M, N>(A);
 }
 
 template <typename T, std::size_t M>
-auto make_LinalgSolverQR(const Matrix<DefDiag, T, M> &A)
+inline auto make_LinalgSolverQR(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverQRDiag<T, M> {
 
   return LinalgSolverQRDiag<T, M>(A);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
-auto make_LinalgSolverQR(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
+inline auto
+make_LinalgSolverQR(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
     -> LinalgSolverQRSparse<T, M, N, SparseAvailable> {
 
   return LinalgSolverQRSparse<T, M, N, SparseAvailable>(A);

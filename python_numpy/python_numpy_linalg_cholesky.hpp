@@ -4,6 +4,7 @@
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_templates.hpp"
+
 #include <cstddef>
 
 namespace PythonNumpy {
@@ -61,7 +62,7 @@ public:
   }
 
   /* Solve function */
-  auto solve(const Matrix<DefDense, T, M, M> &A)
+  inline auto solve(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefSparse, T, M, M,
                 CreateSparseAvailableFromIndicesAndPointers<
                     M, UpperTriangularRowIndices<M, M>,
@@ -82,7 +83,7 @@ public:
         this->_cholesky_decomposed_triangular);
   }
 
-  auto solve(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
+  inline auto solve(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
 
     Base::Matrix::DiagMatrix<T, M> Diag(this->_cholesky_decomposed_matrix(0));
 
@@ -94,7 +95,7 @@ public:
     return Matrix<DefDiag, T, M>(Diag);
   }
 
-  auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+  inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
       -> Matrix<DefDense, T, M, M> {
 
     this->_cholesky_decomposed_matrix =
@@ -117,7 +118,7 @@ private:
 /* make LinalgSolverCholesky */
 template <typename T, std::size_t M,
           typename SparseAvailable = SparseAvailable_NoUse>
-auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
+inline auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverCholesky<T, M, SparseAvailable> {
 
   return LinalgSolverCholesky<T, M, SparseAvailable>(A);
@@ -125,15 +126,15 @@ auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
 
 template <typename T, std::size_t M,
           typename SparseAvailable = SparseAvailable_NoUse>
-auto make_LinalgSolverCholesky(const Matrix<DefDiag, T, M> &A)
+inline auto make_LinalgSolverCholesky(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverCholesky<T, M, SparseAvailable> {
 
   return LinalgSolverCholesky<T, M, SparseAvailable>(A);
 }
 
 template <typename T, std::size_t M, typename SparseAvailable>
-auto make_LinalgSolverCholesky(
-    const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+inline auto
+make_LinalgSolverCholesky(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
     -> LinalgSolverCholesky<T, M, SparseAvailable> {
 
   return LinalgSolverCholesky<T, M, SparseAvailable>(A);

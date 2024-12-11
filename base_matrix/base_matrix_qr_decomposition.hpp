@@ -1,13 +1,14 @@
 #ifndef BASE_MATRIX_QR_DECOMPOSITION_HPP
 #define BASE_MATRIX_QR_DECOMPOSITION_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_vector.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
@@ -21,9 +22,12 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
   T c;
   T s;
 
-  if (std::abs(R_matrix(i, j)) > std::abs(R_matrix(j, j))) {
-    T t = -R_matrix(j, j) / avoid_zero_divide(R_matrix(i, j), division_min);
-    s = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+  if (Base::Math::abs(R_matrix(i, j)) > Base::Math::abs(R_matrix(j, j))) {
+    T t = -R_matrix(j, j) /
+          Base::Matrix::avoid_zero_divide(R_matrix(i, j), division_min);
+    s = Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        static_cast<T>(1) + t * t, division_min);
     c = s * t;
 
     for (std::size_t k = j; k < N; ++k) {
@@ -40,8 +44,11 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
       Q_matrix(k, i) = s * u + c * v;
     }
   } else {
-    T t = -R_matrix(i, j) / avoid_zero_divide(R_matrix(j, j), division_min);
-    c = static_cast<T>(1) / std::sqrt(static_cast<T>(1) + t * t);
+    T t = -R_matrix(i, j) /
+          Base::Matrix::avoid_zero_divide(R_matrix(j, j), division_min);
+    c = Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        static_cast<T>(1) + t * t, division_min);
     s = c * t;
 
     for (std::size_t k = j; k < N; ++k) {
@@ -103,8 +110,8 @@ public:
   }
 
   /* Function */
-  Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
-  Matrix<T, M, N> get_R() const { return this->_R_matrix; }
+  inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+  inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
 
 private:
   /* Variable */
@@ -113,20 +120,21 @@ private:
   T _division_min;
 
   /* Function */
-  void _decompose() {
+  inline void _decompose() {
     for (std::size_t j = 0; j < N; ++j) {
       for (std::size_t i = j + 1; i < M; ++i) {
 
-        if (!near_zero(this->_R_matrix(i, j), this->_division_min)) {
+        if (!Base::Matrix::near_zero(this->_R_matrix(i, j),
+                                     this->_division_min)) {
           this->_givensRotation(i, j);
         }
       }
     }
   }
 
-  void _givensRotation(std::size_t i, std::size_t j) {
-    qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                      this->_division_min);
+  inline void _givensRotation(std::size_t i, std::size_t j) {
+    Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
+                                    this->_division_min);
   }
 };
 
@@ -138,8 +146,8 @@ public:
       : _Q_matrix(DiagMatrix<T, M>::identity()), _R_matrix(A),
         _division_min(division_min) {}
 
-  DiagMatrix<T, M> get_Q() const { return this->_Q_matrix; }
-  DiagMatrix<T, M> get_R() const { return this->_R_matrix; }
+  inline DiagMatrix<T, M> get_Q() const { return this->_Q_matrix; }
+  inline DiagMatrix<T, M> get_R() const { return this->_R_matrix; }
 
 private:
   DiagMatrix<T, M> _Q_matrix;
@@ -161,30 +169,30 @@ public:
     this->_decompose(A);
   }
 
-  Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
-  Matrix<T, M, N> get_R() const { return this->_R_matrix; }
+  inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+  inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
 
 private:
   Matrix<T, M, M> _Q_matrix;
   Matrix<T, M, N> _R_matrix;
   T _division_min;
 
-  void _decompose(
+  inline void _decompose(
       const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t k = RowPointers_A::list[i];
            k < RowPointers_A::list[i + 1]; k++) {
         if ((i >= RowIndices_A::list[k] + 1) &&
-            (!near_zero(A.values[k], this->_division_min))) {
+            (!Base::Matrix::near_zero(A.values[k], this->_division_min))) {
           this->_givensRotation(i, RowIndices_A::list[k]);
         }
       }
     }
   }
 
-  void _givensRotation(std::size_t i, std::size_t j) {
-    qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                      this->_division_min);
+  inline void _givensRotation(std::size_t i, std::size_t j) {
+    Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
+                                    this->_division_min);
   }
 };
 

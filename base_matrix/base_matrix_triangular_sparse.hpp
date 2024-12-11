@@ -8,10 +8,10 @@
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_templates.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
 #include <cstddef>
 #include <vector>
-
 
 namespace Base {
 namespace Matrix {
@@ -158,7 +158,7 @@ public:
   TriangularSparse() {}
 
   /* Upper */
-  static auto create_upper(void)
+  static inline auto create_upper(void)
       -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                               UpperTriangularRowPointers<M, N>> {
     // Currently, only support M >= N.
@@ -171,7 +171,7 @@ public:
     return Y;
   }
 
-  static auto create_upper(const Matrix<T, M, N> &A)
+  static inline auto create_upper(const Matrix<T, M, N> &A)
       -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                               UpperTriangularRowPointers<M, N>> {
     // Currently, only support M >= N.
@@ -195,14 +195,14 @@ public:
 
 #else
 
-    SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+    Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
 #endif
 
     return Y;
   }
 
-  static void set_values_upper(
+  static inline void set_values_upper(
       CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
                            UpperTriangularRowPointers<M, N>> &A,
       const Matrix<T, M, N> &B) {
@@ -222,13 +222,13 @@ public:
 
 #else
 
-    SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
+    Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
 #endif
   }
 
   /* Lower */
-  static auto create_lower(void)
+  static inline auto create_lower(void)
       -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
                               LowerTriangularRowPointers<M, N>> {
     // Currently, only support M <= N.
@@ -241,7 +241,7 @@ public:
     return Y;
   }
 
-  static auto create_lower(const Matrix<T, M, N> &A)
+  static inline auto create_lower(const Matrix<T, M, N> &A)
       -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
                               LowerTriangularRowPointers<M, N>> {
     // Currently, only support M <= N.
@@ -265,14 +265,14 @@ public:
 
 #else
 
-    SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+    Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
 #endif
 
     return Y;
   }
 
-  static void set_values_lower(
+  static inline void set_values_lower(
       CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
                            LowerTriangularRowPointers<M, N>> &A,
       const Matrix<T, M, N> &B) {
@@ -292,7 +292,7 @@ public:
 
 #else
 
-    SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
+    Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
 #endif
   }
