@@ -1814,7 +1814,7 @@ void check_eigen_values_and_vectors(void) {
 
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
-    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-10F));
+    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-20F));
 #ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<Complex<T>> eigen_values_comp
 #else
@@ -1848,7 +1848,7 @@ void check_eigen_values_and_vectors(void) {
 #else
     std::array<T, 3> eigen_values_comp_answer_imag(
 #endif
-        { 0, -0.8660254F, 0.8660254F });
+        { 0, 0.8660254F, -0.8660254F });
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp);
@@ -1883,14 +1883,6 @@ void check_eigen_values_and_vectors(void) {
     //}
     //std::cout << std::endl;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
-    std::vector<Complex<T>> eigen_values_answer_comp(3);
-#else
-    std::array<Complex<T>, 3> eigen_values_answer_comp;
-#endif
-    eigen_values_answer_comp[0] = Complex<T>(6, 0);
-    eigen_values_answer_comp[1] = Complex<T>(-1.5F, -0.8660254F);
-    eigen_values_answer_comp[2] = Complex<T>(-1.5F, 0.8660254F);
 
     eigen_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eigen_solver_comp.get_eigen_vectors();

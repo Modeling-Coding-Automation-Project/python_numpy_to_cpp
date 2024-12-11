@@ -9,7 +9,7 @@
 
 namespace PythonNumpy {
 
-const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-10;
+const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-21;
 
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
