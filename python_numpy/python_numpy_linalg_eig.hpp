@@ -8,7 +8,7 @@
 
 namespace PythonNumpy {
 
-const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-10;
+const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-20;
 const std::size_t DEFAULT_ITERATION_MAX_LINALG_EIG = 10;
 
 /* Able to handle only real number */

@@ -3662,7 +3662,7 @@ void check_python_numpy_eig(void) {
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {6}, {-1.5F}, {-1.5F} });
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {-0.8660254F}, {0.8660254F} });
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {0.8660254F}, {-0.8660254F} });
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_real(
         Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp.matrix));
@@ -3691,10 +3691,6 @@ void check_python_numpy_eig(void) {
     //}
     //std::cout << std::endl;
 
-    std::vector<Complex<T>> eigen_values_answer_comp(3);
-    eigen_values_answer_comp[0] = Complex<T>(6, 0);
-    eigen_values_answer_comp[1] = Complex<T>(-1.5F, -0.8660254F);
-    eigen_values_answer_comp[2] = Complex<T>(-1.5F, 0.8660254F);
 
     eig_solver_comp.solve_eigen_vectors(A1);
     eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
