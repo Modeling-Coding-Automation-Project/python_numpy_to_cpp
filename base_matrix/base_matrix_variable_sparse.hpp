@@ -86,8 +86,8 @@ public:
 
 /* SparseMatrix * Matrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
-Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
-                          const Matrix<T, N, K> &B) {
+inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
+                                 const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < K; i++) {
@@ -104,8 +104,8 @@ Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
-Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
-                          const VariableSparseMatrix<T, N, K> &B) {
+inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
+                                 const VariableSparseMatrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {
@@ -122,8 +122,8 @@ Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
 /* SparseMatrix * SparseMatrix */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
-                          const SparseMatrix<T, N, K, V> &B) {
+inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
+                                 const SparseMatrix<T, N, K, V> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -146,8 +146,8 @@ Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
-Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
-                          const VariableSparseMatrix<T, N, K> &B) {
+inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
+                                 const VariableSparseMatrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; ++j) {
@@ -169,8 +169,8 @@ Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
-Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
-                          const VariableSparseMatrix<T, N, K> &B) {
+inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
+                                 const VariableSparseMatrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; ++j) {
