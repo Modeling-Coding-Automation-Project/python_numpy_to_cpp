@@ -80,9 +80,9 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
 }
 
 template <typename T, std::size_t M>
-DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
-                                             const DiagMatrix<T, M> &Y_b,
-                                             bool &zero_div_flag) {
+inline DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
+                                                    const DiagMatrix<T, M> &Y_b,
+                                                    bool &zero_div_flag) {
   DiagMatrix<T, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
@@ -101,7 +101,7 @@ DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
 
 template <typename T, std::size_t M, typename RowIndices_U,
           typename RowPointers_U>
-Matrix<T, M, M> cholesky_decomposition_sparse(
+inline Matrix<T, M, M> cholesky_decomposition_sparse(
     const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
     const Matrix<T, M, M> &Y_b, bool &zero_div_flag) {
   Matrix<T, M, M> U_dense = U.create_dense();
