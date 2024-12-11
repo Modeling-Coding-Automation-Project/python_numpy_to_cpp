@@ -15,9 +15,9 @@ namespace Matrix {
 
 /* GMRES K */
 template <typename T, std::size_t M>
-Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-                     const Vector<T, M> &x_1, T decay_rate, T division_min,
-                     T &rho, std::size_t &rep_num) {
+inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                            const Vector<T, M> &x_1, T decay_rate,
+                            T division_min, T &rho, std::size_t &rep_num) {
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -42,7 +42,7 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -68,7 +68,8 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     if (n < M) {
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
+        q(i, n) =
+            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -99,7 +100,8 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     rep_num = n;
 
     // Check for convergence
-    if (rho / avoid_zero_divide(b_norm, division_min) < decay_rate) {
+    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+        decay_rate) {
       break;
     }
   }
@@ -110,7 +112,8 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     for (std::size_t m = j + 1; m < rep_num; ++m) {
       temp += r(j, m) * y[m];
     }
-    y[j] = (b_hat[j] - temp) / avoid_zero_divide(r(j, j), division_min);
+    y[j] = (b_hat[j] - temp) /
+           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -134,8 +137,9 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
                            std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, M> x = gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                             division_min, rho[i], rep_num[i]);
+    Vector<T, M> x =
+        Base::Matrix::gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                              division_min, rho[i], rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -147,17 +151,19 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
                            std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, M> x = gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                             division_min, rho[i], rep_num[i]);
+    Vector<T, M> x =
+        Base::Matrix::gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                              division_min, rho[i], rep_num[i]);
     X_1.set_row(i, x);
   }
 }
 
 /* GMRES K for rectangular matrix */
 template <typename T, std::size_t M, std::size_t N>
-Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
-                          const Vector<T, N> &x_1, T decay_rate, T division_min,
-                          T &rho, std::size_t &rep_num) {
+inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
+                                 const Vector<T, M> &b, const Vector<T, N> &x_1,
+                                 T decay_rate, T division_min, T &rho,
+                                 std::size_t &rep_num) {
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -181,13 +187,13 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     b_ax_temp[i] = b[i] - sum;
   }
 
-  Matrix<T, N, N> A = matrix_multiply_AT_mul_B(In_A, In_A);
-  Vector<T, N> b_ax = matrix_multiply_AT_mul_b(In_A, b_ax_temp);
+  Matrix<T, N, N> A = Base::Matrix::matrix_multiply_AT_mul_B(In_A, In_A);
+  Vector<T, N> b_ax = Base::Matrix::matrix_multiply_AT_mul_b(In_A, b_ax_temp);
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -213,7 +219,8 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     if (n < N) {
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
-        q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
+        q(i, n) =
+            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -244,7 +251,8 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     rep_num = n;
 
     // Check for convergence
-    if (rho / avoid_zero_divide(b_norm, division_min) < decay_rate) {
+    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+        decay_rate) {
       break;
     }
   }
@@ -255,7 +263,8 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     for (std::size_t m = j + 1; m < rep_num; ++m) {
       temp += r(j, m) * y[m];
     }
-    y[j] = (b_hat[j] - temp) / avoid_zero_divide(r(j, j), division_min);
+    y[j] = (b_hat[j] - temp) /
+           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -280,8 +289,9 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
                                 std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, N> x = gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                                  division_min, rho[i], rep_num[i]);
+    Vector<T, N> x =
+        Base::Matrix::gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                                   division_min, rho[i], rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -294,8 +304,9 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
                                 std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, N> x = gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                                  division_min, rho[i], rep_num[i]);
+    Vector<T, N> x =
+        Base::Matrix::gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
+                                   division_min, rho[i], rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -313,8 +324,8 @@ inline Matrix<T, M, M> gmres_k_matrix_inv(const Matrix<T, M, M> In_A,
   for (std::size_t i = 0; i < M; i++) {
     Vector<T, M> x;
 
-    x = gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min,
-                rho_vec[i], rep_num_vec[i]);
+    x = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
+                              division_min, rho_vec[i], rep_num_vec[i]);
     X.set_row(i, x);
   }
 
@@ -324,7 +335,7 @@ inline Matrix<T, M, M> gmres_k_matrix_inv(const Matrix<T, M, M> In_A,
 /* Sparse GMRES K */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-Vector<T, M> sparse_gmres_k(
+inline Vector<T, M> sparse_gmres_k(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, T decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
@@ -345,7 +356,7 @@ Vector<T, M> sparse_gmres_k(
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -366,7 +377,8 @@ Vector<T, M> sparse_gmres_k(
     if (n < M) {
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
+        q(i, n) =
+            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -397,7 +409,8 @@ Vector<T, M> sparse_gmres_k(
     rep_num = n;
 
     // Check for convergence
-    if (rho / avoid_zero_divide(b_norm, division_min) < decay_rate) {
+    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+        decay_rate) {
       break;
     }
   }
@@ -408,7 +421,8 @@ Vector<T, M> sparse_gmres_k(
     for (std::size_t m = j + 1; m < rep_num; ++m) {
       temp += r(j, m) * y[m];
     }
-    y[j] = (b_hat[j] - temp) / avoid_zero_divide(r(j, j), division_min);
+    y[j] = (b_hat[j] - temp) /
+           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -434,9 +448,9 @@ inline void sparse_gmres_k_matrix(
     std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, M> x =
-        sparse_gmres_k(SA, B.get_row(i), X_1.get_row(i), decay_rate,
-                       division_min, rho[i], rep_num[i]);
+    Vector<T, M> x = Base::Matrix::sparse_gmres_k(
+        SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -444,7 +458,7 @@ inline void sparse_gmres_k_matrix(
 /* Sparse GMRES K for rectangular matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Vector<T, N> sparse_gmres_k_rect(
+inline Vector<T, N> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, T decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
@@ -464,17 +478,18 @@ Vector<T, N> sparse_gmres_k_rect(
   // b - Ax
   Vector<T, M> b_ax_temp = b - (In_SA * x_1);
 
-  Matrix<T, N, N> A =
-      matrix_multiply_ATranspose_mul_SparseB(In_SA.create_dense(), In_SA);
+  Matrix<T, N, N> A = Base::Matrix::matrix_multiply_ATranspose_mul_SparseB(
+      In_SA.create_dense(), In_SA);
 
   ColVector<T, M> b_ax_temp_col(b_ax_temp);
-  ColVector<T, N> b_SA = colVector_a_mul_SparseB(b_ax_temp_col, In_SA);
+  ColVector<T, N> b_SA =
+      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_col, In_SA);
   Vector<T, N> b_ax = b_SA.transpose();
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -500,7 +515,8 @@ Vector<T, N> sparse_gmres_k_rect(
     if (n < N) {
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
-        q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
+        q(i, n) =
+            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -531,7 +547,8 @@ Vector<T, N> sparse_gmres_k_rect(
     rep_num = n;
 
     // Check for convergence
-    if (rho / avoid_zero_divide(b_norm, division_min) < decay_rate) {
+    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+        decay_rate) {
       break;
     }
   }
@@ -542,7 +559,8 @@ Vector<T, N> sparse_gmres_k_rect(
     for (std::size_t m = j + 1; m < rep_num; ++m) {
       temp += r(j, m) * y[m];
     }
-    y[j] = (b_hat[j] - temp) / avoid_zero_divide(r(j, j), division_min);
+    y[j] = (b_hat[j] - temp) /
+           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -568,9 +586,9 @@ inline void sparse_gmres_k_rect_matrix(
     std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, N> x =
-        sparse_gmres_k_rect(In_SA, B.get_row(i), X_1.get_row(i), decay_rate,
-                            division_min, rho[i], rep_num[i]);
+    Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
+        In_SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -584,9 +602,9 @@ inline void sparse_gmres_k_rect_matrix(
     std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, N> x =
-        sparse_gmres_k_rect(In_SA, B.get_row(i), X_1.get_row(i), decay_rate,
-                            division_min, rho[i], rep_num[i]);
+    Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
+        In_SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i]);
     X_1.set_row(i, x);
   }
 }
@@ -594,7 +612,7 @@ inline void sparse_gmres_k_rect_matrix(
 /* Sparse GMRES K for matrix inverse */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, M> sparse_gmres_k_matrix_inv(
+inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> In_A,
     T decay_rate, T division_min, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
@@ -605,8 +623,9 @@ Matrix<T, M, M> sparse_gmres_k_matrix_inv(
   for (std::size_t i = 0; i < M; i++) {
     Vector<T, M> x;
 
-    x = sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
-                       division_min, rho_vec[i], rep_num_vec[i]);
+    x = Base::Matrix::sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
+                                     decay_rate, division_min, rho_vec[i],
+                                     rep_num_vec[i]);
     X.set_row(i, x);
   }
 
@@ -615,11 +634,11 @@ Matrix<T, M, M> sparse_gmres_k_matrix_inv(
 
 /* Complex GMRES K */
 template <typename T, std::size_t M>
-Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
-                                      const Vector<Complex<T>, M> &b,
-                                      const Vector<Complex<T>, M> &x_1,
-                                      T decay_rate, T division_min, T &rho,
-                                      std::size_t &rep_num) {
+inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
+                                             const Vector<Complex<T>, M> &b,
+                                             const Vector<Complex<T>, M> &x_1,
+                                             T decay_rate, T division_min,
+                                             T &rho, std::size_t &rep_num) {
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -642,9 +661,9 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   }
 
   // Normalize b_Ax
-  T b_norm = complex_vector_norm(b_ax, division_min);
+  T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -660,7 +679,7 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     for (std::size_t j = 0; j < n; ++j) {
       h(j, n - 1) = 0;
       for (std::size_t i = 0; i < M; ++i) {
-        h(j, n - 1) += complex_conjugate(q(i, j)) * v[i];
+        h(j, n - 1) += Base::Matrix::complex_conjugate(q(i, j)) * v[i];
       }
       for (std::size_t i = 0; i < M; ++i) {
         v[i] -= h(j, n - 1) * q(i, j);
@@ -668,9 +687,9 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     }
 
     if (n < M) {
-      h(n, n - 1) = complex_vector_norm(v, division_min);
+      h(n, n - 1) = Base::Matrix::complex_vector_norm(v, division_min);
       for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = complex_divide(v[i], h(n, n - 1), division_min);
+        q(i, n) = Base::Matrix::complex_divide(v[i], h(n, n - 1), division_min);
       }
     }
 
@@ -679,15 +698,17 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     if (n >= 2) {
       for (std::size_t j = 1; j < n; ++j) {
         Complex<T> gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) = -complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
-                      c[j - 1] * h(j, n - 1);
+        r(j, n - 1) =
+            -Base::Matrix::complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
+            c[j - 1] * h(j, n - 1);
         r(j - 1, n - 1) = gamma;
       }
     }
 
     T delta_inv = Base::Math::rsqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        complex_abs_sq(r(n - 1, n - 1)) + complex_abs_sq(h(n, n - 1)),
+        Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
+            Base::Matrix::complex_abs_sq(h(n, n - 1)),
         division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
@@ -695,14 +716,15 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
 
     // Update b_hat
     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -complex_conjugate(s[n - 1]) * b_hat[n - 1];
+    b_hat[n] = -Base::Matrix::complex_conjugate(s[n - 1]) * b_hat[n - 1];
     b_hat[n - 1] = b_hat[n - 1] * c[n - 1];
-    rho = complex_abs_sq(b_hat[n]);
+    rho = Base::Matrix::complex_abs_sq(b_hat[n]);
 
     rep_num = n;
 
     // Check for convergence
-    if (rho / avoid_zero_divide(b_norm * b_norm, division_min) < decay_rate) {
+    if (rho / Base::Matrix::avoid_zero_divide(b_norm * b_norm, division_min) <
+        decay_rate) {
       break;
     }
   }
@@ -713,7 +735,7 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     for (std::size_t m = j + 1; m < rep_num; ++m) {
       temp += r(j, m) * y[m];
     }
-    y[j] = complex_divide(b_hat[j] - temp, r(j, j), division_min);
+    y[j] = Base::Matrix::complex_divide(b_hat[j] - temp, r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
