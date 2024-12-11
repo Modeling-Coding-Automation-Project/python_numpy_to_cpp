@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <cmath>
+
 namespace Base {
 namespace Matrix {
 
@@ -95,7 +97,7 @@ public:
     return result;
   }
 
-  T dot(const Vector<T, N> &other) const {
+  inline T dot(const Vector<T, N> &other) const {
     T result = static_cast<T>(0);
     for (std::size_t i = 0; i < N; ++i) {
       result += this->data[i] * other[i];
@@ -103,13 +105,44 @@ public:
     return result;
   }
 
-  T norm() const {
+  inline T norm() const {
     T sum = static_cast<T>(0);
     for (std::size_t i = 0; i < N; ++i) {
       sum += this->data[i] * this->data[i];
     }
+
     return Base::Math::sqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  }
+
+  inline T norm(const T &division_min) const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+  }
+
+  inline T norm_inv() const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  }
+
+  inline T norm_inv(const T &division_min) const {
+    T sum = static_cast<T>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      sum += this->data[i] * this->data[i];
+    }
+
+    return Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
   }
 
 /* Variable */
@@ -134,6 +167,23 @@ public:
     return result;
   }
 };
+
+/* Normalize */
+template <typename T, std::size_t N>
+inline void vector_normalize(Vector<T, N> &vec) {
+  T norm_inv = vec.norm_inv();
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
+
+template <typename T, std::size_t N>
+inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
+  T norm_inv = vec.norm_inv(division_min);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
 
 /* Scalar Addition */
 // Vector Add Scalar Core Template: N_idx < N
@@ -459,7 +509,7 @@ COMPILED_COMPLEX_VECTOR_NORM(const Vector<Complex<T>, N> &vec_comp) {
 }
 
 template <typename T, std::size_t N>
-T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
+inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
@@ -477,6 +527,89 @@ T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
   return Base::Math::sqrt_base_math<
       T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp,
+                             const T &division_min) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+}
+
+template <typename T, std::size_t N>
+inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
+                                 const T &division_min) {
+  T sum = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t i = 0; i < N; ++i) {
+    sum += vec_comp[i].real * vec_comp[i].real +
+           vec_comp[i].imag * vec_comp[i].imag;
+  }
+
+#else
+
+  sum = COMPILED_COMPLEX_VECTOR_NORM<T, N>(vec_comp);
+
+#endif
+
+  return Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+}
+
+/* Complex Normalize */
+template <typename T, std::size_t N>
+inline void complex_vector_normalize(Vector<Complex<T>, N> &vec) {
+  T norm_inv = complex_vector_norm_inv(vec);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
+}
+
+template <typename T, std::size_t N>
+inline void complex_vector_normalize(Vector<Complex<T>, N> &vec,
+                                     const T &division_min) {
+  T norm_inv = complex_vector_norm_inv(vec, division_min);
+  for (std::size_t i = 0; i < N; ++i) {
+    vec[i] *= norm_inv;
+  }
 }
 
 /* Get Real and Imaginary Vector from Complex Vector */

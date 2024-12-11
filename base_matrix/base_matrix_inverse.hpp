@@ -40,7 +40,7 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   }
 
   // Normalize b_Ax
-  T b_norm = b_ax.norm();
+  T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
     q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
   }
@@ -66,7 +66,7 @@ Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     }
 
     if (n < M) {
-      h(n, n - 1) = v.norm();
+      h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
         q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -185,7 +185,7 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
   Vector<T, N> b_ax = matrix_multiply_AT_mul_b(In_A, b_ax_temp);
 
   // Normalize b_Ax
-  T b_norm = b_ax.norm();
+  T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
     q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
   }
@@ -211,7 +211,7 @@ Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
     }
 
     if (n < N) {
-      h(n, n - 1) = v.norm();
+      h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
         q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -343,7 +343,7 @@ Vector<T, M> sparse_gmres_k(
   Vector<T, M> b_ax = b - (SA * x_1);
 
   // Normalize b_Ax
-  T b_norm = b_ax.norm();
+  T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
     q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
   }
@@ -364,7 +364,7 @@ Vector<T, M> sparse_gmres_k(
     }
 
     if (n < M) {
-      h(n, n - 1) = v.norm();
+      h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
         q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -472,7 +472,7 @@ Vector<T, N> sparse_gmres_k_rect(
   Vector<T, N> b_ax = b_SA.transpose();
 
   // Normalize b_Ax
-  T b_norm = b_ax.norm();
+  T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
     q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
   }
@@ -498,7 +498,7 @@ Vector<T, N> sparse_gmres_k_rect(
     }
 
     if (n < N) {
-      h(n, n - 1) = v.norm();
+      h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
         q(i, n) = v[i] / avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -642,7 +642,7 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   }
 
   // Normalize b_Ax
-  T b_norm = complex_vector_norm(b_ax);
+  T b_norm = complex_vector_norm(b_ax, division_min);
   for (std::size_t i = 0; i < M; ++i) {
     q(i, 0) = b_ax[i] / avoid_zero_divide(b_norm, division_min);
   }
@@ -668,7 +668,7 @@ Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     }
 
     if (n < M) {
-      h(n, n - 1) = complex_vector_norm(v);
+      h(n, n - 1) = complex_vector_norm(v, division_min);
       for (std::size_t i = 0; i < M; ++i) {
         q(i, n) = complex_divide(v[i], h(n, n - 1), division_min);
       }

@@ -1752,7 +1752,7 @@ void check_eigen_values_and_vectors(void) {
     Matrix<T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<T, 4, 4> Ae({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
 
-    EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-10F));
+    EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-20F));
 #ifdef BASE_MATRIX_USE_STD_VECTOR
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
 #else

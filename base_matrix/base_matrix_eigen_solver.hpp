@@ -150,7 +150,7 @@ private:
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
-  T _gmres_k_decay_rate = static_cast<T>(0.2);
+  T _gmres_k_decay_rate = static_cast<T>(0);
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
@@ -365,11 +365,12 @@ private:
                     this->_gmres_k_rho, this->_gmres_k_rep_num);
 
         // normalization
-        T norm_inv = static_cast<T>(1) /
-                     avoid_zero_divide(x.norm(), this->_division_min);
-        for (std::size_t i = 0; i < M; ++i) {
-          x[i] *= norm_inv;
-        }
+        // T norm_inv = static_cast<T>(1) /
+        //              avoid_zero_divide(x.norm(), this->_division_min);
+        // for (std::size_t i = 0; i < M; ++i) {
+        //   x[i] *= norm_inv;
+        // }
+        Base::Matrix::vector_normalize(x, this->_division_min);
 
         // conversion check
         bool converged = true;
@@ -540,7 +541,7 @@ private:
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
-  T _gmres_k_decay_rate = static_cast<T>(0.2);
+  T _gmres_k_decay_rate = static_cast<T>(0);
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
@@ -758,12 +759,13 @@ private:
                             this->_gmres_k_rep_num);
 
         // normalization
-        T norm_inv =
-            static_cast<T>(1) /
-            avoid_zero_divide(complex_vector_norm(x), this->_division_min);
-        for (std::size_t i = 0; i < M; ++i) {
-          x[i] *= norm_inv;
-        }
+        // T norm_inv =
+        //     static_cast<T>(1) /
+        //     avoid_zero_divide(complex_vector_norm(x), this->_division_min);
+        // for (std::size_t i = 0; i < M; ++i) {
+        //   x[i] *= norm_inv;
+        // }
+        Base::Matrix::complex_vector_normalize(x, this->_division_min);
 
         // conversion check
         bool converged = true;
