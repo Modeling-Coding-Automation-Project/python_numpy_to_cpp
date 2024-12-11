@@ -185,8 +185,8 @@ inline Matrix<T, M, N> output_dense_matrix(
 
 #else
 
-  COMPILED_SPARSE_OUTPUT_DENSE_MATRIX<T, M, N, RowIndices, RowPointers>(mat,
-                                                                        result);
+  Base::Matrix::COMPILED_SPARSE_OUTPUT_DENSE_MATRIX<T, M, N, RowIndices,
+                                                    RowPointers>(mat, result);
 
 #endif
 
@@ -287,8 +287,9 @@ inline Matrix<T, N, M> output_transpose_matrix(
 
 #else
 
-  COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX<T, M, N, RowIndices, RowPointers>(
-      mat, result);
+  Base::Matrix::COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX<T, M, N, RowIndices,
+                                                       RowPointers>(mat,
+                                                                    result);
 
 #endif
 
@@ -358,7 +359,7 @@ static inline void COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE(
 }
 
 template <typename T, std::size_t M, std::size_t N>
-auto create_compiled_sparse(const Matrix<T, M, N> &A)
+inline auto create_compiled_sparse(const Matrix<T, M, N> &A)
     -> CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
                             DenseMatrixRowPointers<M, N>> {
   CompiledSparseMatrix<T, M, N, DenseMatrixRowIndices<M, N>,
@@ -377,8 +378,8 @@ auto create_compiled_sparse(const Matrix<T, M, N> &A)
 
 #else
 
-  COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE<T, M, N, DenseMatrixRowIndices<M, N>,
-                                          DenseMatrixRowPointers<M, N>>(A, Y);
+  Base::Matrix::COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE<
+      T, M, N, DenseMatrixRowIndices<M, N>, DenseMatrixRowPointers<M, N>>(A, Y);
 
 #endif
 
@@ -394,7 +395,7 @@ using DiagMatrixRowPointers =
     typename ToRowIndices<MatrixRowNumbers<(M + 1)>>::type;
 
 template <typename T, std::size_t M>
-auto create_compiled_sparse(const DiagMatrix<T, M> &A)
+inline auto create_compiled_sparse(const DiagMatrix<T, M> &A)
     -> CompiledSparseMatrix<T, M, M, DiagMatrixRowIndices<M>,
                             DiagMatrixRowPointers<M>> {
   CompiledSparseMatrix<T, M, M, DiagMatrixRowIndices<M>,
@@ -408,7 +409,7 @@ auto create_compiled_sparse(const DiagMatrix<T, M> &A)
 
 /* Create Compiled Sparse Matrix from SparseAvailable */
 template <typename T, typename SparseAvailable>
-auto create_compiled_sparse(std::initializer_list<T> values)
+inline auto create_compiled_sparse(std::initializer_list<T> values)
     -> CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
                             SparseAvailable::column_size,
                             RowIndicesFromSparseAvailable<SparseAvailable>,
@@ -594,8 +595,9 @@ inline void set_sparse_matrix_value(
 
 #else
 
-  COMPILED_SPARSE_SET_MATRIX_VALUE<ColumnToSet, RowToSet, T, M, N, RowIndices_A,
-                                   RowPointers_A>(A, value);
+  Base::Matrix::COMPILED_SPARSE_SET_MATRIX_VALUE<ColumnToSet, RowToSet, T, M, N,
+                                                 RowIndices_A, RowPointers_A>(
+      A, value);
 
 #endif
 }
@@ -766,8 +768,9 @@ inline T get_sparse_matrix_value(
 
 #else
 
-  COMPILED_SPARSE_GET_MATRIX_VALUE<ColumnToGet, RowToGet, T, M, N, RowIndices_A,
-                                   RowPointers_A>(A, value);
+  Base::Matrix::COMPILED_SPARSE_GET_MATRIX_VALUE<ColumnToGet, RowToGet, T, M, N,
+                                                 RowIndices_A, RowPointers_A>(
+      A, value);
 
 #endif
 
