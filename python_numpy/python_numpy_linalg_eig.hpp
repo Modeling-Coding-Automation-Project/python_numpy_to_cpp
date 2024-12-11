@@ -4,6 +4,7 @@
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_templates.hpp"
+
 #include <cstddef>
 
 namespace PythonNumpy {
@@ -50,34 +51,34 @@ public:
   }
 
   /* Solve function */
-  void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
     this->_Eigen_solver.solve_eigen_values(A.matrix);
   }
 
-  void continue_solving_eigen_values(void) {
+  inline void continue_solving_eigen_values(void) {
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
-  auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
+  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
     return Matrix<DefDense, T, M, 1>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
+  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
     return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
   }
 
-  std::size_t get_iteration_max(void) {
+  inline std::size_t get_iteration_max(void) {
     return this->_Eigen_solver.iteration_max;
   }
 
   /* Set */
-  void set_iteration_max(std::size_t iteration_max) {
+  inline void set_iteration_max(std::size_t iteration_max) {
     this->_Eigen_solver.iteration_max = iteration_max;
   }
 
@@ -129,11 +130,11 @@ public:
   }
 
   /* Get */
-  auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
+  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
     return Matrix<DefDense, T, M, 1>(this->_eigen_values);
   }
 
-  auto get_eigen_vectors(void) -> Matrix<DefDiag, T, M> {
+  inline auto get_eigen_vectors(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
@@ -187,24 +188,24 @@ public:
   }
 
   /* Solve method */
-  void
+  inline void
   solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
         A.matrix.create_dense(), this->_iteration_max, this->_division_min);
   }
 
-  void
+  inline void
   solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
   }
 
   /* Get */
-  auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
+  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
     return Matrix<DefDense, T, M, 1>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
+  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
     return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
   }
 
@@ -218,22 +219,22 @@ private:
 
 /* make LinalgSolverEig */
 template <typename T, std::size_t M>
-auto make_LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A)
+inline auto make_LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverEigReal<T, M> {
 
   return LinalgSolverEigReal<T, M>(A);
 }
 
 template <typename T, std::size_t M>
-auto make_LinalgSolverEigReal(const Matrix<DefDiag, T, M> &A)
+inline auto make_LinalgSolverEigReal(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverEigRealDiag<T, M> {
 
   return LinalgSolverEigRealDiag<T, M>(A);
 }
 
 template <typename T, std::size_t M, typename SparseAvailable>
-auto make_LinalgSolverEigReal(
-    const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+inline auto
+make_LinalgSolverEigReal(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
     -> LinalgSolverEigRealSparse<T, M, SparseAvailable> {
 
   return LinalgSolverEigRealSparse<T, M, SparseAvailable>(A);
@@ -279,43 +280,43 @@ public:
   }
 
   /* Solve method */
-  void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
         A.matrix, this->_iteration_max, this->_division_min);
   }
 
-  void continue_solving_eigen_values(void) {
+  inline void continue_solving_eigen_values(void) {
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
-  auto get_eigen_values(void)
+  inline auto get_eigen_values(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
-  auto get_eigen_vectors(void)
+  inline auto get_eigen_vectors(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
-  std::size_t get_iteration_max(void) {
+  inline std::size_t get_iteration_max(void) {
     return this->_Eigen_solver.iteration_max;
   }
 
   /* Set */
-  void set_iteration_max(std::size_t iteration_max) {
+  inline void set_iteration_max(std::size_t iteration_max) {
     this->_Eigen_solver.iteration_max = iteration_max;
   }
 
-  void set_iteration_max_for_eigen_vector(
+  inline void set_iteration_max_for_eigen_vector(
       std::size_t iteration_max_for_eigen_vector) {
     this->_Eigen_solver.iteration_max_for_eigen_vector =
         iteration_max_for_eigen_vector;
@@ -335,14 +336,6 @@ public:
   LinalgSolverEigDiag() {}
 
   LinalgSolverEigDiag(const Matrix<DefDiag, T, M> &A) {
-    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
-  }
-
-  void solve_eigen_values(const Matrix<DefDiag, T, M> &A) {
-    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
-  }
-
-  void solve_eigen_vectors(const Matrix<DefDiag, T, M> &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
@@ -369,14 +362,23 @@ public:
     return *this;
   }
 
+  /* Solve method */
+  inline void solve_eigen_values(const Matrix<DefDiag, T, M> &A) {
+    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
+  }
+
+  inline void solve_eigen_vectors(const Matrix<DefDiag, T, M> &A) {
+    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
+  }
+
   /* Get */
-  auto get_eigen_values(void)
+  inline auto get_eigen_values(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
         this->_eigen_values);
   }
 
-  auto get_eigen_vectors(void)
+  inline auto get_eigen_vectors(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
         Base::Matrix::DiagMatrix<T, M>::identity());
@@ -431,26 +433,26 @@ public:
   }
 
   /* Solve method */
-  void
+  inline void
   solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
         A.matrix.create_dense(), this->_iteration_max, this->_division_min);
   }
 
-  void
+  inline void
   solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
   }
 
   /* Get */
-  auto get_eigen_values(void)
+  inline auto get_eigen_values(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
-  auto get_eigen_vectors(void)
+  inline auto get_eigen_vectors(void)
       -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
     return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
         this->_Eigen_solver.get_eigen_vectors());
@@ -466,21 +468,22 @@ private:
 
 /* make LinalgSolverEig */
 template <typename T, std::size_t M>
-auto make_LinalgSolverEig(const Matrix<DefDense, T, M, M> &A)
+inline auto make_LinalgSolverEig(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverEig<T, M> {
 
   return LinalgSolverEig<T, M>(A);
 }
 
 template <typename T, std::size_t M>
-auto make_LinalgSolverEig(const Matrix<DefDiag, T, M> &A)
+inline auto make_LinalgSolverEig(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverEigDiag<T, M> {
 
   return LinalgSolverEigDiag<T, M>(A);
 }
 
 template <typename T, std::size_t M, typename SparseAvailable>
-auto make_LinalgSolverEig(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+inline auto
+make_LinalgSolverEig(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
     -> LinalgSolverEigSparse<T, M, SparseAvailable> {
 
   return LinalgSolverEigSparse<T, M, SparseAvailable>(A);
