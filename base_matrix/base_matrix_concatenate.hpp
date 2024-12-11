@@ -31,7 +31,7 @@ inline auto concatenate_vertically(const Matrix<T, M, N> &A,
     -> Matrix<T, M + P, N> {
   Matrix<T, M + P, N> Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -72,7 +72,7 @@ inline auto concatenate_vertically(const Matrix<T, M, N> &A,
           DenseAvailable<M, N>, DiagAvailable<N>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -91,7 +91,7 @@ inline void update_vertically_concatenated_matrix(
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) {
 
-  auto sparse_A = create_compiled_sparse(A);
+  auto sparse_A = Base::Matrix::create_compiled_sparse(A);
   std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
   std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M * N);
@@ -121,7 +121,7 @@ inline auto concatenate_vertically(
                                     N, RowIndices_B, RowPointers_B>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -136,7 +136,7 @@ inline void update_vertically_concatenated_matrix(
             DiagAvailable<M>, DenseAvailable<P, M>>>> &Y,
     const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B) {
 
-  auto sparse_A = create_compiled_sparse(A);
+  auto sparse_A = Base::Matrix::create_compiled_sparse(A);
   std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
   auto sparse_B = create_compiled_sparse(B);
@@ -162,7 +162,7 @@ inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
           DiagAvailable<M>, DenseAvailable<P, M>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -177,10 +177,10 @@ inline void update_vertically_concatenated_matrix(
             DiagAvailable<M>, DiagAvailable<M>>>> &Y,
     const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
-  auto sparse_A = create_compiled_sparse(A);
+  auto sparse_A = Base::Matrix::create_compiled_sparse(A);
   std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
-  auto sparse_B = create_compiled_sparse(B);
+  auto sparse_B = Base::Matrix::create_compiled_sparse(B);
   std::copy(sparse_B.values.begin(), sparse_B.values.end(),
             Y.values.begin() + M);
 }
@@ -203,7 +203,7 @@ inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
           DiagAvailable<M>, DiagAvailable<M>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -222,7 +222,7 @@ inline void update_vertically_concatenated_matrix(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, P, M, RowIndices_B, RowPointers_B> &B) {
 
-  auto sparse_A = create_compiled_sparse(A);
+  auto sparse_A = Base::Matrix::create_compiled_sparse(A);
   std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
 
   std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M);
@@ -252,7 +252,7 @@ inline auto concatenate_vertically(
                                 M, RowIndices_B, RowPointers_B>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -275,7 +275,7 @@ inline void update_vertically_concatenated_matrix(
 
   std::copy(A.values.begin(), A.values.end(), Y.values.begin());
 
-  auto sparse_B = create_compiled_sparse(B);
+  auto sparse_B = Base::Matrix::create_compiled_sparse(B);
   std::copy(sparse_B.values.begin(), sparse_B.values.end(),
             Y.values.begin() + RowIndices_A::size);
 }
@@ -308,7 +308,7 @@ inline auto concatenate_vertically(
           DenseAvailable<P, N>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -331,7 +331,7 @@ inline void update_vertically_concatenated_matrix(
 
   std::copy(A.values.begin(), A.values.end(), Y.values.begin());
 
-  auto sparse_B = create_compiled_sparse(B);
+  auto sparse_B = Base::Matrix::create_compiled_sparse(B);
   std::copy(sparse_B.values.begin(), sparse_B.values.end(),
             Y.values.begin() + RowIndices_A::size);
 }
@@ -364,7 +364,7 @@ inline auto concatenate_vertically(
           DiagAvailable<N>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -427,7 +427,7 @@ inline auto concatenate_vertically(
                                                       RowPointers_B>>>>
       Y;
 
-  update_vertically_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -455,7 +455,7 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
     -> Matrix<T, M, N + P> {
   Matrix<T, M, N + P> Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -505,7 +505,7 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
           DenseAvailable<M, N>, DiagAvailable<M>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -575,7 +575,7 @@ inline auto concatenate_horizontally(
                                     L, RowIndices_B, RowPointers_B>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -627,7 +627,7 @@ inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
           DiagAvailable<M>, DenseAvailable<M, N>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -680,7 +680,7 @@ inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
           DiagAvailable<M>, DiagAvailable<M>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -751,7 +751,7 @@ inline auto concatenate_horizontally(
                                 N, RowIndices_B, RowPointers_B>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -829,7 +829,7 @@ inline auto concatenate_horizontally(
           DenseAvailable<M, N>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -910,7 +910,7 @@ inline auto concatenate_horizontally(
           DiagAvailable<M>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
@@ -1005,14 +1005,14 @@ inline auto concatenate_horizontally(
                                                       RowPointers_B>>>>
       Y;
 
-  update_horizontally_concatenated_matrix(Y, A, B);
+  Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t K>
-Matrix<T, M + K, N + P>
+inline Matrix<T, M + K, N + P>
 concatenate_square(const Matrix<T, M, N> &A, const Matrix<T, M, P> &B,
                    const Matrix<T, K, N> &C, const Matrix<T, K, P> &D) {
   Matrix<T, M + K, N + P> result;
