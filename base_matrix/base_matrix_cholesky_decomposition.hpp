@@ -1,20 +1,23 @@
 #ifndef BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 #define BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
-#include <cmath>
+
 #include <cstddef>
 
 namespace Base {
 namespace Matrix {
 
+constexpr double CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT = 1.0e-20;
+
 template <typename T, std::size_t M>
-Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
-                                       const Matrix<T, M, M> &Y_b,
-                                       bool &zero_div_flag) {
+inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
+                                              const Matrix<T, M, M> &Y_b,
+                                              bool &zero_div_flag) {
   Matrix<T, M, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
@@ -24,8 +27,12 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
-      T temp_inv = static_cast<T>(1) / Y(i, i);
+
+      T temp_inv = Base::Math::rsqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+          temp, static_cast<T>(
+                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = 1; j < M; ++j) {
         Y(0, j) = U(j, 0) * temp_inv;
@@ -40,8 +47,12 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
-      T temp_inv = static_cast<T>(1) / Y(i, i);
+
+      T temp_inv = Base::Math::rsqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+          temp, static_cast<T>(
+                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = i + 1; j < M; ++j) {
         T sum = static_cast<T>(0);
@@ -60,7 +71,8 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(temp);
     }
   }
 
@@ -68,14 +80,15 @@ Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
 }
 
 template <typename T, std::size_t M>
-DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
-                                             const DiagMatrix<T, M> &Y_b,
-                                             bool &zero_div_flag) {
+inline DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
+                                                    const DiagMatrix<T, M> &Y_b,
+                                                    bool &zero_div_flag) {
   DiagMatrix<T, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
     if (U[i] >= static_cast<T>(0)) {
-      Y[i] = std::sqrt(U[i]);
+      Y[i] = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(U[i]);
     } else {
       zero_div_flag = true;
       Y = Y_b;
@@ -88,7 +101,7 @@ DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
 
 template <typename T, std::size_t M, typename RowIndices_U,
           typename RowPointers_U>
-Matrix<T, M, M> cholesky_decomposition_sparse(
+inline Matrix<T, M, M> cholesky_decomposition_sparse(
     const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
     const Matrix<T, M, M> &Y_b, bool &zero_div_flag) {
   Matrix<T, M, M> U_dense = U.create_dense();
@@ -101,8 +114,12 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
-      T temp_inv = static_cast<T>(1) / Y(i, i);
+
+      T temp_inv = Base::Math::rsqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+          temp, static_cast<T>(
+                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = 1; j < M; ++j) {
         Y(0, j) = U_dense(j, 0) * temp_inv;
@@ -117,8 +134,12 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
-      T temp_inv = static_cast<T>(1) / Y(i, i);
+
+      T temp_inv = Base::Math::rsqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+          temp, static_cast<T>(
+                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = i + 1; j < M; ++j) {
         T sum = static_cast<T>(0);
@@ -137,7 +158,8 @@ Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = std::sqrt(temp);
+      Y(i, i) = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(temp);
     }
   }
 

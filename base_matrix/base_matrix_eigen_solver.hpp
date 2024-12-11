@@ -1,16 +1,18 @@
 #ifndef BASE_MATRIX_EIGEN_SOLVER_HPP
 #define BASE_MATRIX_EIGEN_SOLVER_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
+#include "base_matrix_inverse.hpp"
 #include "base_matrix_lu_decomposition.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -149,12 +151,12 @@ private:
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
-  T _gmres_k_decay_rate = static_cast<T>(0.2);
+  T _gmres_k_decay_rate = static_cast<T>(0);
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
   /* Function */
-  void _hessenberg(const Matrix<T, M, M> &A) {
+  inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
     std::array<T, M> u;
 
@@ -163,12 +165,13 @@ private:
       for (std::size_t i = k + 1; i < M; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (near_zero(x_abs, this->_division_min)) {
+      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k + 1] = R(k + 1, k) + sign(R(k + 1, k)) * x_abs;
+      u[k + 1] = R(k + 1, k) + Base::Matrix::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
       for (std::size_t i = k + 2; i < M; ++i) {
         u[i] = R(i, k);
@@ -200,7 +203,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              avoid_zero_divide(u_abs, this->_division_min);
+              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -214,8 +217,8 @@ private:
     this->_Hessen = R;
   }
 
-  void _qr_decomposition(Matrix<T, M, M> &Q, Matrix<T, M, M> &R,
-                         const Matrix<T, M, M> &A) {
+  inline void _qr_decomposition(Matrix<T, M, M> &Q, Matrix<T, M, M> &R,
+                                const Matrix<T, M, M> &A) {
     R = A;
     std::array<T, M> u;
 
@@ -224,12 +227,13 @@ private:
       for (std::size_t i = k; i < k + 2; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (near_zero(x_abs, this->_division_min)) {
+      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k] = R(k, k) + sign(R(k, k)) * x_abs;
+      u[k] = R(k, k) + Base::Matrix::sign(R(k, k)) * x_abs;
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
@@ -258,7 +262,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              avoid_zero_divide(u_abs, this->_division_min);
+              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -279,7 +283,7 @@ private:
     }
   }
 
-  T _wilkinson_shift(const Matrix<T, M, M> &A) {
+  inline T _wilkinson_shift(const Matrix<T, M, M> &A) {
     T a11 = A(M - 2, M - 2);
     T a12 = A(M - 2, M - 1);
     T a21 = A(M - 1, M - 2);
@@ -289,19 +293,20 @@ private:
     T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
     T c2;
     if (c2_2 >= 0) {
-      c2 = std::sqrt(c2_2);
+      c2 = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(c2_2);
     } else {
       c2 = static_cast<T>(0);
     }
 
     T mu1 = static_cast<T>(0.5) * (c1 + c2);
     T mu2 = static_cast<T>(0.5) * (c1 - c2);
-    T dmu1 = std::abs(a22 - mu1);
-    T dmu2 = std::abs(a22 - mu2);
+    T dmu1 = Base::Math::abs(a22 - mu1);
+    T dmu2 = Base::Math::abs(a22 - mu2);
     return (dmu1 <= dmu2) ? mu1 : mu2;
   }
 
-  void _continue_solving_values_with_qr_method(void) {
+  inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
       Matrix<T, M, M> A = this->_Hessen;
 
@@ -314,13 +319,13 @@ private:
         Matrix<T, M, M> Q = Matrix<T, M, M>::identity();
         Matrix<T, M, M> R;
         this->_qr_decomposition(Q, R, A);
-        A = matrix_multiply_Upper_triangular_A_mul_B(R, Q);
+        A = Base::Matrix::matrix_multiply_Upper_triangular_A_mul_B(R, Q);
 
         for (std::size_t i = 0; i < k; ++i) {
           A(i, i) += mu;
         }
 
-        if (std::abs(A(k - 1, k - 2)) < this->_division_min) {
+        if (Base::Math::abs(A(k - 1, k - 2)) < this->_division_min) {
           break;
         }
       }
@@ -333,13 +338,13 @@ private:
     }
   }
 
-  void _solve_values_with_qr_method(const Matrix<T, M, M> &A0) {
+  inline void _solve_values_with_qr_method(const Matrix<T, M, M> &A0) {
     this->_hessenberg(A0);
 
     this->_continue_solving_values_with_qr_method();
   }
 
-  void
+  inline void
   _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
 
     for (std::size_t k = 0; k < M; ++k) {
@@ -357,20 +362,17 @@ private:
       for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
         Vector<T, M> x_old = x;
 
-        x = gmres_k(A, x_old, x, this->_gmres_k_decay_rate, this->_division_min,
-                    this->_gmres_k_rho, this->_gmres_k_rep_num);
+        x = Base::Matrix::gmres_k(A, x_old, x, this->_gmres_k_decay_rate,
+                                  this->_division_min, this->_gmres_k_rho,
+                                  this->_gmres_k_rep_num);
 
-        // normalization
-        T norm_inv = static_cast<T>(1) /
-                     avoid_zero_divide(x.norm(), this->_division_min);
-        for (std::size_t i = 0; i < M; ++i) {
-          x[i] *= norm_inv;
-        }
+        Base::Matrix::vector_normalize(x, this->_division_min);
 
         // conversion check
         bool converged = true;
         for (std::size_t i = 0; i < M; ++i) {
-          if (std::abs(std::abs(x[i]) - std::abs(x_old[i])) >
+          if (Base::Math::abs(Base::Math::abs(x[i]) -
+                              Base::Math::abs(x_old[i])) >
               this->_division_min) {
             converged = false;
             break;
@@ -535,12 +537,12 @@ private:
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
-  T _gmres_k_decay_rate = static_cast<T>(0.2);
+  T _gmres_k_decay_rate = static_cast<T>(0);
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
   /* Function */
-  void _hessenberg(const Matrix<T, M, M> &A) {
+  inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
     std::array<T, M> u;
 
@@ -549,12 +551,13 @@ private:
       for (std::size_t i = k + 1; i < M; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (near_zero(x_abs, this->_division_min)) {
+      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k + 1] = R(k + 1, k) + sign(R(k + 1, k)) * x_abs;
+      u[k + 1] = R(k + 1, k) + Base::Matrix::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
       for (std::size_t i = k + 2; i < M; ++i) {
         u[i] = R(i, k);
@@ -586,7 +589,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              avoid_zero_divide(u_abs, this->_division_min);
+              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -597,28 +600,31 @@ private:
       R = this->_House * R * this->_House;
     }
 
-    this->_Hessen = convert_matrix_real_to_complex(R);
+    this->_Hessen = Base::Matrix::convert_matrix_real_to_complex(R);
   }
 
-  void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
-                         Matrix<Complex<T>, M, M> &R,
-                         const Matrix<Complex<T>, M, M> &A) {
+  inline void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
+                                Matrix<Complex<T>, M, M> &R,
+                                const Matrix<Complex<T>, M, M> &A) {
     R = A;
     std::array<Complex<T>, M> u;
 
     for (std::size_t k = 0; k < M - 1; ++k) {
       T x_abs = static_cast<T>(0);
       for (std::size_t i = k; i < k + 2; ++i) {
-        x_abs += complex_abs_sq(R(i, k));
+        x_abs += Base::Matrix::complex_abs_sq(R(i, k));
       }
-      if (near_zero(x_abs, this->_division_min)) {
+      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = std::sqrt(x_abs);
+      x_abs = Base::Math::sqrt_base_math<
+          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k] = R(k, k) + complex_sign(R(k, k), this->_division_min) * x_abs;
+      u[k] = R(k, k) +
+             Base::Matrix::complex_sign(R(k, k), this->_division_min) * x_abs;
       u[k + 1] = R(k + 1, k);
-      T u_abs = complex_abs_sq(u[k]) + complex_abs_sq(u[k + 1]);
+      T u_abs = Base::Matrix::complex_abs_sq(u[k]) +
+                Base::Matrix::complex_abs_sq(u[k + 1]);
 
       std::fill(this->_House_comp.values.begin(),
                 this->_House_comp.values.end(), Complex<T>());
@@ -646,8 +652,9 @@ private:
           }
 
           this->_House_comp.values[H_value_count] -=
-              static_cast<T>(2) * (u[i] * complex_conjugate(u[j])) /
-              avoid_zero_divide(u_abs, this->_division_min);
+              static_cast<T>(2) *
+              (u[i] * Base::Matrix::complex_conjugate(u[j])) /
+              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House_comp.row_indices[H_value_count] = j;
           H_value_count++;
@@ -668,7 +675,7 @@ private:
     }
   }
 
-  Complex<T> _wilkinson_shift(const Matrix<Complex<T>, M, M> &A) {
+  inline Complex<T> _wilkinson_shift(const Matrix<Complex<T>, M, M> &A) {
     Complex<T> a11 = A(M - 2, M - 2);
     Complex<T> a12 = A(M - 2, M - 1);
     Complex<T> a21 = A(M - 1, M - 2);
@@ -676,25 +683,26 @@ private:
     Complex<T> c1 = a11 + a22;
 
     Complex<T> c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    Complex<T> c2 = complex_sqrt(c2_2);
+    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2);
 
     Complex<T> mu1 = static_cast<T>(0.5) * (c1 + c2);
     Complex<T> mu2 = static_cast<T>(0.5) * (c1 - c2);
 
-    if (complex_abs(a22 - mu1) <= complex_abs(a22 - mu2)) {
+    if (Base::Matrix::complex_abs(a22 - mu1) <=
+        Base::Matrix::complex_abs(a22 - mu2)) {
       return mu1;
     } else {
       return mu2;
     }
   }
 
-  void _solve_with_qr_method(const Matrix<T, M, M> &A0) {
+  inline void _solve_with_qr_method(const Matrix<T, M, M> &A0) {
     this->_hessenberg(A0);
 
     this->_continue_solving_values_with_qr_method();
   }
 
-  void _continue_solving_values_with_qr_method(void) {
+  inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
       Matrix<Complex<T>, M, M> A = this->_Hessen;
 
@@ -707,13 +715,13 @@ private:
         Matrix<Complex<T>, M, M> Q = Matrix<Complex<T>, M, M>::identity();
         Matrix<Complex<T>, M, M> R;
         this->_qr_decomposition(Q, R, A);
-        A = matrix_multiply_Upper_triangular_A_mul_B(R, Q);
+        A = Base::Matrix::matrix_multiply_Upper_triangular_A_mul_B(R, Q);
 
         for (std::size_t i = 0; i < k; ++i) {
           A(i, i) += mu;
         }
 
-        if (complex_abs(A(k - 1, k - 2)) < this->_division_min) {
+        if (Base::Matrix::complex_abs(A(k - 1, k - 2)) < this->_division_min) {
           break;
         }
       }
@@ -726,12 +734,13 @@ private:
     }
   }
 
-  void
+  inline void
   _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
 
     for (std::size_t k = 0; k < M; ++k) {
       // A - mu * I
-      Matrix<Complex<T>, M, M> A = convert_matrix_real_to_complex(matrix);
+      Matrix<Complex<T>, M, M> A =
+          Base::Matrix::convert_matrix_real_to_complex(matrix);
 
       Complex<T> mu = this->_eigen_values[k] + this->_small_value;
       for (std::size_t i = 0; i < M; ++i) {
@@ -746,23 +755,19 @@ private:
            ++iter) {
         Vector<Complex<T>, M> x_old = x;
 
-        x = complex_gmres_k(A, x_old, x, this->_gmres_k_decay_rate,
-                            this->_division_min, this->_gmres_k_rho,
-                            this->_gmres_k_rep_num);
+        x = Base::Matrix::complex_gmres_k(
+            A, x_old, x, this->_gmres_k_decay_rate, this->_division_min,
+            this->_gmres_k_rho, this->_gmres_k_rep_num);
 
-        // normalization
-        T norm_inv =
-            static_cast<T>(1) /
-            avoid_zero_divide(complex_vector_norm(x), this->_division_min);
-        for (std::size_t i = 0; i < M; ++i) {
-          x[i] *= norm_inv;
-        }
+        Base::Matrix::complex_vector_normalize(x, this->_division_min);
 
         // conversion check
         bool converged = true;
         for (std::size_t i = 0; i < M; ++i) {
-          if (std::abs(std::abs(x[i].real) - std::abs(x_old[i].real)) +
-                  std::abs(std::abs(x[i].imag) - std::abs(x_old[i].imag)) >
+          if (Base::Math::abs(Base::Math::abs(x[i].real) -
+                              Base::Math::abs(x_old[i].real)) +
+                  Base::Math::abs(Base::Math::abs(x[i].imag) -
+                                  Base::Math::abs(x_old[i].imag)) >
               this->_division_min) {
             converged = false;
             break;

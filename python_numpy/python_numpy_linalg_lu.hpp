@@ -4,6 +4,7 @@
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_templates.hpp"
+
 #include <cstddef>
 
 namespace PythonNumpy {
@@ -49,25 +50,25 @@ public:
   }
 
   /* Solve function */
-  void solve(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve(const Matrix<DefDense, T, M, M> &A) {
     this->_LU_decomposer =
         Base::Matrix::LUDecomposition<T, M>(A.matrix, this->_division_min);
   }
 
-  void solve(const Matrix<DefDiag, T, M> &A) {
+  inline void solve(const Matrix<DefDiag, T, M> &A) {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<T, M>(A.matrix);
   }
 
-  void solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
+  inline void solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<T, M>(
         A.matrix.create_dense(), this->_division_min);
   }
 
   /* Get */
-  auto get_L() -> Matrix<DefSparse, T, M, M,
-                         CreateSparseAvailableFromIndicesAndPointers<
-                             M, LowerTriangularRowIndices<M, M>,
-                             LowerTriangularRowPointers<M, M>>> const {
+  inline auto get_L() -> Matrix<DefSparse, T, M, M,
+                                CreateSparseAvailableFromIndicesAndPointers<
+                                    M, LowerTriangularRowIndices<M, M>,
+                                    LowerTriangularRowPointers<M, M>>> const {
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_lower(
         this->_L_triangular, this->_LU_decomposer.get_L());
@@ -78,10 +79,10 @@ public:
                       LowerTriangularRowPointers<M, M>>>(this->_L_triangular);
   }
 
-  auto get_U() -> Matrix<DefSparse, T, M, M,
-                         CreateSparseAvailableFromIndicesAndPointers<
-                             M, UpperTriangularRowIndices<M, M>,
-                             UpperTriangularRowPointers<M, M>>> const {
+  inline auto get_U() -> Matrix<DefSparse, T, M, M,
+                                CreateSparseAvailableFromIndicesAndPointers<
+                                    M, UpperTriangularRowIndices<M, M>,
+                                    UpperTriangularRowPointers<M, M>>> const {
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_upper(
         this->_U_triangular, this->_LU_decomposer.get_U());
@@ -92,7 +93,7 @@ public:
                       UpperTriangularRowPointers<M, M>>>(this->_U_triangular);
   }
 
-  T get_det() { return this->_LU_decomposer.get_determinant(); }
+  inline T get_det() { return this->_LU_decomposer.get_determinant(); }
 
 private:
   /* Variable */
@@ -112,7 +113,7 @@ private:
 /* make LinalgSolverLU */
 template <typename T, std::size_t M,
           typename SparseAvailable = SparseAvailable_NoUse>
-auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
+inline auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverLU<T, M, SparseAvailable> {
 
   return LinalgSolverLU<T, M, SparseAvailable>(A);
@@ -120,14 +121,15 @@ auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
 
 template <typename T, std::size_t M,
           typename SparseAvailable = SparseAvailable_NoUse>
-auto make_LinalgSolverLU(const Matrix<DefDiag, T, M> &A)
+inline auto make_LinalgSolverLU(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverLU<T, M, SparseAvailable> {
 
   return LinalgSolverLU<T, M, SparseAvailable>(A);
 }
 
 template <typename T, std::size_t M, typename SparseAvailable>
-auto make_LinalgSolverLU(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
+inline auto
+make_LinalgSolverLU(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
     -> LinalgSolverLU<T, M, SparseAvailable> {
 
   return LinalgSolverLU<T, M, SparseAvailable>(A);

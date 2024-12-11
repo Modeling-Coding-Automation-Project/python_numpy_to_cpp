@@ -1,8 +1,9 @@
 #ifndef BASE_MATRIX_COMPLEX_HPP
 #define BASE_MATRIX_COMPLEX_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_utility.hpp"
-#include <cmath>
+
 #include <cstddef>
 #include <utility>
 
@@ -41,7 +42,7 @@ public:
   }
 
   /* Method */
-  Complex<T> operator+(const Complex<T> &a_comp) const {
+  inline Complex<T> operator+(const Complex<T> &a_comp) const {
     Complex<T> result;
 
     result.real = this->real + a_comp.real;
@@ -50,7 +51,7 @@ public:
     return result;
   }
 
-  Complex<T> operator-(const Complex<T> &a_comp) const {
+  inline Complex<T> operator-(const Complex<T> &a_comp) const {
     Complex<T> result;
 
     result.real = this->real - a_comp.real;
@@ -59,7 +60,7 @@ public:
     return result;
   }
 
-  Complex<T> operator-(void) const {
+  inline Complex<T> operator-(void) const {
     Complex<T> result;
 
     result.real = -this->real;
@@ -68,7 +69,7 @@ public:
     return result;
   }
 
-  Complex<T> operator*(const Complex<T> &a_comp) const {
+  inline Complex<T> operator*(const Complex<T> &a_comp) const {
     Complex<T> result;
 
     result.real = this->real * a_comp.real - this->imag * a_comp.imag;
@@ -77,26 +78,26 @@ public:
     return result;
   }
 
-  void operator+=(const T &a) { this->real += a; }
+  inline void operator+=(const T &a) { this->real += a; }
 
-  void operator-=(const T &a) { this->real -= a; }
+  inline void operator-=(const T &a) { this->real -= a; }
 
-  void operator*=(const T &a) {
+  inline void operator*=(const T &a) {
     this->real *= a;
     this->imag *= a;
   }
 
-  void operator+=(const Complex<T> &a_comp) {
+  inline void operator+=(const Complex<T> &a_comp) {
     this->real += a_comp.real;
     this->imag += a_comp.imag;
   }
 
-  void operator-=(const Complex<T> &a_comp) {
+  inline void operator-=(const Complex<T> &a_comp) {
     this->real -= a_comp.real;
     this->imag -= a_comp.imag;
   }
 
-  void operator*=(const Complex<T> &a_comp) {
+  inline void operator*=(const Complex<T> &a_comp) {
 
     T real_temp = this->real * a_comp.real - this->imag * a_comp.imag;
     T imag_temp = this->real * a_comp.imag + this->imag * a_comp.real;
@@ -111,7 +112,8 @@ public:
 };
 
 /* Scalar */
-template <typename T> Complex<T> operator+(const Complex<T> &a_comp, T b) {
+template <typename T>
+inline Complex<T> operator+(const Complex<T> &a_comp, T b) {
   Complex<T> result;
 
   result.real = a_comp.real + b;
@@ -120,7 +122,8 @@ template <typename T> Complex<T> operator+(const Complex<T> &a_comp, T b) {
   return result;
 }
 
-template <typename T> Complex<T> operator+(T b, const Complex<T> &a_comp) {
+template <typename T>
+inline Complex<T> operator+(T b, const Complex<T> &a_comp) {
   Complex<T> result;
 
   result.real = b + a_comp.real;
@@ -129,7 +132,8 @@ template <typename T> Complex<T> operator+(T b, const Complex<T> &a_comp) {
   return result;
 }
 
-template <typename T> Complex<T> operator-(const Complex<T> &a_comp, T b) {
+template <typename T>
+inline Complex<T> operator-(const Complex<T> &a_comp, T b) {
   Complex<T> result;
 
   result.real = a_comp.real - b;
@@ -138,7 +142,8 @@ template <typename T> Complex<T> operator-(const Complex<T> &a_comp, T b) {
   return result;
 }
 
-template <typename T> Complex<T> operator-(T b, const Complex<T> &a_comp) {
+template <typename T>
+inline Complex<T> operator-(T b, const Complex<T> &a_comp) {
   Complex<T> result;
 
   result.real = b - a_comp.real;
@@ -147,7 +152,8 @@ template <typename T> Complex<T> operator-(T b, const Complex<T> &a_comp) {
   return result;
 }
 
-template <typename T> Complex<T> operator*(const Complex<T> &a_comp, T b) {
+template <typename T>
+inline Complex<T> operator*(const Complex<T> &a_comp, T b) {
   Complex<T> result;
 
   result.real = a_comp.real * b;
@@ -156,7 +162,8 @@ template <typename T> Complex<T> operator*(const Complex<T> &a_comp, T b) {
   return result;
 }
 
-template <typename T> Complex<T> operator*(T b, const Complex<T> &a_comp) {
+template <typename T>
+inline Complex<T> operator*(T b, const Complex<T> &a_comp) {
   Complex<T> result;
 
   result.real = b * a_comp.real;
@@ -165,7 +172,8 @@ template <typename T> Complex<T> operator*(T b, const Complex<T> &a_comp) {
   return result;
 }
 
-template <typename T> Complex<T> operator/(const Complex<T> &a_comp, T b) {
+template <typename T>
+inline Complex<T> operator/(const Complex<T> &a_comp, T b) {
   Complex<T> result;
 
   result.real = a_comp.real / b;
@@ -176,11 +184,11 @@ template <typename T> Complex<T> operator/(const Complex<T> &a_comp, T b) {
 
 /* complex functions */
 template <typename T>
-Complex<T> complex_divide(const Complex<T> &a_comp, const Complex<T> &b_comp,
-                          T division_min) {
+inline Complex<T> complex_divide(const Complex<T> &a_comp,
+                                 const Complex<T> &b_comp, T division_min) {
   Complex<T> result;
 
-  T denominator = avoid_zero_divide(
+  T denominator = Base::Matrix::avoid_zero_divide(
       b_comp.real * b_comp.real + b_comp.imag * b_comp.imag, division_min);
 
   result.real =
@@ -192,10 +200,11 @@ Complex<T> complex_divide(const Complex<T> &a_comp, const Complex<T> &b_comp,
 }
 
 template <typename T>
-Complex<T> complex_divide(T a, const Complex<T> &b_comp, T division_min) {
+inline Complex<T> complex_divide(T a, const Complex<T> &b_comp,
+                                 T division_min) {
   Complex<T> result;
 
-  T denominator = avoid_zero_divide(
+  T denominator = Base::Matrix::avoid_zero_divide(
       b_comp.real * b_comp.real + b_comp.imag * b_comp.imag, division_min);
 
   result.real = (a * b_comp.real) / denominator;
@@ -204,15 +213,17 @@ Complex<T> complex_divide(T a, const Complex<T> &b_comp, T division_min) {
   return result;
 }
 
-template <typename T> T complex_abs(const Complex<T> &a_comp) {
+template <typename T> inline T complex_abs(const Complex<T> &a_comp) {
   T result;
 
-  result = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  result = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
   return result;
 }
 
-template <typename T> T complex_abs_sq(const Complex<T> &a_comp) {
+template <typename T> inline T complex_abs_sq(const Complex<T> &a_comp) {
   T result;
 
   result = a_comp.real * a_comp.real + a_comp.imag * a_comp.imag;
@@ -220,15 +231,16 @@ template <typename T> T complex_abs_sq(const Complex<T> &a_comp) {
   return result;
 }
 
-template <typename T> T complex_phase(const Complex<T> &a_comp) {
+template <typename T> inline T complex_phase(const Complex<T> &a_comp) {
   T result;
 
-  result = std::atan2(a_comp.imag, a_comp.real);
+  result = Base::Math::atan2(a_comp.imag, a_comp.real);
 
   return result;
 }
 
-template <typename T> Complex<T> complex_conjugate(const Complex<T> &a_comp) {
+template <typename T>
+inline Complex<T> complex_conjugate(const Complex<T> &a_comp) {
   Complex<T> result;
 
   result.real = a_comp.real;
@@ -237,35 +249,40 @@ template <typename T> Complex<T> complex_conjugate(const Complex<T> &a_comp) {
   return result;
 }
 
-template <typename T> Complex<T> complex_sqrt(const Complex<T> &a_comp) {
+template <typename T> inline Complex<T> complex_sqrt(const Complex<T> &a_comp) {
   Complex<T> result;
 
-  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
-  result.real = std::sqrt((a_comp.real + a_abs) * static_cast<T>(0.5));
+  result.real = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>((a_comp.real + a_abs) *
+                                                         static_cast<T>(0.5));
 
   if (a_comp.imag >= 0) {
-    result.imag = std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5));
   } else {
-    result.imag = -std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = -Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5));
   }
 
   return result;
 }
 
 template <typename T>
-Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
+inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
   Complex<T> result;
 
-  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs_r = Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag, division_min);
 
-  if (a_abs >= division_min) {
-    result.real = a_comp.real / a_abs;
-    result.imag = a_comp.imag / a_abs;
-  } else {
-    result.real = static_cast<T>(0);
-    result.imag = static_cast<T>(0);
-  }
+  result.real = a_comp.real * a_abs_r;
+  result.imag = a_comp.imag * a_abs_r;
 
   return result;
 }

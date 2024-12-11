@@ -7,6 +7,7 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_templates.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
 #include <cstddef>
 #include <vector>
@@ -128,7 +129,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K>
-Matrix<T, M, K>
+inline Matrix<T, M, K>
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
@@ -148,8 +149,9 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE<T, M, N, RowIndices_A, RowPointers_A,
-                                        K>(A, B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE<T, M, N, RowIndices_A,
+                                                      RowPointers_A, K>(A, B,
+                                                                        Y);
 
 #endif
 
@@ -275,7 +277,7 @@ static inline void COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B, std::size_t K>
-Matrix<T, M, K>
+inline Matrix<T, M, K>
 operator*(const Matrix<T, M, N> &A,
           const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, M, K> Y;
@@ -293,8 +295,9 @@ operator*(const Matrix<T, M, N> &A,
 
 #else
 
-  COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE<T, M, N, RowIndices_B, RowPointers_B,
-                                        K>(A, B, Y);
+  Base::Matrix::COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE<T, M, N, RowIndices_B,
+                                                      RowPointers_B, K>(A, B,
+                                                                        Y);
 
 #endif
 
@@ -369,7 +372,7 @@ static inline void COMPILED_SPARSE_MATRIX_ADD_DENSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, N>
+inline Matrix<T, M, N>
 operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = B;
@@ -385,7 +388,8 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
+                                                 RowPointers_A>(A, Y);
 
 #endif
 
@@ -395,7 +399,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 /* Dense Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, N>
+inline Matrix<T, M, N>
 operator+(const Matrix<T, M, N> &B,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
   Matrix<T, M, N> Y = B;
@@ -411,7 +415,8 @@ operator+(const Matrix<T, M, N> &B,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
+                                                 RowPointers_A>(A, Y);
 
 #endif
 
@@ -427,9 +432,10 @@ struct SparseMatrixAddSparseLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
-    set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
-        Y, get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) +
-               A.values[Start]);
+    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+        Y,
+        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) +
+            A.values[Start]);
     SparseMatrixAddSparseLoop<T, M, N, RowIndices_A, RowPointers_A,
                               RowIndices_Y, RowPointers_Y, J, K, Start + 1,
                               End>::compute(A, Y);
@@ -497,7 +503,7 @@ struct SetDiagMatrixToValuesSparseMatrix {
   static void
   apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
-    set_sparse_matrix_value<I, I>(Y, B[I]);
+    Base::Matrix::set_sparse_matrix_value<I, I>(Y, B[I]);
     SetDiagMatrixToValuesSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y,
                                       I - 1>::apply(Y, B);
   }
@@ -510,7 +516,7 @@ struct SetDiagMatrixToValuesSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y,
   static void
   apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
-    set_sparse_matrix_value<0, 0>(Y, B[0]);
+    Base::Matrix::set_sparse_matrix_value<0, 0>(Y, B[0]);
   }
 };
 
@@ -525,9 +531,9 @@ static inline void SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto operator+(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const DiagMatrix<T, M> &B)
+inline auto
+operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
         T, M, M,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -571,11 +577,11 @@ auto operator+(
 
 #else
 
-  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
-      Y, B);
+  Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
+                                                        RowPointers_Y>(Y, B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                    RowIndices_Y, RowPointers_Y>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
@@ -585,9 +591,9 @@ auto operator+(
 /* Diag Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto operator+(
-    const DiagMatrix<T, M> &B,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
+inline auto
+operator+(const DiagMatrix<T, M> &B,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
     -> CompiledSparseMatrix<
         T, M, M,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -631,11 +637,11 @@ auto operator+(
 
 #else
 
-  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
-      Y, B);
+  Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
+                                                        RowPointers_Y>(Y, B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                    RowIndices_Y, RowPointers_Y>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
@@ -645,9 +651,9 @@ auto operator+(
 /* Sparse Matrix add Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
-auto operator+(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+inline auto
+operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
         T, M, N,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -694,10 +700,10 @@ auto operator+(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                    RowIndices_Y, RowPointers_Y>(A, Y);
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_B, RowPointers_B,
-                                    RowIndices_Y, RowPointers_Y>(B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_B, RowPointers_B, RowIndices_Y, RowPointers_Y>(B, Y);
 
 #endif
 
@@ -707,7 +713,7 @@ auto operator+(
 /* Sparse Matrix subtract Dense Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, N>
+inline Matrix<T, M, N>
 operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = -B;
@@ -723,7 +729,8 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
+                                                 RowPointers_A>(A, Y);
 
 #endif
 
@@ -798,7 +805,7 @@ static inline void COMPILED_SPARSE_MATRIX_SUB_DENSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Matrix<T, M, N>
+inline Matrix<T, M, N>
 operator-(const Matrix<T, M, N> &B,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
   Matrix<T, M, N> Y = B;
@@ -814,7 +821,8 @@ operator-(const Matrix<T, M, N> &B,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_SUB_DENSE<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_DENSE<T, M, N, RowIndices_A,
+                                                 RowPointers_A>(A, Y);
 
 #endif
 
@@ -824,9 +832,9 @@ operator-(const Matrix<T, M, N> &B,
 /* Sparse Matrix subtract Diag Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto operator-(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const DiagMatrix<T, M> &B)
+inline auto
+operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, M> &B)
     -> CompiledSparseMatrix<
         T, M, M,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -870,11 +878,11 @@ auto operator-(
 
 #else
 
-  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
-      Y, -B);
+  Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
+                                                        RowPointers_Y>(Y, -B);
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                    RowIndices_Y, RowPointers_Y>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
 #endif
 
@@ -890,9 +898,10 @@ struct SparseMatrixSubDiagLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
-    set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
-        Y, get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
-               A.values[Start]);
+    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+        Y,
+        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
+            A.values[Start]);
     SparseMatrixSubDiagLoop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y,
                             RowPointers_Y, J, K, Start + 1, End>::compute(A, Y);
   }
@@ -954,9 +963,9 @@ static inline void COMPILED_SPARSE_MATRIX_SUB_DIAG(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto operator-(
-    const DiagMatrix<T, M> &B,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
+inline auto
+operator-(const DiagMatrix<T, M> &B,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
     -> CompiledSparseMatrix<
         T, M, M,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -1000,10 +1009,11 @@ auto operator-(
 
 #else
 
-  SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y, RowPointers_Y>(
-      Y, B);
+  Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
+                                                        RowPointers_Y>(Y, B);
 
-  COMPILED_SPARSE_MATRIX_SUB_DIAG<T, M, N, RowIndices_A, RowPointers_A>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_DIAG<T, M, N, RowIndices_A,
+                                                RowPointers_A>(A, Y);
 
 #endif
 
@@ -1019,9 +1029,10 @@ struct SparseMatrixSubSparseLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
-    set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
-        Y, get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
-               A.values[Start]);
+    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+        Y,
+        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
+            A.values[Start]);
     SparseMatrixSubSparseLoop<T, M, N, RowIndices_A, RowPointers_A,
                               RowIndices_Y, RowPointers_Y, J, K, Start + 1,
                               End>::compute(A, Y);
@@ -1084,9 +1095,9 @@ static inline void COMPILED_SPARSE_MATRIX_SUB_SPARSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
-auto operator-(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+inline auto
+operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
         T, M, N,
         RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
@@ -1133,10 +1144,10 @@ auto operator-(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_ADD_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                    RowIndices_Y, RowPointers_Y>(A, Y);
-  COMPILED_SPARSE_MATRIX_SUB_SPARSE<T, M, N, RowIndices_B, RowPointers_B,
-                                    RowIndices_Y, RowPointers_Y>(B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_SPARSE<
+      T, M, N, RowIndices_B, RowPointers_B, RowIndices_Y, RowPointers_Y>(B, Y);
 
 #endif
 
@@ -1186,7 +1197,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
+inline CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &scalar) {
   CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
@@ -1199,8 +1210,9 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A, RowPointers_A>(
-      A, scalar, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A,
+                                                       RowPointers_A>(A, scalar,
+                                                                      Y);
 
 #endif
 
@@ -1210,7 +1222,7 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 /* Scalar multiply Sparse Matrix */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
+inline CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
 operator*(const T &scalar,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
   CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
@@ -1223,8 +1235,9 @@ operator*(const T &scalar,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A, RowPointers_A>(
-      A, scalar, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A,
+                                                       RowPointers_A>(A, scalar,
+                                                                      Y);
 
 #endif
 
@@ -1314,7 +1327,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-Vector<T, M>
+inline Vector<T, M>
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Vector<T, N> &b) {
   Vector<T, M> y;
@@ -1332,8 +1345,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR<T, M, N, RowIndices_A, RowPointers_A>(
-      A, b, y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR<T, M, N, RowIndices_A,
+                                                       RowPointers_A>(A, b, y);
 
 #endif
 
@@ -1414,7 +1427,7 @@ static inline void COMPILED_COLVECTOR_MULTIPLY_SPARSE(
 
 template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-ColVector<T, K> colVector_a_mul_SparseB(
+inline ColVector<T, K> colVector_a_mul_SparseB(
     const ColVector<T, N> &a,
     const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
   ColVector<T, K> y;
@@ -1430,8 +1443,8 @@ ColVector<T, K> colVector_a_mul_SparseB(
 
 #else
 
-  COMPILED_COLVECTOR_MULTIPLY_SPARSE<T, N, K, RowIndices_B, RowPointers_B>(a, B,
-                                                                           y);
+  Base::Matrix::COMPILED_COLVECTOR_MULTIPLY_SPARSE<T, N, K, RowIndices_B,
+                                                   RowPointers_B>(a, B, y);
 
 #endif
 
@@ -1563,7 +1576,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE_TRANSPOSE(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K>
-Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
+inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
@@ -1583,8 +1596,8 @@ Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE_TRANSPOSE<T, M, N, RowIndices_A,
-                                                  RowPointers_A, K>(A, B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE_TRANSPOSE<
+      T, M, N, RowIndices_A, RowPointers_A, K>(A, B, Y);
 
 #endif
 
@@ -1602,8 +1615,8 @@ struct SparseMatrixMultiplySparseInnerLoop {
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
           CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
-    set_sparse_matrix_value<J, RowIndices_B::list[L]>(
-        Y, get_sparse_matrix_value<J, RowIndices_B::list[L]>(Y) +
+    Base::Matrix::set_sparse_matrix_value<J, RowIndices_B::list[L]>(
+        Y, Base::Matrix::get_sparse_matrix_value<J, RowIndices_B::list[L]>(Y) +
                A.values[Start] * B.values[L]);
     SparseMatrixMultiplySparseInnerLoop<
         T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
@@ -1754,9 +1767,9 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE(
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-auto operator*(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B)
+inline auto
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<
         T, M, K,
         RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiply<
@@ -1807,9 +1820,9 @@ auto operator*(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE<T, M, N, RowIndices_A, RowPointers_A,
-                                         K, RowIndices_B, RowPointers_B,
-                                         RowIndices_Y, RowPointers_Y>(A, B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B,
+      RowIndices_Y, RowPointers_Y>(A, B, Y);
 
 #endif
 
@@ -1974,7 +1987,7 @@ static inline void COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE(
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
+inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
     const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, M, K> Y;
@@ -1994,7 +2007,7 @@ Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE<
+  Base::Matrix::COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B>(
       A, B, Y);
 
@@ -2221,7 +2234,7 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE(
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
+inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, M, K> Y;
@@ -2244,7 +2257,7 @@ Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<
       T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B>(
       A, B, Y);
 
@@ -2327,9 +2340,9 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-auto operator*(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const DiagMatrix<T, N> &B)
+inline auto
+operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, N> &B)
     -> CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> {
 
   CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y;
@@ -2345,8 +2358,8 @@ auto operator*(
 
 #else
 
-  COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG<T, M, N, RowIndices_A, RowPointers_A>(
-      A, B, Y);
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG<T, M, N, RowIndices_A,
+                                                     RowPointers_A>(A, B, Y);
 
 #endif
 
@@ -2427,9 +2440,9 @@ static inline void DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX(
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-auto operator*(
-    const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B)
+inline auto
+operator*(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B)
     -> CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> {
 
   CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> Y;
@@ -2445,8 +2458,8 @@ auto operator*(
 
 #else
 
-  DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX<T, M, K, RowIndices_B, RowPointers_B>(
-      A, B, Y);
+  Base::Matrix::DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX<T, M, K, RowIndices_B,
+                                                     RowPointers_B>(A, B, Y);
 
 #endif
 
@@ -2572,7 +2585,7 @@ static inline void COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE(
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
+inline Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, K, M> Y;
@@ -2592,8 +2605,8 @@ Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
 
 #else
 
-  COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE<T, M, K, RowIndices_B,
-                                                 RowPointers_B>(A, B, Y);
+  Base::Matrix::COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE<
+      T, M, K, RowIndices_B, RowPointers_B>(A, B, Y);
 
 #endif
 
@@ -2733,7 +2746,7 @@ static inline void COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
-Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
+inline Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, N, K> Y;
@@ -2753,8 +2766,8 @@ Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
 
 #else
 
-  COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<T, M, N, RowIndices_B,
-                                                  RowPointers_B, K>(A, B, Y);
+  Base::Matrix::COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<
+      T, M, N, RowIndices_B, RowPointers_B, K>(A, B, Y);
 
 #endif
 
@@ -2878,7 +2891,7 @@ static inline void COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
-Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
+inline Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
     const Matrix<T, N, M> &A,
     const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
   Matrix<T, M, K> Y;
@@ -2896,8 +2909,8 @@ Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
 
 #else
 
-  COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE<T, M, N, K, RowIndices_B,
-                                                  RowPointers_B>(A, B, Y);
+  Base::Matrix::COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE<
+      T, M, N, K, RowIndices_B, RowPointers_B>(A, B, Y);
 
 #endif
 
@@ -3027,7 +3040,7 @@ static inline void COMPILED_SPARSE_TRANSPOSE_MATRIX_MULTIPLY_DENSE(
 
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
-Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
+inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
     const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
@@ -3045,8 +3058,8 @@ Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
 
 #else
 
-  COMPILED_SPARSE_TRANSPOSE_MATRIX_MULTIPLY_DENSE<T, N, M, RowIndices_A,
-                                                  RowPointers_A, K>(A, B, Y);
+  Base::Matrix::COMPILED_SPARSE_TRANSPOSE_MATRIX_MULTIPLY_DENSE<
+      T, N, M, RowIndices_A, RowPointers_A, K>(A, B, Y);
 
 #endif
 
