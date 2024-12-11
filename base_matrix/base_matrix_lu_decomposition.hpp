@@ -58,21 +58,21 @@ public:
   }
 
   /* Function */
-  Matrix<T, M, M> get_L() const { return _Lower; }
+  inline Matrix<T, M, M> get_L() const { return _Lower; }
 
-  Matrix<T, M, M> get_U() const { return _Upper; }
+  inline Matrix<T, M, M> get_U() const { return _Upper; }
 
-  Vector<T, M> solve(const Vector<T, M> &b) const {
+  inline Vector<T, M> solve(const Vector<T, M> &b) const {
     Vector<T, M> b_p;
     for (std::size_t i = 0; i < M; i++) {
       b_p[i] = b[this->_pivot_index_vec[i]];
     }
 
-    Vector<T, M> y = _forward_substitution(b_p);
-    return _backward_substitution(y);
+    Vector<T, M> y = this->_forward_substitution(b_p);
+    return this->_backward_substitution(y);
   }
 
-  T get_determinant() const {
+  inline T get_determinant() const {
     T det = static_cast<T>(1);
 
     for (std::size_t i = 0; i < M; i++) {
@@ -90,7 +90,7 @@ private:
   T _division_min;
 
   /* Function */
-  void _decompose(const Matrix<T, M, M> &matrix) {
+  inline void _decompose(const Matrix<T, M, M> &matrix) {
     this->_Lower = Matrix<T, M, M>();
     this->_Upper = matrix;
 
@@ -102,7 +102,7 @@ private:
       this->_Lower(i, i) = 1;
 
       // Pivoting
-      if (near_zero(this->_Upper(i, i), this->_division_min)) {
+      if (Base::Matrix::near_zero(this->_Upper(i, i), this->_division_min)) {
         std::size_t maxRow = i;
         T maxVal = Base::Math::abs(this->_Upper(i, i));
         for (std::size_t k = i + 1; k < M; ++k) {
@@ -113,15 +113,17 @@ private:
           }
         }
         if (maxRow != i) {
-          swap_value(this->_pivot_index_vec[i], this->_pivot_index_vec[maxRow]);
-          matrix_col_swap(i, maxRow, this->_Upper);
-          matrix_col_swap(i, maxRow, this->_Lower);
+          Base::Matrix::swap_value(this->_pivot_index_vec[i],
+                                   this->_pivot_index_vec[maxRow]);
+          Base::Matrix::matrix_col_swap(i, maxRow, this->_Upper);
+          Base::Matrix::matrix_col_swap(i, maxRow, this->_Lower);
         }
       }
 
       for (std::size_t j = i + 1; j < M; ++j) {
         T factor = this->_Upper(j, i) /
-                   avoid_zero_divide(this->_Upper(i, i), this->_division_min);
+                   Base::Matrix::avoid_zero_divide(this->_Upper(i, i),
+                                                   this->_division_min);
         this->_Lower(j, i) = factor;
         for (std::size_t k = i; k < M; ++k) {
           this->_Upper(j, k) -= factor * this->_Upper(i, k);
@@ -130,7 +132,7 @@ private:
     }
   }
 
-  Vector<T, M> _forward_substitution(const Vector<T, M> &b) const {
+  inline Vector<T, M> _forward_substitution(const Vector<T, M> &b) const {
     Vector<T, M> y;
     for (std::size_t i = 0; i < M; ++i) {
       T sum = b[i];
@@ -142,14 +144,15 @@ private:
     return y;
   }
 
-  Vector<T, M> _backward_substitution(const Vector<T, M> &y) const {
+  inline Vector<T, M> _backward_substitution(const Vector<T, M> &y) const {
     Vector<T, M> x;
     for (std::size_t i = M; i-- > 0;) {
       T sum = y[i];
       for (std::size_t j = i + 1; j < M; ++j) {
         sum -= this->_Upper(i, j) * x[j];
       }
-      x[i] = sum / avoid_zero_divide(this->_Upper(i, i), this->_division_min);
+      x[i] = sum / Base::Matrix::avoid_zero_divide(this->_Upper(i, i),
+                                                   this->_division_min);
     }
     return x;
   }
