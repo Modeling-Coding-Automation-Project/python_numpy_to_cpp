@@ -24,7 +24,9 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
 
   if (Base::Math::abs(R_matrix(i, j)) > Base::Math::abs(R_matrix(j, j))) {
     T t = -R_matrix(j, j) / avoid_zero_divide(R_matrix(i, j), division_min);
-    s = static_cast<T>(1) / Base::Math::sqrt(static_cast<T>(1) + t * t);
+    s = Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        static_cast<T>(1) + t * t, division_min);
     c = s * t;
 
     for (std::size_t k = j; k < N; ++k) {
@@ -42,7 +44,9 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
     }
   } else {
     T t = -R_matrix(i, j) / avoid_zero_divide(R_matrix(j, j), division_min);
-    c = static_cast<T>(1) / Base::Math::sqrt(static_cast<T>(1) + t * t);
+    c = Base::Math::rsqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        static_cast<T>(1) + t * t, division_min);
     s = c * t;
 
     for (std::size_t k = j; k < N; ++k) {

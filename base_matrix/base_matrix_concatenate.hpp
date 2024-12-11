@@ -7,6 +7,7 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_templates.hpp"
+
 #include <cstddef>
 #include <tuple>
 

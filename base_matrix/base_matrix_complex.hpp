@@ -1,8 +1,9 @@
 #ifndef BASE_MATRIX_COMPLEX_HPP
 #define BASE_MATRIX_COMPLEX_HPP
 
+#include "base_math.hpp"
 #include "base_matrix_utility.hpp"
-#include <cmath>
+
 #include <cstddef>
 #include <utility>
 
@@ -207,7 +208,9 @@ Complex<T> complex_divide(T a, const Complex<T> &b_comp, T division_min) {
 template <typename T> T complex_abs(const Complex<T> &a_comp) {
   T result;
 
-  result = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  result = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
   return result;
 }
@@ -240,14 +243,22 @@ template <typename T> Complex<T> complex_conjugate(const Complex<T> &a_comp) {
 template <typename T> Complex<T> complex_sqrt(const Complex<T> &a_comp) {
   Complex<T> result;
 
-  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
 
-  result.real = std::sqrt((a_comp.real + a_abs) * static_cast<T>(0.5));
+  result.real = Base::Math::sqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>((a_comp.real + a_abs) *
+                                                         static_cast<T>(0.5));
 
   if (a_comp.imag >= 0) {
-    result.imag = std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5));
   } else {
-    result.imag = -std::sqrt((-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag = -Base::Math::sqrt_base_math<
+        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5));
   }
 
   return result;
@@ -257,15 +268,12 @@ template <typename T>
 Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
   Complex<T> result;
 
-  T a_abs = std::sqrt(a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs_r = Base::Math::rsqrt_base_math<
+      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag, division_min);
 
-  if (a_abs >= division_min) {
-    result.real = a_comp.real / a_abs;
-    result.imag = a_comp.imag / a_abs;
-  } else {
-    result.real = static_cast<T>(0);
-    result.imag = static_cast<T>(0);
-  }
+  result.real = a_comp.real * a_abs_r;
+  result.imag = a_comp.imag * a_abs_r;
 
   return result;
 }

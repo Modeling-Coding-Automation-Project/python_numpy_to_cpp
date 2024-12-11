@@ -6,6 +6,7 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_templates.hpp"
 #include "base_matrix_vector.hpp"
+
 #include <array>
 #include <cstddef>
 #include <initializer_list>
