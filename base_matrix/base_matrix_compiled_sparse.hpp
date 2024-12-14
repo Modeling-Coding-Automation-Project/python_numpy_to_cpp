@@ -30,7 +30,7 @@ public:
 
   CompiledSparseMatrix(const std::vector<T> &values) : values(values) {}
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   CompiledSparseMatrix() : values{} {}
 
@@ -51,7 +51,7 @@ public:
     std::copy(values.begin(), values.end(), this->values.begin());
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   CompiledSparseMatrix(
@@ -87,9 +87,9 @@ public:
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, RowIndices::size> values;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 /* Output dense matrix */
@@ -183,12 +183,12 @@ inline Matrix<T, M, N> output_dense_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_OUTPUT_DENSE_MATRIX<T, M, N, RowIndices,
                                                     RowPointers>(mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -285,13 +285,13 @@ inline Matrix<T, N, M> output_transpose_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX<T, M, N, RowIndices,
                                                        RowPointers>(mat,
                                                                     result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -376,12 +376,12 @@ inline auto create_compiled_sparse(const Matrix<T, M, N> &A)
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE<
       T, M, N, DenseMatrixRowIndices<M, N>, DenseMatrixRowPointers<M, N>>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -593,13 +593,13 @@ inline void set_sparse_matrix_value(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_SET_MATRIX_VALUE<ColumnToSet, RowToSet, T, M, N,
                                                  RowIndices_A, RowPointers_A>(
       A, value);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 /* Get Sparse Matrix Value */
@@ -766,13 +766,13 @@ inline T get_sparse_matrix_value(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_GET_MATRIX_VALUE<ColumnToGet, RowToGet, T, M, N,
                                                  RowIndices_A, RowPointers_A>(
       A, value);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return value;
 }

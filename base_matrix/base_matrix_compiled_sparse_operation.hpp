@@ -147,13 +147,13 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE<T, M, N, RowIndices_A,
                                                       RowPointers_A, K>(A, B,
                                                                         Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -293,13 +293,13 @@ operator*(const Matrix<T, M, N> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE<T, M, N, RowIndices_B,
                                                       RowPointers_B, K>(A, B,
                                                                         Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -386,12 +386,12 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
                                                  RowPointers_A>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -413,12 +413,12 @@ operator+(const Matrix<T, M, N> &B,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
                                                  RowPointers_A>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -575,7 +575,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
                                                         RowPointers_Y>(Y, B);
@@ -583,7 +583,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -635,7 +635,7 @@ operator+(const DiagMatrix<T, M> &B,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
                                                         RowPointers_Y>(Y, B);
@@ -643,7 +643,7 @@ operator+(const DiagMatrix<T, M> &B,
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -698,14 +698,14 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_B, RowPointers_B, RowIndices_Y, RowPointers_Y>(B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -727,12 +727,12 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_DENSE<T, M, N, RowIndices_A,
                                                  RowPointers_A>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -819,12 +819,12 @@ operator-(const Matrix<T, M, N> &B,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_DENSE<T, M, N, RowIndices_A,
                                                  RowPointers_A>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -876,7 +876,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
                                                         RowPointers_Y>(Y, -B);
@@ -884,7 +884,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1007,7 +1007,7 @@ operator-(const DiagMatrix<T, M> &B,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX<T, M, N, RowIndices_Y,
                                                         RowPointers_Y>(Y, B);
@@ -1015,7 +1015,7 @@ operator-(const DiagMatrix<T, M> &B,
   Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_DIAG<T, M, N, RowIndices_A,
                                                 RowPointers_A>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1142,14 +1142,14 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
   Base::Matrix::COMPILED_SPARSE_MATRIX_SUB_SPARSE<
       T, M, N, RowIndices_B, RowPointers_B, RowIndices_Y, RowPointers_Y>(B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1208,13 +1208,13 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     Y.values[i] = scalar * A.values[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A,
                                                        RowPointers_A>(A, scalar,
                                                                       Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1233,13 +1233,13 @@ operator*(const T &scalar,
     Y.values[i] = scalar * A.values[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SCALAR<T, M, N, RowIndices_A,
                                                        RowPointers_A>(A, scalar,
                                                                       Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1343,12 +1343,12 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     y[j] = sum;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_VECTOR<T, M, N, RowIndices_A,
                                                        RowPointers_A>(A, b, y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return y;
 }
@@ -1441,12 +1441,12 @@ inline ColVector<T, K> colVector_a_mul_SparseB(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_COLVECTOR_MULTIPLY_SPARSE<T, N, K, RowIndices_B,
                                                    RowPointers_B>(a, B, y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return y;
 }
@@ -1594,12 +1594,12 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DENSE_TRANSPOSE<
       T, M, N, RowIndices_A, RowPointers_A, K>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -1818,13 +1818,13 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B,
       RowIndices_Y, RowPointers_Y>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2005,13 +2005,13 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_TRANSPOSE_MULTIPLY_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B>(
       A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2255,13 +2255,13 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<
       T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B, RowPointers_B>(
       A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2356,12 +2356,12 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_MULTIPLY_DIAG<T, M, N, RowIndices_A,
                                                      RowPointers_A>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2456,12 +2456,12 @@ operator*(const DiagMatrix<T, M> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::DIAG_MULTIPLY_COMPILED_SPARSE_MATRIX<T, M, K, RowIndices_B,
                                                      RowPointers_B>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2603,12 +2603,12 @@ inline Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE<
       T, M, K, RowIndices_B, RowPointers_B>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2764,12 +2764,12 @@ inline Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DENSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE<
       T, M, N, RowIndices_B, RowPointers_B, K>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -2907,12 +2907,12 @@ inline Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DENSE_TRANSPOSE_MATRIX_MULTIPLY_SPARSE<
       T, M, N, K, RowIndices_B, RowPointers_B>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -3056,12 +3056,12 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_TRANSPOSE_MATRIX_MULTIPLY_DENSE<
       T, N, M, RowIndices_A, RowPointers_A, K>(A, B, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }

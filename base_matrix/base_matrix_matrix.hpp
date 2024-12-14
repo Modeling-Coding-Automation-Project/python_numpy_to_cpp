@@ -49,7 +49,7 @@ public:
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   Matrix() : data{} {}
 
@@ -87,7 +87,7 @@ public:
     }
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   Matrix(const Matrix<T, M, N> &other) : data(other.data) {}
@@ -141,11 +141,11 @@ public:
       identity(i, i) = static_cast<T>(1);
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     COMPILED_MATRIX_IDENTITY<T, M>(identity);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     return identity;
   }
@@ -202,11 +202,11 @@ public:
       }
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     COMPILED_MATRIX_ONES<T, M, N>(Ones);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     return Ones;
   }
@@ -264,7 +264,7 @@ public:
     return this->data[row];
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   std::array<T, M> &operator()(std::size_t row) {
     if (row >= N) {
@@ -282,7 +282,7 @@ public:
     return this->data[row];
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   inline Matrix<T, N, M> transpose() const {
     return output_matrix_transpose(*this);
@@ -326,9 +326,9 @@ public:
 /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<std::vector<T>> data;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<std::array<T, M>, N> data;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 /* swap columns */
@@ -382,11 +382,11 @@ inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
     mat(col_2, i) = temp;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_COLUMN_SWAP<T, M, N>(col_1, col_2, mat, temp);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 /* swap rows */
@@ -436,11 +436,11 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
     trace += mat(i, i);
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   trace = Base::Matrix::COMPILED_MATRIX_TRACE<T, M, N>(mat);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return trace;
 }
@@ -505,11 +505,11 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_ADD_MATRIX<T, M, N>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -574,11 +574,11 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_SUB_MATRIX<T, M, N>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -636,11 +636,11 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_MINUS_MATRIX<T, M, N>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -706,11 +706,11 @@ inline Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -727,11 +727,11 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -798,11 +798,11 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
     result[i] = sum;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::BASE_MATRIX_MATRIX_MULTIPLY_VECTOR<T, M, N>(mat, vec, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -867,11 +867,11 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_VECTOR_MULTIPLY_MATRIX<T, L, M, N>(vec, mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -939,12 +939,12 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
     result[j] = sum;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX<T, M, N>(vec, mat,
                                                                 result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1034,11 +1034,11 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1097,11 +1097,11 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_TRANSPOSE<T, M, N>(mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1214,12 +1214,12 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY<T, M, K, N>(A, B,
                                                                       result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1317,11 +1317,11 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_T_MULTIPLY_MATRIX<T, M, K, N>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1392,12 +1392,12 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
     result[n] = sum;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::BASE_MATRIX_MATRIX_TRANSPOSE_MULTIPLY_VECTOR<T, M, N>(A, b,
                                                                       result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1497,12 +1497,12 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX<T, M, K, N>(A, B,
                                                                       result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -1571,12 +1571,12 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_REAL_TO_COMPLEX<T, M, N>(From_matrix,
                                                          To_matrix);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return To_matrix;
 }
@@ -1646,12 +1646,12 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_REAL_FROM_COMPLEX<T, M, N>(From_matrix,
                                                            To_matrix);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return To_matrix;
 }
@@ -1721,12 +1721,12 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_IMAG_FROM_COMPLEX<T, M, N>(From_matrix,
                                                            To_matrix);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return To_matrix;
 }
