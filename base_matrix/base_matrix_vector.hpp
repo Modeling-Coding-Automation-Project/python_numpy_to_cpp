@@ -88,11 +88,41 @@ public:
     return Vector<T, N>(std::vector<T>(N, static_cast<T>(1)));
   }
 
+  /* dot */
+  template <typename U, std::size_t P, std::size_t P_idx> struct VectorDotCore {
+    static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
+      return a[P_idx] * b[P_idx] +
+             VectorDotCore<U, P, P_idx - 1>::compute(a, b);
+    }
+  };
+
+  // Termination condition: P_idx == 0
+  template <typename U, std::size_t P> struct VectorDotCore<U, P, 0> {
+    static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
+      return a[0] * b[0];
+    }
+  };
+
+  template <typename U, std::size_t P>
+  static inline T VECTOR_DOT(const Vector<U, P> &a, const Vector<U, P> &b) {
+    return VectorDotCore<U, P, P - 1>::compute(a, b);
+  }
+
   inline T dot(const Vector<T, N> &other) const {
     T result = static_cast<T>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
     for (std::size_t i = 0; i < N; ++i) {
       result += this->data[i] * other[i];
     }
+
+#else
+
+    result = VECTOR_DOT<T, N>(*this, other);
+
+#endif
+
     return result;
   }
 
@@ -477,17 +507,17 @@ inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 /* Vector Multiply */
 template <typename T, std::size_t N, std::size_t N_idx>
 struct VectorMultiplyCore {
-  static void multiply(const Vector<T, N> &a, const Vector<T, N> &b,
-                       Vector<T, N> &result) {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
+                      Vector<T, N> &result) {
     result[N_idx] = a[N_idx] * b[N_idx];
-    VectorMultiplyCore<T, N, N_idx - 1>::multiply(a, b, result);
+    VectorMultiplyCore<T, N, N_idx - 1>::compute(a, b, result);
   }
 };
 
 // Termination condition: N_idx == 0
 template <typename T, std::size_t N> struct VectorMultiplyCore<T, N, 0> {
-  static void multiply(const Vector<T, N> &a, const Vector<T, N> &b,
-                       Vector<T, N> &result) {
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
+                      Vector<T, N> &result) {
     result[0] = a[0] * b[0];
   }
 };
@@ -495,7 +525,7 @@ template <typename T, std::size_t N> struct VectorMultiplyCore<T, N, 0> {
 template <typename T, std::size_t N>
 static inline void VECTOR_MULTIPLY(const Vector<T, N> &a, const Vector<T, N> &b,
                                    Vector<T, N> &result) {
-  VectorMultiplyCore<T, N, N - 1>::multiply(a, b, result);
+  VectorMultiplyCore<T, N, N - 1>::compute(a, b, result);
 }
 
 template <typename T, std::size_t N>
