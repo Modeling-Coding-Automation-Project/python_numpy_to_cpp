@@ -175,7 +175,7 @@ public:
   inline Vector<T, N> transpose() const {
     Vector<T, N> result;
 
-    std::copy(this->data.begin(), this->data.end(), result.data.begin());
+    Base::Utility::copy<T, 0, N, 0, N, N>(this->data, result.data);
 
     return result;
   }
