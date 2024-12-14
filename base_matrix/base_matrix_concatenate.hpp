@@ -53,8 +53,8 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t row = 0; row < N; row++) {
-    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
-    std::copy(B(row).begin(), B(row).end(), Y(row).begin() + M);
+    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
+    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[row], Y.data[row]);
   }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
