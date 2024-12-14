@@ -182,20 +182,56 @@ public:
 };
 
 /* Normalize */
+template <typename T, std::size_t N, std::size_t Index>
+struct VectorNormalizeCore {
+  static void compute(Vector<T, N> &vec, T norm_inv) {
+    vec[Index] *= norm_inv;
+    VectorNormalizeCore<T, N, Index - 1>::compute(vec, norm_inv);
+  }
+};
+
+// Specialization to end the recursion
+template <typename T, std::size_t N> struct VectorNormalizeCore<T, N, 0> {
+  static void compute(Vector<T, N> &vec, T norm_inv) { vec[0] *= norm_inv; }
+};
+
+template <typename T, std::size_t N>
+static inline void COMPILED_VECTOR_NORMALIZE(Vector<T, N> &vec, T norm_inv) {
+  VectorNormalizeCore<T, N, N - 1>::compute(vec, norm_inv);
+}
+
 template <typename T, std::size_t N>
 inline void vector_normalize(Vector<T, N> &vec) {
   T norm_inv = vec.norm_inv();
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Base::Matrix::COMPILED_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t N>
 inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
   T norm_inv = vec.norm_inv(division_min);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Base::Matrix::COMPILED_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 /* Scalar Addition */
