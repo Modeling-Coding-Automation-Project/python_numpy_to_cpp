@@ -127,40 +127,32 @@ public:
   }
 
   inline T norm() const {
-    T sum = static_cast<T>(0);
-    for (std::size_t i = 0; i < N; ++i) {
-      sum += this->data[i] * this->data[i];
-    }
+
+    T sum = this->dot(*this);
 
     return Base::Math::sqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
   }
 
   inline T norm(const T &division_min) const {
-    T sum = static_cast<T>(0);
-    for (std::size_t i = 0; i < N; ++i) {
-      sum += this->data[i] * this->data[i];
-    }
+
+    T sum = this->dot(*this);
 
     return Base::Math::sqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
   }
 
   inline T norm_inv() const {
-    T sum = static_cast<T>(0);
-    for (std::size_t i = 0; i < N; ++i) {
-      sum += this->data[i] * this->data[i];
-    }
+
+    T sum = this->dot(*this);
 
     return Base::Math::rsqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
   }
 
   inline T norm_inv(const T &division_min) const {
-    T sum = static_cast<T>(0);
-    for (std::size_t i = 0; i < N; ++i) {
-      sum += this->data[i] * this->data[i];
-    }
+
+    T sum = this->dot(*this);
 
     return Base::Math::rsqrt_base_math<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
