@@ -50,7 +50,18 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, M, N> &A,
                                                   const Matrix<T, P, N> &B) {
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  for (std::size_t row = 0; row < N; row++) {
+    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
+    std::copy(B(row).begin(), B(row).end(), Y(row).begin() + M);
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   Base::Matrix::COMPILED_SPARSE_VERTICAL_CONCATENATE<T, M, N, P>(A, B, Y);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
@@ -476,12 +487,12 @@ inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
                                                     const Matrix<T, M, P> &B) {
 
   for (std::size_t row = 0; row < N; row++) {
-    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
+    Base::Utility::copy<T, 0, M, 0, M, M>(A(row), Y(row));
   }
 
   std::size_t B_row = 0;
   for (std::size_t row = N; row < N + P; row++) {
-    std::copy(B(B_row).begin(), B(B_row).end(), Y(row).begin());
+    Base::Utility::copy<T, 0, M, 0, M, M>(B(B_row), Y(row));
     B_row++;
   }
 }
