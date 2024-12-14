@@ -7,6 +7,7 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_templates.hpp"
+#include "base_utility.hpp"
 
 #include <cstddef>
 #include <tuple>
@@ -20,7 +21,7 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, M, N> &A,
                                                   const Matrix<T, P, N> &B) {
   for (std::size_t row = 0; row < N; row++) {
-    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
+    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
     std::copy(B(row).begin(), B(row).end(), Y(row).begin() + M);
   }
 }
