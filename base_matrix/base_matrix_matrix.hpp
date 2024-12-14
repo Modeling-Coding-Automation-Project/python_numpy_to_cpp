@@ -4,7 +4,9 @@
 #include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_vector.hpp"
+#include "base_utility.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <initializer_list>
@@ -75,7 +77,7 @@ public:
   }
 
   Matrix(const std::array<T, M> &input) : data{} {
-    std::copy(input.begin(), input.end(), this->data[0].begin());
+    Base::Utility::copy<T, 0, M, 0, M, M>(input, this->data[0]);
   }
 
   Matrix(T input[][N]) : data{} {
@@ -218,8 +220,7 @@ public:
       row = M - 1;
     }
 
-    std::copy(this->data[row].begin(), this->data[row].end(),
-              result.data.begin());
+    Base::Utility::copy<T, 0, M, 0, M, M>(this->data[row], result.data);
 
     return result;
   }
@@ -298,8 +299,8 @@ public:
     }
 
     Vector<T, M> result;
-    std::copy(this->data[row].begin(), this->data[row].end(),
-              result.data.begin());
+
+    Base::Utility::copy<T, 0, M, 0, M, M>(this->data[row], result.data);
 
     return result;
   }
@@ -309,8 +310,7 @@ public:
       row = N - 1;
     }
 
-    std::copy(row_vector.data.begin(), row_vector.data.end(),
-              this->data[row].begin());
+    Base::Utility::copy<T, 0, M, 0, M, M>(row_vector.data, this->data[row]);
   }
 
   inline Matrix<T, M, M> inv() const {
@@ -402,9 +402,9 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
     row_2 = N - 1;
   }
 
-  std::copy(mat(row_1).begin(), mat(row_1).end(), temp_vec.data.begin());
-  std::copy(mat(row_2).begin(), mat(row_2).end(), mat(row_1).begin());
-  std::copy(temp_vec.data.begin(), temp_vec.data.end(), mat(row_2).begin());
+  Base::Utility::copy<T, 0, M, 0, M, M>(mat(row_1), temp_vec.data);
+  Base::Utility::copy<T, 0, M, 0, M, M>(mat(row_2), mat(row_1));
+  Base::Utility::copy<T, 0, M, 0, M, M>(temp_vec.data, mat(row_2));
 }
 
 /* Trace */
