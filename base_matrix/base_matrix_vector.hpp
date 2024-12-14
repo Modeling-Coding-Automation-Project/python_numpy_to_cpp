@@ -88,14 +88,6 @@ public:
     return Vector<T, N>(std::vector<T>(N, static_cast<T>(1)));
   }
 
-  inline Vector<T, N> operator*(const Vector<T, N> &vec) const {
-    Vector<T, N> result;
-    for (std::size_t i = 0; i < N; ++i) {
-      result[i] = this->data[i] * vec[i];
-    }
-    return result;
-  }
-
   inline T dot(const Vector<T, N> &other) const {
     T result = static_cast<T>(0);
     for (std::size_t i = 0; i < N; ++i) {
@@ -479,6 +471,16 @@ inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 
 #endif
 
+  return result;
+}
+
+/* Vector Multiply */
+template <typename T, std::size_t N>
+inline Vector<T, N> operator*(const Vector<T, N> &a, const Vector<T, N> &b) {
+  Vector<T, N> result;
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = a[i] * b[i];
+  }
   return result;
 }
 
