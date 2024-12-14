@@ -113,7 +113,7 @@ public:
 
     for (std::size_t i = 0; i < M; i++) {
       result[i] = static_cast<T>(1) /
-                  Base::Matrix::avoid_zero_divide(this->data[i], division_min);
+                  Base::Utility::avoid_zero_divide(this->data[i], division_min);
     }
 
     return result;
@@ -790,7 +790,8 @@ template <typename T, std::size_t M, std::size_t M_idx>
 struct DiagMatrixDividerCore {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
-    result[M_idx] = A[M_idx] / avoid_zero_divide(B[M_idx], division_min);
+    result[M_idx] =
+        A[M_idx] / Base::Utility::avoid_zero_divide(B[M_idx], division_min);
     DiagMatrixDividerCore<T, M, M_idx - 1>::compute(A, B, result, division_min);
   }
 };
@@ -799,7 +800,7 @@ struct DiagMatrixDividerCore {
 template <typename T, std::size_t M> struct DiagMatrixDividerCore<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
-    result[0] = A[0] / avoid_zero_divide(B[0], division_min);
+    result[0] = A[0] / Base::Utility::avoid_zero_divide(B[0], division_min);
   }
 };
 
@@ -839,7 +840,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
 struct DiagInvMultiplyDenseColumn {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    result(J, K) = B(J, K) / avoid_zero_divide(A[J], division_min);
+    result(J, K) =
+        B(J, K) / Base::Utility::avoid_zero_divide(A[J], division_min);
     DiagInvMultiplyDenseColumn<T, M, N, J, K - 1>::compute(A, B, result,
                                                            division_min);
   }
@@ -851,7 +853,7 @@ struct DiagInvMultiplyDenseColumn<T, M, N, J, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, 0) =
-        B(J, 0) / Base::Matrix::avoid_zero_divide(A[J], division_min);
+        B(J, 0) / Base::Utility::avoid_zero_divide(A[J], division_min);
   }
 };
 
@@ -896,7 +898,7 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
       result(j, k) =
-          B(j, k) / Base::Matrix::avoid_zero_divide(A[j], division_min);
+          B(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
     }
   }
 

@@ -4,7 +4,6 @@
 #include "base_math.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
-#include "base_matrix_utility.hpp"
 
 #include <array>
 #include <cstddef>

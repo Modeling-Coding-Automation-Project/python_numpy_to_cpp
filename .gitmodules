@@ -4,3 +4,6 @@
 [submodule "external_libraries/python_math_to_cpp"]
 	path = external_libraries/python_math_to_cpp
 	url = https://github.com/Modeling-Coding-Automation-Project/python_math_to_cpp.git
+[submodule "external_libraries/base_utility_cpp"]
+	path = external_libraries/base_utility_cpp
+	url = https://github.com/Modeling-Coding-Automation-Project/base_utility_cpp.git

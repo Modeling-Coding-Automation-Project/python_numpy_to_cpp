@@ -165,13 +165,13 @@ private:
       for (std::size_t i = k + 1; i < M; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
       x_abs = Base::Math::sqrt_base_math<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k + 1] = R(k + 1, k) + Base::Matrix::sign(R(k + 1, k)) * x_abs;
+      u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
       for (std::size_t i = k + 2; i < M; ++i) {
         u[i] = R(i, k);
@@ -203,7 +203,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -227,13 +227,13 @@ private:
       for (std::size_t i = k; i < k + 2; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
       x_abs = Base::Math::sqrt_base_math<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k] = R(k, k) + Base::Matrix::sign(R(k, k)) * x_abs;
+      u[k] = R(k, k) + Base::Utility::sign(R(k, k)) * x_abs;
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
@@ -262,7 +262,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -551,13 +551,13 @@ private:
       for (std::size_t i = k + 1; i < M; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
       x_abs = Base::Math::sqrt_base_math<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
-      u[k + 1] = R(k + 1, k) + Base::Matrix::sign(R(k + 1, k)) * x_abs;
+      u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
       for (std::size_t i = k + 2; i < M; ++i) {
         u[i] = R(i, k);
@@ -589,7 +589,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -614,7 +614,7 @@ private:
       for (std::size_t i = k; i < k + 2; ++i) {
         x_abs += Base::Matrix::complex_abs_sq(R(i, k));
       }
-      if (Base::Matrix::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
       x_abs = Base::Math::sqrt_base_math<
@@ -654,7 +654,7 @@ private:
           this->_House_comp.values[H_value_count] -=
               static_cast<T>(2) *
               (u[i] * Base::Matrix::complex_conjugate(u[j])) /
-              Base::Matrix::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
 
           this->_House_comp.row_indices[H_value_count] = j;
           H_value_count++;
