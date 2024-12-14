@@ -481,20 +481,75 @@ inline auto concatenate_vertically(
 }
 
 /* Functions: Concatenate horizontally */
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Row>
+struct CopyRowsFirstLoop {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, M>(A(Row), Y(Row));
+    CopyRowsFirstLoop<T, M, N, P, Row - 1>::compute(A, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
+struct CopyRowsFirstLoop<T, M, N, P, 0> {
+  static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, M>(A(0), Y(0));
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
+static inline void
+COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1(const Matrix<T, M, N> &A,
+                                         Matrix<T, M, N + P> &Y) {
+  CopyRowsFirstLoop<T, M, N, P, N - 1>::compute(A, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Row>
+struct CopyRowsSecondLoop {
+  static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, M>(B(Row), Y(N + Row));
+    CopyRowsSecondLoop<T, M, N, P, Row - 1>::compute(B, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
+struct CopyRowsSecondLoop<T, M, N, P, 0> {
+  static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, M>(B(0), Y(N));
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
+static inline void
+COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2(const Matrix<T, M, P> &B,
+                                         Matrix<T, M, N + P> &Y) {
+  CopyRowsSecondLoop<T, M, N, P, P - 1>::compute(B, Y);
+}
+
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
                                                     const Matrix<T, M, N> &A,
                                                     const Matrix<T, M, P> &B) {
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t row = 0; row < N; row++) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(A(row), Y(row));
+    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
   }
 
   std::size_t B_row = 0;
   for (std::size_t row = N; row < N + P; row++) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(B(B_row), Y(row));
+    std::copy(B(B_row).begin(), B(B_row).end(), Y(row).begin());
     B_row++;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Base::Matrix::COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1<T, M, N, P>(A, Y);
+  Base::Matrix::COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2<T, M, N, P>(B, Y);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
