@@ -207,11 +207,10 @@ inline void update_vertically_concatenated_matrix(
     const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
+  Base::Utility::copy<T, 0, M, 0, M, (2 * M)>(sparse_A.values, Y.values);
 
   auto sparse_B = Base::Matrix::create_compiled_sparse(B);
-  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
-            Y.values.begin() + M);
+  Base::Utility::copy<T, 0, M, M, M, (2 * M)>(sparse_B.values, Y.values);
 }
 
 template <typename T, std::size_t M>
@@ -252,9 +251,11 @@ inline void update_vertically_concatenated_matrix(
     const CompiledSparseMatrix<T, P, M, RowIndices_B, RowPointers_B> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
+  Base::Utility::copy<T, 0, M, 0, M, (M + RowIndices_B::size)>(sparse_A.values,
+                                                               Y.values);
 
-  std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M);
+  Base::Utility::copy<T, 0, RowIndices_B::size, M, RowIndices_B::size,
+                      (M + RowIndices_B::size)>(B.values, Y.values);
 }
 
 template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
@@ -302,11 +303,13 @@ inline void update_vertically_concatenated_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, P, N> &B) {
 
-  std::copy(A.values.begin(), A.values.end(), Y.values.begin());
+  Base::Utility::copy<T, 0, RowIndices_A::size, 0, RowIndices_A::size,
+                      (RowIndices_A::size + (P * N))>(A.values, Y.values);
 
   auto sparse_B = Base::Matrix::create_compiled_sparse(B);
-  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
-            Y.values.begin() + RowIndices_A::size);
+  Base::Utility::copy<T, 0, (P * N), RowIndices_A::size, (P * N),
+                      (RowIndices_A::size + (P * N))>(sparse_B.values,
+                                                      Y.values);
 }
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
