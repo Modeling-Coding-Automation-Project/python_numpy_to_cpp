@@ -22,7 +22,7 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, P, N> &B) {
   for (std::size_t row = 0; row < N; row++) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
-    std::copy(B(row).begin(), B(row).end(), Y(row).begin() + M);
+    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[row], Y.data[row]);
   }
 }
 
@@ -48,11 +48,12 @@ inline void update_vertically_concatenated_matrix(
     const Matrix<T, M, N> &A, const DiagMatrix<T, N> &B) {
 
   auto sparse_A = create_compiled_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
+  Base::Utility::copy<T, 0, (M * N), 0, (M * N), ((M * N) + N)>(sparse_A.values,
+                                                                Y.values);
 
   auto sparse_B = create_compiled_sparse(B);
-  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
-            Y.values.begin() + M * N);
+  Base::Utility::copy<T, 0, N, (M * N), N, ((M * N) + N)>(sparse_B.values,
+                                                          Y.values);
 }
 
 template <typename T, std::size_t M, std::size_t N>
