@@ -166,11 +166,11 @@ inline void update_vertically_concatenated_matrix(
     const DiagMatrix<T, M> &A, const Matrix<T, P, M> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
+  Base::Utility::copy<T, 0, M, 0, M, (M + (M * P))>(sparse_A.values, Y.values);
 
   auto sparse_B = create_compiled_sparse(B);
-  std::copy(sparse_B.values.begin(), sparse_B.values.end(),
-            Y.values.begin() + M);
+  Base::Utility::copy<T, 0, (M * P), M, (M * P), (M + (M * P))>(sparse_B.values,
+                                                                Y.values);
 }
 
 template <typename T, std::size_t M, std::size_t P>
