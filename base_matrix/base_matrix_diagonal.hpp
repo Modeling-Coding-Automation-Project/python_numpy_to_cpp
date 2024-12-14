@@ -821,7 +821,7 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   for (std::size_t j = 0; j < M; ++j) {
-    result[j] = A[j] / avoid_zero_divide(B[j], division_min);
+    result[j] = A[j] / Base::Utility::avoid_zero_divide(B[j], division_min);
   }
 
 #else
