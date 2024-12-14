@@ -687,21 +687,61 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
 }
 
 /* Complex Normalize */
+template <typename T, std::size_t N, std::size_t Index>
+struct ComplexVectorNormalizeCore {
+  static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
+    vec[Index] *= norm_inv;
+    ComplexVectorNormalizeCore<T, N, Index - 1>::compute(vec, norm_inv);
+  }
+};
+
+// Specialization to end the recursion
+template <typename T, std::size_t N>
+struct ComplexVectorNormalizeCore<T, N, 0> {
+  static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
+    vec[0] *= norm_inv;
+  }
+};
+
+template <typename T, std::size_t N>
+static inline void COMPILED_COMPLEX_VECTOR_NORMALIZE(Vector<Complex<T>, N> &vec,
+                                                     T norm_inv) {
+  ComplexVectorNormalizeCore<T, N, N - 1>::compute(vec, norm_inv);
+}
+
 template <typename T, std::size_t N>
 inline void complex_vector_normalize(Vector<Complex<T>, N> &vec) {
   T norm_inv = complex_vector_norm_inv(vec);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Base::Matrix::COMPILED_COMPLEX_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t N>
 inline void complex_vector_normalize(Vector<Complex<T>, N> &vec,
                                      const T &division_min) {
   T norm_inv = complex_vector_norm_inv(vec, division_min);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  Base::Matrix::COMPILED_COMPLEX_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 /* Get Real and Imaginary Vector from Complex Vector */
