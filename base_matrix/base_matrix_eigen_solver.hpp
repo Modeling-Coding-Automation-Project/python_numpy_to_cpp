@@ -10,8 +10,8 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+#include "base_utility.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <vector>
@@ -384,8 +384,8 @@ private:
         }
       }
 
-      std::copy(x.data.begin(), x.data.end(),
-                this->_eigen_vectors.data[k].begin());
+      Base::Utility::copy<T, 0, M, 0, M, M>(x.data,
+                                            this->_eigen_vectors.data[k]);
     }
   }
 };
