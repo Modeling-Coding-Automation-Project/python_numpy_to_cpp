@@ -475,12 +475,45 @@ inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 }
 
 /* Vector Multiply */
+template <typename T, std::size_t N, std::size_t N_idx>
+struct VectorMultiplyCore {
+  static void multiply(const Vector<T, N> &a, const Vector<T, N> &b,
+                       Vector<T, N> &result) {
+    result[N_idx] = a[N_idx] * b[N_idx];
+    VectorMultiplyCore<T, N, N_idx - 1>::multiply(a, b, result);
+  }
+};
+
+// Termination condition: N_idx == 0
+template <typename T, std::size_t N> struct VectorMultiplyCore<T, N, 0> {
+  static void multiply(const Vector<T, N> &a, const Vector<T, N> &b,
+                       Vector<T, N> &result) {
+    result[0] = a[0] * b[0];
+  }
+};
+
+template <typename T, std::size_t N>
+static inline void VECTOR_MULTIPLY(const Vector<T, N> &a, const Vector<T, N> &b,
+                                   Vector<T, N> &result) {
+  VectorMultiplyCore<T, N, N - 1>::multiply(a, b, result);
+}
+
 template <typename T, std::size_t N>
 inline Vector<T, N> operator*(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] * b[i];
   }
+
+#else
+
+  Base::Matrix::VECTOR_MULTIPLY<T, N>(a, b, result);
+
+#endif
+
   return result;
 }
 
