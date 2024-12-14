@@ -2,7 +2,7 @@
 #define BASE_MATRIX_COMPLEX_HPP
 
 #include "base_math.hpp"
-#include "base_matrix_utility.hpp"
+#include "base_utility.hpp"
 
 #include <cstddef>
 #include <utility>
@@ -188,7 +188,7 @@ inline Complex<T> complex_divide(const Complex<T> &a_comp,
                                  const Complex<T> &b_comp, T division_min) {
   Complex<T> result;
 
-  T denominator = Base::Matrix::avoid_zero_divide(
+  T denominator = Base::Utility::avoid_zero_divide(
       b_comp.real * b_comp.real + b_comp.imag * b_comp.imag, division_min);
 
   result.real =
@@ -204,7 +204,7 @@ inline Complex<T> complex_divide(T a, const Complex<T> &b_comp,
                                  T division_min) {
   Complex<T> result;
 
-  T denominator = Base::Matrix::avoid_zero_divide(
+  T denominator = Base::Utility::avoid_zero_divide(
       b_comp.real * b_comp.real + b_comp.imag * b_comp.imag, division_min);
 
   result.real = (a * b_comp.real) / denominator;

@@ -42,7 +42,7 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -69,7 +69,7 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
         q(i, n) =
-            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
+            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -100,7 +100,7 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     rep_num = n;
 
     // Check for convergence
-    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
         decay_rate) {
       break;
     }
@@ -113,7 +113,7 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
       temp += r(j, m) * y[m];
     }
     y[j] = (b_hat[j] - temp) /
-           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
+           Base::Utility::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -193,7 +193,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -220,7 +220,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
         q(i, n) =
-            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
+            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -251,7 +251,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
     rep_num = n;
 
     // Check for convergence
-    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
         decay_rate) {
       break;
     }
@@ -264,7 +264,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
       temp += r(j, m) * y[m];
     }
     y[j] = (b_hat[j] - temp) /
-           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
+           Base::Utility::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -356,7 +356,7 @@ inline Vector<T, M> sparse_gmres_k(
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -378,7 +378,7 @@ inline Vector<T, M> sparse_gmres_k(
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < M; ++i) {
         q(i, n) =
-            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
+            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -409,7 +409,7 @@ inline Vector<T, M> sparse_gmres_k(
     rep_num = n;
 
     // Check for convergence
-    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
         decay_rate) {
       break;
     }
@@ -422,7 +422,7 @@ inline Vector<T, M> sparse_gmres_k(
       temp += r(j, m) * y[m];
     }
     y[j] = (b_hat[j] - temp) /
-           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
+           Base::Utility::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -489,7 +489,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
   for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -516,7 +516,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
       h(n, n - 1) = v.norm(division_min);
       for (std::size_t i = 0; i < N; ++i) {
         q(i, n) =
-            v[i] / Base::Matrix::avoid_zero_divide(h(n, n - 1), division_min);
+            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
     }
 
@@ -547,7 +547,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
     rep_num = n;
 
     // Check for convergence
-    if (rho / Base::Matrix::avoid_zero_divide(b_norm, division_min) <
+    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
         decay_rate) {
       break;
     }
@@ -560,7 +560,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
       temp += r(j, m) * y[m];
     }
     y[j] = (b_hat[j] - temp) /
-           Base::Matrix::avoid_zero_divide(r(j, j), division_min);
+           Base::Utility::avoid_zero_divide(r(j, j), division_min);
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
@@ -663,7 +663,7 @@ inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   // Normalize b_Ax
   T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
   for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Matrix::avoid_zero_divide(b_norm, division_min);
+    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
@@ -723,7 +723,7 @@ inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     rep_num = n;
 
     // Check for convergence
-    if (rho / Base::Matrix::avoid_zero_divide(b_norm * b_norm, division_min) <
+    if (rho / Base::Utility::avoid_zero_divide(b_norm * b_norm, division_min) <
         decay_rate) {
       break;
     }
