@@ -16,14 +16,41 @@ namespace Base {
 namespace Matrix {
 
 /* Functions: Concatenate vertically */
+template <typename T, std::size_t M, std::size_t P, std::size_t N,
+          std::size_t Row>
+struct VerticalConcatenateLoop {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
+                      Matrix<T, M + P, N> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Row], Y.data[Row]);
+    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[Row], Y.data[Row]);
+    VerticalConcatenateLoop<T, M, P, N, Row - 1>::compute(A, B, Y);
+  }
+};
+
+// end of recursion
+template <typename T, std::size_t M, std::size_t P, std::size_t N>
+struct VerticalConcatenateLoop<T, M, P, N, 0> {
+  static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
+                      Matrix<T, M + P, N> &Y) {
+    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[0], Y.data[0]);
+    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[0], Y.data[0]);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P>
+static inline void
+COMPILED_SPARSE_VERTICAL_CONCATENATE(const Matrix<T, M, N> &A,
+                                     const Matrix<T, P, N> &B,
+                                     Matrix<T, M + P, N> &Y) {
+  VerticalConcatenateLoop<T, M, P, N, N - 1>::compute(A, B, Y);
+}
+
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, M, N> &A,
                                                   const Matrix<T, P, N> &B) {
-  for (std::size_t row = 0; row < N; row++) {
-    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
-    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[row], Y.data[row]);
-  }
+
+  Base::Matrix::COMPILED_SPARSE_VERTICAL_CONCATENATE<T, M, N, P>(A, B, Y);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
