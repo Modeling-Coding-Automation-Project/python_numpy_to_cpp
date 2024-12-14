@@ -23,6 +23,13 @@ void check_matrix_vector_creation(void) {
     A(1, 0) = 4.0F; A(1, 1) = 5.0F; A(1, 2) = 6.0F;
 
     /* ベクトルの作成 */
+    Vector<T, 3> one_vec = Vector<T, 3>::Ones();
+
+    for (size_t i = 0; i < one_vec.size(); ++i) {
+        tester.expect_near(one_vec[i], static_cast<T>(1), NEAR_LIMIT_STRICT,
+            "check Vector Ones.");
+    }
+
     Vector<T, 3> b;
     b[0] = 1.0F;
     b[1] = 2.0F;
