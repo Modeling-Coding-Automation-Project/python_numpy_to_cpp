@@ -67,7 +67,7 @@ public:
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   SparseMatrix() : values{}, row_indices{}, row_pointers{} {}
 
@@ -129,7 +129,7 @@ public:
     }
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   SparseMatrix(const SparseMatrix<T, M, N, V> &other)
@@ -301,11 +301,11 @@ public:
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, V> values;
   std::array<std::size_t, V> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 template <typename T, std::size_t M, std::size_t N>
@@ -316,11 +316,11 @@ inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::vector<T> values(M * N);
   std::vector<std::size_t> row_indices(M * N);
   std::vector<std::size_t> row_pointers(M + 1);
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, (M * N)> values;
   std::array<std::size_t, (M * N)> row_indices;
   std::array<std::size_t, (M + 1)> row_pointers;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -345,11 +345,11 @@ inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::vector<T> values(M);
   std::vector<std::size_t> row_indices(M);
   std::vector<std::size_t> row_pointers(M + 1);
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, M> values;
   std::array<std::size_t, M> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {

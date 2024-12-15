@@ -30,7 +30,7 @@ public:
 
   CompiledSparseMatrix(const std::vector<T> &values) : values(values) {}
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   CompiledSparseMatrix() : values{} {}
 
@@ -51,7 +51,7 @@ public:
     std::copy(values.begin(), values.end(), this->values.begin());
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   CompiledSparseMatrix(
@@ -87,9 +87,9 @@ public:
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, RowIndices::size> values;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 /* Output dense matrix */
@@ -183,12 +183,12 @@ inline Matrix<T, M, N> output_dense_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_OUTPUT_DENSE_MATRIX<T, M, N, RowIndices,
                                                     RowPointers>(mat, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -285,13 +285,13 @@ inline Matrix<T, N, M> output_transpose_matrix(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX<T, M, N, RowIndices,
                                                        RowPointers>(mat,
                                                                     result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -376,12 +376,12 @@ inline auto create_compiled_sparse(const Matrix<T, M, N> &A)
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DENSE_MATRIX_SUBSTITUTE_SPARSE<
       T, M, N, DenseMatrixRowIndices<M, N>, DenseMatrixRowPointers<M, N>>(A, Y);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return Y;
 }
@@ -431,6 +431,29 @@ inline auto create_compiled_sparse(std::initializer_list<T> values)
 }
 
 /* Set Sparse Matrix Value */
+// check if RowToSet == RowIndices_A::list[K]
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, std::size_t RowToGet_I>
+struct SetSparseMatrixValueCoreIf {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &value) {
+    /* Do nothing */
+    static_cast<void>(A);
+    static_cast<void>(value);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K>
+struct SetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &value) {
+    A.values[K] = value;
+  }
+};
+
 // Core conditional operation for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
@@ -439,9 +462,9 @@ struct SetSparseMatrixValueCoreConditional {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &value) {
+    /* Do nothing */
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of conditional operation, do nothing
   }
 };
 
@@ -453,9 +476,10 @@ struct SetSparseMatrixValueCoreConditional<
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &value) {
-    if (RowToSet == RowIndices_A::list[K]) {
-      A.values[K] = value;
-    }
+
+    SetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K,
+                               (RowToSet -
+                                RowIndices_A::list[K])>::compute(A, value);
   }
 };
 
@@ -593,16 +617,39 @@ inline void set_sparse_matrix_value(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_SET_MATRIX_VALUE<ColumnToSet, RowToSet, T, M, N,
                                                  RowIndices_A, RowPointers_A>(
       A, value);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 /* Get Sparse Matrix Value */
+// check if RowToGet == RowIndices_A::list[K]
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, std::size_t RowToGet_I>
+struct GetSparseMatrixValueCoreIf {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T &value) {
+    /* Do nothing */
+    static_cast<void>(A);
+    static_cast<void>(value);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K>
+struct GetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          T &value) {
+    value = A.values[K];
+  }
+};
+
 // Core conditional operation for setting sparse matrix value
 template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
@@ -611,9 +658,9 @@ struct GetSparseMatrixValueCoreConditional {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           T &value) {
+    /* Do nothing */
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of conditional operation, do nothing
   }
 };
 
@@ -625,9 +672,10 @@ struct GetSparseMatrixValueCoreConditional<
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           T &value) {
-    if (RowToGet == RowIndices_A::list[K]) {
-      value = A.values[K];
-    }
+
+    GetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K,
+                               (RowToGet -
+                                RowIndices_A::list[K])>::compute(A, value);
   }
 };
 
@@ -766,13 +814,13 @@ inline T get_sparse_matrix_value(
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_SPARSE_GET_MATRIX_VALUE<ColumnToGet, RowToGet, T, M, N,
                                                  RowIndices_A, RowPointers_A>(
       A, value);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return value;
 }

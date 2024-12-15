@@ -10,8 +10,8 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
+#include "base_utility.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <vector>
@@ -39,7 +39,7 @@ public:
     this->_solve_values_with_qr_method(matrix);
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   EigenSolverReal()
       : iteration_max(0), _eigen_values{}, _division_min(static_cast<T>(0)),
@@ -54,7 +54,7 @@ public:
     this->_solve_values_with_qr_method(matrix);
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   EigenSolverReal(EigenSolverReal<T, M> &other)
@@ -131,9 +131,9 @@ public:
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   Matrix<T, M, M> get_eigen_vectors(void) { return this->_eigen_vectors; }
 
@@ -145,9 +145,9 @@ private:
   Matrix<T, M, M> _Hessen;
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> _eigen_values;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, M> _eigen_values;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -384,8 +384,8 @@ private:
         }
       }
 
-      std::copy(x.data.begin(), x.data.end(),
-                this->_eigen_vectors.data[k].begin());
+      Base::Utility::copy<T, 0, M, 0, M, M>(x.data,
+                                            this->_eigen_vectors.data[k]);
     }
   }
 };
@@ -410,7 +410,7 @@ public:
     this->_solve_with_qr_method(matrix);
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0), _eigen_values{},
@@ -428,7 +428,7 @@ public:
     this->_solve_with_qr_method(matrix);
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
@@ -511,11 +511,11 @@ public:
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<Complex<T>, M> get_eigen_values(void) {
     return this->_eigen_values;
   }
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
@@ -531,9 +531,9 @@ private:
   Matrix<Complex<T>, M, M> _Hessen;
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<Complex<T>> _eigen_values;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<Complex<T>, M> _eigen_values;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);

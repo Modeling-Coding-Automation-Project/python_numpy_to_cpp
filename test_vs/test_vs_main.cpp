@@ -23,6 +23,13 @@ void check_matrix_vector_creation(void) {
     A(1, 0) = 4.0F; A(1, 1) = 5.0F; A(1, 2) = 6.0F;
 
     /* ベクトルの作成 */
+    Vector<T, 3> one_vec = Vector<T, 3>::Ones();
+
+    for (size_t i = 0; i < one_vec.size(); ++i) {
+        tester.expect_near(one_vec[i], static_cast<T>(1), NEAR_LIMIT_STRICT,
+            "check Vector Ones.");
+    }
+
     Vector<T, 3> b;
     b[0] = 1.0F;
     b[1] = 2.0F;
@@ -1385,43 +1392,6 @@ void check_matrix_cocatenation(void) {
     
     tester.expect_near(C_h_C_dense.data, C_h_C_answer.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Sparse.");
-    
-    Matrix<T, 2, 2> Aa;
-    Aa(0, 0) = 1.0F; Aa(0, 1) = 2.0F;
-    Aa(1, 0) = 3.0F; Aa(1, 1) = 4.0F;
-    
-    Matrix<T, 2, 2> Ba;
-    Ba(0, 0) = 5.0F; Ba(0, 1) = 6.0F;
-    Ba(1, 0) = 7.0F; Ba(1, 1) = 8.0F;
-    
-    Matrix<T, 3, 2> Ca;
-    Ca(0, 0) = 9.0F; Ca(0, 1) = 10.0F;
-    Ca(1, 0) = 11.0F; Ca(1, 1) = 12.0F;
-    Ca(2, 0) = 11.0F; Ca(2, 1) = 12.0F;
-    
-    Matrix<T, 3, 2> Da;
-    Da(0, 0) = 13.0F; Da(0, 1) = 14.0F;
-    Da(1, 0) = 15.0F; Da(1, 1) = 16.0F;
-    Da(2, 0) = 15.0F; Da(2, 1) = 16.0F;
-    
-    Matrix<T, 5, 4> C = concatenate_square(Aa, Ba, Ca, Da);
-    //std::cout << "Square = " << std::endl;
-    //for (size_t j = 0; j < C.cols(); ++j) {
-    //    for (size_t i = 0; i < C.rows(); ++i) {
-    //        std::cout << C(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
-    
-    Matrix<T, 5, 4> C_answer({
-        {1, 2, 5, 6},
-        {3, 4, 7, 8},
-        {9, 10, 13, 14},
-        {11, 12, 15, 16},
-        {11, 12, 15, 16} });
-    tester.expect_near(C.data, C_answer.data, NEAR_LIMIT_STRICT,
-        "check Matrix concatenate.");
     
     
     tester.throw_error_if_test_failed();

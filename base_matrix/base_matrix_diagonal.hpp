@@ -31,7 +31,7 @@ public:
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_STD_VECTOR
 
   DiagMatrix() : data{} {}
 
@@ -56,7 +56,7 @@ public:
     }
   }
 
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   DiagMatrix(const DiagMatrix<T, M> &other) : data(other.data) {}
@@ -122,9 +122,9 @@ public:
 /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> data;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, M> data;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 /* Matrix Addition */
@@ -164,11 +164,11 @@ inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
     result[j] = A[j] + B[j];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_ADDER<T, M>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -206,11 +206,11 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
     result(i, i) += A[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -226,11 +226,11 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
     result(i, i) += B[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -268,11 +268,11 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
     result[i] = -A[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_MINUS_DIAG_MATRIX<T, M>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -314,11 +314,11 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
     result[j] = A[j] - B[j];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_SUBTRACTOR<T, M>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -356,11 +356,11 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
     result(i, i) += A[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_SUB_MATRIX<T, M>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -398,11 +398,11 @@ inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
     result(i, i) -= B[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_SUB_DIAG_MATRIX<T, M>(B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -443,11 +443,11 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
     result[i] = A[i] * scalar;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -462,11 +462,11 @@ inline DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
     result[i] = A[i] * scalar;
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -508,11 +508,11 @@ inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
     result[i] = A[i] * vec[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR<T, M>(A, vec, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -556,11 +556,11 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
     result[j] = A[j] * B[j];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_DIAG<T, M>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -626,11 +626,11 @@ inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX<T, M, N>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -695,11 +695,11 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX<T, L, M>(A, B, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -733,11 +733,11 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
     trace += A[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   trace = Base::Matrix::COMPILED_DIAG_TRACE_CALCULATOR<T, M>(A);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return trace;
 }
@@ -775,11 +775,11 @@ inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
     result(i, i) = A[i];
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_TO_DENSE<T, M>(A, result);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -824,11 +824,11 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
     result[j] = A[j] / Base::Utility::avoid_zero_divide(B[j], division_min);
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_MATRIX_DIVIDER<T, M>(A, B, result, division_min);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
@@ -902,12 +902,12 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
     }
   }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   Base::Matrix::COMPILED_DIAG_INV_MULTIPLY_DENSE<T, M, N>(A, B, result,
                                                           division_min);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   return result;
 }
