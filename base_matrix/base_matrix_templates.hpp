@@ -153,6 +153,10 @@ template <std::size_t M, std::size_t N>
 using DenseAvailable =
     typename RepeatColumnAvailable<M, GenerateTrueColumnAvailable<N>>::type;
 
+template <std::size_t M, std::size_t N>
+using DenseAvailableEmpty =
+    typename RepeatColumnAvailable<M, GenerateFalseColumnAvailable<N>>::type;
+
 /* Create Diag Available */
 // base case: N = 0
 template <std::size_t N, std::size_t Index, bool... Flags>
