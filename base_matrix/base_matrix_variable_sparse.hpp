@@ -20,9 +20,9 @@ public:
       : values(M * N, static_cast<T>(0)),
         row_indices(M * N, static_cast<std::size_t>(0)),
         row_pointers(M + 1, static_cast<std::size_t>(0)) {}
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   VariableSparseMatrix() : values{}, row_indices{}, row_pointers{} {}
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
@@ -77,11 +77,11 @@ public:
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
-#else
+#else  // BASE_MATRIX_USE_STD_VECTOR
   std::array<T, M * N> values;
   std::array<std::size_t, M * N> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif
+#endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
 /* SparseMatrix * Matrix */

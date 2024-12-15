@@ -193,11 +193,11 @@ public:
       }
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     return Y;
   }
@@ -220,11 +220,11 @@ public:
       }
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
   }
 
   /* Lower */
@@ -263,11 +263,11 @@ public:
       }
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     return Y;
   }
@@ -290,11 +290,11 @@ public:
       }
     }
 
-#else
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
     Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
-#endif
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
   }
 };
 
