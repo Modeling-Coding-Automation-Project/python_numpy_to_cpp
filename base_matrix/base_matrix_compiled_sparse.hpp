@@ -431,6 +431,29 @@ inline auto create_compiled_sparse(std::initializer_list<T> values)
 }
 
 /* Set Sparse Matrix Value */
+// check if RowToSet == RowIndices_A::list[K]
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, std::size_t RowToGet_I>
+struct SetSparseMatrixValueCoreIf {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &value) {
+    /* Do nothing */
+    static_cast<void>(A);
+    static_cast<void>(value);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K>
+struct SetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const T &value) {
+    A.values[K] = value;
+  }
+};
+
 // Core conditional operation for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename RowIndices_A,
@@ -439,9 +462,9 @@ struct SetSparseMatrixValueCoreConditional {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &value) {
+    /* Do nothing */
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of conditional operation, do nothing
   }
 };
 
@@ -453,9 +476,12 @@ struct SetSparseMatrixValueCoreConditional<
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &value) {
-    if (RowToSet == RowIndices_A::list[K]) {
-      A.values[K] = value;
-    }
+    // if (RowToSet == RowIndices_A::list[K]) {
+    //   A.values[K] = value;
+    // }
+    SetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K,
+                               (RowToSet -
+                                RowIndices_A::list[K])>::compute(A, value);
   }
 };
 
