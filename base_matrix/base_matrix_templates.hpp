@@ -68,6 +68,42 @@ template <typename... Columns> struct SparseAvailableColumns {
 template <typename... Columns>
 using SparseAvailable = SparseAvailableColumns<Columns...>;
 
+// helper template to calculate the logical OR
+template <bool A, bool B> struct LogicalOr {
+  static constexpr bool value = A || B;
+};
+
+/* SparseAvailable check empty */
+// helper template to calculate the logical OR for multiple values
+template <bool... Values> struct LogicalOrMultiple;
+
+// base case for a single value
+template <bool Value> struct LogicalOrMultiple<Value> {
+  static constexpr bool value = Value;
+};
+
+// recursive case for multiple values
+template <bool First, bool... Rest> struct LogicalOrMultiple<First, Rest...> {
+  static constexpr bool value =
+      LogicalOr<First, LogicalOrMultiple<Rest...>::value>::value;
+};
+
+// helper template to calculate the logical OR for SparseAvailable
+template <typename SparseAvailable> struct SparseAvailableOrHelper;
+
+// partial specialization for ColumnAvailable
+template <bool... Values>
+struct SparseAvailableOrHelper<ColumnAvailable<Values...>> {
+  static constexpr bool value = LogicalOrMultiple<Values...>::value;
+};
+
+// partial specialization for SparseAvailable
+template <typename... Columns>
+struct SparseAvailableOrHelper<SparseAvailable<Columns...>> {
+  static constexpr bool value =
+      LogicalOrMultiple<SparseAvailableOrHelper<Columns>::value...>::value;
+};
+
 /* Create Dense Available */
 // Generate false flags
 // base case: N = 0
@@ -712,11 +748,6 @@ using LowerTriangularRowPointers = typename ToRowPointers<
         typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
 
 /* SparseAvailable Addition and Subtraction */
-// helper template to calculate the logical OR
-template <bool A, bool B> struct LogicalOr {
-  static constexpr bool value = A || B;
-};
-
 // helper template to calculate the matrix product
 template <typename MatrixA, typename MatrixB>
 struct MatrixAddSubSparseAvailableHelper;
