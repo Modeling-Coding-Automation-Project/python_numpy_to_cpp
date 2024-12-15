@@ -21,6 +21,9 @@ using SparseAvailable = Base::Matrix::SparseAvailable<Columns...>;
 template <std::size_t M, std::size_t N>
 using DenseAvailable = Base::Matrix::DenseAvailable<M, N>;
 
+template <std::size_t M, std::size_t N>
+using DenseAvailableEmpty = Base::Matrix::DenseAvailableEmpty<M, N>;
+
 template <std::size_t M> using DiagAvailable = Base::Matrix::DiagAvailable<M>;
 
 template <typename SparseAvailable>
@@ -60,8 +63,8 @@ template <std::size_t M, std::size_t N>
 using UpperTriangularRowPointers =
     Base::Matrix::UpperTriangularRowPointers<M, N>;
 
-using SparseAvailable_NoUse =
-    SparseAvailable<ColumnAvailable<true, false>, ColumnAvailable<false, true>>;
+template <std::size_t M, std::size_t N>
+using SparseAvailable_NoUse = DenseAvailableEmpty<M, N>;
 
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using MatrixAddSubSparseAvailable =
