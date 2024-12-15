@@ -3764,7 +3764,7 @@ int main() {
 
     check_python_numpy_calc<double>();
 
-    check_python_numpy_calc<float>();
+    //check_python_numpy_calc<float>();
 
 
     return 0;

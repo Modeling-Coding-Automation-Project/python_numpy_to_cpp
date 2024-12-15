@@ -5,11 +5,11 @@
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
-#include "base_matrix_sparse.hpp"
 #include "base_matrix_templates.hpp"
 #include "base_utility.hpp"
 
 #include <cstddef>
+#include <iostream>
 #include <tuple>
 
 namespace Base {
@@ -564,6 +564,84 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 }
 
 /* Copy DenseMatrix and DiagMatrix to horizontally concatenated matrix */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y, std::size_t I, std::size_t J_idx>
+struct HoriMatrixSetFromDenseColumn {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const Matrix<T, M, N> &A) {
+
+    Base::Matrix::set_sparse_matrix_value<I, J_idx>(Y, A(I, J_idx));
+    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I,
+                                 J_idx - 1>::compute(Y, A);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y, std::size_t I>
+struct HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I,
+                                    0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const Matrix<T, M, N> &A) {
+    Base::Matrix::set_sparse_matrix_value<I, 0>(Y, A(I, 0));
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y, std::size_t I_idx>
+struct HoriMatrixSetFromDenseRow {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const Matrix<T, M, N> &A) {
+    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I_idx,
+                                 N - 1>::compute(Y, A);
+    HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y,
+                              I_idx - 1>::compute(Y, A);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y>
+struct HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const Matrix<T, M, N> &A) {
+    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, 0,
+                                 N - 1>::compute(Y, A);
+  }
+};
+
+// DiagMatrix: when I_idx < M
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y, std::size_t I_idx>
+struct HoriMatrixSetFromDiagRow {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const DiagMatrix<T, M> &B) {
+
+    Base::Matrix::set_sparse_matrix_value<I_idx, (I_idx + N)>(Y, B[I_idx]);
+
+    HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y,
+                             I_idx - 1>::compute(Y, B);
+  }
+};
+
+// DiagMatrix: row recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
+          typename RowPointers_Y>
+struct HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
+          const DiagMatrix<T, M> &B) {
+
+    Base::Matrix::set_sparse_matrix_value<0, N>(Y, B[0]);
+  }
+};
 
 template <typename T, std::size_t M, std::size_t N>
 inline void update_horizontally_concatenated_matrix(
@@ -574,6 +652,8 @@ inline void update_horizontally_concatenated_matrix(
         RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
             DenseAvailable<M, N>, DiagAvailable<M>>>> &Y,
     const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B) {
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -593,6 +673,23 @@ inline void update_horizontally_concatenated_matrix(
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  using RowIndices_Y =
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DenseAvailable<M, N>, DiagAvailable<M>>>;
+  using RowPointers_Y =
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DenseAvailable<M, N>, DiagAvailable<M>>>;
+
+  HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y,
+                            M - 1>::compute(Y, A);
+
+  HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y,
+                           M - 1>::compute(Y, B);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M, std::size_t N>
