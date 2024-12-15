@@ -736,6 +736,80 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
   return Y;
 }
 
+/* Copy SparseMatrix to horizontally concatenated matrix */
+// when J_idx < N
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
+          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
+          std::size_t J_idx>
+struct ConcatMatrixSetFromSparseColumn {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
+                                          (J_idx + Row_Offset)>(
+        Y, Base::Matrix::get_sparse_matrix_value<I, J_idx>(A));
+
+    ConcatMatrixSetFromSparseColumn<
+        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
+        Row_Offset, RowIndices_Y, RowPointers_Y, I, J_idx - 1>::compute(Y, A);
+  }
+};
+
+// column recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
+          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowIndices_Y, typename RowPointers_Y, std::size_t I>
+struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
+                                       Y_Col, Y_Row, Column_Offset, Row_Offset,
+                                       RowIndices_Y, RowPointers_Y, I, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+        Y, Base::Matrix::get_sparse_matrix_value<I, 0>(A));
+  }
+};
+
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
+          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
+struct ConcatMatrixSetFromSparseRow {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+    ConcatMatrixSetFromSparseColumn<
+        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
+        Row_Offset, RowIndices_Y, RowPointers_Y, I_idx, N - 1>::compute(Y, A);
+    ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
+                                 Y_Row, Column_Offset, Row_Offset, RowIndices_Y,
+                                 RowPointers_Y, I_idx - 1>::compute(Y, A);
+  }
+};
+
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
+          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowIndices_Y, typename RowPointers_Y>
+struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
+                                    Y_Row, Column_Offset, Row_Offset,
+                                    RowIndices_Y, RowPointers_Y, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+    ConcatMatrixSetFromSparseColumn<
+        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
+        Row_Offset, RowIndices_Y, RowPointers_Y, 0, N - 1>::compute(Y, A);
+  }
+};
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
@@ -780,46 +854,21 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  // using RowIndices_Y =
-  //     RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-  //         DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-  //                                   L, RowIndices_B, RowPointers_B>>>;
-  // using RowPointers_Y =
-  //     RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-  //         DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-  //                                   L, RowIndices_B, RowPointers_B>>>;
+  using RowIndices_Y =
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                    L, RowIndices_B, RowPointers_B>>>;
+  using RowPointers_Y =
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
+                                    L, RowIndices_B, RowPointers_B>>>;
 
-  // ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, RowIndices_Y,
-  //                             RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, RowIndices_Y,
+                              RowPointers_Y, M - 1>::compute(Y, A);
 
-  // ConcatMatrixSetFromDiagRow<T, M, N, 0, N, RowIndices_Y, RowPointers_Y,
-  //                            M - 1>::compute(Y, B);
-
-  std::size_t value_count = 0;
-  std::size_t sparse_value_count = 0;
-  std::size_t sparse_col_count = 0;
-  for (std::size_t i = 0; i < M; i++) {
-    for (std::size_t j = 0; j < (N + L); j++) {
-      if (j < N) {
-
-        Y.values[value_count] = A(i, j);
-        value_count++;
-
-      } else if ((RowPointers_B::list[i + 1] - RowPointers_B::list[i] >
-                  sparse_col_count) &&
-                 (sparse_value_count < RowIndices_B::size)) {
-
-        if ((j - N) == RowIndices_B::list[sparse_value_count]) {
-          Y.values[value_count] = B.values[sparse_value_count];
-
-          value_count++;
-          sparse_value_count++;
-          sparse_col_count++;
-        }
-      }
-    }
-    sparse_col_count = 0;
-  }
+  ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_B, RowPointers_B, M, (N + L),
+                               0, N, RowIndices_Y, RowPointers_Y,
+                               M - 1>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
