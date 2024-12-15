@@ -476,9 +476,7 @@ struct SetSparseMatrixValueCoreConditional<
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const T &value) {
-    // if (RowToSet == RowIndices_A::list[K]) {
-    //   A.values[K] = value;
-    // }
+
     SetSparseMatrixValueCoreIf<T, M, N, RowIndices_A, RowPointers_A, K,
                                (RowToSet -
                                 RowIndices_A::list[K])>::compute(A, value);
