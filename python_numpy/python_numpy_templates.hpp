@@ -24,6 +24,9 @@ using DenseAvailable = Base::Matrix::DenseAvailable<M, N>;
 template <std::size_t M, std::size_t N>
 using DenseAvailableEmpty = Base::Matrix::DenseAvailableEmpty<M, N>;
 
+template <std::size_t M, std::size_t N>
+using SparseAvailableEmpty = Base::Matrix::DenseAvailableEmpty<M, N>;
+
 template <std::size_t M> using DiagAvailable = Base::Matrix::DiagAvailable<M>;
 
 template <typename SparseAvailable>
