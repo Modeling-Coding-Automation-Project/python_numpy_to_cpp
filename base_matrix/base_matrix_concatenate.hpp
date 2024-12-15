@@ -1468,28 +1468,6 @@ inline auto concatenate_horizontally(
   return Y;
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t K>
-inline Matrix<T, M + K, N + P>
-concatenate_square(const Matrix<T, M, N> &A, const Matrix<T, M, P> &B,
-                   const Matrix<T, K, N> &C, const Matrix<T, K, P> &D) {
-  Matrix<T, M + K, N + P> result;
-
-  for (std::size_t i = 0; i < N; ++i) {
-    std::copy(A(i).begin(), A(i).end(), result(i).begin());
-    std::copy(C(i).begin(), C(i).end(), result(i).begin() + M);
-  }
-
-  std::size_t B_row = 0;
-  for (std::size_t i = N; i < N + P; ++i) {
-    std::copy(B(B_row).begin(), B(B_row).end(), result(i).begin());
-    std::copy(D(B_row).begin(), D(B_row).end(), result(i).begin() + M);
-    B_row++;
-  }
-
-  return result;
-}
-
 } // namespace Matrix
 } // namespace Base
 
