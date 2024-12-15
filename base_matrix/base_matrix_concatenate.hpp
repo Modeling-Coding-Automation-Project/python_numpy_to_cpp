@@ -1365,6 +1365,8 @@ inline void update_horizontally_concatenated_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) {
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   std::size_t value_count = 0;
   std::size_t sparse_value_count_A = 0;
   std::size_t sparse_col_count_A = 0;
@@ -1401,6 +1403,31 @@ inline void update_horizontally_concatenated_matrix(
     sparse_col_count_A = 0;
     sparse_col_count_B = 0;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  using RowIndices_Y =
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                      RowPointers_A>,
+          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
+                                                      RowPointers_B>>>;
+  using RowPointers_Y =
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
+                                                      RowPointers_A>,
+          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
+                                                      RowPointers_B>>>;
+
+  ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, M, (N + L),
+                               0, 0, RowIndices_Y, RowPointers_Y,
+                               M - 1>::compute(Y, A);
+
+  ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_B, RowPointers_B, M, (N + L),
+                               0, N, RowIndices_Y, RowPointers_Y,
+                               M - 1>::compute(Y, B);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
