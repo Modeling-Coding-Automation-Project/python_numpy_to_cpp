@@ -89,19 +89,19 @@ template <bool First, bool... Rest> struct LogicalOrMultiple<First, Rest...> {
 };
 
 // helper template to calculate the logical OR for SparseAvailable
-template <typename SparseAvailable> struct SparseAvailableOrHelper;
+template <typename SparseAvailable> struct CheckSparseAvailableEmpty;
 
 // partial specialization for ColumnAvailable
 template <bool... Values>
-struct SparseAvailableOrHelper<ColumnAvailable<Values...>> {
+struct CheckSparseAvailableEmpty<ColumnAvailable<Values...>> {
   static constexpr bool value = LogicalOrMultiple<Values...>::value;
 };
 
 // partial specialization for SparseAvailable
 template <typename... Columns>
-struct SparseAvailableOrHelper<SparseAvailable<Columns...>> {
+struct CheckSparseAvailableEmpty<SparseAvailable<Columns...>> {
   static constexpr bool value =
-      LogicalOrMultiple<SparseAvailableOrHelper<Columns>::value...>::value;
+      LogicalOrMultiple<CheckSparseAvailableEmpty<Columns>::value...>::value;
 };
 
 /* Create Dense Available */
@@ -417,16 +417,25 @@ struct AssignSparseMatrixColumnLoop<SparseAvailable, 0> {
       (SparseAvailable::column_size - 1)>::type;
 };
 
+template <typename SparseAvailable, bool NotEmpty>
+struct RowIndicesSequenceFromSparseAvailable;
+
 template <typename SparseAvailable>
-struct RowIndicesSequenceFromSparseAvailable {
+struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
   using type = typename AssignSparseMatrixColumnLoop<
       SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
 };
 
 template <typename SparseAvailable>
+struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
+  using type = IndexSequence<0>;
+};
+
+template <typename SparseAvailable>
 using RowIndicesFromSparseAvailable =
     typename ToRowIndices<typename RowIndicesSequenceFromSparseAvailable<
-        SparseAvailable>::type>::type;
+        SparseAvailable,
+        CheckSparseAvailableEmpty<SparseAvailable>::value>::type>::type;
 
 /* Create Row Pointers */
 template <typename SparseAvailable, std::size_t ElementCount,
