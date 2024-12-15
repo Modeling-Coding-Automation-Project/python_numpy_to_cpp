@@ -657,6 +657,9 @@ inline void update_horizontally_concatenated_matrix(
 
         Y.values[value_count] = B[i];
         value_count++;
+
+      } else {
+        /* Do nothing */
       }
     }
   }
