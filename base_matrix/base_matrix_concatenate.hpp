@@ -563,83 +563,99 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
   return Y;
 }
 
-/* Copy DenseMatrix and DiagMatrix to horizontally concatenated matrix */
+/* Copy DenseMatrix to horizontally concatenated matrix */
 // when J_idx < N
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y, std::size_t I, std::size_t J_idx>
-struct HoriMatrixSetFromDenseColumn {
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t I, std::size_t J_idx>
+struct ConcatMatrixSetFromDenseColumn {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
 
-    Base::Matrix::set_sparse_matrix_value<I, J_idx>(Y, A(I, J_idx));
-    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I,
-                                 J_idx - 1>::compute(Y, A);
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
+                                          (J_idx + Row_Offset)>(Y, A(I, J_idx));
+
+    ConcatMatrixSetFromDenseColumn<T, M, N, Column_Offset, Row_Offset,
+                                   RowIndices_Y, RowPointers_Y, I,
+                                   J_idx - 1>::compute(Y, A);
   }
 };
 
 // column recursion termination
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y, std::size_t I>
-struct HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I,
-                                    0> {
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t I>
+struct ConcatMatrixSetFromDenseColumn<T, M, N, Column_Offset, Row_Offset,
+                                      RowIndices_Y, RowPointers_Y, I, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    Base::Matrix::set_sparse_matrix_value<I, 0>(Y, A(I, 0));
+
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+        Y, A(I, 0));
   }
 };
 
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y, std::size_t I_idx>
-struct HoriMatrixSetFromDenseRow {
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t I_idx>
+struct ConcatMatrixSetFromDenseRow {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, I_idx,
-                                 N - 1>::compute(Y, A);
-    HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y,
-                              I_idx - 1>::compute(Y, A);
+    ConcatMatrixSetFromDenseColumn<T, M, N, Column_Offset, Row_Offset,
+                                   RowIndices_Y, RowPointers_Y, I_idx,
+                                   N - 1>::compute(Y, A);
+    ConcatMatrixSetFromDenseRow<T, M, N, Column_Offset, Row_Offset,
+                                RowIndices_Y, RowPointers_Y,
+                                I_idx - 1>::compute(Y, A);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y>
-struct HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y>
+struct ConcatMatrixSetFromDenseRow<T, M, N, Column_Offset, Row_Offset,
+                                   RowIndices_Y, RowPointers_Y, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    HoriMatrixSetFromDenseColumn<T, M, N, RowIndices_Y, RowPointers_Y, 0,
-                                 N - 1>::compute(Y, A);
+    ConcatMatrixSetFromDenseColumn<T, M, N, Column_Offset, Row_Offset,
+                                   RowIndices_Y, RowPointers_Y, 0,
+                                   N - 1>::compute(Y, A);
   }
 };
 
-// DiagMatrix: when I_idx < M
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y, std::size_t I_idx>
-struct HoriMatrixSetFromDiagRow {
+/* Copy DiagMatrix to horizontally concatenated matrix */
+// when I_idx < M
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y,
+          std::size_t I_idx>
+struct ConcatMatrixSetFromDiagRow {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
-    Base::Matrix::set_sparse_matrix_value<I_idx, (I_idx + N)>(Y, B[I_idx]);
+    Base::Matrix::set_sparse_matrix_value<(I_idx + Column_Offset),
+                                          (I_idx + Row_Offset)>(Y, B[I_idx]);
 
-    HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y,
-                             I_idx - 1>::compute(Y, B);
+    ConcatMatrixSetFromDiagRow<T, M, N, Column_Offset, Row_Offset, RowIndices_Y,
+                               RowPointers_Y, I_idx - 1>::compute(Y, B);
   }
 };
 
-// DiagMatrix: row recursion termination
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y>
-struct HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
+// row recursion termination
+template <typename T, std::size_t M, std::size_t N, std::size_t Column_Offset,
+          std::size_t Row_Offset, typename RowIndices_Y, typename RowPointers_Y>
+struct ConcatMatrixSetFromDiagRow<T, M, N, Column_Offset, Row_Offset,
+                                  RowIndices_Y, RowPointers_Y, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
-    Base::Matrix::set_sparse_matrix_value<0, N>(Y, B[0]);
+    Base::Matrix::set_sparse_matrix_value<Column_Offset, Row_Offset>(Y, B[0]);
   }
 };
 
@@ -683,11 +699,11 @@ inline void update_horizontally_concatenated_matrix(
       RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
           DenseAvailable<M, N>, DiagAvailable<M>>>;
 
-  HoriMatrixSetFromDenseRow<T, M, N, RowIndices_Y, RowPointers_Y,
-                            M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDenseRow<T, M, N, 0, 0, RowIndices_Y, RowPointers_Y,
+                              M - 1>::compute(Y, A);
 
-  HoriMatrixSetFromDiagRow<T, M, N, RowIndices_Y, RowPointers_Y,
-                           M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDiagRow<T, M, N, 0, N, RowIndices_Y, RowPointers_Y,
+                             M - 1>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
