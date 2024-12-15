@@ -983,6 +983,8 @@ inline void update_horizontally_concatenated_matrix(
             DiagAvailable<M>, DiagAvailable<M>>>> &Y,
     const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (2 * M); j++) {
@@ -1001,6 +1003,23 @@ inline void update_horizontally_concatenated_matrix(
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  using RowIndices_Y =
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DiagAvailable<M>>>;
+  using RowPointers_Y =
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, DiagAvailable<M>>>;
+
+  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, 0, RowIndices_Y,
+                             RowPointers_Y, M - 1>::compute(Y, A);
+
+  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, M, RowIndices_Y,
+                             RowPointers_Y, M - 1>::compute(Y, B);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M>
@@ -1040,6 +1059,8 @@ inline void update_horizontally_concatenated_matrix(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) {
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
   std::size_t sparse_col_count = 0;
@@ -1066,6 +1087,26 @@ inline void update_horizontally_concatenated_matrix(
     }
     sparse_col_count = 0;
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+
+  using RowIndices_Y =
+      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                N, RowIndices_B, RowPointers_B>>>;
+  using RowPointers_Y =
+      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
+          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
+                                N, RowIndices_B, RowPointers_B>>>;
+
+  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, RowIndices_Y,
+                             RowPointers_Y, M - 1>::compute(Y, A);
+
+  ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_B, RowPointers_B, M, (M + N),
+                               0, M, RowIndices_Y, RowPointers_Y,
+                               M - 1>::compute(Y, B);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 }
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
