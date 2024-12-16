@@ -18,12 +18,6 @@
 namespace Base {
 namespace Matrix {
 
-/* switch how to define array */
-template <typename T, typename RowIndices, std::size_t ValueSize>
-using CompiledSparseMatrixArrayDefinition =
-    typename std::conditional<ValueSize == 0, std::array<T, 0>,
-                              std::array<T, RowIndices::size>>::type;
-
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
 class CompiledSparseMatrix {
@@ -95,8 +89,7 @@ public:
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
 #else  // BASE_MATRIX_USE_STD_VECTOR
-  CompiledSparseMatrixArrayDefinition<T, RowIndices, RowPointers::list[M]>
-      values;
+  std::array<T, RowIndices::size> values;
 #endif // BASE_MATRIX_USE_STD_VECTOR
 };
 

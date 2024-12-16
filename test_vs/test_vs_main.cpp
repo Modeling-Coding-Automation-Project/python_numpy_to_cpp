@@ -2046,6 +2046,9 @@ void check_python_numpy_base(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailableEmpty<3, 3>> Empty;
+
     T c_value = C(2);
 
     tester.expect_near(c_value, 8, NEAR_LIMIT_STRICT,
@@ -2088,6 +2091,13 @@ void check_python_numpy_base(void) {
         "check SparseMatrix set value.");
 
     C.template set<2, 2>(static_cast<T>(4));
+
+    Empty.template set<1, 1>(static_cast<T>(100));
+
+    T empty_value = Empty.template get<1, 1>();
+
+    tester.expect_near(empty_value, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value empty.");
 
     /* 演算 */
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
@@ -2280,6 +2290,34 @@ void check_python_numpy_base(void) {
 
     tester.expect_near(Sparse_mul_Sparse_dense.matrix.data, Sparse_mul_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
+
+    auto A_add_E = A + Empty;
+
+    Matrix<DefDense, T, 3, 3> A_add_E_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+        });
+
+    tester.expect_near(A_add_E.matrix.data, A_add_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix add EmptyMatrix.");
+
+    auto A_sub_E = A - Empty;
+
+    tester.expect_near(A_sub_E.matrix.data, A_add_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix sub EmptyMatrix.");
+
+    auto A_mul_E = A * Empty;
+
+    Matrix<DefDense, T, 3, 3> A_mul_E_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(A_mul_E.matrix.data, A_mul_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix multiply EmptyMatrix.");
+
 
 
     tester.throw_error_if_test_failed();
