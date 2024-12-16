@@ -43,7 +43,8 @@ inline auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
                              const Matrix<DefDense, T, N, M> &B)
     -> Matrix<DefDense, T, M, N> {
 
-  return Matrix<DefDense, T, M, N>(A.matrix * B.matrix.transpose());
+  return Matrix<DefDense, T, M, N>(
+      A.matrix * Base::Matrix::output_matrix_transpose(B.matrix));
 }
 
 template <typename T, std::size_t M>
@@ -60,7 +61,8 @@ A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
                  const Matrix<DefSparse, T, N, M, SparseAvailable> &B)
     -> Matrix<DefDense, T, M, N> {
 
-  return Matrix<DefDense, T, M, N>(A.matrix * B.matrix.transpose());
+  return Matrix<DefDense, T, M, N>(
+      A.matrix * Base::Matrix::output_matrix_transpose(B.matrix));
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
@@ -109,7 +111,8 @@ inline auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
                              const Matrix<DefDiag, T, N> &B)
     -> Matrix<DefDense, T, M, N> {
 
-  return Matrix<DefDense, T, M, N>(A.matrix.transpose() * B.matrix);
+  return Matrix<DefDense, T, M, N>(
+      Base::Matrix::output_matrix_transpose(A.matrix) * B.matrix);
 }
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N,

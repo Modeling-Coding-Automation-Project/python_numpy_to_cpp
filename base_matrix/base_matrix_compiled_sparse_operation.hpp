@@ -559,7 +559,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = B.create_dense();
+  Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
@@ -619,7 +619,7 @@ operator+(const DiagMatrix<T, M> &B,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = B.create_dense();
+  Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
@@ -682,7 +682,7 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = B.create_dense();
+  Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
@@ -860,7 +860,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = -(B.create_dense());
+  Matrix<T, M, M> Y_temp = -(Base::Matrix::output_dense_matrix(B));
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
@@ -991,7 +991,7 @@ operator-(const DiagMatrix<T, M> &B,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = B.create_dense();
+  Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
@@ -1126,7 +1126,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  Matrix<T, M, M> Y_temp = A.create_dense();
+  Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(A);
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];

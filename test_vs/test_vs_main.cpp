@@ -508,14 +508,14 @@ void check_diag_matrix(void) {
     tester.expect_near(D_4.data, D_4_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix subtract DiagMatrix.");
 
-    T ddd = D.get_trace();
+    T ddd = output_trace(D);
     //std::cout << "trace " << ddd << std::endl;
 
     T ddd_answer = 6.0F;
     tester.expect_near(ddd, ddd_answer, NEAR_LIMIT_STRICT,
         "check DiagMatrix trace.");
 
-    Matrix<T, 3, 3> D_dense = D.create_dense();
+    Matrix<T, 3, 3> D_dense = output_dense_matrix(D);
 
     Matrix<T, 3, 3> D_dense_answer({
     {1, 0, 0},
@@ -562,7 +562,7 @@ void check_sparse_matrix(void) {
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
-    Matrix<T, 3, 3> Cc_mul_A = SparseCc.transpose();
+    Matrix<T, 3, 3> Cc_mul_A = output_matrix_transpose(SparseCc);
     Matrix<T, 3, 3> Cn_mul_A = SparseCn.transpose();
 
     tester.expect_near(Cc_mul_A.data, Cn_mul_A.data, NEAR_LIMIT_STRICT,
@@ -571,7 +571,7 @@ void check_sparse_matrix(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> SparseCc_mul_scalar = SparseCc * static_cast<T>(3);
-    Matrix<T, 3, 3> SparseCc_mul_scalar_dense = SparseCc_mul_scalar.create_dense();
+    Matrix<T, 3, 3> SparseCc_mul_scalar_dense = Base::Matrix::output_dense_matrix(SparseCc_mul_scalar);
 
     Matrix<T, 3, 3> SparseCc_mul_scalar_answer({
         {3, 0, 0},
@@ -585,7 +585,7 @@ void check_sparse_matrix(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> Scalar_mul_SparseCc = static_cast<T>(3) * SparseCc;
-    Matrix<T, 3, 3> Scalar_mul_SparseCc_dense = Scalar_mul_SparseCc.create_dense();
+    Matrix<T, 3, 3> Scalar_mul_SparseCc_dense = Base::Matrix::output_dense_matrix(Scalar_mul_SparseCc);
 
     tester.expect_near(Scalar_mul_SparseCc_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix multiply scalar.");
@@ -705,7 +705,7 @@ void check_sparse_matrix(void) {
         RowPointers<0, 1, 4, 6>> SEc({ 1, 3, 8, 1, 2, 4 });
 
     auto Sparse_mul_Sparse = SparseCc * SEc;
-    Matrix<T, 3, 4> Sparse_mul_Sparse_dense = Sparse_mul_Sparse.create_dense();
+    Matrix<T, 3, 4> Sparse_mul_Sparse_dense = Base::Matrix::output_dense_matrix(Sparse_mul_Sparse);
 
     Matrix<T, 3, 4> Sparse_mul_Sparse_answer({
         {1, 0, 0, 0},
@@ -743,7 +743,7 @@ void check_sparse_matrix(void) {
     DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
 
     auto Sparse_add_Diag = SparseCc + DiagJ;
-    Matrix<T, 3, 3> Sparse_add_Diag_dense = Sparse_add_Diag.create_dense();
+    Matrix<T, 3, 3> Sparse_add_Diag_dense = Base::Matrix::output_dense_matrix(Sparse_add_Diag);
 
     Matrix<T, 3, 3> Sparse_add_Diag_answer({
         {11, 0, 0},
@@ -755,13 +755,13 @@ void check_sparse_matrix(void) {
         "check SparseMatrix add DiagMatrix.");
 
     auto Diag_add_Sparse = DiagJ + SparseCc;
-    Matrix<T, 3, 3> Diag_add_Sparse_dense = Diag_add_Sparse.create_dense();
+    Matrix<T, 3, 3> Diag_add_Sparse_dense = Base::Matrix::output_dense_matrix(Diag_add_Sparse);
 
     tester.expect_near(Diag_add_Sparse_dense.data, Sparse_add_Diag_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix add SparseMatrix.");
 
     auto Sparse_sub_Diag = SparseCc - DiagJ;
-    Matrix<T, 3, 3> Sparse_sub_Diag_dense = Sparse_sub_Diag.create_dense();
+    Matrix<T, 3, 3> Sparse_sub_Diag_dense = Base::Matrix::output_dense_matrix(Sparse_sub_Diag);
 
     Matrix<T, 3, 3> Sparse_sub_Diag_answer({
         {-9, 0, 0},
@@ -773,7 +773,7 @@ void check_sparse_matrix(void) {
         "check SparseMatrix sub DiagMatrix.");
 
     auto Diag_sub_Sparse = DiagJ - SparseCc;
-    Matrix<T, 3, 3> Diag_sub_Sparse_dense = Diag_sub_Sparse.create_dense();
+    Matrix<T, 3, 3> Diag_sub_Sparse_dense = Base::Matrix::output_dense_matrix(Diag_sub_Sparse);
 
     Matrix<T, 3, 3> Diag_sub_Sparse_answer({
         {9, 0, 0},
@@ -785,7 +785,7 @@ void check_sparse_matrix(void) {
         "check DiagMatrix sub SparseMatrix.");
 
     auto Sparse_mul_Diag = SparseCc * DiagJ;
-    Matrix<T, 3, 3> Sparse_mul_Diag_dense = Sparse_mul_Diag.create_dense();
+    Matrix<T, 3, 3> Sparse_mul_Diag_dense = Base::Matrix::output_dense_matrix(Sparse_mul_Diag);
 
     Matrix<T, 3, 3> Sparse_mul_Diag_answer({
         {10, 0, 0},
@@ -797,7 +797,7 @@ void check_sparse_matrix(void) {
         "check SparseMatrix multiply DiagMatrix.");
 
     auto Diag_mul_Sparse = DiagJ * SparseCc;
-    Matrix<T, 3, 3> Diag_mul_Sparse_dense = Diag_mul_Sparse.create_dense();
+    Matrix<T, 3, 3> Diag_mul_Sparse_dense = Base::Matrix::output_dense_matrix(Diag_mul_Sparse);
 
     Matrix<T, 3, 3> Diag_mul_Sparse_answer({
         {10, 0, 0},
@@ -809,7 +809,7 @@ void check_sparse_matrix(void) {
         "check DiagMatrix multiply SparseMatrix.");
 
     auto Sparse_add_Sparse = SparseCc + SparseCc;
-    auto Sparse_add_Sparse_dense = Sparse_add_Sparse.create_dense();
+    auto Sparse_add_Sparse_dense = Base::Matrix::output_dense_matrix(Sparse_add_Sparse);
 
     Matrix<T, 3, 3> Sparse_add_Sparse_answer({
         {2, 0, 0},
@@ -821,7 +821,7 @@ void check_sparse_matrix(void) {
         "check SparseMatrix add SparseMatrix.");
 
     auto Sparse_sub_Sparse = SparseCc - SparseCc;
-    auto Sparse_sub_Sparse_dense = Sparse_sub_Sparse.create_dense();
+    auto Sparse_sub_Sparse_dense = Base::Matrix::output_dense_matrix(Sparse_sub_Sparse);
 
     Matrix<T, 3, 3> Sparse_sub_Sparse_answer({
         {0, 0, 0},
@@ -1039,7 +1039,7 @@ void check_sparse_matrix(void) {
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer_3.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix GMRES k rect.");
 
-    Matrix<T, 4, 3> SB_dense = SBc.create_dense();
+    Matrix<T, 4, 3> SB_dense = Base::Matrix::output_dense_matrix(SBc);
 
     //std::cout << "SB_dense = " << std::endl;
     //for (size_t j = 0; j < SB_dense.cols(); ++j) {
@@ -1167,7 +1167,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Dense and Dense.");
 
     auto A_v_B = concatenate_vertically(DenseA, D);
-    auto A_v_B_dense = A_v_B.create_dense();
+    auto A_v_B_dense = Base::Matrix::output_dense_matrix(A_v_B);
 
     Matrix<T, 6, 3> A_v_B_answer({
         {1, 2, 3},
@@ -1182,7 +1182,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Dense and Diag.");
 
     auto A_v_C = concatenate_vertically(DenseA, SparseCc);
-    auto A_v_C_dense = A_v_C.create_dense();
+    auto A_v_C_dense = Base::Matrix::output_dense_matrix(A_v_C);
 
     Matrix<T, 6, 3> A_v_C_answer({
         {1, 2, 3},
@@ -1197,7 +1197,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Dense and Sparse.");
 
     auto B_v_A = concatenate_vertically(D, DenseA);
-    auto B_v_A_dense = B_v_A.create_dense();
+    auto B_v_A_dense = Base::Matrix::output_dense_matrix(B_v_A);
 
     Matrix<T, 6, 3> B_v_A_answer({
         {1, 0, 0},
@@ -1212,7 +1212,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Diag and Dense.");
 
     auto B_v_B = concatenate_vertically(D, D * static_cast<T>(2));
-    auto B_v_B_dense = B_v_B.create_dense();
+    auto B_v_B_dense = Base::Matrix::output_dense_matrix(B_v_B);
 
     Matrix<T, 6, 3> B_v_B_answer({
         {1, 0, 0},
@@ -1227,7 +1227,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Diag and Diag.");
 
     auto B_v_C = concatenate_vertically(D, SparseCc);
-    auto B_v_C_dense = B_v_C.create_dense();
+    auto B_v_C_dense = Base::Matrix::output_dense_matrix(B_v_C);
 
     Matrix<T, 6, 3> B_v_C_answer({
         {1, 0, 0},
@@ -1242,7 +1242,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Diag and Sparse.");
 
     auto C_v_A = concatenate_vertically(SparseCc, DenseA);
-    auto C_v_A_dense = C_v_A.create_dense();
+    auto C_v_A_dense = Base::Matrix::output_dense_matrix(C_v_A);
 
     Matrix<T, 6, 3> C_v_A_answer({
         {1, 0, 0},
@@ -1257,7 +1257,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Sparse and Dense.");
 
     auto C_v_B = concatenate_vertically(SparseCc, D);
-    auto C_v_B_dense = C_v_B.create_dense();
+    auto C_v_B_dense = Base::Matrix::output_dense_matrix(C_v_B);
 
     Matrix<T, 6, 3> C_v_B_answer({
         {1, 0, 0},
@@ -1272,7 +1272,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate vertically Sparse and Diag.");
 
     auto C_v_C = concatenate_vertically(SparseCc, SparseCc * static_cast<T>(2));
-    auto C_v_C_dense = C_v_C.create_dense();
+    auto C_v_C_dense = Base::Matrix::output_dense_matrix(C_v_C);
 
     Matrix<T, 6, 3> C_v_C_answer({
         {1, 0, 0},
@@ -1298,7 +1298,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Dense and Dense.");
 
     auto A_h_B = concatenate_horizontally(DenseA, D);
-    auto A_h_B_dense = A_h_B.create_dense();
+    auto A_h_B_dense = Base::Matrix::output_dense_matrix(A_h_B);
 
     Matrix<T, 3, 6> A_h_B_answer({
         {1, 2, 3, 1, 0, 0},
@@ -1310,7 +1310,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Dense and Diag.");
 
     auto A_h_C = concatenate_horizontally(DenseA, SparseCc);
-    auto A_h_C_dense = A_h_C.create_dense();
+    auto A_h_C_dense = Base::Matrix::output_dense_matrix(A_h_C);
 
     Matrix<T, 3, 6> A_h_C_answer({
         {1, 2, 3, 1, 0, 0},
@@ -1322,7 +1322,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Dense and Sparse.");
 
     auto B_h_A = concatenate_horizontally(D, DenseA);
-    auto B_h_A_dense = B_h_A.create_dense();
+    auto B_h_A_dense = Base::Matrix::output_dense_matrix(B_h_A);
 
     Matrix<T, 3, 6> B_h_A_answer({
         {1, 0, 0, 1, 2, 3},
@@ -1334,7 +1334,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Diag and Dense.");
 
     auto B_h_B = concatenate_horizontally(D, D * static_cast<T>(2));
-    auto B_h_B_dense = B_h_B.create_dense();
+    auto B_h_B_dense = Base::Matrix::output_dense_matrix(B_h_B);
 
     Matrix<T, 3, 6> B_h_B_answer({
         {1, 0, 0, 2, 0, 0},
@@ -1346,7 +1346,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Diag and Diag.");
     
     auto B_h_C = concatenate_horizontally(D, SparseCc);
-    auto B_h_C_dense = B_h_C.create_dense();
+    auto B_h_C_dense = Base::Matrix::output_dense_matrix(B_h_C);
     
     Matrix<T, 3, 6> B_h_C_answer({
         {1, 0, 0, 1, 0, 0},
@@ -1358,7 +1358,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Diag and Sparse.");
     
     auto C_h_A = concatenate_horizontally(SparseCc, DenseA);
-    auto C_h_A_dense = C_h_A.create_dense();
+    auto C_h_A_dense = Base::Matrix::output_dense_matrix(C_h_A);
     
     Matrix<T, 3, 6> C_h_A_answer({
         {1, 0, 0, 1, 2, 3},
@@ -1370,7 +1370,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Sparse and Dense.");
     
     auto C_h_B = concatenate_horizontally(SparseCc, D);
-    auto C_h_B_dense = C_h_B.create_dense();
+    auto C_h_B_dense = Base::Matrix::output_dense_matrix(C_h_B);
     
     Matrix<T, 3, 6> C_h_B_answer({
         {1, 0, 0, 1, 0, 0},
@@ -1382,7 +1382,7 @@ void check_matrix_cocatenation(void) {
         "check concatenate horizontally Sparse and Diag.");
     
     auto C_h_C = concatenate_horizontally(SparseCc, SparseCc * static_cast<T>(2));
-    auto C_h_C_dense = C_h_C.create_dense();
+    auto C_h_C_dense = Base::Matrix::output_dense_matrix(C_h_C);
     
     Matrix<T, 3, 6> C_h_C_answer({
         {1, 0, 0, 2, 0, 0},
@@ -1637,7 +1637,7 @@ void check_triangular_matrix(void) {
     Matrix<T, 4, 4> Test_ts({ {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16} });
     TriangularSparse<T, 4, 4>::set_values_lower(TS, Test_ts);
 
-    Matrix<T, 4, 4> Test_lower = TS.create_dense();
+    Matrix<T, 4, 4> Test_lower = Base::Matrix::output_dense_matrix(TS);
     //for (size_t j = 0; j < Test_lower.cols(); ++j) {
     //    for (size_t i = 0; i < Test_lower.rows(); ++i) {
     //        std::cout << Test_lower(j, i) << " ";
@@ -2046,6 +2046,9 @@ void check_python_numpy_base(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailableEmpty<3, 3>> Empty;
+
     T c_value = C(2);
 
     tester.expect_near(c_value, 8, NEAR_LIMIT_STRICT,
@@ -2088,6 +2091,13 @@ void check_python_numpy_base(void) {
         "check SparseMatrix set value.");
 
     C.template set<2, 2>(static_cast<T>(4));
+
+    Empty.template set<1, 1>(static_cast<T>(100));
+
+    T empty_value = Empty.template get<1, 1>();
+
+    tester.expect_near(empty_value, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value empty.");
 
     /* 演算 */
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
@@ -2280,6 +2290,34 @@ void check_python_numpy_base(void) {
 
     tester.expect_near(Sparse_mul_Sparse_dense.matrix.data, Sparse_mul_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
+
+    auto A_add_E = A + Empty;
+
+    Matrix<DefDense, T, 3, 3> A_add_E_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+        });
+
+    tester.expect_near(A_add_E.matrix.data, A_add_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix add EmptyMatrix.");
+
+    auto A_sub_E = A - Empty;
+
+    tester.expect_near(A_sub_E.matrix.data, A_add_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix sub EmptyMatrix.");
+
+    auto A_mul_E = A * Empty;
+
+    Matrix<DefDense, T, 3, 3> A_mul_E_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(A_mul_E.matrix.data, A_mul_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix multiply EmptyMatrix.");
+
 
 
     tester.throw_error_if_test_failed();
@@ -2547,6 +2585,11 @@ void check_python_numpy_concatenate(void) {
         >
         CL({ 1, 3, 2, 8, 4, 1 });
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailableEmpty<3, 3>> Empty;
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailableEmpty<4, 3>> EmptyL;
+
 
     /* 結合 */
     auto A_v_A = concatenate_vertically(A, A);
@@ -2638,6 +2681,21 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Dense and Sparse.");
 
+    auto A_v_E = concatenate_vertically(A, Empty);
+    auto A_v_E_dense = A_v_E.create_dense();
+
+    Matrix<DefDense, T, 6, 3> A_v_E_answer({
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 }
+    });
+
+    tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Empty.");
+
     auto B_v_A = concatenate_vertically(B, A);
     auto B_v_A_dense = B_v_A.create_dense();
 
@@ -2728,6 +2786,21 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(B_v_C_dense.matrix.data, B_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Diag and Sparse.");
 
+    auto B_v_E = concatenate_vertically(B, Empty);
+    auto B_v_E_dense = B_v_E.create_dense();
+
+    Matrix<DefDense, T, 6, 3> B_v_E_answer({
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 }
+    });
+
+    tester.expect_near(B_v_E_dense.matrix.data, B_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Diag and Empty.");
+
     auto C_v_A = concatenate_vertically(C, A);
     auto C_v_A_dense = C_v_A.create_dense();
 
@@ -2757,6 +2830,21 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Dense.");
+
+    auto E_v_A = concatenate_vertically(Empty, A);
+    auto E_v_A_dense = E_v_A.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_A_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 }
+    });
+
+    tester.expect_near(E_v_A_dense.matrix.data, E_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Dense.");
 
     auto C_v_B = concatenate_vertically(C, B);
     auto C_v_B_dense = C_v_B.create_dense();
@@ -2788,6 +2876,21 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Diag.");
 
+    auto E_v_B = concatenate_vertically(Empty, B);
+    auto E_v_B_dense = E_v_B.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_B_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 }
+    });
+
+    tester.expect_near(E_v_B_dense.matrix.data, E_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Diag.");
+
     auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
     auto C_v_C_dense = C_v_C.create_dense();
 
@@ -2817,6 +2920,21 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Sparse.");
+
+    auto E_v_C = concatenate_vertically(Empty, C);
+    auto E_v_C_dense = E_v_C.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_C_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 0, 0 },
+        { 3, 0, 8 },
+        { 0, 2, 4 }
+    });
+
+    tester.expect_near(E_v_C_dense.matrix.data, E_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Sparse.");
 
     auto AL_h_AL = concatenate_horizontally(AL, AL);
 
@@ -2893,6 +3011,19 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(AL_h_CL_dense.matrix.data, AL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Dense and Sparse.");
+
+    auto AL_h_EL = concatenate_horizontally(AL, EmptyL);
+    auto AL_h_EL_dense = AL_h_EL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> AL_h_EL_answer({
+        {1, 2, 3, 0, 0, 0},
+        {5, 4, 6, 0, 0, 0},
+        {9, 8, 7, 0, 0, 0},
+        {2, 2, 3, 0, 0, 0}
+    });
+
+    tester.expect_near(AL_h_EL_dense.matrix.data, AL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Dense and Empty.");
 
     auto BL_h_AL = concatenate_horizontally(BL, AL);
     auto BL_h_AL_dense = BL_h_AL.create_dense();
@@ -2972,6 +3103,19 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Diag and Sparse.");
 
+    auto BL_h_EL = concatenate_horizontally(BL, EmptyL);
+    auto BL_h_EL_dense = BL_h_EL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> BL_h_EL_answer({
+        {1, 0, 0, 0, 0, 0, 0},
+        {0, 2, 0, 0, 0, 0, 0},
+        {0, 0, 3, 0, 0, 0, 0},
+        {0, 0, 0, 4, 0, 0, 0}
+    });
+
+    tester.expect_near(BL_h_EL_dense.matrix.data, BL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Diag and Empty.");
+
     auto CL_h_AL = concatenate_horizontally(CL, AL);
     auto CL_h_AL_dense = CL_h_AL.create_dense();
 
@@ -2998,6 +3142,18 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Dense.");
 
+    auto EL_h_AL = concatenate_horizontally(EmptyL, AL);
+    auto EL_h_AL_dense = EL_h_AL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> EL_h_AL_answer({
+        {0, 0, 0, 1, 2, 3},
+        {0, 0, 0, 5, 4, 6},
+        {0, 0, 0, 9, 8, 7},
+        {0, 0, 0, 2, 2, 3}
+    });
+
+    tester.expect_near(EL_h_AL_dense.matrix.data, EL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Dense.");
 
     auto CL_h_BL = concatenate_horizontally(CL, BL);
     auto CL_h_BL_dense = CL_h_BL.create_dense();
@@ -3025,6 +3181,19 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Diag.");
 
+    auto EL_h_BL = concatenate_horizontally(EmptyL, BL);
+    auto EL_h_BL_dense = EL_h_BL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> EL_h_BL_answer({
+        {0, 0, 0, 1, 0, 0, 0},
+        {0, 0, 0, 0, 2, 0, 0},
+        {0, 0, 0, 0, 0, 3, 0},
+        {0, 0, 0, 0, 0, 0, 4}
+    });
+
+    tester.expect_near(EL_h_BL_dense.matrix.data, EL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Diag.");
+
     auto CL_h_CL = concatenate_horizontally(CL, CL);
     auto CL_h_CL_dense = CL_h_CL.create_dense();
 
@@ -3050,6 +3219,19 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Sparse.");
+
+    auto EL_h_CL = concatenate_horizontally(EmptyL, CL);
+    auto EL_h_CL_dense = EL_h_CL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> EL_h_CL_answer({
+        {0, 0, 0, 1, 3, 0},
+        {0, 0, 0, 0, 0, 2},
+        {0, 0, 0, 0, 8, 4},
+        {0, 0, 0, 0, 1, 0}
+    });
+
+    tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Sparse.");
 
 
     tester.throw_error_if_test_failed();
@@ -3221,7 +3403,7 @@ void check_check_python_numpy_cholesky(void) {
     static auto Chol_solver = make_LinalgSolverCholesky(K);
 
     auto A_ch = Chol_solver.solve(K);
-    auto A_ch_d = A_ch.matrix.create_dense();
+    auto A_ch_d = Base::Matrix::output_dense_matrix(A_ch.matrix);
     //std::cout << "A_ch_d = " << std::endl;
     //for (size_t j = 0; j < A_ch_d.cols(); ++j) {
     //    for (size_t i = 0; i < A_ch_d.rows(); ++i) {

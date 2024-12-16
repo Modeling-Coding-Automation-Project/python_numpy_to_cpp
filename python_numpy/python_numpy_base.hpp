@@ -111,7 +111,8 @@ public:
   }
 
   inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(this->matrix.transpose());
+    return Matrix<DefDense, T, N, M>(
+        Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
   inline auto create_complex(void)
@@ -233,7 +234,8 @@ public:
   }
 
   inline auto create_dense(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->matrix.create_dense());
+    return Matrix<DefDense, T, M, M>(
+        Base::Matrix::output_dense_matrix(this->matrix));
   }
 
   inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
@@ -286,7 +288,8 @@ public:
 
   /* Function */
   inline auto create_dense(void) -> Matrix<DefDense, T, M, N> {
-    return Matrix<DefDense, T, M, N>(this->matrix.create_dense());
+    return Matrix<DefDense, T, M, N>(
+        Base::Matrix::output_dense_matrix(this->matrix));
   }
 
   template <std::size_t COL, std::size_t ROW> inline T get() const {
@@ -324,7 +327,8 @@ public:
   }
 
   inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(this->matrix.transpose());
+    return Matrix<DefDense, T, N, M>(
+        Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
   /* Variable */

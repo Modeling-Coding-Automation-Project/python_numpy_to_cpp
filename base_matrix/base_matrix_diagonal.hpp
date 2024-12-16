@@ -104,10 +104,6 @@ public:
     return result;
   }
 
-  inline T get_trace() const { return output_trace(*this); }
-
-  inline Matrix<T, M, M> create_dense() const { return output_dense(*this); }
-
   inline DiagMatrix<T, M> inv(T division_min) const {
     DiagMatrix<T, M> result;
 
@@ -766,7 +762,7 @@ static inline void COMPILED_DIAG_MATRIX_TO_DENSE(const DiagMatrix<T, M> &A,
 }
 
 template <typename T, std::size_t M>
-inline Matrix<T, M, M> output_dense(const DiagMatrix<T, M> &A) {
+inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
   Matrix<T, M, M> result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION

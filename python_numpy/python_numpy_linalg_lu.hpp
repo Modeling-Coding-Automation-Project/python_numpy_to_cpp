@@ -112,7 +112,7 @@ private:
 
 /* make LinalgSolverLU */
 template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse>
+          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverLU<T, M, SparseAvailable> {
 
@@ -120,7 +120,7 @@ inline auto make_LinalgSolverLU(const Matrix<DefDense, T, M, M> &A)
 }
 
 template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse>
+          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolverLU(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverLU<T, M, SparseAvailable> {
 

@@ -68,6 +68,42 @@ template <typename... Columns> struct SparseAvailableColumns {
 template <typename... Columns>
 using SparseAvailable = SparseAvailableColumns<Columns...>;
 
+// helper template to calculate the logical OR
+template <bool A, bool B> struct LogicalOr {
+  static constexpr bool value = A || B;
+};
+
+/* SparseAvailable check empty */
+// helper template to calculate the logical OR for multiple values
+template <bool... Values> struct LogicalOrMultiple;
+
+// base case for a single value
+template <bool Value> struct LogicalOrMultiple<Value> {
+  static constexpr bool value = Value;
+};
+
+// recursive case for multiple values
+template <bool First, bool... Rest> struct LogicalOrMultiple<First, Rest...> {
+  static constexpr bool value =
+      LogicalOr<First, LogicalOrMultiple<Rest...>::value>::value;
+};
+
+// helper template to calculate the logical OR for SparseAvailable
+template <typename SparseAvailable> struct CheckSparseAvailableEmpty;
+
+// partial specialization for ColumnAvailable
+template <bool... Values>
+struct CheckSparseAvailableEmpty<ColumnAvailable<Values...>> {
+  static constexpr bool value = LogicalOrMultiple<Values...>::value;
+};
+
+// partial specialization for SparseAvailable
+template <typename... Columns>
+struct CheckSparseAvailableEmpty<SparseAvailable<Columns...>> {
+  static constexpr bool value =
+      LogicalOrMultiple<CheckSparseAvailableEmpty<Columns>::value...>::value;
+};
+
 /* Create Dense Available */
 // Generate false flags
 // base case: N = 0
@@ -116,6 +152,10 @@ struct RepeatColumnAvailable<0, ColumnAvailable, Columns...> {
 template <std::size_t M, std::size_t N>
 using DenseAvailable =
     typename RepeatColumnAvailable<M, GenerateTrueColumnAvailable<N>>::type;
+
+template <std::size_t M, std::size_t N>
+using DenseAvailableEmpty =
+    typename RepeatColumnAvailable<M, GenerateFalseColumnAvailable<N>>::type;
 
 /* Create Diag Available */
 // base case: N = 0
@@ -322,6 +362,135 @@ template <std::size_t M, std::size_t N>
 using DenseMatrixRowPointers =
     typename ToRowIndices<MatrixColumnRowPointers<M, N>>::type;
 
+/* Concatenate ColumnAvailable */
+template <typename Column1, typename Column2>
+struct ConcatenateColumnAvailableLists;
+
+template <bool... Flags1, bool... Flags2>
+struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
+                                       ColumnAvailable<Flags2...>> {
+  using type = ColumnAvailable<Flags1..., Flags2...>;
+};
+
+template <typename ColumnAvailable_A, typename ColumnAvailable_B>
+using ConcatenateColumnAvailable =
+    typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
+                                             ColumnAvailable_B>::type;
+
+/* Get ColumnAvailable from SparseAvailable */
+template <std::size_t N, typename SparseAvailable> struct GetColumnAvailable;
+
+template <std::size_t N, typename... Columns>
+struct GetColumnAvailable<N, SparseAvailable<Columns...>> {
+  using type = typename std::tuple_element<N, std::tuple<Columns...>>::type;
+};
+
+/* Concatenate SparseAvailable vertically */
+template <typename SparseAvailable1, typename SparseAvailable2>
+struct ConcatenateSparseAvailable;
+
+template <typename... Columns1, typename... Columns2>
+struct ConcatenateSparseAvailable<SparseAvailableColumns<Columns1...>,
+                                  SparseAvailableColumns<Columns2...>> {
+  using type = SparseAvailableColumns<Columns1..., Columns2...>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableVertically =
+    typename ConcatenateSparseAvailable<SparseAvailable_A,
+                                        SparseAvailable_B>::type;
+
+/* Concatenate SparseAvailable horizontally */
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t ColumnCount>
+struct ConcatenateSparseAvailableHorizontallyLoop {
+  using type = typename ConcatenateSparseAvailable<
+      typename ConcatenateSparseAvailableHorizontallyLoop<
+          SparseAvailable_A, SparseAvailable_B, (ColumnCount - 1)>::type,
+      SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
+          typename GetColumnAvailable<ColumnCount, SparseAvailable_A>::type,
+          typename GetColumnAvailable<ColumnCount,
+                                      SparseAvailable_B>::type>::type>>::type;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+struct ConcatenateSparseAvailableHorizontallyLoop<SparseAvailable_A,
+                                                  SparseAvailable_B, 0> {
+  using type = SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
+      typename GetColumnAvailable<0, SparseAvailable_A>::type,
+      typename GetColumnAvailable<0, SparseAvailable_B>::type>::type>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+using ConcatenateSparseAvailableHorizontally =
+    typename ConcatenateSparseAvailableHorizontallyLoop<
+        SparseAvailable_A, SparseAvailable_B,
+        SparseAvailable_A::number_of_columns - 1>::type;
+
+/* Concatenate ColumnAvailable with SparseAvailable  */
+// Helper template to concatenate two template parameter packs
+template <typename...> struct ConcatTuple;
+
+template <typename... Ts1, typename... Ts2>
+struct ConcatTuple<std::tuple<Ts1...>, std::tuple<Ts2...>> {
+  using type = std::tuple<Ts1..., Ts2...>;
+};
+
+// Template to concatenate ColumnAvailable and SparseAvailable
+template <typename Column, typename Sparse> struct ConcatColumnSparse;
+
+template <typename Column, typename... Columns>
+struct ConcatColumnSparse<Column, SparseAvailable<Columns...>> {
+  using type = SparseAvailable<Column, Columns...>;
+};
+
+/* Get rest of SparseAvailable */
+template <typename SparseAvailable_In, std::size_t Col_Index,
+          std::size_t Residual>
+struct GetRestOfSparseAvailableLoop {
+  using type = typename ConcatColumnSparse<
+      typename GetColumnAvailable<Col_Index, SparseAvailable_In>::type,
+      typename GetRestOfSparseAvailableLoop<SparseAvailable_In, (Col_Index + 1),
+                                            (Residual - 1)>::type>::type;
+};
+
+template <typename SparseAvailable_In, std::size_t Col_Index>
+struct GetRestOfSparseAvailableLoop<SparseAvailable_In, Col_Index, 0> {
+  using type = SparseAvailable<
+      typename GetColumnAvailable<Col_Index, SparseAvailable_In>::type>;
+};
+
+template <typename SparseAvailable_In, std::size_t Col_Index>
+using GetRestOfSparseAvailable = typename GetRestOfSparseAvailableLoop<
+    SparseAvailable_In, Col_Index,
+    ((SparseAvailable_In::number_of_columns - 1) - Col_Index)>::type;
+
+template <typename SparseAvailable_In, std::size_t Col_Index, bool NotEmpty>
+struct AvoidEmptyColumnsSparseAvailableLoop;
+
+template <typename SparseAvailable_In, std::size_t Col_Index>
+struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable_In, Col_Index,
+                                            true> {
+  using type = GetRestOfSparseAvailable<SparseAvailable_In, Col_Index>;
+};
+
+template <typename SparseAvailable_In, std::size_t Col_Index>
+struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable_In, Col_Index,
+                                            false> {
+  using type = typename AvoidEmptyColumnsSparseAvailableLoop<
+      SparseAvailable_In, (Col_Index + 1),
+      CheckSparseAvailableEmpty<typename GetColumnAvailable<
+          (Col_Index + 1), SparseAvailable_In>::type>::value>::type;
+};
+
+template <typename SparseAvailable_In>
+using AvoidEmptyColumnsSparseAvailable =
+    typename AvoidEmptyColumnsSparseAvailableLoop<
+        SparseAvailable_In, 0,
+        CheckSparseAvailableEmpty<SparseAvailableColumns<
+            typename GetColumnAvailable<0, SparseAvailable_In>::type>>::value>::
+        type;
+
 /* Create Row Indices */
 template <typename SparseAvailable, std::size_t ColumnElementNumber,
           bool Active, std::size_t RowElementNumber>
@@ -381,16 +550,27 @@ struct AssignSparseMatrixColumnLoop<SparseAvailable, 0> {
       (SparseAvailable::column_size - 1)>::type;
 };
 
+template <typename SparseAvailable, bool NotEmpty>
+struct RowIndicesSequenceFromSparseAvailable;
+
 template <typename SparseAvailable>
-struct RowIndicesSequenceFromSparseAvailable {
+struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
   using type = typename AssignSparseMatrixColumnLoop<
-      SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
+      AvoidEmptyColumnsSparseAvailable<SparseAvailable>,
+      (AvoidEmptyColumnsSparseAvailable<SparseAvailable>::number_of_columns -
+       1)>::type;
+};
+
+template <typename SparseAvailable>
+struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
+  using type = IndexSequence<0>;
 };
 
 template <typename SparseAvailable>
 using RowIndicesFromSparseAvailable =
     typename ToRowIndices<typename RowIndicesSequenceFromSparseAvailable<
-        SparseAvailable>::type>::type;
+        SparseAvailable,
+        CheckSparseAvailableEmpty<SparseAvailable>::value>::type>::type;
 
 /* Create Row Pointers */
 template <typename SparseAvailable, std::size_t ElementCount,
@@ -494,71 +674,6 @@ using RowPointersFromSparseAvailable =
         typename CountSparseMatrixColumnLoop<
             SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type,
         SparseAvailable>::type>::type;
-
-/* Concatenate ColumnAvailable */
-template <typename Column1, typename Column2>
-struct ConcatenateColumnAvailableLists;
-
-template <bool... Flags1, bool... Flags2>
-struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
-                                       ColumnAvailable<Flags2...>> {
-  using type = ColumnAvailable<Flags1..., Flags2...>;
-};
-
-template <typename ColumnAvailable_A, typename ColumnAvailable_B>
-using ConcatenateColumnAvailable =
-    typename ConcatenateColumnAvailableLists<ColumnAvailable_A,
-                                             ColumnAvailable_B>::type;
-
-/* Get ColumnAvailable from SparseAvailable */
-template <std::size_t N, typename SparseAvailable> struct GetColumnAvailable;
-
-template <std::size_t N, typename... Columns>
-struct GetColumnAvailable<N, SparseAvailable<Columns...>> {
-  using type = typename std::tuple_element<N, std::tuple<Columns...>>::type;
-};
-
-/* Concatenate SparseAvailable vertically */
-template <typename SparseAvailable1, typename SparseAvailable2>
-struct ConcatenateSparseAvailable;
-
-template <typename... Columns1, typename... Columns2>
-struct ConcatenateSparseAvailable<SparseAvailableColumns<Columns1...>,
-                                  SparseAvailableColumns<Columns2...>> {
-  using type = SparseAvailableColumns<Columns1..., Columns2...>;
-};
-
-template <typename SparseAvailable_A, typename SparseAvailable_B>
-using ConcatenateSparseAvailableVertically =
-    typename ConcatenateSparseAvailable<SparseAvailable_A,
-                                        SparseAvailable_B>::type;
-
-/* Concatenate SparseAvailable horizontally */
-template <typename SparseAvailable_A, typename SparseAvailable_B,
-          std::size_t ColumnCount>
-struct ConcatenateSparseAvailableHorizontallyLoop {
-  using type = typename ConcatenateSparseAvailable<
-      typename ConcatenateSparseAvailableHorizontallyLoop<
-          SparseAvailable_A, SparseAvailable_B, (ColumnCount - 1)>::type,
-      SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
-          typename GetColumnAvailable<ColumnCount, SparseAvailable_A>::type,
-          typename GetColumnAvailable<ColumnCount,
-                                      SparseAvailable_B>::type>::type>>::type;
-};
-
-template <typename SparseAvailable_A, typename SparseAvailable_B>
-struct ConcatenateSparseAvailableHorizontallyLoop<SparseAvailable_A,
-                                                  SparseAvailable_B, 0> {
-  using type = SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
-      typename GetColumnAvailable<0, SparseAvailable_A>::type,
-      typename GetColumnAvailable<0, SparseAvailable_B>::type>::type>;
-};
-
-template <typename SparseAvailable_A, typename SparseAvailable_B>
-using ConcatenateSparseAvailableHorizontally =
-    typename ConcatenateSparseAvailableHorizontallyLoop<
-        SparseAvailable_A, SparseAvailable_B,
-        SparseAvailable_A::number_of_columns - 1>::type;
 
 /* Sequence for Triangular */
 template <std::size_t Start, std::size_t End, std::size_t E_S>
@@ -712,11 +827,6 @@ using LowerTriangularRowPointers = typename ToRowPointers<
         typename LowerTriangularCountNumbers<M, N>::type, M>::type>::type;
 
 /* SparseAvailable Addition and Subtraction */
-// helper template to calculate the logical OR
-template <bool A, bool B> struct LogicalOr {
-  static constexpr bool value = A || B;
-};
-
 // helper template to calculate the matrix product
 template <typename MatrixA, typename MatrixB>
 struct MatrixAddSubSparseAvailableHelper;
