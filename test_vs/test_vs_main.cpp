@@ -2585,6 +2585,8 @@ void check_python_numpy_concatenate(void) {
         >
         CL({ 1, 3, 2, 8, 4, 1 });
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailableEmpty<3, 3>> Empty;
 
     /* 結合 */
     auto A_v_A = concatenate_vertically(A, A);
@@ -2675,6 +2677,21 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Dense and Sparse.");
+
+    auto A_v_E = concatenate_vertically(A, Empty);
+    auto A_v_E_dense = A_v_E.create_dense();
+
+    Matrix<DefDense, T, 6, 3> A_v_E_answer({
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 }
+    });
+
+    tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Empty.");
 
     auto B_v_A = concatenate_vertically(B, A);
     auto B_v_A_dense = B_v_A.create_dense();
