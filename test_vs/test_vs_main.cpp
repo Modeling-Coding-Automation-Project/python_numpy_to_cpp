@@ -508,7 +508,7 @@ void check_diag_matrix(void) {
     tester.expect_near(D_4.data, D_4_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix subtract DiagMatrix.");
 
-    T ddd = D.get_trace();
+    T ddd = output_trace(D);
     //std::cout << "trace " << ddd << std::endl;
 
     T ddd_answer = 6.0F;

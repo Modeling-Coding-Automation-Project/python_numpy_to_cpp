@@ -104,8 +104,6 @@ public:
     return result;
   }
 
-  inline T get_trace() const { return output_trace(*this); }
-
   inline Matrix<T, M, M> create_dense() const { return output_dense(*this); }
 
   inline DiagMatrix<T, M> inv(T division_min) const {
