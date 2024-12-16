@@ -429,24 +429,49 @@ using ConcatenateSparseAvailableHorizontally =
 
 /* Get rest of SparseAvailable */
 template <typename SparseAvailable, std::size_t Col_Index, std::size_t Residual>
-struct GetRestSparseAvailableLoop {
+struct GetRestOfSparseAvailableLoop {
   using type = ConcatenateSparseAvailableVertically<
       typename SparseAvailableColumns<
           typename GetColumnAvailable<Col_Index, SparseAvailable>::type>,
-      typename GetRestSparseAvailableLoop<SparseAvailable, (Col_Index + 1),
-                                          (Residual - 1)>::type>;
+      typename GetRestOfSparseAvailableLoop<SparseAvailable, (Col_Index + 1),
+                                            (Residual - 1)>::type>;
 };
 
 template <typename SparseAvailable, std::size_t Col_Index>
-struct GetRestSparseAvailableLoop<SparseAvailable, Col_Index, 0> {
+struct GetRestOfSparseAvailableLoop<SparseAvailable, Col_Index, 0> {
   using type = typename SparseAvailableColumns<
       typename GetColumnAvailable<Col_Index, SparseAvailable>::type>;
 };
 
 template <typename SparseAvailable, std::size_t Col_Index>
-using GetRestSparseAvailable = typename GetRestSparseAvailableLoop<
+using GetRestOfSparseAvailable = typename GetRestOfSparseAvailableLoop<
     SparseAvailable, Col_Index,
     ((SparseAvailable::number_of_columns - 1) - Col_Index)>::type;
+
+template <typename SparseAvailable, std::size_t Col_Index, bool NotEmpty>
+struct AvoidEmptyColumnsSparseAvailableLoop;
+
+template <typename SparseAvailable, std::size_t Col_Index>
+struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable, Col_Index, true> {
+  using type = GetRestOfSparseAvailable<SparseAvailable, Col_Index>;
+};
+
+template <typename SparseAvailable, std::size_t Col_Index>
+struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable, Col_Index, false> {
+  using type = typename AvoidEmptyColumnsSparseAvailableLoop<
+      SparseAvailable, (Col_Index + 1),
+      CheckSparseAvailableEmpty<
+          typename SparseAvailableColumns<typename GetColumnAvailable<
+              (Col_Index + 1), SparseAvailable>::type>>::value>::type;
+};
+
+template <typename SparseAvailable>
+using AvoidEmptyColumnsSparseAvailable =
+    typename AvoidEmptyColumnsSparseAvailableLoop<
+        SparseAvailable, 0,
+        CheckSparseAvailableEmpty<SparseAvailableColumns<
+            typename GetColumnAvailable<0, SparseAvailable>::type>>::value>::
+        type;
 
 /* Create Row Indices */
 template <typename SparseAvailable, std::size_t ColumnElementNumber,
@@ -513,7 +538,9 @@ struct RowIndicesSequenceFromSparseAvailable;
 template <typename SparseAvailable>
 struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
   using type = typename AssignSparseMatrixColumnLoop<
-      SparseAvailable, (SparseAvailable::number_of_columns - 1)>::type;
+      AvoidEmptyColumnsSparseAvailable<SparseAvailable>,
+      (AvoidEmptyColumnsSparseAvailable<SparseAvailable>::number_of_columns -
+       1)>::type;
 };
 
 template <typename SparseAvailable>
