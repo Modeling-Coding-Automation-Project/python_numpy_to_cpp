@@ -234,7 +234,8 @@ public:
   }
 
   inline auto create_dense(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->matrix.create_dense());
+    return Matrix<DefDense, T, M, M>(
+        Base::Matrix::output_dense_matrix(this->matrix));
   }
 
   inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }

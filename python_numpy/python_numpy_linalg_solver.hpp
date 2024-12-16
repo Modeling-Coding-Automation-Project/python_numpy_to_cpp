@@ -171,7 +171,7 @@ public:
     Base::Matrix::DiagMatrix<T, M> result =
         Base::Matrix::diag_divide_diag(B.matrix, A.matrix, this->division_min);
 
-    X_1 = result.create_dense();
+    X_1 = Base::Matrix::output_dense_matrix(result);
 
     return Matrix<DefDiag, T, M>(std::move(result));
   }
@@ -239,7 +239,7 @@ public:
 
     Base::Matrix::DiagMatrix<T, M> result = A.matrix.inv(this->division_min);
 
-    X_1 = result.create_dense();
+    X_1 = Base::Matrix::output_dense_matrix(result);
 
     return Matrix<DefDiag, T, M>(std::move(result));
   }

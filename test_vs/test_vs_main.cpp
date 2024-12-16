@@ -515,7 +515,7 @@ void check_diag_matrix(void) {
     tester.expect_near(ddd, ddd_answer, NEAR_LIMIT_STRICT,
         "check DiagMatrix trace.");
 
-    Matrix<T, 3, 3> D_dense = D.create_dense();
+    Matrix<T, 3, 3> D_dense = output_dense_matrix(D);
 
     Matrix<T, 3, 3> D_dense_answer({
     {1, 0, 0},

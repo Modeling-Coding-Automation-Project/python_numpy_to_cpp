@@ -22,7 +22,7 @@ public:
   LUDecomposition(const DiagMatrix<T, M> &matrix)
       : _division_min(static_cast<T>(0)) {
     this->_Lower = Matrix<T, M, M>::identity();
-    this->_Upper = matrix.create_dense();
+    this->_Upper = Base::Matrix::output_dense_matrix(matrix);
   }
 
   /* Copy Constructor */
