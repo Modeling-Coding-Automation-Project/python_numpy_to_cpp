@@ -427,19 +427,36 @@ using ConcatenateSparseAvailableHorizontally =
         SparseAvailable_A, SparseAvailable_B,
         SparseAvailable_A::number_of_columns - 1>::type;
 
+/* Concatenate ColumnAvailable with SparseAvailable  */
+// Helper template to concatenate two template parameter packs
+template <typename...> struct ConcatTuple;
+
+template <typename... Ts1, typename... Ts2>
+struct ConcatTuple<std::tuple<Ts1...>, std::tuple<Ts2...>> {
+  using type = std::tuple<Ts1..., Ts2...>;
+};
+
+// Template to concatenate ColumnAvailable and SparseAvailable
+template <typename Column, typename Sparse> struct ConcatColumnSparse;
+
+template <typename Column, typename... Columns>
+struct ConcatColumnSparse<Column, SparseAvailable<Columns...>> {
+  using type = SparseAvailable<Column, Columns...>;
+};
+
 /* Get rest of SparseAvailable */
-template <typename SparseAvailable, std::size_t Col_Index, std::size_t Residual>
+template <typename SparseAvailable_In, std::size_t Col_Index,
+          std::size_t Residual>
 struct GetRestOfSparseAvailableLoop {
-  using type = ConcatenateSparseAvailableVertically<
-      typename SparseAvailableColumns<
-          typename GetColumnAvailable<Col_Index, SparseAvailable>::type>,
-      typename GetRestOfSparseAvailableLoop<SparseAvailable, (Col_Index + 1),
-                                            (Residual - 1)>::type>;
+  using type = typename ConcatColumnSparse<
+      typename GetColumnAvailable<Col_Index, SparseAvailable_In>::type,
+      typename GetRestOfSparseAvailableLoop<SparseAvailable_In, (Col_Index + 1),
+                                            (Residual - 1)>::type>::type;
 };
 
 template <typename SparseAvailable_In, std::size_t Col_Index>
 struct GetRestOfSparseAvailableLoop<SparseAvailable_In, Col_Index, 0> {
-  using type = typename SparseAvailableColumns<
+  using type = SparseAvailable<
       typename GetColumnAvailable<Col_Index, SparseAvailable_In>::type>;
 };
 
@@ -462,9 +479,8 @@ struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable_In, Col_Index,
                                             false> {
   using type = typename AvoidEmptyColumnsSparseAvailableLoop<
       SparseAvailable_In, (Col_Index + 1),
-      CheckSparseAvailableEmpty<
-          typename SparseAvailableColumns<typename GetColumnAvailable<
-              (Col_Index + 1), SparseAvailable_In>::type>>::value>::type;
+      CheckSparseAvailableEmpty<typename GetColumnAvailable<
+          (Col_Index + 1), SparseAvailable_In>::type>::value>::type;
 };
 
 template <typename SparseAvailable_In>
