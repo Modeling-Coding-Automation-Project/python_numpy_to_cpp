@@ -562,7 +562,7 @@ void check_sparse_matrix(void) {
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
-    Matrix<T, 3, 3> Cc_mul_A = SparseCc.transpose();
+    Matrix<T, 3, 3> Cc_mul_A = output_matrix_transpose(SparseCc);
     Matrix<T, 3, 3> Cn_mul_A = SparseCn.transpose();
 
     tester.expect_near(Cc_mul_A.data, Cn_mul_A.data, NEAR_LIMIT_STRICT,

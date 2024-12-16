@@ -83,8 +83,6 @@ public:
   /* Function */
   Matrix<T, M, N> create_dense() const { return output_dense_matrix(*this); }
 
-  Matrix<T, N, M> transpose() const { return output_transpose_matrix(*this); }
-
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
@@ -273,7 +271,7 @@ static inline void COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX(
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
-inline Matrix<T, N, M> output_transpose_matrix(
+inline Matrix<T, N, M> output_matrix_transpose(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat) {
   Matrix<T, N, M> result;
 

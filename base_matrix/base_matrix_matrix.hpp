@@ -285,10 +285,6 @@ public:
 
 #endif // BASE_MATRIX_USE_STD_VECTOR
 
-  inline Matrix<T, N, M> transpose() const {
-    return output_matrix_transpose(*this);
-  }
-
   constexpr std::size_t rows() const { return N; }
 
   constexpr std::size_t cols() const { return M; }

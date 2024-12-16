@@ -111,7 +111,8 @@ public:
   }
 
   inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(this->matrix.transpose());
+    return Matrix<DefDense, T, N, M>(
+        Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
   inline auto create_complex(void)
@@ -324,7 +325,8 @@ public:
   }
 
   inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(this->matrix.transpose());
+    return Matrix<DefDense, T, N, M>(
+        Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
   /* Variable */
