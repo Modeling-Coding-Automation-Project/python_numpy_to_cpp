@@ -117,7 +117,7 @@ private:
 
 /* make LinalgSolverCholesky */
 template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse>
+          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolverCholesky<T, M, SparseAvailable> {
 
@@ -125,7 +125,7 @@ inline auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
 }
 
 template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse>
+          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolverCholesky(const Matrix<DefDiag, T, M> &A)
     -> LinalgSolverCholesky<T, M, SparseAvailable> {
 
