@@ -2587,6 +2587,9 @@ void check_python_numpy_concatenate(void) {
 
     Matrix<DefSparse, T, 3, 3,
         SparseAvailableEmpty<3, 3>> Empty;
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailableEmpty<4, 3>> EmptyL;
+
 
     /* 結合 */
     auto A_v_A = concatenate_vertically(A, A);
@@ -3009,6 +3012,19 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(AL_h_CL_dense.matrix.data, AL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Dense and Sparse.");
 
+    auto AL_h_EL = concatenate_horizontally(AL, EmptyL);
+    auto AL_h_EL_dense = AL_h_EL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> AL_h_EL_answer({
+        {1, 2, 3, 0, 0, 0},
+        {5, 4, 6, 0, 0, 0},
+        {9, 8, 7, 0, 0, 0},
+        {2, 2, 3, 0, 0, 0}
+    });
+
+    tester.expect_near(AL_h_EL_dense.matrix.data, AL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Dense and Empty.");
+
     auto BL_h_AL = concatenate_horizontally(BL, AL);
     auto BL_h_AL_dense = BL_h_AL.create_dense();
 
@@ -3087,6 +3103,19 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Diag and Sparse.");
 
+    auto BL_h_EL = concatenate_horizontally(BL, EmptyL);
+    auto BL_h_EL_dense = BL_h_EL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> BL_h_EL_answer({
+        {1, 0, 0, 0, 0, 0, 0},
+        {0, 2, 0, 0, 0, 0, 0},
+        {0, 0, 3, 0, 0, 0, 0},
+        {0, 0, 0, 4, 0, 0, 0}
+    });
+
+    tester.expect_near(BL_h_EL_dense.matrix.data, BL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Diag and Empty.");
+
     auto CL_h_AL = concatenate_horizontally(CL, AL);
     auto CL_h_AL_dense = CL_h_AL.create_dense();
 
@@ -3113,6 +3142,18 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Dense.");
 
+    auto EL_h_AL = concatenate_horizontally(EmptyL, AL);
+    auto EL_h_AL_dense = EL_h_AL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> EL_h_AL_answer({
+        {0, 0, 0, 1, 2, 3},
+        {0, 0, 0, 5, 4, 6},
+        {0, 0, 0, 9, 8, 7},
+        {0, 0, 0, 2, 2, 3}
+    });
+
+    tester.expect_near(EL_h_AL_dense.matrix.data, EL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Dense.");
 
     auto CL_h_BL = concatenate_horizontally(CL, BL);
     auto CL_h_BL_dense = CL_h_BL.create_dense();
@@ -3140,6 +3181,19 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Diag.");
 
+    auto EL_h_BL = concatenate_horizontally(EmptyL, BL);
+    auto EL_h_BL_dense = EL_h_BL.create_dense();
+
+    Matrix<DefDense, T, 4, 7> EL_h_BL_answer({
+        {0, 0, 0, 1, 0, 0, 0},
+        {0, 0, 0, 0, 2, 0, 0},
+        {0, 0, 0, 0, 0, 3, 0},
+        {0, 0, 0, 0, 0, 0, 4}
+    });
+
+    tester.expect_near(EL_h_BL_dense.matrix.data, EL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Diag.");
+
     auto CL_h_CL = concatenate_horizontally(CL, CL);
     auto CL_h_CL_dense = CL_h_CL.create_dense();
 
@@ -3165,6 +3219,19 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update horizontally concatenated matrix Sparse and Sparse.");
+
+    auto EL_h_CL = concatenate_horizontally(EmptyL, CL);
+    auto EL_h_CL_dense = EL_h_CL.create_dense();
+
+    Matrix<DefDense, T, 4, 6> EL_h_CL_answer({
+        {0, 0, 0, 1, 3, 0},
+        {0, 0, 0, 0, 0, 2},
+        {0, 0, 0, 0, 8, 4},
+        {0, 0, 0, 0, 1, 0}
+    });
+
+    tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate horizontally Empty and Sparse.");
 
 
     tester.throw_error_if_test_failed();
