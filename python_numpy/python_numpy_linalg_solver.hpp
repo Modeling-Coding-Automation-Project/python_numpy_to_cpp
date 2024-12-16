@@ -146,7 +146,8 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
                                  this->decay_rate, this->division_min,
@@ -180,7 +181,8 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
     X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
                                                 this->division_min);
@@ -216,7 +218,8 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
                                         this->decay_rate, this->division_min,
@@ -506,7 +509,8 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::gmres_k_rect_matrix(A.matrix, B_dense_matrix, this->X_1,
                                       this->decay_rate, this->division_min,
@@ -547,7 +551,8 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::Matrix<T, M, K> B_dense_matrix = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::sparse_gmres_k_rect_matrix(
         A.matrix, B_dense_matrix, this->X_1, this->decay_rate,

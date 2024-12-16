@@ -288,7 +288,8 @@ public:
 
   /* Function */
   inline auto create_dense(void) -> Matrix<DefDense, T, M, N> {
-    return Matrix<DefDense, T, M, N>(this->matrix.create_dense());
+    return Matrix<DefDense, T, M, N>(
+        Base::Matrix::output_dense_matrix(this->matrix));
   }
 
   template <std::size_t COL, std::size_t ROW> inline T get() const {

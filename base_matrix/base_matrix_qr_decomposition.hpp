@@ -164,7 +164,8 @@ public:
   QRDecompositionSparse(
       const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
       T division_min)
-      : _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix(A.create_dense()),
+      : _Q_matrix(Matrix<T, M, M>::identity()),
+        _R_matrix(Base::Matrix::output_dense_matrix(A)),
         _division_min(division_min) {
     this->_decompose(A);
   }

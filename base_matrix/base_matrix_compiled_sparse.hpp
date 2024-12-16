@@ -80,9 +80,6 @@ public:
     return *this;
   }
 
-  /* Function */
-  Matrix<T, M, N> create_dense() const { return output_dense_matrix(*this); }
-
   /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
