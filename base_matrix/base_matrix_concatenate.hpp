@@ -132,9 +132,16 @@ inline void update_vertically_concatenated_matrix(
     const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
-  std::copy(sparse_A.values.begin(), sparse_A.values.end(), Y.values.begin());
+  // std::copy(sparse_A.values.begin(), sparse_A.values.end(),
+  // Y.values.begin());
+  Base::Utility::copy<T, 0, (M * N), 0, (M * N),
+                      ((M * N) + RowPointers_B::list[P])>(sparse_A.values,
+                                                          Y.values);
 
-  std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M * N);
+  // std::copy(B.values.begin(), B.values.end(), Y.values.begin() + M * N);
+  Base::Utility::copy<T, 0, RowPointers_B::list[P], (M * N),
+                      RowPointers_B::list[P],
+                      ((M * N) + RowPointers_B::list[P])>(B.values, Y.values);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,

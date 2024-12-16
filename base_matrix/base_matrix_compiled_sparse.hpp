@@ -89,7 +89,7 @@ public:
 #ifdef BASE_MATRIX_USE_STD_VECTOR
   std::vector<T> values;
 #else  // BASE_MATRIX_USE_STD_VECTOR
-  std::array<T, RowIndices::size> values;
+  std::array<T, RowPointers::list[M]> values;
 #endif // BASE_MATRIX_USE_STD_VECTOR
 };
 
