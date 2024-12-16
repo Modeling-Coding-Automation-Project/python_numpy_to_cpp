@@ -2828,6 +2828,21 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Dense.");
 
+    auto E_v_A = concatenate_vertically(Empty, A);
+    auto E_v_A_dense = E_v_A.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_A_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 2, 3 },
+        { 5, 4, 6 },
+        { 9, 8, 7 }
+    });
+
+    tester.expect_near(E_v_A_dense.matrix.data, E_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Dense.");
+
     auto C_v_B = concatenate_vertically(C, B);
     auto C_v_B_dense = C_v_B.create_dense();
 
@@ -2858,6 +2873,21 @@ void check_python_numpy_concatenate(void) {
     tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Diag.");
 
+    auto E_v_B = concatenate_vertically(Empty, B);
+    auto E_v_B_dense = E_v_B.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_B_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 0, 0 },
+        { 0, 2, 0 },
+        { 0, 0, 3 }
+    });
+
+    tester.expect_near(E_v_B_dense.matrix.data, E_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Diag.");
+
     auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
     auto C_v_C_dense = C_v_C.create_dense();
 
@@ -2887,6 +2917,21 @@ void check_python_numpy_concatenate(void) {
 
     tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update vertically concatenated matrix Sparse and Sparse.");
+
+    auto E_v_C = concatenate_vertically(Empty, C);
+    auto E_v_C_dense = E_v_C.create_dense();
+
+    Matrix<DefDense, T, 6, 3> E_v_C_answer({
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 1, 0, 0 },
+        { 3, 0, 8 },
+        { 0, 2, 4 }
+    });
+
+    tester.expect_near(E_v_C_dense.matrix.data, E_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Empty and Sparse.");
 
     auto AL_h_AL = concatenate_horizontally(AL, AL);
 
