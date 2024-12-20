@@ -2,6 +2,7 @@
 #define BASE_MATRIX_DIAGONAL_HPP
 
 #include "base_matrix_macros.hpp"
+
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
 

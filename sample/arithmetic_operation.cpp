@@ -54,6 +54,9 @@ int main() {
   }
   std::cout << std::endl;
 
+  // if you want to expand columns and rows of sparse matrix, you should use
+  // Empty Sparse Matrix and "concatenate_horizontally" and
+  // "concatenate_vertically".
   auto concat_E_C = concatenate_horizontally(E, C);
   auto concat_E_C_dense =
       concat_E_C.create_dense(); // convert SparseMatrix to DenseMatrix
