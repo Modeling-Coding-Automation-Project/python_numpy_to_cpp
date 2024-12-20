@@ -1,9 +1,10 @@
 #ifndef BASE_MATRIX_VECTOR_HPP
 #define BASE_MATRIX_VECTOR_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_complex.hpp"
-#include "base_matrix_macros.hpp"
 
 #include <array>
 #include <cstddef>
@@ -130,7 +131,7 @@ public:
 
     T sum = this->dot(*this);
 
-    return Base::Math::sqrt_base_math<
+    return Base::Math::sqrt_newton_method<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
   }
 
@@ -138,7 +139,7 @@ public:
 
     T sum = this->dot(*this);
 
-    return Base::Math::sqrt_base_math<
+    return Base::Math::sqrt_newton_method<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
   }
 
@@ -146,7 +147,7 @@ public:
 
     T sum = this->dot(*this);
 
-    return Base::Math::rsqrt_base_math<
+    return Base::Math::rsqrt_newton_method<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
   }
 
@@ -154,7 +155,7 @@ public:
 
     T sum = this->dot(*this);
 
-    return Base::Math::rsqrt_base_math<
+    return Base::Math::rsqrt_newton_method<
         T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
   }
 
@@ -617,7 +618,7 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::sqrt_base_math<
+  return Base::Math::sqrt_newton_method<
       T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
 }
 
@@ -639,7 +640,7 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp,
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::sqrt_base_math<
+  return Base::Math::sqrt_newton_method<
       T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
 }
 
@@ -660,7 +661,7 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::rsqrt_base_math<
+  return Base::Math::rsqrt_newton_method<
       T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
 }
 
@@ -682,7 +683,7 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::rsqrt_base_math<
+  return Base::Math::rsqrt_newton_method<
       T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
 }
 

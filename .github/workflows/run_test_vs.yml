@@ -9,6 +9,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        define:
+          - ""
+          - "-DBASE_MATRIX_USE_STD_VECTOR"
+          - "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION"
+          - "-DBASE_MATH_USE_STD_MATH"
+          - "-DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION"
+          - "-DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATH_USE_STD_MATH"
+          - "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION -DBASE_MATH_USE_STD_MATH"
+          - "-DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -DBASE_MATH_USE_STD_MATH"
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,34 +30,6 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y g++
 
-    - name: Build C++ application
+    - name: Build and Run C++ application
       run: |
-        g++ -std=c++11 -Wall -I ./python_numpy -I ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I ./external_libraries/base_utility_cpp/base_utility -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
-
-    - name: Run the application
-      run: |
-        ./test_vs/app
-
-    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR
-      run: |
-        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -I ./python_numpy -I ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I ./external_libraries/base_utility_cpp/base_utility -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
-
-    - name: Run the application
-      run: |
-        ./test_vs/app
-
-    - name: Build C++ application with BASE_MATRIX_USE_FOR_LOOP_OPERATION
-      run: |
-        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I ./external_libraries/base_utility_cpp/base_utility -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
-
-    - name: Run the application
-      run: |
-        ./test_vs/app
-
-    - name: Build C++ application with BASE_MATRIX_USE_STD_VECTOR, BASE_MATRIX_USE_FOR_LOOP_OPERATION
-      run: |
-        g++ -std=c++11 -Wall -DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION -I ./python_numpy -I ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I ./external_libraries/base_utility_cpp/base_utility -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp
-
-    - name: Run the application
-      run: |
-        ./test_vs/app
+        g++ -std=c++11 -Wall ${{ matrix.define }} -I ./python_numpy -I ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I ./external_libraries/base_utility_cpp/base_utility -I ./test_vs/MCAP_tester/include -o ./test_vs/app ./test_vs/test_vs_main.cpp && ./test_vs/app

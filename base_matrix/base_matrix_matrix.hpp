@@ -1,8 +1,9 @@
 #ifndef BASE_MATRIX_MATRIX_HPP
 #define BASE_MATRIX_MATRIX_HPP
 
-#include "base_matrix_complex.hpp"
 #include "base_matrix_macros.hpp"
+
+#include "base_matrix_complex.hpp"
 #include "base_matrix_vector.hpp"
 #include "base_utility.hpp"
 

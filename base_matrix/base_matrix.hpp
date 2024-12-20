@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_HPP
 #define BASE_MATRIX_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_matrix_cholesky_decomposition.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
@@ -10,7 +12,6 @@
 #include "base_matrix_eigen_solver.hpp"
 #include "base_matrix_inverse.hpp"
 #include "base_matrix_lu_decomposition.hpp"
-#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_qr_decomposition.hpp"
 #include "base_matrix_sparse.hpp"
