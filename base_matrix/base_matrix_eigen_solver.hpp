@@ -168,7 +168,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt_base_math<
+      x_abs = Base::Math::sqrt_newton_method<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
@@ -230,7 +230,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt_base_math<
+      x_abs = Base::Math::sqrt_newton_method<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
       u[k] = R(k, k) + Base::Utility::sign(R(k, k)) * x_abs;
@@ -293,7 +293,7 @@ private:
     T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
     T c2;
     if (c2_2 >= 0) {
-      c2 = Base::Math::sqrt_base_math<
+      c2 = Base::Math::sqrt_newton_method<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(c2_2);
     } else {
       c2 = static_cast<T>(0);
@@ -554,7 +554,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt_base_math<
+      x_abs = Base::Math::sqrt_newton_method<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
@@ -617,7 +617,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt_base_math<
+      x_abs = Base::Math::sqrt_newton_method<
           T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(x_abs);
 
       u[k] = R(k, k) +
