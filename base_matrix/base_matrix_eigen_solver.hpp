@@ -1,12 +1,13 @@
 #ifndef BASE_MATRIX_EIGEN_SOLVER_HPP
 #define BASE_MATRIX_EIGEN_SOLVER_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_inverse.hpp"
 #include "base_matrix_lu_decomposition.hpp"
-#include "base_matrix_macros.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"

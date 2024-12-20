@@ -1,9 +1,10 @@
 #ifndef BASE_MATRIX_VECTOR_HPP
 #define BASE_MATRIX_VECTOR_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_complex.hpp"
-#include "base_matrix_macros.hpp"
 
 #include <array>
 #include <cstddef>
