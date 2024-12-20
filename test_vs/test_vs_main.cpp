@@ -3912,5 +3912,7 @@ int main() {
     check_python_numpy_calc<float>();
 
 
+    std::cout << "All tests passed." << std::endl;
+
     return 0;
 }
