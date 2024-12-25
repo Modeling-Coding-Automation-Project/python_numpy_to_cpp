@@ -2,7 +2,7 @@ name: Run test VS
 
 on:
   push:
-    branches: [ develop, update_external_libraries ]
+    branches: [ develop ]
 
 jobs:
   build:
