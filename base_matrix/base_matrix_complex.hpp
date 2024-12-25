@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_COMPLEX_HPP
 #define BASE_MATRIX_COMPLEX_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_utility.hpp"
 

@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_QR_DECOMPOSITION_HPP
 #define BASE_MATRIX_QR_DECOMPOSITION_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"

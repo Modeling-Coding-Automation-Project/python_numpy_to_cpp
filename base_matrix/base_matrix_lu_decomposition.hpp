@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_LU_DECOMPOSITION_HPP
 #define BASE_MATRIX_LU_DECOMPOSITION_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
