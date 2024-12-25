@@ -28,8 +28,7 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      T temp_inv = Base::Math::rsqrt<T>(
           temp, static_cast<T>(
                     Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
       Y(i, i) = static_cast<T>(1) / temp_inv;
@@ -48,8 +47,7 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      T temp_inv = Base::Math::rsqrt<T>(
           temp, static_cast<T>(
                     Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
       Y(i, i) = static_cast<T>(1) / temp_inv;
@@ -71,8 +69,7 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = Base::Math::sqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(temp);
+      Y(i, i) = Base::Math::sqrt<T>(temp);
     }
   }
 
@@ -87,8 +84,7 @@ inline DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
 
   for (std::size_t i = 0; i < M; ++i) {
     if (U[i] >= static_cast<T>(0)) {
-      Y[i] = Base::Math::sqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(U[i]);
+      Y[i] = Base::Math::sqrt<T>(U[i]);
     } else {
       zero_div_flag = true;
       Y = Y_b;
@@ -115,8 +111,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      T temp_inv = Base::Math::rsqrt<T>(
           temp, static_cast<T>(
                     Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
       Y(i, i) = static_cast<T>(1) / temp_inv;
@@ -135,8 +130,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      T temp_inv = Base::Math::rsqrt<T>(
           temp, static_cast<T>(
                     Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
       Y(i, i) = static_cast<T>(1) / temp_inv;
@@ -158,8 +152,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
         zero_div_flag = true;
         return Y_b;
       }
-      Y(i, i) = Base::Math::sqrt_newton_method<
-          T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(temp);
+      Y(i, i) = Base::Math::sqrt<T>(temp);
     }
   }
 

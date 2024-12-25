@@ -131,32 +131,28 @@ public:
 
     T sum = this->dot(*this);
 
-    return Base::Math::sqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+    return Base::Math::sqrt<T>(sum);
   }
 
   inline T norm(const T &division_min) const {
 
     T sum = this->dot(*this);
 
-    return Base::Math::sqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+    return Base::Math::sqrt<T>(sum, division_min);
   }
 
   inline T norm_inv() const {
 
     T sum = this->dot(*this);
 
-    return Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+    return Base::Math::rsqrt<T>(sum);
   }
 
   inline T norm_inv(const T &division_min) const {
 
     T sum = this->dot(*this);
 
-    return Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+    return Base::Math::rsqrt<T>(sum, division_min);
   }
 
 /* Variable */
@@ -618,8 +614,8 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::sqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  return Base::Math::sqrt<T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+      sum);
 }
 
 template <typename T, std::size_t N>
@@ -640,8 +636,7 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp,
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::sqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+  return Base::Math::sqrt<T>(sum, division_min);
 }
 
 template <typename T, std::size_t N>
@@ -661,8 +656,7 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::rsqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum);
+  return Base::Math::rsqrt<T>(sum);
 }
 
 template <typename T, std::size_t N>
@@ -683,8 +677,7 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
 
-  return Base::Math::rsqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(sum, division_min);
+  return Base::Math::rsqrt<T>(sum, division_min);
 }
 
 /* Complex Normalize */

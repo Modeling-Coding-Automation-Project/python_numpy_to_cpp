@@ -83,10 +83,9 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
       }
     }
 
-    T delta_inv = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        r(n - 1, n - 1) * r(n - 1, n - 1) + h(n, n - 1) * h(n, n - 1),
-        division_min);
+    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1),
+                                       division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
     s[n - 1] = h(n, n - 1) * delta_inv;
@@ -234,10 +233,9 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
       }
     }
 
-    T delta_inv = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        r(n - 1, n - 1) * r(n - 1, n - 1) + h(n, n - 1) * h(n, n - 1),
-        division_min);
+    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1),
+                                       division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
     s[n - 1] = h(n, n - 1) * delta_inv;
@@ -392,10 +390,9 @@ inline Vector<T, M> sparse_gmres_k(
       }
     }
 
-    T delta_inv = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        r(n - 1, n - 1) * r(n - 1, n - 1) + h(n, n - 1) * h(n, n - 1),
-        division_min);
+    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1),
+                                       division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
     s[n - 1] = h(n, n - 1) * delta_inv;
@@ -530,10 +527,9 @@ inline Vector<T, N> sparse_gmres_k_rect(
       }
     }
 
-    T delta_inv = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        r(n - 1, n - 1) * r(n - 1, n - 1) + h(n, n - 1) * h(n, n - 1),
-        division_min);
+    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
+                                           h(n, n - 1) * h(n, n - 1),
+                                       division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
     s[n - 1] = h(n, n - 1) * delta_inv;
@@ -705,11 +701,10 @@ inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
       }
     }
 
-    T delta_inv = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
-            Base::Matrix::complex_abs_sq(h(n, n - 1)),
-        division_min);
+    T delta_inv =
+        Base::Math::rsqrt<T>(Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
+                                 Base::Matrix::complex_abs_sq(h(n, n - 1)),
+                             division_min);
 
     c[n - 1] = r(n - 1, n - 1) * delta_inv;
     s[n - 1] = h(n, n - 1) * delta_inv;
