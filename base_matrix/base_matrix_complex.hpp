@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_COMPLEX_HPP
 #define BASE_MATRIX_COMPLEX_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_utility.hpp"
 
@@ -216,9 +218,8 @@ inline Complex<T> complex_divide(T a, const Complex<T> &b_comp,
 template <typename T> inline T complex_abs(const Complex<T> &a_comp) {
   T result;
 
-  result = Base::Math::sqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  result = Base::Math::sqrt<T>(a_comp.real * a_comp.real +
+                               a_comp.imag * a_comp.imag);
 
   return result;
 }
@@ -252,22 +253,18 @@ inline Complex<T> complex_conjugate(const Complex<T> &a_comp) {
 template <typename T> inline Complex<T> complex_sqrt(const Complex<T> &a_comp) {
   Complex<T> result;
 
-  T a_abs = Base::Math::sqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag);
+  T a_abs = Base::Math::sqrt<T>(a_comp.real * a_comp.real +
+                                a_comp.imag * a_comp.imag);
 
-  result.real = Base::Math::sqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>((a_comp.real + a_abs) *
-                                                         static_cast<T>(0.5));
+  result.real =
+      Base::Math::sqrt<T>((a_comp.real + a_abs) * static_cast<T>(0.5));
 
   if (a_comp.imag >= 0) {
-    result.imag = Base::Math::sqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        (-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag =
+        Base::Math::sqrt<T>((-a_comp.real + a_abs) * static_cast<T>(0.5));
   } else {
-    result.imag = -Base::Math::sqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        (-a_comp.real + a_abs) * static_cast<T>(0.5));
+    result.imag =
+        -Base::Math::sqrt<T>((-a_comp.real + a_abs) * static_cast<T>(0.5));
   }
 
   return result;
@@ -277,8 +274,7 @@ template <typename T>
 inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
   Complex<T> result;
 
-  T a_abs_r = Base::Math::rsqrt_newton_method<
-      T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
+  T a_abs_r = Base::Math::rsqrt<T>(
       a_comp.real * a_comp.real + a_comp.imag * a_comp.imag, division_min);
 
   result.real = a_comp.real * a_abs_r;

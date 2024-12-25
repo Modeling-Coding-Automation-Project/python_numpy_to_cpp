@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_VARIABLE_SPARSE_HPP
 #define BASE_MATRIX_VARIABLE_SPARSE_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"

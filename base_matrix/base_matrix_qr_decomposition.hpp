@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_QR_DECOMPOSITION_HPP
 #define BASE_MATRIX_QR_DECOMPOSITION_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include "base_math.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
@@ -25,9 +27,7 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
   if (Base::Math::abs(R_matrix(i, j)) > Base::Math::abs(R_matrix(j, j))) {
     T t = -R_matrix(j, j) /
           Base::Utility::avoid_zero_divide(R_matrix(i, j), division_min);
-    s = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        static_cast<T>(1) + t * t, division_min);
+    s = Base::Math::rsqrt<T>(static_cast<T>(1) + t * t, division_min);
     c = s * t;
 
     for (std::size_t k = j; k < N; ++k) {
@@ -46,9 +46,7 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
   } else {
     T t = -R_matrix(i, j) /
           Base::Utility::avoid_zero_divide(R_matrix(j, j), division_min);
-    c = Base::Math::rsqrt_newton_method<
-        T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-        static_cast<T>(1) + t * t, division_min);
+    c = Base::Math::rsqrt<T>(static_cast<T>(1) + t * t, division_min);
     s = c * t;
 
     for (std::size_t k = j; k < N; ++k) {

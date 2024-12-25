@@ -1,6 +1,8 @@
 #ifndef BASE_MATRIX_TEMPLATES_HPP
 #define BASE_MATRIX_TEMPLATES_HPP
 
+#include "base_matrix_macros.hpp"
+
 #include <tuple>
 
 namespace Base {
