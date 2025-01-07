@@ -2319,6 +2319,24 @@ void check_python_numpy_base(void) {
         "check Matrix multiply EmptyMatrix.");
 
 
+    /* Empty 演算 補足 */
+    Matrix<DefSparse, T, 4, 1, SparseAvailableEmpty<4, 1>> SS_D;
+
+    Matrix<DefSparse, T, 1, 1, DenseAvailable<1, 1>> SS_U;
+
+    auto SS_D_mul_SS_U = SS_D * SS_U;
+    auto SS_D_mul_SS_U_dense = SS_D_mul_SS_U.create_dense();
+
+    Matrix<DefDense, T, 4, 1> SS_D_mul_SS_U_answer({
+        {0},
+        {0},
+        {0},
+        {0}
+    });
+
+    tester.expect_near(SS_D_mul_SS_U_dense.matrix.data, SS_D_mul_SS_U_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check EmptyMatrix multiply EmptyMatrix SS.");
+
 
     tester.throw_error_if_test_failed();
 }

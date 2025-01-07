@@ -960,7 +960,7 @@ template <typename SparseAvailable_A, typename SparseAvailable_B>
 using SparseAvailableMatrixMultiply =
     typename SparseAvailableMatrixMultiplyColumnLoop<
         SparseAvailable_A, SparseAvailable_B,
-        (SparseAvailable_A::column_size - 1)>::type;
+        (SparseAvailable_A::number_of_columns - 1)>::type;
 
 } // namespace Matrix
 } // namespace Base
