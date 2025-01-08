@@ -76,9 +76,9 @@ public:
     matrix.data[ROW][COL] = value;
   }
 
-  constexpr std::size_t rows() const { return N; }
+  constexpr std::size_t rows() const { return ROWS; }
 
-  constexpr std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return COLS; }
 
   T &operator()(std::size_t col, std::size_t row) {
     if (col >= M) {
@@ -214,9 +214,9 @@ public:
     GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix, value);
   }
 
-  constexpr std::size_t rows() const { return M; }
+  constexpr std::size_t rows() const { return ROWS; }
 
-  constexpr std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return COLS; }
 
   T &operator()(std::size_t col) {
     if (col >= M) {
@@ -312,9 +312,9 @@ public:
     Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
   }
 
-  constexpr std::size_t rows() const { return N; }
+  constexpr std::size_t rows() const { return ROWS; }
 
-  constexpr std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return COLS; }
 
   T &operator()(std::size_t value_index) {
     if (value_index >= this->matrix.values.size()) {
