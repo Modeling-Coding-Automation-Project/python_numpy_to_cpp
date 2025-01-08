@@ -125,6 +125,9 @@ public:
   }
 
   /* Variable */
+  static constexpr std::size_t ROWS = N;
+  static constexpr std::size_t COLS = M;
+
   Base::Matrix::Matrix<T, M, N> matrix;
 };
 
@@ -241,6 +244,9 @@ public:
   inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
 
   /* Variable */
+  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
+
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
 
@@ -332,6 +338,9 @@ public:
   }
 
   /* Variable */
+  static constexpr std::size_t ROWS = N;
+  static constexpr std::size_t COLS = M;
+
   Base::Matrix::CompiledSparseMatrix<
       T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
       RowPointersFromSparseAvailable<SparseAvailable>>
