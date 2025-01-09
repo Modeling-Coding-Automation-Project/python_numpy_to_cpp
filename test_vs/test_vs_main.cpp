@@ -2099,6 +2099,16 @@ void check_python_numpy_base(void) {
     tester.expect_near(empty_value, static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check SparseMatrix get value empty.");
 
+    static_assert(std::is_same<typename Matrix<DefDense, T, 3, 3>::Value_Type, T>::value,
+        "check Dense Matrix get value type.");
+
+    static_assert(std::is_same<typename Matrix<DefDiag, T, 3>::Value_Type, T>::value,
+        "check Diag Matrix get value type.");
+
+    static_assert(std::is_same<typename Matrix<DefSparse, T, 3, 3, DenseAvailable<3, 3>>::Value_Type, T>::value,
+        "check Sparse Matrix get value type.");
+    
+
     /* 演算 */
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
 
