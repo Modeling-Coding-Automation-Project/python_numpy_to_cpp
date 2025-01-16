@@ -17,7 +17,7 @@ namespace Matrix {
 
 template <typename T, std::size_t M> class DiagMatrix {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   DiagMatrix() : data(M, static_cast<T>(0)) {}
 
@@ -32,7 +32,7 @@ public:
     }
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   DiagMatrix() : data{} {}
 
@@ -57,7 +57,7 @@ public:
     }
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   DiagMatrix(const DiagMatrix<T, M> &other) : data(other.data) {}
@@ -117,11 +117,11 @@ public:
   }
 
 /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> data;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M> data;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 /* Matrix Addition */

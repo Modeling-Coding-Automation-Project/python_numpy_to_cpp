@@ -19,7 +19,7 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class Matrix {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   Matrix() : data(N, std::vector<T>(M, static_cast<T>(0))) {}
 
@@ -52,7 +52,7 @@ public:
     }
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   Matrix() : data{} {}
 
@@ -90,7 +90,7 @@ public:
     }
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   Matrix(const Matrix<T, M, N> &other) : data(other.data) {}
@@ -248,7 +248,7 @@ public:
     return this->data[row][col];
   }
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   std::vector<T> &operator()(std::size_t row) {
     if (row >= N) {
@@ -266,7 +266,7 @@ public:
     return this->data[row];
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   std::array<T, M> &operator()(std::size_t row) {
     if (row >= N) {
@@ -284,7 +284,7 @@ public:
     return this->data[row];
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   constexpr std::size_t rows() const { return N; }
 
@@ -321,11 +321,11 @@ public:
   inline T get_trace() const { return output_matrix_trace(*this); }
 
 /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<std::vector<T>> data;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<std::array<T, M>, N> data;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 /* swap columns */

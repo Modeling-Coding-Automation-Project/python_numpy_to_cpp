@@ -20,7 +20,7 @@ namespace Matrix {
 /* Vector */
 template <typename T, std::size_t N> class Vector {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   Vector() : data(N, static_cast<T>(0)) {}
 
@@ -28,7 +28,7 @@ public:
 
   Vector(const std::vector<T> &input) : data(input) {}
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   Vector() : data{} {}
 
@@ -46,7 +46,7 @@ public:
     std::copy(input.begin(), input.end(), this->data.begin());
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   Vector(const Vector<T, N> &vector) : data(vector.data) {}
@@ -156,11 +156,11 @@ public:
   }
 
 /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> data;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, N> data;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 template <typename T, std::size_t N> class ColVector : public Vector<T, N> {
@@ -839,7 +839,7 @@ struct GetImagFromComplexVectorCore<T, N, 0> {
   }
 };
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
 template <typename T, std::size_t N>
 inline std::vector<T> get_real_vector_from_complex_vector(
@@ -883,7 +883,7 @@ inline std::vector<T> get_imag_vector_from_complex_vector(
   return To_vector;
 }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
 template <typename T, std::size_t N>
 inline std::array<T, N> get_real_vector_from_complex_vector(
@@ -927,7 +927,7 @@ inline std::array<T, N> get_imag_vector_from_complex_vector(
   return To_vector;
 }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
 template <typename T, std::size_t N>
 inline Vector<T, N>

@@ -23,7 +23,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
 class CompiledSparseMatrix {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   CompiledSparseMatrix() : values(RowPointers::list[M], static_cast<T>(0)) {}
 
@@ -32,7 +32,7 @@ public:
 
   CompiledSparseMatrix(const std::vector<T> &values) : values(values) {}
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   CompiledSparseMatrix() : values{} {}
 
@@ -53,7 +53,7 @@ public:
     std::copy(values.begin(), values.end(), this->values.begin());
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   CompiledSparseMatrix(
@@ -82,11 +82,11 @@ public:
   }
 
   /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, RowPointers::list[M]> values;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 /* Output dense matrix */

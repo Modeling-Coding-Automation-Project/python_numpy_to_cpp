@@ -2,7 +2,7 @@
 #define BASE_MATRIX_MACROS_HPP
 
 /* Uncomment if you want to use std::vector */
-// #define BASE_MATRIX_USE_STD_VECTOR
+// #define __BASE_MATRIX_USE_STD_VECTOR__
 
 /* Uncomment if you want to use for loop iteration */
 // #define BASE_MATRIX_USE_FOR_LOOP_OPERATION
