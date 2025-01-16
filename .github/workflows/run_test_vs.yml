@@ -13,9 +13,9 @@ jobs:
       matrix:
         define:
           - ""
-          - "-DBASE_MATRIX_USE_STD_VECTOR"
-          - "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION"
-          - "-DBASE_MATRIX_USE_STD_VECTOR -DBASE_MATRIX_USE_FOR_LOOP_OPERATION"
+          - "-D__BASE_MATRIX_USE_STD_VECTOR__"
+          - "-D__BASE_MATRIX_USE_FOR_LOOP_OPERATION__"
+          - "-D__BASE_MATRIX_USE_STD_VECTOR__ -D__BASE_MATRIX_USE_FOR_LOOP_OPERATION__"
 
     steps:
     - name: Checkout code

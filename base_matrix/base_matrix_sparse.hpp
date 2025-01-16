@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_SPARSE_HPP
-#define BASE_MATRIX_SPARSE_HPP
+#ifndef __BASE_MATRIX_SPARSE_HPP__
+#define __BASE_MATRIX_SPARSE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -22,7 +22,7 @@ const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 class SparseMatrix {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   SparseMatrix()
       : values(V, static_cast<T>(0)),
@@ -68,7 +68,7 @@ public:
     }
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   SparseMatrix() : values{}, row_indices{}, row_pointers{} {}
 
@@ -130,7 +130,7 @@ public:
     }
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   SparseMatrix(const SparseMatrix<T, M, N, V> &other)
@@ -298,30 +298,30 @@ public:
   constexpr std::size_t cols() const { return M; }
 
 /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, V> values;
   std::array<std::size_t, V> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 template <typename T, std::size_t M, std::size_t N>
 inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values(M * N);
   std::vector<std::size_t> row_indices(M * N);
   std::vector<std::size_t> row_pointers(M + 1);
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, (M * N)> values;
   std::array<std::size_t, (M * N)> row_indices;
   std::array<std::size_t, (M + 1)> row_pointers;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -342,15 +342,15 @@ template <typename T, std::size_t M>
 inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values(M);
   std::vector<std::size_t> row_indices(M);
   std::vector<std::size_t> row_pointers(M + 1);
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M> values;
   std::array<std::size_t, M> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   row_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -699,4 +699,4 @@ matrix_multiply_SparseAT_mul_B(const SparseMatrix<T, N, M, V> &A,
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_SPARSE_HPP
+#endif // __BASE_MATRIX_SPARSE_HPP__

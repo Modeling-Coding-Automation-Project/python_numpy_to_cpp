@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_COMPLEX_HPP
-#define BASE_MATRIX_COMPLEX_HPP
+#ifndef __BASE_MATRIX_COMPLEX_HPP__
+#define __BASE_MATRIX_COMPLEX_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -286,4 +286,4 @@ inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_COMPLEX_HPP
+#endif // __BASE_MATRIX_COMPLEX_HPP__

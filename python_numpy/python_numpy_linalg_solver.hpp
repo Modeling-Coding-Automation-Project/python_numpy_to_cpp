@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_LINALG_SOLVER_HPP
-#define PYTHON_NUMPY_LINALG_SOLVER_HPP
+#ifndef __PYTHON_NUMPY_LINALG_SOLVER_HPP__
+#define __PYTHON_NUMPY_LINALG_SOLVER_HPP__
 
 #include "python_numpy_base.hpp"
 #include "python_numpy_templates.hpp"
@@ -646,4 +646,4 @@ make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_LINALG_SOLVER_HPP
+#endif // __PYTHON_NUMPY_LINALG_SOLVER_HPP__

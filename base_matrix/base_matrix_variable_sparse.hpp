@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_VARIABLE_SPARSE_HPP
-#define BASE_MATRIX_VARIABLE_SPARSE_HPP
+#ifndef __BASE_MATRIX_VARIABLE_SPARSE_HPP__
+#define __BASE_MATRIX_VARIABLE_SPARSE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -17,14 +17,14 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N> class VariableSparseMatrix {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
         row_indices(M * N, static_cast<std::size_t>(0)),
         row_pointers(M + 1, static_cast<std::size_t>(0)) {}
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   VariableSparseMatrix() : values{}, row_indices{}, row_pointers{} {}
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
@@ -75,15 +75,15 @@ public:
   }
 
 /* Variable */
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
   std::vector<std::size_t> row_indices;
   std::vector<std::size_t> row_pointers;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M * N> values;
   std::array<std::size_t, M * N> row_indices;
   std::array<std::size_t, M + 1> row_pointers;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
 /* SparseMatrix * Matrix */
@@ -196,4 +196,4 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_VARIABLE_SPARSE_HPP
+#endif // __BASE_MATRIX_VARIABLE_SPARSE_HPP__

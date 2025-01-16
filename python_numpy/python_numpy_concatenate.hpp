@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_CONCATENATE_HPP
-#define PYTHON_NUMPY_CONCATENATE_HPP
+#ifndef __PYTHON_NUMPY_CONCATENATE_HPP__
+#define __PYTHON_NUMPY_CONCATENATE_HPP__
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -723,4 +723,4 @@ concatenate_horizontally(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_CONCATENATE_HPP
+#endif // __PYTHON_NUMPY_CONCATENATE_HPP__

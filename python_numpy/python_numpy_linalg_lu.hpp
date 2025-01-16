@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_LINALG_LU_HPP
-#define PYTHON_NUMPY_LINALG_LU_HPP
+#ifndef __PYTHON_NUMPY_LINALG_LU_HPP__
+#define __PYTHON_NUMPY_LINALG_LU_HPP__
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -137,4 +137,4 @@ make_LinalgSolverLU(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_LINALG_LU_HPP
+#endif // __PYTHON_NUMPY_LINALG_LU_HPP__

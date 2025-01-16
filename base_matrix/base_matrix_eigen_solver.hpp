@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_EIGEN_SOLVER_HPP
-#define BASE_MATRIX_EIGEN_SOLVER_HPP
+#ifndef __BASE_MATRIX_EIGEN_SOLVER_HPP__
+#define __BASE_MATRIX_EIGEN_SOLVER_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -24,7 +24,7 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverReal()
       : iteration_max(0), _eigen_values(M, static_cast<T>(0)),
@@ -40,7 +40,7 @@ public:
     this->_solve_values_with_qr_method(matrix);
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverReal()
       : iteration_max(0), _eigen_values{}, _division_min(static_cast<T>(0)),
@@ -55,7 +55,7 @@ public:
     this->_solve_values_with_qr_method(matrix);
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   EigenSolverReal(EigenSolverReal<T, M> &other)
@@ -130,11 +130,11 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   Matrix<T, M, M> get_eigen_vectors(void) { return this->_eigen_vectors; }
 
@@ -144,11 +144,11 @@ public:
 private:
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> _eigen_values;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M> _eigen_values;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
   T _division_min;
   Matrix<T, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -390,7 +390,7 @@ private:
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0),
@@ -408,7 +408,7 @@ public:
     this->_solve_with_qr_method(matrix);
   }
 
-#else // BASE_MATRIX_USE_STD_VECTOR
+#else // __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverComplex()
       : iteration_max(0), iteration_max_for_eigen_vector(0), _eigen_values{},
@@ -426,7 +426,7 @@ public:
     this->_solve_with_qr_method(matrix);
   }
 
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
@@ -507,13 +507,13 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<Complex<T>, M> get_eigen_values(void) {
     return this->_eigen_values;
   }
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
@@ -527,11 +527,11 @@ private:
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
-#ifdef BASE_MATRIX_USE_STD_VECTOR
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<Complex<T>> _eigen_values;
-#else  // BASE_MATRIX_USE_STD_VECTOR
+#else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<Complex<T>, M> _eigen_values;
-#endif // BASE_MATRIX_USE_STD_VECTOR
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
   T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
@@ -785,4 +785,4 @@ private:
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_EIGEN_SOLVER_HPP
+#endif // __BASE_MATRIX_EIGEN_SOLVER_HPP__

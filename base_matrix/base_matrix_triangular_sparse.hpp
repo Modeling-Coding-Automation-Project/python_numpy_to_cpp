@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_TRIANGULAR_SPARSE_HPP
-#define BASE_MATRIX_TRIANGULAR_SPARSE_HPP
+#ifndef __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
+#define __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -183,7 +183,7 @@ public:
                          UpperTriangularRowPointers<M, N>>
         Y;
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     std::size_t consecutive_index = 0;
 
@@ -195,11 +195,11 @@ public:
       }
     }
 
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     return Y;
   }
@@ -211,7 +211,7 @@ public:
     // Currently, only support M >= N.
     static_assert(M >= N, "M must be greater than or equal to N");
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     std::size_t consecutive_index = 0;
 
@@ -222,11 +222,11 @@ public:
       }
     }
 
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
   }
 
   /* Lower */
@@ -253,7 +253,7 @@ public:
                          LowerTriangularRowPointers<M, N>>
         Y;
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     std::size_t consecutive_index = 0;
 
@@ -265,11 +265,11 @@ public:
       }
     }
 
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
 
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     return Y;
   }
@@ -281,7 +281,7 @@ public:
     // Currently, only support M <= N.
     static_assert(M <= N, "M must be smaller than or equal to N");
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     std::size_t consecutive_index = 0;
 
@@ -292,15 +292,15 @@ public:
       }
     }
 
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
 
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
   }
 };
 
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_TRIANGULAR_SPARSE_HPP
+#endif // __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__

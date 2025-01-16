@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_TEMPLATES_HPP
-#define BASE_MATRIX_TEMPLATES_HPP
+#ifndef __BASE_MATRIX_TEMPLATES_HPP__
+#define __BASE_MATRIX_TEMPLATES_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -965,4 +965,4 @@ using SparseAvailableMatrixMultiply =
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_TEMPLATES_HPP
+#endif // __BASE_MATRIX_TEMPLATES_HPP__

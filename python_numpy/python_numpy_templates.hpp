@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_TEMPLATES_HPP
-#define PYTHON_NUMPY_TEMPLATES_HPP
+#ifndef __PYTHON_NUMPY_TEMPLATES_HPP__
+#define __PYTHON_NUMPY_TEMPLATES_HPP__
 
 #include "base_matrix.hpp"
 
@@ -81,4 +81,4 @@ using SparseAvailableMatrixMultiply =
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_TEMPLATES_HPP
+#endif // __PYTHON_NUMPY_TEMPLATES_HPP__

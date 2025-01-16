@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_INVERSE_HPP
-#define BASE_MATRIX_INVERSE_HPP
+#ifndef __BASE_MATRIX_INVERSE_HPP__
+#define __BASE_MATRIX_INVERSE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -752,4 +752,4 @@ inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_INVERSE_HPP
+#endif // __BASE_MATRIX_INVERSE_HPP__

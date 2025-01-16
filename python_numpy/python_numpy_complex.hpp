@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_COMPLEX_HPP
-#define PYTHON_NUMPY_COMPLEX_HPP
+#ifndef __PYTHON_NUMPY_COMPLEX_HPP__
+#define __PYTHON_NUMPY_COMPLEX_HPP__
 
 #include "base_matrix.hpp"
 
@@ -9,4 +9,4 @@ template <typename T> using Complex = Base::Matrix::Complex<T>;
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_COMPLEX_HPP
+#endif // __PYTHON_NUMPY_COMPLEX_HPP__
