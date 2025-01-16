@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP
-#define PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP
+#ifndef __PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP__
+#define __PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP__
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -186,4 +186,4 @@ ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable_A> &A,
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP
+#endif // __PYTHON_NUMPY_TRANSPOSE_OPERATION_HPP__

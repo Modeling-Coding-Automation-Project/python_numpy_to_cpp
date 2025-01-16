@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_BASE_HPP
-#define PYTHON_NUMPY_BASE_HPP
+#ifndef __PYTHON_NUMPY_BASE_HPP__
+#define __PYTHON_NUMPY_BASE_HPP__
 
 #include "base_matrix.hpp"
 #include "python_numpy_templates.hpp"
@@ -724,4 +724,4 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_BASE_HPP
+#endif // __PYTHON_NUMPY_BASE_HPP__

@@ -1,5 +1,5 @@
-#ifndef PYTHON_NUMPY_LINALG_QR_HPP
-#define PYTHON_NUMPY_LINALG_QR_HPP
+#ifndef __PYTHON_NUMPY_LINALG_QR_HPP__
+#define __PYTHON_NUMPY_LINALG_QR_HPP__
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -238,4 +238,4 @@ make_LinalgSolverQR(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_NUMPY_LINALG_QR_HPP
+#endif // __PYTHON_NUMPY_LINALG_QR_HPP__
