@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP
-#define BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP
+#ifndef __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
+#define __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -3070,4 +3070,4 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP
+#endif // __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__

@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_CONCATENATE_HPP
-#define BASE_MATRIX_CONCATENATE_HPP
+#ifndef __BASE_MATRIX_CONCATENATE_HPP__
+#define __BASE_MATRIX_CONCATENATE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -1477,4 +1477,4 @@ inline auto concatenate_horizontally(
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_CONCATENATE_HPP
+#endif // __BASE_MATRIX_CONCATENATE_HPP__

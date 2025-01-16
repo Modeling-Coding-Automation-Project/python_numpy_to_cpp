@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_TRIANGULAR_SPARSE_HPP
-#define BASE_MATRIX_TRIANGULAR_SPARSE_HPP
+#ifndef __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
+#define __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -303,4 +303,4 @@ public:
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_TRIANGULAR_SPARSE_HPP
+#endif // __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__

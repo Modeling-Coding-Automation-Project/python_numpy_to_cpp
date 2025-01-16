@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_DIAGONAL_HPP
-#define BASE_MATRIX_DIAGONAL_HPP
+#ifndef __BASE_MATRIX_DIAGONAL_HPP__
+#define __BASE_MATRIX_DIAGONAL_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -912,4 +912,4 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_DIAGONAL_HPP
+#endif // __BASE_MATRIX_DIAGONAL_HPP__

@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_MATRIX_HPP
-#define BASE_MATRIX_MATRIX_HPP
+#ifndef __BASE_MATRIX_MATRIX_HPP__
+#define __BASE_MATRIX_MATRIX_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -1731,4 +1731,4 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_MATRIX_HPP
+#endif // __BASE_MATRIX_MATRIX_HPP__

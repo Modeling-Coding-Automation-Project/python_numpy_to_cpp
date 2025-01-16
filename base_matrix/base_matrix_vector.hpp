@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_VECTOR_HPP
-#define BASE_MATRIX_VECTOR_HPP
+#ifndef __BASE_MATRIX_VECTOR_HPP__
+#define __BASE_MATRIX_VECTOR_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -974,4 +974,4 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_VECTOR_HPP
+#endif // __BASE_MATRIX_VECTOR_HPP__

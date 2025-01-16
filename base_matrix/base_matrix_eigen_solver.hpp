@@ -1,5 +1,5 @@
-#ifndef BASE_MATRIX_EIGEN_SOLVER_HPP
-#define BASE_MATRIX_EIGEN_SOLVER_HPP
+#ifndef __BASE_MATRIX_EIGEN_SOLVER_HPP__
+#define __BASE_MATRIX_EIGEN_SOLVER_HPP__
 
 #include "base_matrix_macros.hpp"
 
@@ -785,4 +785,4 @@ private:
 } // namespace Matrix
 } // namespace Base
 
-#endif // BASE_MATRIX_EIGEN_SOLVER_HPP
+#endif // __BASE_MATRIX_EIGEN_SOLVER_HPP__
