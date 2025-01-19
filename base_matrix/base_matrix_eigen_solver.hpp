@@ -169,7 +169,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -230,7 +230,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k] = R(k, k) + Base::Utility::sign(R(k, k)) * x_abs;
       u[k + 1] = R(k + 1, k);
@@ -292,7 +292,7 @@ private:
     T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
     T c2;
     if (c2_2 >= 0) {
-      c2 = Base::Math::sqrt<T>(c2_2);
+      c2 = Base::Math::sqrt<T>(c2_2, this->_division_min);
     } else {
       c2 = static_cast<T>(0);
     }
@@ -334,6 +334,8 @@ private:
       }
       this->_Hessen = A;
     }
+
+    Base::Utility::sort(this->_eigen_values);
   }
 
   inline void _solve_values_with_qr_method(const Matrix<T, M, M> &A0) {
@@ -552,7 +554,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -614,7 +616,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k] = R(k, k) +
              Base::Matrix::complex_sign(R(k, k), this->_division_min) * x_abs;
@@ -679,7 +681,7 @@ private:
     Complex<T> c1 = a11 + a22;
 
     Complex<T> c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2);
+    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2, this->_division_min);
 
     Complex<T> mu1 = static_cast<T>(0.5) * (c1 + c2);
     Complex<T> mu2 = static_cast<T>(0.5) * (c1 - c2);
@@ -728,6 +730,8 @@ private:
       }
       this->_Hessen = A;
     }
+
+    Base::Utility::sort(this->_eigen_values);
   }
 
   inline void

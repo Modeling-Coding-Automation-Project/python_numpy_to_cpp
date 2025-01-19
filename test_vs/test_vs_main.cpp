@@ -1740,7 +1740,7 @@ void check_eigen_values_and_vectors(void) {
 #else
     std::array<T, 3> eigen_values_answer(
 #endif
-        { 3, 2, 1 });
+        { 1, 2, 3 });
 
     eigen_solver.continue_solving_eigen_values();
     eigen_values = eigen_solver.get_eigen_values();
@@ -1803,7 +1803,7 @@ void check_eigen_values_and_vectors(void) {
 #else
     std::array<T, 3> eigen_values_comp_answer_real(
 #endif
-        { 6, -1.5F, -1.5F });
+        { -1.5F, -1.5F, 6.0F });
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<T> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp);
 #else
@@ -1818,7 +1818,7 @@ void check_eigen_values_and_vectors(void) {
 #else
     std::array<T, 3> eigen_values_comp_answer_imag(
 #endif
-        { 0, 0.8660254F, -0.8660254F });
+        { -0.8660254F, 0.8660254F, 0.0F });
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<T> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp);
@@ -3765,7 +3765,7 @@ void check_python_numpy_eig(void) {
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
-    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
+
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
         ColumnAvailable<true, false, false>,
@@ -3773,6 +3773,20 @@ void check_python_numpy_eig(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
+    /* スパース行列の固有値 */
+    static auto eig_solver_sparse = make_LinalgSolverEigReal(C);
+
+    auto eigen_values_sparse = eig_solver_sparse.get_eigen_values();
+
+    decltype(eigen_values_sparse) eigen_values_sparse_answer({
+        {static_cast<T>(-2.47213595)},
+        {static_cast<T>(1.0)},
+        {static_cast<T>(6.47213595)}
+        });
+
+    tester.expect_near(eigen_values_sparse.matrix.data, eigen_values_sparse_answer.matrix.data,
+        NEAR_LIMIT_SOFT * std::abs(eigen_values_sparse_answer(0, 0)),
+        "check LinalgSolverEigReal eigen values Sparse.");
 
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
@@ -3791,7 +3805,7 @@ void check_python_numpy_eig(void) {
     //std::cout << std::endl;
 
     //Matrix<DefDense, T, 4, 1> eigen_values_answer({ {34}, {8.94427191F}, {0}, {-8.94427191F} });
-    Matrix<DefDense, T, 3, 1> eigen_values_answer({ {3}, {2}, {1} });
+    Matrix<DefDense, T, 3, 1> eigen_values_answer({ {1}, {2}, {3} });
     tester.expect_near(eigen_values.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen values.");
 
@@ -3841,8 +3855,8 @@ void check_python_numpy_eig(void) {
     eig_solver_comp.set_iteration_max(5);
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
 
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {6}, {-1.5F}, {-1.5F} });
-    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {0}, {0.8660254F}, {-0.8660254F} });
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {-1.5F}, {-1.5F}, {6.0F} });
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {-0.8660254F}, {0.8660254F}, {0.0F} });
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_real(
         Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp.matrix));

@@ -184,6 +184,58 @@ inline Complex<T> operator/(const Complex<T> &a_comp, T b) {
   return result;
 }
 
+template <typename T>
+inline bool operator<(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) < (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator<=(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) <= (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator>(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) > (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator>=(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) >= (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
 /* complex functions */
 template <typename T>
 inline Complex<T> complex_divide(const Complex<T> &a_comp,
@@ -265,6 +317,28 @@ template <typename T> inline Complex<T> complex_sqrt(const Complex<T> &a_comp) {
   } else {
     result.imag =
         -Base::Math::sqrt<T>((-a_comp.real + a_abs) * static_cast<T>(0.5));
+  }
+
+  return result;
+}
+
+template <typename T>
+inline Complex<T> complex_sqrt(const Complex<T> &a_comp,
+                               const T &division_min) {
+  Complex<T> result;
+
+  T a_abs = Base::Math::sqrt<T>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag, division_min);
+
+  result.real = Base::Math::sqrt<T>((a_comp.real + a_abs) * static_cast<T>(0.5),
+                                    division_min);
+
+  if (a_comp.imag >= 0) {
+    result.imag = Base::Math::sqrt<T>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5), division_min);
+  } else {
+    result.imag = -Base::Math::sqrt<T>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5), division_min);
   }
 
   return result;
