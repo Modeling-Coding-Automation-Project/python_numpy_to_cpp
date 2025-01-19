@@ -191,12 +191,14 @@ public:
   inline void
   solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
-        A.matrix.create_dense(), this->_iteration_max, this->_division_min);
+        Base::Matrix::output_dense_matrix(A.matrix), this->_iteration_max,
+        this->_division_min);
   }
 
   inline void
   solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
+    this->_Eigen_solver.solve_eigen_vectors(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
   /* Get */
@@ -436,12 +438,14 @@ public:
   inline void
   solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
-        A.matrix.create_dense(), this->_iteration_max, this->_division_min);
+        Base::Matrix::output_dense_matrix(A.matrix), this->_iteration_max,
+        this->_division_min);
   }
 
   inline void
   solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
+    this->_Eigen_solver.solve_eigen_vectors(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
   /* Get */
