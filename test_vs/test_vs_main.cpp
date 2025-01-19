@@ -3856,7 +3856,7 @@ void check_python_numpy_eig(void) {
     Matrix<DefDense, T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<DefDense, Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
 
-    static auto eig_solver_comp = make_LinalgSolverEig(A1);
+    static auto eig_solver_comp = make_LinalgSolverEig<T, 3, 5>(A1);
     auto eigen_values_comp = eig_solver_comp.get_eigen_values();
 
     //std::cout << "eigen_values_comp = " << std::endl;

@@ -204,6 +204,10 @@ public:
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
+  }
+
   inline void
   solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_vectors(
@@ -463,6 +467,10 @@ public:
   solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
     this->_Eigen_solver.solve_eigen_values(
         Base::Matrix::output_dense_matrix(A.matrix));
+  }
+
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
   }
 
   inline void
