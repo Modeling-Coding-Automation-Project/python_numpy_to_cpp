@@ -261,7 +261,7 @@ private:
   std::size_t _iteration_max = Default_Iteration_Max;
 };
 
-/* make LinalgSolverEig */
+/* make LinalgSolverEig Real */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -558,7 +558,7 @@ private:
   std::size_t _iteration_max = Default_Iteration_Max;
 };
 
-/* make LinalgSolverEig */
+/* make LinalgSolverEig Complex */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
