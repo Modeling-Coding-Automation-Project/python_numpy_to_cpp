@@ -3773,7 +3773,7 @@ void check_python_numpy_eig(void) {
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
 
-    /* スパース行列の固有値 */
+    /* スパース行列の固有値 実数 */
     static auto eig_solver_sparse = make_LinalgSolverEigReal(C);
 
     auto eigen_values_sparse = eig_solver_sparse.get_eigen_values();
@@ -3834,6 +3834,23 @@ void check_python_numpy_eig(void) {
 
     tester.expect_near(A_mul_V.matrix.data, V_mul_D.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen vectors.");
+
+    /* スパース行列の固有値 複素数 */
+    static auto eig_solver_comp_sparse = make_LinalgSolverEig(C);
+
+    auto eigen_values_comp_sparse = eig_solver_comp_sparse.get_eigen_values();
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_sparse_real(
+        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_sparse.matrix));
+
+    decltype(eigen_values_comp_sparse_real) eigen_values_comp_sparse_answer({
+        {static_cast<T>(-2.47213595)},
+        {static_cast<T>(1.0)},
+        {static_cast<T>(6.47213595)}
+        });
+
+    tester.expect_near(eigen_values_comp_sparse_real.matrix.data, eigen_values_comp_sparse_answer.matrix.data,
+        NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig eigen values Sparse.");
 
     /* 複素数固有値 */
     Matrix<DefDense, T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
