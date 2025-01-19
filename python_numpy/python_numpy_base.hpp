@@ -263,6 +263,7 @@ class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Type */
   using Value_Type = T;
+  using SparseAvailable_Type = SparseAvailable;
 
 public:
   /* Constructor */
