@@ -3765,13 +3765,23 @@ void check_python_numpy_eig(void) {
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
-
+    Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
         ColumnAvailable<true, false, false>,
         ColumnAvailable<true, false, true>,
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
+
+    /* 対角行列の固有値 実数 */
+    static auto eig_solver_diag = make_LinalgSolverEigReal(B);
+
+    auto eigen_values_diag = eig_solver_diag.get_eigen_values();
+
+    Matrix<DefDense, T, 3, 1> eigen_values_diag_answer({ {1}, {2}, {3} });
+
+    tester.expect_near(eigen_values_diag.matrix.data, eigen_values_diag_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEigReal eigen values Diag.");
 
     /* スパース行列の固有値 実数 */
     static auto eig_solver_sparse = make_LinalgSolverEigReal(C);
@@ -3834,6 +3844,21 @@ void check_python_numpy_eig(void) {
 
     tester.expect_near(A_mul_V.matrix.data, V_mul_D.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen vectors.");
+
+    /* 対角行列の固有値 複素数 */
+    static auto eig_solver_diag_comp = make_LinalgSolverEig(B);
+    eig_solver_diag_comp.solve_eigen_values(B);
+
+    auto eigen_values_comp_diag = eig_solver_diag_comp.get_eigen_values();
+
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_diag_real(
+        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_diag.matrix));
+
+    Matrix<DefDense, T, 3, 1> eigen_values_comp_diag_answer({ {1}, {2}, {3} });
+
+    tester.expect_near(eigen_values_comp_diag_real.matrix.data,
+        eigen_values_comp_diag_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig eigen values Diag.");
 
     /* スパース行列の固有値 複素数 */
     static auto eig_solver_comp_sparse = make_LinalgSolverEig(C);
