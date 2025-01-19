@@ -262,29 +262,20 @@ make_LinalgSolverEigReal(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
 }
 
 /* Able to handle complex number */
-template <typename T, std::size_t M, typename SolverType>
-class LinalgSolverEig {
-public:
-  /* Type */
-  using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
-  using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
+namespace ForLinalgSolverEig {
 
-protected:
-  /* Variable */
-  SolverType _Eigen_solver;
+template <typename T, std::size_t M>
+using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
 
-public:
-  /* Function */
-  inline void continue_solving_eigen_values(void) {
-    this->_Eigen_solver.continue_solving_eigen_values();
-  }
-};
+template <typename T, std::size_t M>
+using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
+
+} // namespace ForLinalgSolverEig
 
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
-class LinalgSolverEigDense
-    : public LinalgSolverEig<T, M, Base::Matrix::EigenSolverComplex<T, M>> {
+class LinalgSolverEigDense {
 public:
   /* Type */
   using A_Type = Matrix<DefDense, T, M, M>;
@@ -335,21 +326,25 @@ public:
     this->_Eigen_solver.solve_eigen_values(A.matrix);
   }
 
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
+  }
+
   inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
   inline auto get_eigen_values(void) ->
-      typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenValues_Type {
-    return typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenValues_Type(
+      typename ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return typename ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
   inline auto get_eigen_vectors(void) ->
-      typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenVectors_Type {
-    return typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenVectors_Type(
+      typename ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return typename ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
@@ -448,8 +443,7 @@ private:
 template <typename T, std::size_t M, typename SparseAvailable,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
-class LinalgSolverEigSparse
-    : public LinalgSolverEig<T, M, Base::Matrix::EigenSolverComplex<T, M>> {
+class LinalgSolverEigSparse {
 public:
   /* Type */
   using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
@@ -504,6 +498,10 @@ public:
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
+  }
+
   inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(
         Base::Matrix::output_dense_matrix(A.matrix));
@@ -511,15 +509,15 @@ public:
 
   /* Get */
   inline auto get_eigen_values(void) ->
-      typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenValues_Type {
-    return typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenValues_Type(
+      typename ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return typename ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
   inline auto get_eigen_vectors(void) ->
-      typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenVectors_Type {
-    return typename LinalgSolverEig<T, M, EigenSolver_Type>::EigenVectors_Type(
+      typename ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return typename ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
