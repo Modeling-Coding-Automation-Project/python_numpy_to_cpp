@@ -13,25 +13,41 @@ const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-20;
 const std::size_t DEFAULT_ITERATION_MAX_LINALG_EIG = 10;
 
 /* Able to handle only real number */
+namespace ForLinalgSolverEigReal {
+
+template <typename T, std::size_t M>
+using EigenValues_Type = Matrix<DefDense, T, M, 1>;
+
+template <typename T, std::size_t M>
+using EigenVectors_Type = Matrix<DefDense, T, M, M>;
+
+} // namespace ForLinalgSolverEigReal
+
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
-class LinalgSolverEigReal {
+class LinalgSolverEigRealDense {
+public:
+  /* Type */
+  using A_Type = Matrix<DefDense, T, M, M>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
+
 public:
   /* Constructor */
-  LinalgSolverEigReal() {}
+  LinalgSolverEigRealDense() {}
 
-  LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A) {
-    this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
-        A.matrix, Default_Iteration_Max, this->_division_min);
+  LinalgSolverEigRealDense(const A_Type &A) {
+    this->_Eigen_solver =
+        EigenSolver_Type(A.matrix, Default_Iteration_Max, this->_division_min);
   }
 
   /* Copy Constructor */
-  LinalgSolverEigReal(const LinalgSolverEigReal<T, M> &other)
+  LinalgSolverEigRealDense(const LinalgSolverEigRealDense<T, M> &other)
       : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min) {
   }
 
-  LinalgSolverEigReal<T, M> &operator=(const LinalgSolverEigReal<T, M> &other) {
+  LinalgSolverEigRealDense<T, M> &
+  operator=(const LinalgSolverEigRealDense<T, M> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
       this->_division_min = other._division_min;
@@ -40,12 +56,12 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverEigReal(LinalgSolverEigReal<T, M> &&other) noexcept
+  LinalgSolverEigRealDense(LinalgSolverEigRealDense<T, M> &&other) noexcept
       : _Eigen_solver(std::move(other._Eigen_solver)),
         _division_min(std::move(other._division_min)) {}
 
-  LinalgSolverEigReal<T, M> &
-  operator=(LinalgSolverEigReal<T, M> &&other) noexcept {
+  LinalgSolverEigRealDense<T, M> &
+  operator=(LinalgSolverEigRealDense<T, M> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
       this->_division_min = std::move(other._division_min);
@@ -54,7 +70,7 @@ public:
   }
 
   /* Solve function */
-  inline void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_values(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_values(A.matrix);
   }
 
@@ -62,18 +78,21 @@ public:
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  inline void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.get_eigen_vectors());
   }
 
   inline std::size_t get_iteration_max(void) {
@@ -87,7 +106,7 @@ public:
 
 private:
   /* Variable */
-  Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
+  EigenSolver_Type _Eigen_solver;
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
 };
 
@@ -96,18 +115,24 @@ template <typename T, std::size_t M,
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 class LinalgSolverEigRealDiag {
 public:
+  /* Type */
+  using A_Type = Matrix<DefDiag, T, M>;
+  using EigenValues_Type = Matrix<DefDense, T, M, 1>;
+  using EigenVectors_Type = Matrix<DefDiag, T, M>;
+
+public:
   /* Constructor */
   LinalgSolverEigRealDiag() {}
 
-  LinalgSolverEigRealDiag(const Matrix<DefDiag, T, M> &A) {
+  LinalgSolverEigRealDiag(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
-  void solve_eigen_values(const Matrix<DefDiag, T, M> &A) {
+  void solve_eigen_values(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
-  void solve_eigen_vectors(const Matrix<DefDiag, T, M> &A) {
+  void solve_eigen_vectors(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
@@ -136,12 +161,12 @@ public:
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(this->_eigen_values);
+  inline auto get_eigen_values(void) -> EigenValues_Type {
+    return EigenValues_Type(this->_eigen_values);
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDiag, T, M> {
-    return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
+  inline auto get_eigen_vectors(void) -> EigenVectors_Type {
+    return EigenVectors_Type(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
 private:
@@ -154,11 +179,15 @@ template <typename T, std::size_t M, typename SparseAvailable,
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 class LinalgSolverEigRealSparse {
 public:
+  /* Type */
+  using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
+
+public:
   /* Constructor */
   LinalgSolverEigRealSparse() {}
 
-  LinalgSolverEigRealSparse(
-      const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
+  LinalgSolverEigRealSparse(const A_Type &A) {
     this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
         Base::Matrix::output_dense_matrix(A.matrix), Default_Iteration_Max,
         this->_division_min);
@@ -198,8 +227,7 @@ public:
   }
 
   /* Solve method */
-  inline void
-  solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
+  inline void solve_eigen_values(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_values(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
@@ -208,20 +236,22 @@ public:
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  inline void
-  solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
+  inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
+        this->_Eigen_solver.get_eigen_vectors());
   }
 
 private:
@@ -236,9 +266,9 @@ template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto make_LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolverEigReal<T, M, Default_Iteration_Max> {
+    -> LinalgSolverEigRealDense<T, M, Default_Iteration_Max> {
 
-  return LinalgSolverEigReal<T, M, Default_Iteration_Max>(A);
+  return LinalgSolverEigRealDense<T, M, Default_Iteration_Max>(A);
 }
 
 template <typename T, std::size_t M,
@@ -335,16 +365,16 @@ public:
   }
 
   /* Get */
-  inline auto get_eigen_values(void) ->
-      typename ForLinalgSolverEig::EigenValues_Type<T, M> {
-    return typename ForLinalgSolverEig::EigenValues_Type<T, M>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) ->
-      typename ForLinalgSolverEig::EigenVectors_Type<T, M> {
-    return typename ForLinalgSolverEig::EigenVectors_Type<T, M>(
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
@@ -378,7 +408,7 @@ public:
   /* Type */
   using A_Type = Matrix<DefDiag, T, M>;
   using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
-  using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
+  using EigenVectors_Type = Matrix<DefDiag, Base::Matrix::Complex<T>, M>;
 
 public:
   /* Constructor */
@@ -508,16 +538,16 @@ public:
   }
 
   /* Get */
-  inline auto get_eigen_values(void) ->
-      typename ForLinalgSolverEig::EigenValues_Type<T, M> {
-    return typename ForLinalgSolverEig::EigenValues_Type<T, M>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) ->
-      typename ForLinalgSolverEig::EigenVectors_Type<T, M> {
-    return typename ForLinalgSolverEig::EigenVectors_Type<T, M>(
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
