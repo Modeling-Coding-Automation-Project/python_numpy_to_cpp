@@ -37,21 +37,21 @@ void CheckPythonNumpy<T>::calc(void) {
 
     check_python_numpy_base();
 
-    //check_python_numpy_left_divide_and_inv();
+    check_python_numpy_left_divide_and_inv();
 
-    //check_python_numpy_concatenate();
+    check_python_numpy_concatenate();
 
     check_python_numpy_transpose();
 
-    //check_python_numpy_lu();
+    check_python_numpy_lu();
 
-    //check_check_python_numpy_cholesky();
+    check_check_python_numpy_cholesky();
 
-    //check_check_python_numpy_transpose_operation();
+    check_check_python_numpy_transpose_operation();
 
-    //check_python_numpy_qr();
+    check_python_numpy_qr();
 
-    //check_python_numpy_eig();
+    check_python_numpy_eig();
 }
 
 template <typename T>

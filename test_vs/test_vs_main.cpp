@@ -27,10 +27,10 @@ int main() {
     //    ColumnAvailable<false, true, false, false>>;
 
     //using Name_B = SparseAvailable<
-    //    ColumnAvailable<true, false, true>,
-    //    ColumnAvailable<true, false, false>,
-    //    ColumnAvailable<false, true, false>,
-    //    ColumnAvailable<false, true, true>>;
+    //    ColumnAvailable<true>,
+    //    ColumnAvailable<true>,
+    //    ColumnAvailable<false>,
+    //    ColumnAvailable<false>>;
 
     //using Name_C = SparseAvailableMatrixMultiplyTranspose<Name_A, Name_B>;
 
@@ -48,8 +48,8 @@ int main() {
     //using RowIndices = RowIndicesFromSparseAvailable<Name_B>;
     //using RowPointers = RowPointersFromSparseAvailable<Name_B>;
 
-    //CompiledSparseMatrix<double, 4, 3, RowIndices, RowPointers> B({ 1, 2, 3, 4, 5, 6 });
-    ////CompiledSparseMatrix<double, 3, 4, RowIndices, RowPointers> B({ 1, 2, 3, 4, 5, 6 });
+    //CompiledSparseMatrix<double, 4, 1, RowIndices, RowPointers> B({ 1, 2 });
+    //CompiledSparseMatrix<double, 3, 4, RowIndices, RowPointers> B({ 1, 2, 3, 4, 5, 6 });
 
     //auto B_T = output_matrix_transpose_2(B);
     //auto B_T_dense = output_dense_matrix(B_T);
@@ -61,20 +61,6 @@ int main() {
     //    std::cout << std::endl;
     //}
 
-
-    //using namespace PythonNumpy;
-
-    //Matrix<DefSparse, double, 4, 3,
-    //    SparseAvailable<
-    //    ColumnAvailable<true, true, false>,
-    //    ColumnAvailable<false, false, true>,
-    //    ColumnAvailable<false, true, true>,
-    //    ColumnAvailable<false, true, false>>
-    //    >
-    //    CL({ 1, 3, 2, 8, 4, 1 });
-
-
-    //auto CL_T = CL.transpose();
 
 
     return 0;
