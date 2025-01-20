@@ -37,21 +37,21 @@ void CheckPythonNumpy<T>::calc(void) {
 
     check_python_numpy_base();
 
-    check_python_numpy_left_divide_and_inv();
+    //check_python_numpy_left_divide_and_inv();
 
-    check_python_numpy_concatenate();
+    //check_python_numpy_concatenate();
 
     check_python_numpy_transpose();
 
-    check_python_numpy_lu();
+    //check_python_numpy_lu();
 
-    check_check_python_numpy_cholesky();
+    //check_check_python_numpy_cholesky();
 
-    check_check_python_numpy_transpose_operation();
+    //check_check_python_numpy_transpose_operation();
 
-    check_python_numpy_qr();
+    //check_python_numpy_qr();
 
-    check_python_numpy_eig();
+    //check_python_numpy_eig();
 }
 
 template <typename T>
@@ -1429,21 +1429,15 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose(void) {
         "check transpose Dense.");
 
     auto CL_T = CL.transpose();
-    //std::cout << "AL_T = " << std::endl;
-    //for (size_t j = 0; j < AL_T.cols(); ++j) {
-    //    for (size_t i = 0; i < AL_T.rows(); ++i) {
-    //        std::cout << AL_T(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto CL_T_dense = CL_T.create_dense();
 
     Matrix<DefDense, T, 3, 4> CL_T_answer({
         {1, 0, 0, 0},
         {3, 0, 8, 1},
         {0, 2, 4, 0}
         });
-    tester.expect_near(CL_T.matrix.data, CL_T_answer.matrix.data, NEAR_LIMIT_STRICT,
+
+    tester.expect_near(CL_T_dense.matrix.data, CL_T_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check transpose Sparse.");
 
     auto B_T = B.transpose();

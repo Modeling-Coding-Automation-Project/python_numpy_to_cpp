@@ -270,6 +270,15 @@ public:
   using Matrix_Type = DefSparse;
   using SparseAvailable_Type = SparseAvailable;
 
+private:
+  /* Type */
+  using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
+  using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
+
+  using _BaseMatrix_Type =
+      Base::Matrix::CompiledSparseMatrix<T, M, N, _RowIndices_Type,
+                                         _RowPointers_Type>;
+
 public:
   /* Constructor */
   Matrix() {}
@@ -350,19 +359,26 @@ public:
     return this->matrix.values[value_index];
   }
 
-  inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(
-        Base::Matrix::output_matrix_transpose(this->matrix));
+  inline auto transpose(void)
+      -> Matrix<DefSparse, T, N, M,
+                SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
+                                                       SparseAvailable>> {
+
+    using SparseAvailable_T =
+        SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
+                                               SparseAvailable>;
+
+    Matrix<DefSparse, T, N, M, SparseAvailable_T> result_T(
+        Base::Matrix::output_matrix_transpose_2(this->matrix));
+
+    return result_T;
   }
 
   /* Variable */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
 
-  Base::Matrix::CompiledSparseMatrix<
-      T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-      RowPointersFromSparseAvailable<SparseAvailable>>
-      matrix;
+  _BaseMatrix_Type matrix;
 };
 
 /* Matrix Addition */
