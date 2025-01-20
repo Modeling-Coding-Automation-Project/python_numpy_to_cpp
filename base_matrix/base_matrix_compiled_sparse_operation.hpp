@@ -2470,13 +2470,13 @@ operator*(const DiagMatrix<T, M> &A,
 /* Transpose (Diag Matrix multiply Sparse Matrix) */
 // Conditional operation False
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t I, std::size_t KStart_End,
-          std::size_t I_J>
+          typename RowPointers_B, typename Y_Type, std::size_t I,
+          std::size_t KStart_End, std::size_t I_J>
 struct TransposeDiagMatrixMultiplySparseConditionalOperation {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -2486,130 +2486,137 @@ struct TransposeDiagMatrixMultiplySparseConditionalOperation {
 
 // Conditional operation True
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t I, std::size_t KStart_End>
+          typename RowPointers_B, typename Y_Type, std::size_t I,
+          std::size_t KStart_End>
 struct TransposeDiagMatrixMultiplySparseConditionalOperation<
-    T, M, K, RowIndices_B, RowPointers_B, I, KStart_End, 0> {
+    T, M, K, RowIndices_B, RowPointers_B, Y_Type, I, KStart_End, 0> {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
-    Y(RowIndices_B::list[KStart_End], I) += B.values[KStart_End] * A[I];
+          Y_Type &Y) {
+
+    set_sparse_matrix_value<RowIndices_B::list[KStart_End], I>(
+        Y, get_sparse_matrix_value<RowIndices_B::list[KStart_End], I>(Y) +
+               B.values[KStart_End] * A[I]);
   }
 };
 
 // Core loop (Inner loop)
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t I,
+          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I,
           std::size_t KStart, std::size_t KEnd>
 struct TransposeDiagMatrixMultiplySparseInnerLoop {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     TransposeDiagMatrixMultiplySparseConditionalOperation<
-        T, M, K, RowIndices_B, RowPointers_B, I, KStart, (I - J)>::compute(A, B,
-                                                                           Y);
+        T, M, K, RowIndices_B, RowPointers_B, Y_Type, I, KStart,
+        (I - J)>::compute(A, B, Y);
     TransposeDiagMatrixMultiplySparseInnerLoop<T, M, K, RowIndices_B,
-                                               RowPointers_B, J, I, KStart + 1,
-                                               KEnd>::compute(A, B, Y);
+                                               RowPointers_B, Y_Type, J, I,
+                                               KStart + 1, KEnd>::compute(A, B,
+                                                                          Y);
   }
 };
 
 // End of inner loop
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t I,
+          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I,
           std::size_t KEnd>
 struct TransposeDiagMatrixMultiplySparseInnerLoop<
-    T, M, K, RowIndices_B, RowPointers_B, J, I, KEnd, KEnd> {
+    T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I, KEnd, KEnd> {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     TransposeDiagMatrixMultiplySparseConditionalOperation<
-        T, M, K, RowIndices_B, RowPointers_B, I, KEnd, (I - J)>::compute(A, B,
-                                                                         Y);
+        T, M, K, RowIndices_B, RowPointers_B, Y_Type, I, KEnd,
+        (I - J)>::compute(A, B, Y);
   }
 };
 
 // Core loop
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t I>
+          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I>
 struct TransposeDiagMatrixMultiplySparseCore {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     TransposeDiagMatrixMultiplySparseInnerLoop<
-        T, M, K, RowIndices_B, RowPointers_B, J, I, RowPointers_B::list[J],
-        RowPointers_B::list[J + 1] - 1>::compute(A, B, Y);
+        T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I,
+        RowPointers_B::list[J], RowPointers_B::list[J + 1] - 1>::compute(A, B,
+                                                                         Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J>
+          typename RowPointers_B, typename Y_Type, std::size_t J>
 struct TransposeDiagMatrixMultiplySparseList {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     TransposeDiagMatrixMultiplySparseCore<T, M, K, RowIndices_B, RowPointers_B,
-                                          J, J>::compute(A, B, Y);
+                                          Y_Type, J, J>::compute(A, B, Y);
     TransposeDiagMatrixMultiplySparseList<T, M, K, RowIndices_B, RowPointers_B,
-                                          J - 1>::compute(A, B, Y);
+                                          Y_Type, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+          typename RowPointers_B, typename Y_Type>
 struct TransposeDiagMatrixMultiplySparseList<T, M, K, RowIndices_B,
-                                             RowPointers_B, 0> {
+                                             RowPointers_B, Y_Type, 0> {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, K, M> &Y) {
+          Y_Type &Y) {
     TransposeDiagMatrixMultiplySparseCore<T, M, K, RowIndices_B, RowPointers_B,
-                                          0, 0>::compute(A, B, Y);
+                                          Y_Type, 0, 0>::compute(A, B, Y);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+          typename RowPointers_B, typename Y_Type>
 static inline void COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-    Matrix<T, K, M> &Y) {
+    Y_Type &Y) {
   TransposeDiagMatrixMultiplySparseList<T, M, K, RowIndices_B, RowPointers_B,
-                                        M - 1>::compute(A, B, Y);
+                                        Y_Type, M - 1>::compute(A, B, Y);
 }
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-inline Matrix<T, K, M> matrix_multiply_Transpose_DiagA_mul_SparseB(
+inline auto matrix_multiply_Transpose_DiagA_mul_SparseB(
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
-  Matrix<T, K, M> Y;
+    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B)
+    -> CompiledSparseMatrix<
+        T, K, M,
+        RowIndicesFromSparseAvailable<SparseAvailableTranspose<
+            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                        RowPointers_B>>>,
+        RowPointersFromSparseAvailable<SparseAvailableTranspose<
+            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                        RowPointers_B>>>> {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+  using Y_Type = CompiledSparseMatrix<
+      T, K, M,
+      RowIndicesFromSparseAvailable<
+          SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
+              K, RowIndices_B, RowPointers_B>>>,
+      RowPointersFromSparseAvailable<
+          SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
+              K, RowIndices_B, RowPointers_B>>>>;
 
-  for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
-         k++) {
-      for (std::size_t i = 0; i < M; i++) {
-        if (i == j) {
-          Y(RowIndices_B::list[k], i) += B.values[k] * A[i];
-        }
-      }
-    }
-  }
-
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+  Y_Type Y;
 
   Base::Matrix::COMPILED_TRANSPOSE_DIAG_MATRIX_MULTIPLY_SPARSE<
-      T, M, K, RowIndices_B, RowPointers_B>(A, B, Y);
-
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+      T, M, K, RowIndices_B, RowPointers_B, Y_Type>(A, B, Y);
 
   return Y;
 }
