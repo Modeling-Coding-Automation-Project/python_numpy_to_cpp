@@ -18,8 +18,13 @@ D_v = np.zeros((N, N, 1))
 for i in range(N):
     D_v[i, i, 0] = 1
 
-A_vec = D[0] @ A @ D_v[0] + D[1] @ A @ D_v[0] + D[2] @ A @ D_v[1] + \
-    D[3] @ A @ D_v[1] + D[4] @ A @ D_v[2] + D[5] @ A @ D_v[2]
+A_vec = np.zeros((M * N, 1))
+k = 0
+for i in range(N):
+    for j in range(M):
+        A_vec += D[k] @ A @ D_v[i]
+        k += 1
+
 
 T = np.zeros((M * N, M * N))
 for i in range(M * N):
