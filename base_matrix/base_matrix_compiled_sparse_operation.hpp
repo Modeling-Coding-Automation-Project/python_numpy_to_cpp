@@ -2604,6 +2604,19 @@ inline auto matrix_multiply_Transpose_DiagA_mul_SparseB(
             CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
                                                         RowPointers_B>>>> {
 
+  /* Logic which realizes (A * B)^T without template */
+  // for (std::size_t j = 0; j < M; j++) {
+  //   for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j +
+  //   1];
+  //        k++) {
+  //     for (std::size_t i = 0; i < M; i++) {
+  //       if (i == j) {
+  //         Y(RowIndices_B::list[k], i) += B.values[k] * A[i];
+  //       }
+  //     }
+  //   }
+  // }
+
   using Y_Type = CompiledSparseMatrix<
       T, K, M,
       RowIndicesFromSparseAvailable<
