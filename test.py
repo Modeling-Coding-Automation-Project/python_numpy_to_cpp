@@ -3,7 +3,6 @@ import math
 
 
 def transpose(A):
-
     # extract elements vector from matrix
     M, N = A.shape
 
@@ -56,14 +55,14 @@ def transpose(A):
 
 
 # input: Matrix which you want to transpose
-# A = np.array([[1, 2, 3],
-#               [4, 5, 6]])
+A = np.array([[1, 2, 3],
+              [4, 5, 6]])
 
-A = np.array([[1, 2],
-              [3, 4],
-              [5, 6],
-              [7, 8],
-              [9, 10]])
+# A = np.array([[1, 2],
+#               [3, 4],
+#               [5, 6],
+#               [7, 8],
+#               [9, 10]])
 
 print("Original Matrix:\n", A)
 
