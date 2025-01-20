@@ -8,27 +8,21 @@ A = np.array([[1, 2, 3],
 print("Original Matrix:\n", A)
 
 # extract elements vector from matrix
-N, M = A.shape
+M, N = A.shape
 
-D_0 = np.zeros((M * N, M))
-D_0[0, 0] = 1
-D_1 = np.zeros((M * N, M))
-D_1[1, 1] = 1
-D_2 = np.zeros((M * N, M))
-D_2[2, 0] = 1
-D_3 = np.zeros((M * N, M))
-D_3[3, 1] = 1
-D_4 = np.zeros((M * N, M))
-D_4[4, 0] = 1
-D_5 = np.zeros((M * N, M))
-D_5[5, 1] = 1
+D = np.zeros((M * N, M * N, M))
+for i in range(M * N):
+    if i < 3:
+        D[i, i, 0] = 1
+    else:
+        D[i, i, 1] = 1
 
 D_v_0 = np.array([[1, 0, 0]]).T
 D_v_1 = np.array([[0, 1, 0]]).T
 D_v_2 = np.array([[0, 0, 1]]).T
 
-A_vec = D_0 @ A @ D_v_0 + D_1 @ A @ D_v_0 + D_2 @ A @ D_v_1 + \
-    D_3 @ A @ D_v_1 + D_4 @ A @ D_v_2 + D_5 @ A @ D_v_2
+A_vec = D[0] @ A @ D_v_0 + D[1] @ A @ D_v_0 + D[2] @ A @ D_v_1 + \
+    D[3] @ A @ D_v_1 + D[4] @ A @ D_v_2 + D[5] @ A @ D_v_2
 
 T = np.zeros((M * N, M * N))
 for i in range(M * N):
