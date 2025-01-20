@@ -1927,6 +1927,16 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         NEAR_LIMIT_SOFT * std::abs(eigen_values_sparse_answer(0, 0)),
         "check LinalgSolverEigReal eigen values Sparse.");
 
+    eig_solver_sparse.solve_eigen_vectors(C);
+    auto eigen_vectors_sparse = eig_solver_sparse.get_eigen_vectors();
+
+    auto A_mul_V_sparse = C * eigen_vectors_sparse;
+    auto V_mul_D_sparse = eigen_vectors_sparse * Matrix<DefDiag, T, 3>(eigen_values_sparse.matrix);
+
+    tester.expect_near(A_mul_V_sparse.matrix.data, V_mul_D_sparse.matrix.data, NEAR_LIMIT_SOFT * static_cast<T>(10),
+        "check LinalgSolverEigReal eigen vectors Sparse.");
+
+
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
     //Matrix<DefDense, T, 4, 4> A2({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });

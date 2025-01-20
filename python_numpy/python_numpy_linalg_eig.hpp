@@ -249,8 +249,8 @@ public:
   }
 
   inline auto get_eigen_vectors(void)
-      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
-    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
