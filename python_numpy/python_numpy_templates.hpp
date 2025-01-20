@@ -84,6 +84,10 @@ using SparseAvailableMatrixMultiplyTranspose =
     Base::Matrix::SparseAvailableMatrixMultiplyTranspose<SparseAvailable_A,
                                                          SparseAvailable_BT>;
 
+template <typename SparseAvailable>
+using SparseAvailableTranspose =
+    Base::Matrix::SparseAvailableTranspose<SparseAvailable>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_TEMPLATES_HPP__

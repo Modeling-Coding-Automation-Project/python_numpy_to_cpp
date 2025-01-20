@@ -1041,6 +1041,10 @@ using SparseAvailableMatrixMultiplyTranspose =
         SparseAvailable_A, SparseAvailable_BT,
         (SparseAvailable_A::number_of_columns - 1)>::type;
 
+template <typename SparseAvailable>
+using SparseAvailableTranspose = SparseAvailableMatrixMultiplyTranspose<
+    DiagAvailable<SparseAvailable::column_size>, SparseAvailable>;
+
 } // namespace Matrix
 } // namespace Base
 

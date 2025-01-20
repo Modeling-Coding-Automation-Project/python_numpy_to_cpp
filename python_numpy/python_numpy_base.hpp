@@ -360,13 +360,10 @@ public:
   }
 
   inline auto transpose(void)
-      -> Matrix<DefSparse, T, N, M,
-                SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
-                                                       SparseAvailable>> {
+      -> Matrix<DefSparse, T, N, M, SparseAvailableTranspose<SparseAvailable>> {
 
     return Matrix<DefSparse, T, N, M,
-                  SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
-                                                         SparseAvailable>>(
+                  SparseAvailableTranspose<SparseAvailable>>(
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 

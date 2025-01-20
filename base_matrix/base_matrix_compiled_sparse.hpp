@@ -797,21 +797,21 @@ inline auto output_matrix_transpose(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat)
     -> CompiledSparseMatrix<
         T, N, M,
-        RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiplyTranspose<
-            DiagAvailable<N>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices, RowPointers>>>,
-        RowPointersFromSparseAvailable<SparseAvailableMatrixMultiplyTranspose<
-            DiagAvailable<N>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices, RowPointers>>>> {
+        RowIndicesFromSparseAvailable<SparseAvailableTranspose<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices,
+                                                        RowPointers>>>,
+        RowPointersFromSparseAvailable<SparseAvailableTranspose<
+            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices,
+                                                        RowPointers>>>> {
 
   using Result_Type = CompiledSparseMatrix<
       T, N, M,
-      RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiplyTranspose<
-          DiagAvailable<N>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices, RowPointers>>>,
-      RowPointersFromSparseAvailable<SparseAvailableMatrixMultiplyTranspose<
-          DiagAvailable<N>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices, RowPointers>>>>;
+      RowIndicesFromSparseAvailable<
+          SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
+              N, RowIndices, RowPointers>>>,
+      RowPointersFromSparseAvailable<
+          SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
+              N, RowIndices, RowPointers>>>>;
 
   Result_Type result;
 
