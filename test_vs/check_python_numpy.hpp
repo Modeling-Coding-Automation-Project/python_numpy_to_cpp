@@ -1771,6 +1771,7 @@ void CheckPythonNumpy<T>::check_check_python_numpy_transpose_operation(void) {
         "check ATranspose_mul_B Sparse and Dense.");
 
     auto Ct_B = ATranspose_mul_B(C, B);
+    auto Ct_B_dense = Ct_B.create_dense();
 
     Matrix<DefDense, T, 3, 3> Ct_B_answer({
         {1, 6, 0},
@@ -1778,7 +1779,7 @@ void CheckPythonNumpy<T>::check_check_python_numpy_transpose_operation(void) {
         {0, 16, 12}
         });
 
-    tester.expect_near(Ct_B.matrix.data, Ct_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Ct_B_dense.matrix.data, Ct_B_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check ATranspose_mul_B Sparse and Diag.");
 
     auto Ct_C = ATranspose_mul_B(C, C);
