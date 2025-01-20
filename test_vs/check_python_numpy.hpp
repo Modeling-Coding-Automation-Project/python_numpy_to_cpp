@@ -2028,6 +2028,25 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values Sparse.");
 
+    eig_solver_comp_sparse.solve_eigen_vectors(C);
+    auto eigen_vectors_comp_sparse = eig_solver_comp_sparse.get_eigen_vectors();
+
+    auto A_mul_V_comp_sparse = Matrix<DefDense, Base::Matrix::Complex<T>, 3, 3>(
+        Base::Matrix::convert_matrix_real_to_complex(Base::Matrix::output_dense_matrix(C.matrix))) 
+        * eigen_vectors_comp_sparse;
+    auto V_mul_D_comp_sparse = eigen_vectors_comp_sparse
+        * Matrix<DefDiag, Base::Matrix::Complex<T>, 3>(eigen_values_comp_sparse.matrix);
+
+    Matrix<DefDense, T, 3, 3> A_mul_V_real_sparse(Base::Matrix::get_real_matrix_from_complex_matrix(A_mul_V_comp_sparse.matrix));
+    Matrix<DefDense, T, 3, 3> V_mul_D_real_sparse(Base::Matrix::get_real_matrix_from_complex_matrix(V_mul_D_comp_sparse.matrix));
+    tester.expect_near(A_mul_V_real_sparse.matrix.data, V_mul_D_real_sparse.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig eigen vectors real sparse.");
+
+    Matrix<DefDense, T, 3, 3> A_mul_V_imag_sparse(Base::Matrix::get_imag_matrix_from_complex_matrix(A_mul_V_comp_sparse.matrix));
+    Matrix<DefDense, T, 3, 3> V_mul_D_imag_sparse(Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp_sparse.matrix));
+    tester.expect_near(A_mul_V_imag_sparse.matrix.data, V_mul_D_imag_sparse.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig eigen vectors imag sparse.");
+
     /* 複素数固有値 */
     Matrix<DefDense, T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<DefDense, Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
