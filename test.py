@@ -14,12 +14,12 @@ D = np.zeros((M * N, M * N, M))
 for i in range(M * N):
     D[i, i, i % M] = 1
 
-D_v_0 = np.array([[1, 0, 0]]).T
-D_v_1 = np.array([[0, 1, 0]]).T
-D_v_2 = np.array([[0, 0, 1]]).T
+D_v = np.zeros((N, N, 1))
+for i in range(N):
+    D_v[i, i, 0] = 1
 
-A_vec = D[0] @ A @ D_v_0 + D[1] @ A @ D_v_0 + D[2] @ A @ D_v_1 + \
-    D[3] @ A @ D_v_1 + D[4] @ A @ D_v_2 + D[5] @ A @ D_v_2
+A_vec = D[0] @ A @ D_v[0] + D[1] @ A @ D_v[0] + D[2] @ A @ D_v[1] + \
+    D[3] @ A @ D_v[1] + D[4] @ A @ D_v[2] + D[5] @ A @ D_v[2]
 
 T = np.zeros((M * N, M * N))
 for i in range(M * N):
