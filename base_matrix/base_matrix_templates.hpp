@@ -963,7 +963,7 @@ using SparseAvailableMatrixMultiply =
         (SparseAvailable_A::number_of_columns - 1)>::type;
 
 /* SparseAvailable Multiply Transpose
- * (SparseAvailable_BT is transpose of SparseAvailable_B) */
+ * (SparseAvailable_BT will be calculated as transpose) */
 template <typename SparseAvailable_A, typename SparseAvailable_BT,
           std::size_t COL, std::size_t ROW, std::size_t N_Idx>
 struct SparseAvailableMatrixMultiplyTransposeElement {
