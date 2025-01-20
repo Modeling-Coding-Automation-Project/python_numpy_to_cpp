@@ -364,14 +364,10 @@ public:
                 SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
                                                        SparseAvailable>> {
 
-    using SparseAvailable_T =
-        SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
-                                               SparseAvailable>;
-
-    Matrix<DefSparse, T, N, M, SparseAvailable_T> result_T(
+    return Matrix<DefSparse, T, N, M,
+                  SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
+                                                         SparseAvailable>>(
         Base::Matrix::output_matrix_transpose_2(this->matrix));
-
-    return result_T;
   }
 
   /* Variable */
