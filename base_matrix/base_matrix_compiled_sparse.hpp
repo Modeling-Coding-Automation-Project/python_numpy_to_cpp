@@ -722,118 +722,16 @@ inline T get_sparse_matrix_value(
 /* Output transpose matrix */
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
-          std::size_t End>
-struct OutputTransposeMatrixLoop {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, N, M> &result) {
-    result(RowIndices::list[Start], J) = mat.values[Start];
-    OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, Start + 1,
-                              End>::compute(mat, result);
-  }
-};
-
-// Start == End (End of Core Loop)
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
-struct OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, J, K, End,
-                                 End> {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, N, M> &result) {
-    static_cast<void>(mat);
-    static_cast<void>(result);
-    // End of loop, do nothing
-  }
-};
-
-// Pointer loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J, std::size_t K>
-struct OutputTransposeMatrixCore {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, N, M> &result) {
-    OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, J, K,
-                              RowPointers::list[J],
-                              RowPointers::list[J + 1]>::compute(mat, result);
-  }
-};
-
-// Row loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J>
-struct OutputTransposeMatrixRow {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, N, M> &result) {
-    OutputTransposeMatrixCore<T, M, N, RowIndices, RowPointers, J, 0>::compute(
-        mat, result);
-    OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, J - 1>::compute(
-        mat, result);
-  }
-};
-
-// End of row loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
-struct OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, 0> {
-  static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-          Matrix<T, N, M> &result) {
-    OutputTransposeMatrixCore<T, M, N, RowIndices, RowPointers, 0, 0>::compute(
-        mat, result);
-  }
-};
-
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
-static inline void COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX(
-    const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
-    Matrix<T, N, M> &result) {
-  OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, M - 1>::compute(
-      mat, result);
-}
-
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
-inline Matrix<T, N, M> output_matrix_transpose(
-    const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat) {
-  Matrix<T, N, M> result;
-
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-  for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
-         k++) {
-      result(RowIndices::list[k], j) = mat.values[k];
-    }
-  }
-
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-  Base::Matrix::COMPILED_SPARSE_TRANSPOSE_DENSE_MATRIX<T, M, N, RowIndices,
-                                                       RowPointers>(mat,
-                                                                    result);
-
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-  return result;
-}
-
-// Start < End (Core)
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, typename Result_Type, std::size_t J,
           std::size_t K, std::size_t Start, std::size_t End>
-struct OutputTransposeMatrixLoop_2 {
+struct OutputTransposeMatrixLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Result_Type &result) {
     set_sparse_matrix_value<RowIndices::list[Start], J>(result,
                                                         mat.values[Start]);
-    OutputTransposeMatrixLoop_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                                J, K, Start + 1, End>::compute(mat, result);
+    OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, Result_Type, J,
+                              K, Start + 1, End>::compute(mat, result);
   }
 };
 
@@ -841,8 +739,8 @@ struct OutputTransposeMatrixLoop_2 {
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, typename Result_Type, std::size_t J,
           std::size_t K, std::size_t End>
-struct OutputTransposeMatrixLoop_2<T, M, N, RowIndices, RowPointers,
-                                   Result_Type, J, K, End, End> {
+struct OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, Result_Type,
+                                 J, K, End, End> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Result_Type &result) {
@@ -856,46 +754,46 @@ struct OutputTransposeMatrixLoop_2<T, M, N, RowIndices, RowPointers,
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, typename Result_Type, std::size_t J,
           std::size_t K>
-struct OutputTransposeMatrixCore_2 {
+struct OutputTransposeMatrixCore {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Result_Type &result) {
-    OutputTransposeMatrixLoop_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                                J, K, RowPointers::list[J],
-                                RowPointers::list[J + 1]>::compute(mat, result);
+    OutputTransposeMatrixLoop<T, M, N, RowIndices, RowPointers, Result_Type, J,
+                              K, RowPointers::list[J],
+                              RowPointers::list[J + 1]>::compute(mat, result);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, typename Result_Type, std::size_t J>
-struct OutputTransposeMatrixRow_2 {
+struct OutputTransposeMatrixRow {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Result_Type &result) {
-    OutputTransposeMatrixCore_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                                J, 0>::compute(mat, result);
-    OutputTransposeMatrixRow_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                               J - 1>::compute(mat, result);
+    OutputTransposeMatrixCore<T, M, N, RowIndices, RowPointers, Result_Type, J,
+                              0>::compute(mat, result);
+    OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, Result_Type,
+                             J - 1>::compute(mat, result);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, typename Result_Type>
-struct OutputTransposeMatrixRow_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                                  0> {
+struct OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, Result_Type,
+                                0> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Result_Type &result) {
-    OutputTransposeMatrixCore_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                                0, 0>::compute(mat, result);
+    OutputTransposeMatrixCore<T, M, N, RowIndices, RowPointers, Result_Type, 0,
+                              0>::compute(mat, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
-inline auto output_matrix_transpose_2(
+inline auto output_matrix_transpose(
     const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat)
     -> CompiledSparseMatrix<
         T, N, M,
@@ -917,8 +815,8 @@ inline auto output_matrix_transpose_2(
 
   Result_Type result;
 
-  OutputTransposeMatrixRow_2<T, M, N, RowIndices, RowPointers, Result_Type,
-                             M - 1>::compute(mat, result);
+  OutputTransposeMatrixRow<T, M, N, RowIndices, RowPointers, Result_Type,
+                           M - 1>::compute(mat, result);
 
   return result;
 }

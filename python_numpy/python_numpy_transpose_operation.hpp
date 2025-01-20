@@ -59,9 +59,13 @@ template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 inline auto
 A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
                  const Matrix<DefSparse, T, N, M, SparseAvailable> &B)
-    -> Matrix<DefDense, T, M, N> {
+    -> Matrix<DefSparse, T, M, N,
+              SparseAvailableMatrixMultiplyTranspose<DiagAvailable<M>,
+                                                     SparseAvailable>> {
 
-  return Matrix<DefDense, T, M, N>(
+  return Matrix<DefSparse, T, M, N,
+                SparseAvailableMatrixMultiplyTranspose<DiagAvailable<M>,
+                                                       SparseAvailable>>(
       A.matrix * Base::Matrix::output_matrix_transpose(B.matrix));
 }
 

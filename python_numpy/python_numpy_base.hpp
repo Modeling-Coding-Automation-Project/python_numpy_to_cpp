@@ -367,7 +367,7 @@ public:
     return Matrix<DefSparse, T, N, M,
                   SparseAvailableMatrixMultiplyTranspose<DiagAvailable<N>,
                                                          SparseAvailable>>(
-        Base::Matrix::output_matrix_transpose_2(this->matrix));
+        Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
   /* Variable */
