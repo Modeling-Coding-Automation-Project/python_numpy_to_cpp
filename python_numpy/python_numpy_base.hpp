@@ -26,6 +26,8 @@ class Matrix<DefDense, T, M, N> {
 public:
   /* Type */
   using Value_Type = T;
+  using Matrix_Type = DefDense;
+  using SparseAvailable_Type = DenseAvailable<M, N>;
 
 public:
   /* Constructor */
@@ -139,6 +141,8 @@ template <typename T, std::size_t M> class Matrix<DefDiag, T, M> {
 public:
   /* Type */
   using Value_Type = T;
+  using Matrix_Type = DefDiag;
+  using SparseAvailable_Type = DiagAvailable<M>;
 
 public:
   /* Constructor */
@@ -263,6 +267,7 @@ class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Type */
   using Value_Type = T;
+  using Matrix_Type = DefSparse;
   using SparseAvailable_Type = SparseAvailable;
 
 public:
