@@ -162,6 +162,8 @@
     <ClInclude Include="..\python_numpy\python_numpy_linalg_solver.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_templates.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_transpose_operation.hpp" />
+    <ClInclude Include="check_base_matrix.hpp" />
+    <ClInclude Include="check_python_numpy.hpp" />
     <ClInclude Include="MCAP_tester\include\MCAP_tester.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
