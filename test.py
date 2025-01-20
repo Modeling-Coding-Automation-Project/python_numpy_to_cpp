@@ -12,10 +12,7 @@ M, N = A.shape
 
 D = np.zeros((M * N, M * N, M))
 for i in range(M * N):
-    if i < 3:
-        D[i, i, 0] = 1
-    else:
-        D[i, i, 1] = 1
+    D[i, i, i % M] = 1
 
 D_v_0 = np.array([[1, 0, 0]]).T
 D_v_1 = np.array([[0, 1, 0]]).T
