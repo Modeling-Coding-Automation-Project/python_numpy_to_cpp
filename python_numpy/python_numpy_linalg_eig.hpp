@@ -462,7 +462,8 @@ public:
   }
 
   inline auto get_eigen_vectors(void) -> EigenVectors_Type {
-    return EigenVectors_Type(Base::Matrix::DiagMatrix<T, M>::identity());
+    return EigenVectors_Type(Base::Matrix::convert_matrix_real_to_complex(
+        Base::Matrix::DiagMatrix<T, M>::identity()));
   }
 
 private:

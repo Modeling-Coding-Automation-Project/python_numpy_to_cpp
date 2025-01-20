@@ -1902,8 +1902,15 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
     Matrix<DefDense, T, 3, 1> eigen_values_diag_answer({ {1}, {2}, {3} });
 
-    tester.expect_near(eigen_values_diag.matrix.data, eigen_values_diag_answer.matrix.data, NEAR_LIMIT_SOFT,
+    tester.expect_near(eigen_values_diag.matrix.data, eigen_values_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEigReal eigen values Diag.");
+
+    auto eigen_vectors_diag = eig_solver_diag.get_eigen_vectors();
+
+    Matrix<DefDiag, T, 3> eigen_vectors_diag_answer = Matrix<DefDiag, T, 3>::identity();
+
+    tester.expect_near(eigen_vectors_diag.matrix.data, eigen_vectors_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverEigReal eigen vectors Diag.");
 
     /* スパース行列の固有値 実数 */
     static auto eig_solver_sparse = make_LinalgSolverEigReal(C);
@@ -1981,6 +1988,18 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(eigen_values_comp_diag_real.matrix.data,
         eigen_values_comp_diag_answer.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values Diag.");
+
+    auto eigen_vectors_comp_diag = eig_solver_diag_comp.get_eigen_vectors();
+    Matrix<DefDiag, T, 3> eigen_vectors_comp_diag_real;
+    eigen_vectors_comp_diag_real(0) = eigen_vectors_comp_diag(0).real;
+    eigen_vectors_comp_diag_real(1) = eigen_vectors_comp_diag(1).real;
+    eigen_vectors_comp_diag_real(2) = eigen_vectors_comp_diag(2).real;
+
+    Matrix<DefDiag, T, 3> eigen_vectors_comp_diag_answer = Matrix<DefDiag, T, 3>::identity();
+
+    tester.expect_near(eigen_vectors_comp_diag_real.matrix.data,
+        eigen_vectors_comp_diag_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig eigen vectors Diag.");
 
     /* スパース行列の固有値 複素数 */
     static auto eig_solver_comp_sparse = make_LinalgSolverEig(C);

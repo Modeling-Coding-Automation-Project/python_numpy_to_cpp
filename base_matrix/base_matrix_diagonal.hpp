@@ -909,6 +909,30 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/* Matrix real from complex */
+template <typename T, std::size_t M>
+inline DiagMatrix<Complex<T>, M>
+convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
+
+  DiagMatrix<Complex<T>, M> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    To_matrix[i].real = From_matrix[i];
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    To_matrix[i].real = From_matrix[i];
+  }
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
 } // namespace Matrix
 } // namespace Base
 
