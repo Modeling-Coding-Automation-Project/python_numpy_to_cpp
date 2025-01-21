@@ -700,14 +700,31 @@ struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
   }
 };
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
+
+  using SparseAvailable_A = DenseAvailable<M, N>;
+
+  using SparseAvailable_B = DiagAvailable<M>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, DiagAvailable<M>>>> &Y,
+    typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::Y_Type &Y,
     const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -734,11 +751,10 @@ inline void update_horizontally_concatenated_matrix(
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, DiagAvailable<M>>>;
+      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::RowIndices_Y;
+
   using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, DiagAvailable<M>>>;
+      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::RowPointers_Y;
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, 0, RowIndices_Y,
                               RowPointers_Y, M - 1>::compute(Y, A);
@@ -751,21 +767,10 @@ inline void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
-                                     const DiagMatrix<T, M> &B)
-    -> CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, DiagAvailable<M>>>> {
+                                     const DiagMatrix<T, M> &B) ->
+    typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (M + N),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, DiagAvailable<M>>>>
-      Y;
+  typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
@@ -846,17 +851,37 @@ struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
   }
 };
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename RowIndices_B, typename RowPointers_B>
+struct DenseAndSparse {
+
+  using SparseAvailable_A = DenseAvailable<M, N>;
+
+  using SparseAvailable_B =
+      CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
+                                                  RowPointers_B>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      L, RowIndices_B, RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      L, RowIndices_B, RowPointers_B>>>> &Y,
+    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
+                                                     RowPointers_B>::Y_Type &Y,
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) {
 
@@ -890,14 +915,11 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    L, RowIndices_B, RowPointers_B>>>;
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    L, RowIndices_B, RowPointers_B>>>;
+  using RowIndices_Y = typename ConcatenateHorizontally::DenseAndSparse<
+      T, M, N, L, RowIndices_B, RowPointers_B>::RowIndices_Y;
+
+  using RowPointers_Y = typename ConcatenateHorizontally::DenseAndSparse<
+      T, M, N, L, RowIndices_B, RowPointers_B>::RowPointers_Y;
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, RowIndices_Y,
                               RowPointers_Y, M - 1>::compute(Y, A);
@@ -913,39 +935,43 @@ template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
 inline auto concatenate_horizontally(
     const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      L, RowIndices_B, RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                      L, RowIndices_B, RowPointers_B>>>> {
+    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) ->
+    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
+                                                     RowPointers_B>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (N + L),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    L, RowIndices_B, RowPointers_B>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DenseAvailable<M, N>, CreateSparseAvailableFromIndicesAndPointers<
-                                    L, RowIndices_B, RowPointers_B>>>>
-      Y;
+  typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
+                                                   RowPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N> struct DiagAndDense {
+
+  using SparseAvailable_A = DiagAvailable<M>;
+
+  using SparseAvailable_B = DenseAvailable<M, N>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DenseAvailable<M, N>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DenseAvailable<M, N>>>> &Y,
+    typename ConcatenateHorizontally::DiagAndDense<T, M, N>::Y_Type &Y,
     const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -971,11 +997,10 @@ inline void update_horizontally_concatenated_matrix(
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DenseAvailable<M, N>>>;
+      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::RowIndices_Y;
+
   using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DenseAvailable<M, N>>>;
+      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::RowPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, RowIndices_Y,
                              RowPointers_Y, M - 1>::compute(Y, A);
@@ -988,35 +1013,41 @@ inline void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
-                                     const Matrix<T, M, N> &B)
-    -> CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DenseAvailable<M, N>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DenseAvailable<M, N>>>> {
+                                     const Matrix<T, M, N> &B) ->
+    typename ConcatenateHorizontally::DiagAndDense<T, M, N>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (M + N),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DenseAvailable<M, N>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DenseAvailable<M, N>>>>
-      Y;
+  typename ConcatenateHorizontally::DiagAndDense<T, M, N>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M> struct DiagAndDiag {
+
+  using SparseAvailable_A = DiagAvailable<M>;
+
+  using SparseAvailable_B = DiagAvailable<M>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (2 * M), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (2 * M),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DiagAvailable<M>>>> &Y,
+    typename ConcatenateHorizontally::DiagAndDiag<T, M>::Y_Type &Y,
     const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -1043,11 +1074,10 @@ inline void update_horizontally_concatenated_matrix(
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DiagAvailable<M>>>;
+      typename ConcatenateHorizontally::DiagAndDiag<T, M>::RowIndices_Y;
+
   using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DiagAvailable<M>>>;
+      typename ConcatenateHorizontally::DiagAndDiag<T, M>::RowPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, 0, RowIndices_Y,
                              RowPointers_Y, M - 1>::compute(Y, A);
@@ -1060,38 +1090,47 @@ inline void update_horizontally_concatenated_matrix(
 
 template <typename T, std::size_t M>
 inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
-                                     const DiagMatrix<T, M> &B)
-    -> CompiledSparseMatrix<
-        T, M, (2 * M),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, DiagAvailable<M>>>> {
+                                     const DiagMatrix<T, M> &B) ->
+    typename ConcatenateHorizontally::DiagAndDiag<T, M>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (2 * M),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, DiagAvailable<M>>>>
-      Y;
+  typename ConcatenateHorizontally::DiagAndDiag<T, M>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+struct DiagAndSparse {
+
+  using SparseAvailable_A = DiagAvailable<M>;
+
+  using SparseAvailable_B =
+      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
+                                                  RowPointers_B>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices_B, RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices_B, RowPointers_B>>>> &Y,
+    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
+                                                    RowPointers_B>::Y_Type &Y,
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) {
 
@@ -1126,14 +1165,11 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices_B, RowPointers_B>>>;
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices_B, RowPointers_B>>>;
+  using RowIndices_Y = typename ConcatenateHorizontally::DiagAndSparse<
+      T, M, N, RowIndices_B, RowPointers_B>::RowIndices_Y;
+
+  using RowPointers_Y = typename ConcatenateHorizontally::DiagAndSparse<
+      T, M, N, RowIndices_B, RowPointers_B>::RowPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, RowIndices_Y,
                              RowPointers_Y, M - 1>::compute(Y, A);
@@ -1149,44 +1185,49 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 inline auto concatenate_horizontally(
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices_B, RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                  N, RowIndices_B, RowPointers_B>>>> {
+    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) ->
+    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
+                                                    RowPointers_B>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (M + N),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices_B, RowPointers_B>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          DiagAvailable<M>, CreateSparseAvailableFromIndicesAndPointers<
-                                N, RowIndices_B, RowPointers_B>>>>
-      Y;
+  typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
+                                                  RowPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename RowIndices_A, typename RowPointers_A>
+struct SparseAndDense {
+
+  using SparseAvailable_A =
+      CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
+                                                  RowPointers_A>;
+
+  using SparseAvailable_B = DenseAvailable<M, N>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            DenseAvailable<M, N>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            DenseAvailable<M, N>>>> &Y,
+    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
+                                                     RowPointers_A>::Y_Type &Y,
     const CompiledSparseMatrix<T, M, L, RowIndices_A, RowPointers_A> &A,
     const Matrix<T, M, N> &B) {
 
@@ -1222,17 +1263,11 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          DenseAvailable<M, N>>>;
+  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndDense<
+      T, M, N, L, RowIndices_A, RowPointers_A>::RowIndices_Y;
 
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          DenseAvailable<M, N>>>;
+  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndDense<
+      T, M, N, L, RowIndices_A, RowPointers_A>::RowPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_A, RowPointers_A, M, (N + L),
                                0, 0, RowIndices_Y, RowPointers_Y,
@@ -1248,48 +1283,49 @@ template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
 inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, L, RowIndices_A, RowPointers_A> &A,
-    const Matrix<T, M, N> &B)
-    -> CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            DenseAvailable<M, N>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            DenseAvailable<M, N>>>> {
+    const Matrix<T, M, N> &B) ->
+    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
+                                                     RowPointers_A>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (N + L),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          DenseAvailable<M, N>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          DenseAvailable<M, N>>>>
-      Y;
+  typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
+                                                   RowPointers_A>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct SparseAndDiag {
+
+  using SparseAvailable_A =
+      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                  RowPointers_A>;
+
+  using SparseAvailable_B = DiagAvailable<M>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> &Y,
+    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
+                                                    RowPointers_A>::Y_Type &Y,
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const DiagMatrix<T, M> &B) {
 
@@ -1328,16 +1364,11 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>;
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>;
+  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndDiag<
+      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+
+  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndDiag<
+      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, M, (M + N),
                                0, 0, RowIndices_Y, RowPointers_Y,
@@ -1353,51 +1384,54 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const DiagMatrix<T, M> &B)
-    -> CompiledSparseMatrix<
-        T, M, (M + N),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> {
+    const DiagMatrix<T, M> &B) ->
+    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
+                                                    RowPointers_A>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (M + N),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          DiagAvailable<M>>>>
-      Y;
+  typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
+                                                  RowPointers_A>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
   return Y;
 }
 
+namespace ConcatenateHorizontally {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t L,
+          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
+          typename RowPointers_B>
+struct SparseAndSparse {
+
+  using SparseAvailable_A =
+      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                  RowPointers_A>;
+
+  using SparseAvailable_B =
+      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
+                                                  RowPointers_B>;
+
+  using SparseAvailable_Y =
+      ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
+                                             SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+
+  using Y_Type =
+      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace ConcatenateHorizontally
+
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
-    CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
-                                                        RowPointers_B>>>> &Y,
+    typename ConcatenateHorizontally::SparseAndSparse<
+        T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
+        RowPointers_B>::Y_Type &Y,
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
     const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) {
 
@@ -1442,18 +1476,13 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>;
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
-                                                      RowPointers_B>>>;
+  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndSparse<
+      T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowIndices_Y;
+
+  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndSparse<
+      T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, M, (N + L),
                                0, 0, RowIndices_Y, RowPointers_Y,
@@ -1471,33 +1500,14 @@ template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowPointers_B>
 inline auto concatenate_horizontally(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, (N + L),
-        RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>,
-        RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
-                                                        RowPointers_B>>>> {
+    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) ->
+    typename ConcatenateHorizontally::SparseAndSparse<
+        T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
+        RowPointers_B>::Y_Type {
 
-  CompiledSparseMatrix<
-      T, M, (N + L),
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                      RowPointers_B>>>,
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableHorizontally<
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                      RowPointers_A>,
-          CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
-                                                      RowPointers_B>>>>
-      Y;
+  typename ConcatenateHorizontally::SparseAndSparse<T, M, N, L, RowIndices_A,
+                                                    RowPointers_A, RowIndices_B,
+                                                    RowPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
