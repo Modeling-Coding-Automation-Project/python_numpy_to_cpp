@@ -795,7 +795,7 @@ inline Vector<Complex<T>, M> complex_sparse_gmres_k(
   Vector<Complex<T>, M> s;
   Vector<Complex<T>, M> y;
   Vector<Complex<T>, M> x_dif;
-  Complex<T> ZERO = static_cast<T>(0);
+  Complex<T> ZERO;
 
   // b - Ax
   Vector<Complex<T>, M> b_ax = b - (SA * x_1);
