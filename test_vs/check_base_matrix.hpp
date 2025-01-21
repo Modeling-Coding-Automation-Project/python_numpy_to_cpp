@@ -1844,7 +1844,11 @@ void CheckBaseMatrix<T>::check_complex(void) {
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> C_comp({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
-    Matrix<Complex<T>, 3, 3> C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,
+    Matrix<Complex<T>, 3, 3> C_comp_dense = output_dense_matrix(C_comp);
+
+    Matrix<Complex<T>, 3, 3> C_inv;
+
+    C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,
         static_cast<T>(0.0F), static_cast<T>(1.0e-10F), C_inv);
 
     Matrix<T, 3, 3> C_I_real = get_real_matrix_from_complex_matrix(C_comp * C_inv);
@@ -1855,8 +1859,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
         {0.0F, 0.0F, 1.0F}
         });
 
-    //tester.expect_near(C_I_real.data, C_I_answer_real.data, NEAR_LIMIT_STRICT,
-    //    "check Complex GMRES k matrix real, sparse.");
+    tester.expect_near(C_I_real.data, C_I_answer_real.data, NEAR_LIMIT_STRICT,
+        "check Complex GMRES k matrix real, sparse.");
 
 
     tester.throw_error_if_test_failed();
