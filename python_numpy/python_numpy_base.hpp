@@ -2,6 +2,7 @@
 #define __PYTHON_NUMPY_BASE_HPP__
 
 #include "base_matrix.hpp"
+#include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
@@ -121,13 +122,10 @@ public:
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
-  inline auto create_complex(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, N> {
+  inline auto create_complex(void) -> Matrix<DefDense, Complex<T>, M, N> {
 
-    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix(
+    return Matrix<DefDense, Complex<T>, M, N>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
-
-    return Complex_matrix;
   }
 
   /* Variable */
@@ -255,6 +253,12 @@ public:
 
   inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
 
+  inline auto create_complex(void) -> Matrix<DefDiag, Complex<T>, M> {
+
+    return Matrix<DefDiag, Complex<T>, M>(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
+  }
+
   /* Variable */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = M;
@@ -365,6 +369,13 @@ public:
     return Matrix<DefSparse, T, N, M,
                   SparseAvailableTranspose<SparseAvailable>>(
         Base::Matrix::output_matrix_transpose(this->matrix));
+  }
+
+  inline auto create_complex(void)
+      -> Matrix<DefSparse, Complex<T>, M, N, SparseAvailable> {
+
+    return Matrix<DefSparse, Complex<T>, M, N, SparseAvailable>(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
   /* Variable */

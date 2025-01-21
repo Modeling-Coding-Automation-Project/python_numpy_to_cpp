@@ -821,6 +821,60 @@ inline auto output_matrix_transpose(
   return result;
 }
 
+/* Matrix real from complex */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t I>
+struct SparseMatrixRealToComplexLoop {
+  static void compute(
+      const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &From_matrix,
+      CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+          &To_matrix) {
+    To_matrix.values[I - 1].real = From_matrix.values[I - 1];
+    SparseMatrixRealToComplexLoop<T, M, N, RowIndices, RowPointers,
+                                  I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+struct SparseMatrixRealToComplexLoop<T, M, N, RowIndices, RowPointers, 0> {
+  static void compute(
+      const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &From_matrix,
+      CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+          &To_matrix) {
+    /* Do Nothing. */
+    static_cast<void>(From_matrix);
+    static_cast<void>(To_matrix);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+inline CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+convert_matrix_real_to_complex(
+    const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &From_matrix) {
+
+  CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
+    To_matrix[i].real = From_matrix[i];
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  SparseMatrixRealToComplexLoop<T, M, N, RowIndices, RowPointers,
+                                RowPointers::list[M]>::compute(From_matrix,
+                                                               To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
 } // namespace Matrix
 } // namespace Base
 

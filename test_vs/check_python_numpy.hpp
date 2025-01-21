@@ -500,11 +500,59 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(SS_D_mul_SS_U_dense.matrix.data, SS_D_mul_SS_U_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check EmptyMatrix multiply EmptyMatrix SS.");
 
+    /* 複素数 */
+    Matrix<DefDense, Complex<T>, 3, 3> A_complex = A.create_complex();
+
+    Matrix<DefDense, Complex<T>, 3, 3> A_complex_answer({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9, 8, 7}
+        });
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            tester.expect_near(A_complex.matrix.data[j][i].real, A_complex_answer.matrix.data[j][i].real, NEAR_LIMIT_STRICT,
+                "check Dense Matrix create complex real.");
+            tester.expect_near(A_complex.matrix.data[j][i].imag, A_complex_answer.matrix.data[j][i].imag, NEAR_LIMIT_STRICT,
+                "check Dense Matrix create complex imag.");
+        }
+    }
+
+    Matrix<DefDiag, Complex<T>, 3> B_complex = B.create_complex();
+
+    Matrix<DefDiag, Complex<T>, 3> B_complex_answer({ 1, 2, 3 });
+
+    for (int i = 0; i < 3; i++) {
+        tester.expect_near(B_complex.matrix.data[i].real, B_complex_answer.matrix.data[i].real, NEAR_LIMIT_STRICT,
+            "check Diag Matrix create complex real.");
+        tester.expect_near(B_complex.matrix.data[i].imag, B_complex_answer.matrix.data[i].imag, NEAR_LIMIT_STRICT,
+            "check Diag Matrix create complex imag.");
+    }
+
+    Matrix<DefSparse, Complex<T>, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_complex = C.create_complex();
+
+    Matrix<DefSparse, Complex<T>, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_complex_answer({ 1, 3, 8, 2, 4 });
+
+    for (int i = 0; i < 5; i++) {
+        tester.expect_near(C_complex.matrix.values[i].real, C_complex_answer.matrix.values[i].real, NEAR_LIMIT_STRICT,
+            "check Sparse Matrix create complex real.");
+        tester.expect_near(C_complex.matrix.values[i].imag, C_complex_answer.matrix.values[i].imag, NEAR_LIMIT_STRICT,
+            "check Sparse Matrix create complex imag.");
+    }
+
 
     tester.throw_error_if_test_failed();
 }
-
-
 
 
 template <typename T>
