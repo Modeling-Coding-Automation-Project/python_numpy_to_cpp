@@ -324,6 +324,10 @@ public:
     return Matrix<DefDiag, T, M>(std::move(X_1));
   }
 
+  inline auto get_answer(void) -> Matrix<DefDiag, T, M> {
+    return Matrix<DefDiag, T, M>(this->X_1);
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = M;

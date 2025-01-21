@@ -714,6 +714,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     static auto B_inv_solver = make_LinalgSolver(B);
 
     auto B_Inv = B_inv_solver.inv(B);
+    B_Inv = B_inv_solver.get_answer();
     auto B_Inv_dense = B_Inv.create_dense();
 
     Matrix<DefDense, T, 3, 3> B_Inv_answer({
