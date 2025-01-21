@@ -530,33 +530,47 @@ static inline void SET_DIAG_MATRIX_VALUES_TO_SPARSE_MATRIX(
                                     M - 1>::apply(Y, B);
 }
 
+namespace CompiledSparseOperation {
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-inline auto
-operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, M> &B)
-    -> CompiledSparseMatrix<
-        T, M, M,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> {
-  static_assert(M == N, "Argument is not square matrix.");
+struct DiagAddSubSparse {
 
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
+
   using RowPointers_Y = RowPointersFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_A, RowPointers_A>,
                                   DiagAvailable<M>>>;
 
-  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
+  using Y_Type = CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace CompiledSparseOperation
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+inline auto
+operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const DiagMatrix<T, M> &B) ->
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                       RowPointers_A>::Y_Type {
+  static_assert(M == N, "Argument is not square matrix.");
+
+  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+
+  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+
+  using Y_Type =
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                         RowPointers_A>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -595,28 +609,22 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline auto
 operator+(const DiagMatrix<T, M> &B,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
-    -> CompiledSparseMatrix<
-        T, M, M,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> {
+    ->
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                       RowPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
+  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
 
-  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
+  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+
+  using Y_Type =
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                         RowPointers_A>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -849,29 +857,22 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline auto
 operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const DiagMatrix<T, M> &B)
-    -> CompiledSparseMatrix<
-        T, M, M,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> {
+          const DiagMatrix<T, M> &B) ->
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                       RowPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
+  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
 
-  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
+  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+
+  using Y_Type =
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                         RowPointers_A>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -981,28 +982,22 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline auto
 operator-(const DiagMatrix<T, M> &B,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
-    -> CompiledSparseMatrix<
-        T, M, M,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            DiagAvailable<M>>>> {
+    ->
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                       RowPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  DiagAvailable<M>>>;
+  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
 
-  CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> Y;
+  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+
+  using Y_Type =
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
+                                                         RowPointers_A>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1113,31 +1108,23 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline auto
 operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, N,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>> {
+    -> typename CompiledSparseOperation::SparseAddSubSparse<
+        T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+        RowPointers_B>::Y_Type {
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
-                                  CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>;
+  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowIndices_Y;
 
-  CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> Y;
+  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowPointers_Y;
+
+  using Y_Type = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1779,38 +1766,56 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE(
                                    RowPointers_Y>::compute(A, B, Y);
 }
 
+namespace CompiledSparseOperation {
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+struct SparseMulSparse {
+
+  using SparseAvailable_A =
+      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
+                                                  RowPointers_A>;
+
+  using SparseAvailable_B =
+      CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                  RowPointers_B>;
+
+  using SparseAvailable_A_mul_B =
+      SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>;
+
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_A_mul_B>;
+
+  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_A_mul_B>;
+
+  using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace CompiledSparseOperation
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
 inline auto
 operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, K,
-        RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiply<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
-                                                        RowPointers_B>>>,
-        RowPointersFromSparseAvailable<SparseAvailableMatrixMultiply<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
-                                                        RowPointers_B>>>> {
+    -> typename CompiledSparseOperation::SparseMulSparse<
+        T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+        RowPointers_B>::Y_Type {
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
-      SparseAvailableMatrixMultiply<CreateSparseAvailableFromIndicesAndPointers<
-                                        N, RowIndices_A, RowPointers_A>,
-                                    CreateSparseAvailableFromIndicesAndPointers<
-                                        K, RowIndices_B, RowPointers_B>>>;
+  using RowIndices_Y = typename CompiledSparseOperation::SparseMulSparse<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+      RowPointers_B>::RowIndices_Y;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<
-      SparseAvailableMatrixMultiply<CreateSparseAvailableFromIndicesAndPointers<
-                                        N, RowIndices_A, RowPointers_A>,
-                                    CreateSparseAvailableFromIndicesAndPointers<
-                                        K, RowIndices_B, RowPointers_B>>>;
+  using RowPointers_Y = typename CompiledSparseOperation::SparseMulSparse<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+      RowPointers_B>::RowPointers_Y;
 
-  CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> Y;
+  using Y_Type = typename CompiledSparseOperation::SparseMulSparse<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+      RowPointers_B>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
