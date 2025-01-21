@@ -90,9 +90,16 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 inline auto
 A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable_A> &A,
                  const Matrix<DefSparse, T, N, K, SparseAvailable_B> &B)
-    -> Matrix<DefDense, T, M, N> {
+    -> Matrix<
+        DefSparse, T, M, N,
+        SparseAvailableMatrixMultiply<
+            SparseAvailable_A, SparseAvailableTranspose<SparseAvailable_B>>> {
 
-  return Matrix<DefDense, T, M, N>(
+  using SparseAvailable_BT = SparseAvailableTranspose<SparseAvailable_B>;
+  using SparseAvailable_A_mul_BT =
+      SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_BT>;
+
+  return Matrix<DefSparse, T, M, N, SparseAvailable_A_mul_BT>(
       matrix_multiply_SparseA_mul_SparseBTranspose(A.matrix, B.matrix));
 }
 
