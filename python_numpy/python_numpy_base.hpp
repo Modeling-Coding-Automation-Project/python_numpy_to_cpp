@@ -128,10 +128,13 @@ public:
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
-  /* Variable */
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
 
+public:
+  /* Variable */
   Base::Matrix::Matrix<T, M, N> matrix;
 };
 

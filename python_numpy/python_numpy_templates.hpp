@@ -5,6 +5,9 @@
 
 namespace PythonNumpy {
 
+/* Complex Templates */
+template <typename T> using Is_Complex_Type = Base::Matrix::Is_Complex_Type<T>;
+
 /* Compiled Sparse Matrix Templates */
 template <std::size_t... Sizes>
 using RowIndices = Base::Matrix::RowIndices<Sizes...>;

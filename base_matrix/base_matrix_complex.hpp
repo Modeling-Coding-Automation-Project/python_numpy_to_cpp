@@ -357,6 +357,13 @@ inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
   return result;
 }
 
+/* Tmeplate to judge Complex type or not */
+// default
+template <typename T> struct Is_Complex_Type : std::false_type {};
+
+// is Complex
+template <typename T> struct Is_Complex_Type<Complex<T>> : std::true_type {};
+
 } // namespace Matrix
 } // namespace Base
 
