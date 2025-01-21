@@ -16,6 +16,10 @@ template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
 class LinalgSolver {
 public:
+  /* Type */
+  using Value_Type = T;
+
+public:
   /* Constructor */
   LinalgSolver() {}
 
@@ -260,6 +264,11 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = K;
+
   /* Variable */
   Base::Matrix::Matrix<T, M, K> X_1;
 
@@ -396,6 +405,12 @@ make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
 class LinalgLstsqSolver {
+public:
+  /* Type */
+  using Value_Type = T;
+  using SparseAvailable_A_Type = SparseAvailable_A;
+  using SparseAvailable_B_Type = SparseAvailable_B;
+
 public:
   /* Constructor */
   LinalgLstsqSolver() {}
@@ -565,6 +580,12 @@ public:
     return Matrix<DefDense, T, N, K>(this->X_1);
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = K;
+
+public:
   /* Properties */
   Base::Matrix::Matrix<T, N, K> X_1;
 

@@ -207,6 +207,11 @@ public:
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = N;
+
 private:
   /* Variable */
   Base::Matrix::QRDecompositionSparse<
