@@ -79,11 +79,6 @@ using SparseAvailableMatrixMultiply =
     Base::Matrix::SparseAvailableMatrixMultiply<SparseAvailable_A,
                                                 SparseAvailable_B>;
 
-template <typename SparseAvailable_A, typename SparseAvailable_BT>
-using SparseAvailableMatrixMultiplyTranspose =
-    Base::Matrix::SparseAvailableMatrixMultiplyTranspose<SparseAvailable_A,
-                                                         SparseAvailable_BT>;
-
 template <typename SparseAvailable>
 using SparseAvailableTranspose =
     Base::Matrix::SparseAvailableTranspose<SparseAvailable>;

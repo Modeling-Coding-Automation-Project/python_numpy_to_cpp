@@ -784,8 +784,10 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(Sparse_mul_Sparse_dense.data, Sparse_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply SparseMatrix.");
 
-    Matrix<T, 3, 4> SparseTranspose_mul_Sparse =
+    auto SparseTranspose_mul_Sparse =
         matrix_multiply_SparseATranspose_mul_SparseB(SparseCc, SEc);
+    auto SparseTranspose_mul_Sparse_dense =
+        Base::Matrix::output_dense_matrix(SparseTranspose_mul_Sparse);
 
     Matrix<T, 3, 4> SparseTranspose_mul_Sparse_answer({
         {10, 0, 24, 3},
@@ -793,7 +795,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         {24, 8, 80, 8}
         });
 
-    tester.expect_near(SparseTranspose_mul_Sparse.data, SparseTranspose_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(SparseTranspose_mul_Sparse_dense.data,
+        SparseTranspose_mul_Sparse_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix transpose multiply SparseMatrix.");
 
     auto Sparse_mul_SparseTranspose =
