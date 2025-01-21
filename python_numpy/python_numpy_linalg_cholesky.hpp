@@ -12,6 +12,11 @@ namespace PythonNumpy {
 template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverCholesky {
 public:
+  /* Type */
+  using Value_Type = T;
+  using SparseAvailable_Type = SparseAvailable;
+
+public:
   /* Constructor */
   LinalgSolverCholesky() {}
 
@@ -104,6 +109,11 @@ public:
 
     return Matrix<DefDense, T, M, M>(this->_cholesky_decomposed_matrix);
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
 
 private:
   /* Variable */

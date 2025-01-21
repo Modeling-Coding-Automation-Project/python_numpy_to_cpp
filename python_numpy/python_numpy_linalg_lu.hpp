@@ -14,6 +14,11 @@ const double DEFAULT_DIVISION_MIN_LINALG_LU = 1.0e-10;
 template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverLU {
 public:
+  /* Type */
+  using Value_Type = T;
+  using SparseAvailable_Type = SparseAvailable;
+
+public:
   /* Constructor */
   LinalgSolverLU() {}
 
@@ -94,6 +99,11 @@ public:
   }
 
   inline T get_det() { return this->_LU_decomposer.get_determinant(); }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
 
 private:
   /* Variable */
