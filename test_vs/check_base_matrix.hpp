@@ -1785,6 +1785,80 @@ void CheckBaseMatrix<T>::check_complex(void) {
         "check Complex GMRES k imag.");
 
 
+    std::array<T, 3> rho_vec;
+    std::array<std::size_t, 3> rep_num_vec;
+
+    Matrix<Complex<T>, 3, 3> H_inv_H;
+
+    complex_gmres_k_matrix(H_comp, H_comp, H_inv_H,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec);
+
+    Matrix<T, 3, 3> H_inv_H_real = get_real_matrix_from_complex_matrix(H_inv_H);
+    Matrix<T, 3, 3> H_inv_H_answer_real = {
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 1.0F}
+    };
+    tester.expect_near(H_inv_H_real.data, H_inv_H_answer_real.data, NEAR_LIMIT_STRICT,
+        "check Complex GMRES k matrix real.");
+
+    Matrix<T, 3, 3> H_inv_H_imag = get_imag_matrix_from_complex_matrix(H_inv_H);
+    Matrix<T, 3, 3> H_inv_H_answer_imag = {
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+    };
+    tester.expect_near(H_inv_H_imag.data, H_inv_H_answer_imag.data, NEAR_LIMIT_STRICT,
+        "check Complex GMRES k matrix imag.");
+
+    DiagMatrix<Complex<T>, 3> I_Comp(DiagMatrix<Complex<T>, 3>::identity());
+    Matrix<Complex<T>, 3, 3> H_inv_I;
+
+    complex_gmres_k_matrix(H_comp, I_Comp, H_inv_I,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec);
+
+    Matrix<T, 3, 3> I_real = get_real_matrix_from_complex_matrix(H_comp * H_inv_I);
+
+    Matrix<T, 3, 3> I_answer_real({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 1.0F}
+        });
+
+    tester.expect_near(I_real.data, I_answer_real.data, NEAR_LIMIT_STRICT,
+        "check Complex GMRES k matrix real, diag.");
+
+    Matrix<T, 3, 3> I_imag = get_imag_matrix_from_complex_matrix(H_comp * H_inv_I);
+
+    Matrix<T, 3, 3> I_answer_imag({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    tester.expect_near(I_imag.data, I_answer_imag.data, NEAR_LIMIT_STRICT,
+        "check Complex GMRES k matrix imag, diag.");
+
+
+    CompiledSparseMatrix<Complex<T>, 3, 3,
+        RowIndices<0, 0, 2, 1, 2>,
+        RowPointers<0, 1, 3, 5>> C_comp({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+
+    Matrix<Complex<T>, 3, 3> C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), C_inv);
+
+    Matrix<T, 3, 3> C_I_real = get_real_matrix_from_complex_matrix(C_comp * C_inv);
+
+    Matrix<T, 3, 3> C_I_answer_real({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 1.0F}
+        });
+
+    //tester.expect_near(C_I_real.data, C_I_answer_real.data, NEAR_LIMIT_STRICT,
+    //    "check Complex GMRES k matrix real, sparse.");
+
+
     tester.throw_error_if_test_failed();
 }
 
