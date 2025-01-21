@@ -649,24 +649,11 @@ operator+(const DiagMatrix<T, M> &B,
   return Y;
 }
 
-/* Sparse Matrix add Sparse Matrix */
+namespace CompiledSparseOperation {
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
-inline auto
-operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, N,
-        RowIndicesFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>,
-        RowPointersFromSparseAvailable<MatrixAddSubSparseAvailable<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                        RowPointers_B>>>> {
+struct SparseAddSubSparse {
 
   using RowIndices_Y = RowIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
@@ -679,7 +666,26 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
                                   CreateSparseAvailableFromIndicesAndPointers<
                                       N, RowIndices_B, RowPointers_B>>>;
 
-  CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> Y;
+  using Y_Type = CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace CompiledSparseOperation
+
+/* Sparse Matrix add Sparse Matrix */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
+inline auto
+operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+    -> typename CompiledSparseOperation::SparseAddSubSparse<
+        T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+        RowPointers_B>::Y_Type {
+
+  using Y_Type = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::Y_Type;
+
+  Y_Type Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -700,6 +706,14 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowIndices_Y;
+
+  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowPointers_Y;
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
@@ -1999,26 +2013,23 @@ template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_B>
 struct SparseATransposeMulSparseB {
 
-  using SparseAvailable_AT = Base::Matrix::SparseAvailableTranspose<
-      Base::Matrix::CreateSparseAvailableFromIndicesAndPointers<M, RowIndices_A,
-                                                                RowPointers_A>>;
+  using SparseAvailable_AT =
+      SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
+          M, RowIndices_A, RowPointers_A>>;
 
   using SparseAvailable_B =
-      Base::Matrix::CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
-                                                                RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
+                                                  RowPointers_B>;
 
   using SparseAvailable_AT_mul_B =
-      Base::Matrix::SparseAvailableMatrixMultiply<SparseAvailable_AT,
-                                                  SparseAvailable_B>;
+      SparseAvailableMatrixMultiply<SparseAvailable_AT, SparseAvailable_B>;
 
-  using RowIndices_Y =
-      Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable_AT_mul_B>;
+  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_AT_mul_B>;
 
   using RowPointers_Y =
-      Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable_AT_mul_B>;
+      RowPointersFromSparseAvailable<SparseAvailable_AT_mul_B>;
 
-  using Y_Type =
-      Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -2274,41 +2285,12 @@ static inline void COMPILED_SPARSE_MATRIX_MULTIPLY_SPARSE_TRANSPOSE(
       Y_Type, K - 1>::compute(A, B, Y);
 }
 
+namespace CompiledSparseOperation {
+
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t K, typename RowIndices_B,
           typename RowPointers_B>
-inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<
-        T, M, K,
-        RowIndicesFromSparseAvailable<SparseAvailableMatrixMultiply<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            SparseAvailableTranspose<
-                CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                            RowPointers_B>>>>,
-        RowPointersFromSparseAvailable<SparseAvailableMatrixMultiply<
-            CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                        RowPointers_A>,
-            SparseAvailableTranspose<
-                CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                            RowPointers_B>>>>> {
-
-  /* Logic which realizes (A * B^T) without template */
-  // for (std::size_t i = 0; i < M; i++) {
-  //   for (std::size_t j = 0; j < K; j++) {
-  //     for (std::size_t l = RowPointers_A::list[i];
-  //          l < RowPointers_A::list[i + 1]; l++) {
-  //       for (std::size_t o = RowPointers_B::list[j];
-  //            o < RowPointers_B::list[j + 1]; o++) {
-  //         if (RowIndices_A::list[l] == RowIndices_B::list[o]) {
-  //           Y(i, j) += A.values[l] * B.values[o];
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+struct SparseAMulSparseBTranspose {
 
   using SparseAvailable_A =
       CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
@@ -2325,6 +2307,38 @@ inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
       RowPointersFromSparseAvailable<SparseAvailable_A_mul_BT>;
 
   using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+};
+
+} // namespace CompiledSparseOperation
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t K, typename RowIndices_B,
+          typename RowPointers_B>
+inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B) ->
+    typename CompiledSparseOperation::SparseAMulSparseBTranspose<
+        T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+        RowPointers_B>::Y_Type {
+
+  /* Logic which realizes (A * B^T) without template */
+  // for (std::size_t i = 0; i < M; i++) {
+  //   for (std::size_t j = 0; j < K; j++) {
+  //     for (std::size_t l = RowPointers_A::list[i];
+  //          l < RowPointers_A::list[i + 1]; l++) {
+  //       for (std::size_t o = RowPointers_B::list[j];
+  //            o < RowPointers_B::list[j + 1]; o++) {
+  //         if (RowIndices_A::list[l] == RowIndices_B::list[o]) {
+  //           Y(i, j) += A.values[l] * B.values[o];
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  using Y_Type = typename CompiledSparseOperation::SparseAMulSparseBTranspose<
+      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
+      RowPointers_B>::Y_Type;
 
   Y_Type Y;
 
