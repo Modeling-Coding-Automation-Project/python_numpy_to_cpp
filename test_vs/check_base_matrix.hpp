@@ -1844,8 +1844,6 @@ void CheckBaseMatrix<T>::check_complex(void) {
         RowIndices<0, 0, 2, 1, 2>,
         RowPointers<0, 1, 3, 5>> C_comp({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
-    Matrix<Complex<T>, 3, 3> C_comp_dense = output_dense_matrix(C_comp);
-
     Matrix<Complex<T>, 3, 3> C_inv;
 
     C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,

@@ -12,6 +12,37 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-23;
 
+/* Inverse */
+template <typename T, std::size_t M, std::size_t K, bool IsComplex>
+struct inverse {};
+
+template <typename T, std::size_t M, std::size_t K>
+struct inverse<T, M, K, true> {
+  static auto compute(const Matrix<DefDense, T, M, M> &A, T decay_rate,
+                      T division_min, Base::Matrix::Matrix<T, M, K> &X_1)
+      -> Matrix<DefDense, T, M, M> {
+
+    // X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate,
+    //                                        division_min, X_1);
+
+    return Matrix<DefDense, T, M, M>(X_1);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t K>
+struct inverse<T, M, K, false> {
+  static auto compute(const Matrix<DefDense, T, M, M> &A, T decay_rate,
+                      T division_min, Base::Matrix::Matrix<T, M, K> &X_1)
+      -> Matrix<DefDense, T, M, M> {
+
+    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate, division_min,
+                                           X_1);
+
+    return Matrix<DefDense, T, M, M>(X_1);
+  }
+};
+
+/* Linalg Solver */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
 class LinalgSolver {
@@ -236,10 +267,8 @@ public:
   inline auto inv(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, this->decay_rate,
-                                           this->division_min, X_1);
-
-    return Matrix<DefDense, T, M, M>(X_1);
+    return inverse<T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
+                                                 this->division_min, X_1);
   }
 
   inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
@@ -268,6 +297,8 @@ public:
   /* Constant */
   static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = K;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
 public:
   /* Variable */
