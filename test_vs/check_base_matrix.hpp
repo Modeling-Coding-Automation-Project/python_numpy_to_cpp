@@ -1074,6 +1074,10 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     /* スパース行列の逆行列計算 */
     T rho;
     size_t rep_num;
+
+    std::array<T, 3> rho_vec;
+    std::array<std::size_t, 3> rep_num_vec;
+
     Vector<T, 3> x_gmres_k_0;
     Vector<T, 3> x_gmres_k = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
         static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
@@ -1141,7 +1145,7 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
 
     Matrix<T, 3, 3> X_temp = Matrix<T, 3, 3>::identity();
     Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SparseCc,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec, X_temp);
 
     //std::cout << "S_inv = " << std::endl;
     //for (size_t j = 0; j < S_inv.cols(); ++j) {
@@ -1847,7 +1851,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
     Matrix<Complex<T>, 3, 3> C_inv;
 
     C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), C_inv);
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F),
+        rho_vec, rep_num_vec, C_inv);
 
     Matrix<T, 3, 3> C_I_real = get_real_matrix_from_complex_matrix(C_comp * C_inv);
 

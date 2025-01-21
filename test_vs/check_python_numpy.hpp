@@ -787,6 +787,31 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse.");
 
+    /* 逆行列 複素数 */
+    Matrix<DefDense, Complex<T>, 3, 3> A_comp({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    Matrix<DefDiag, Complex<T>, 3> B_comp({ 1, 2, 3 });
+    Matrix<DefSparse, Complex<T>, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_comp({ 1, 3, 8, 2, 4 });
+
+    //static auto A_comp_inv_solver = make_LinalgSolver(A_comp);
+
+    //auto A_comp_Inv = A_comp_inv_solver.inv(A_comp);
+    //auto A_comp_Inv_real = 
+
+    //Matrix<DefDense, Complex<T>, 3, 3> A_comp_Inv_answer_real({
+    //    {-6.66666667e-01F, 3.33333333e-01F, 0.0F },
+    //    {6.33333333e-01F, -6.66666667e-01F, 3.00000000e-01F },
+    //    {1.33333333e-01F, 3.33333333e-01F, -0.2F }
+    //    });
+
+    //tester.expect_near(A_comp_Inv_real.matrix.data,
+    //    A_comp_Inv_answer_real.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check LinalgSolver inv Dense complex.");
+
 
     tester.throw_error_if_test_failed();
 }

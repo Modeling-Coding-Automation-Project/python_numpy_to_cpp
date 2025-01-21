@@ -12,35 +12,42 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-23;
 
-/* Inverse */
+namespace Inverse {
+
 template <typename T, std::size_t M, std::size_t K, bool IsComplex>
-struct inverse {};
+struct InverseDense {};
 
 template <typename T, std::size_t M, std::size_t K>
-struct inverse<T, M, K, true> {
+struct InverseDense<T, M, K, true> {
   static auto compute(const Matrix<DefDense, T, M, M> &A, T decay_rate,
-                      T division_min, Base::Matrix::Matrix<T, M, K> &X_1)
+                      T division_min, std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, T, M, M> {
 
-    // X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate,
-    //                                        division_min, X_1);
+    X_1 = Base::Matrix::complex_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K>
-struct inverse<T, M, K, false> {
-  static auto compute(const Matrix<DefDense, T, M, M> &A, T decay_rate,
-                      T division_min, Base::Matrix::Matrix<T, M, K> &X_1)
+struct InverseDense<T, M, K, false> {
+  static auto compute(const Matrix<DefDense, T, M, M> &A, const T &decay_rate,
+                      const T &division_min, std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, T, M, M> {
 
     X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate, division_min,
-                                           X_1);
+                                           rho, rep_num, X_1);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
 };
+
+} // namespace Inverse
 
 /* Linalg Solver */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
@@ -267,8 +274,8 @@ public:
   inline auto inv(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    return inverse<T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
-                                                 this->division_min, X_1);
+    return Inverse::InverseDense<T, M, K, IS_COMPLEX>::compute(
+        A, this->decay_rate, this->division_min, this->rho, this->rep_num, X_1);
   }
 
   inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
@@ -284,7 +291,8 @@ public:
       -> Matrix<DefDense, T, M, M> {
 
     X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(A.matrix, this->decay_rate,
-                                                  this->division_min, X_1);
+                                                  this->division_min, this->rho,
+                                                  this->rep_num, X_1);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }

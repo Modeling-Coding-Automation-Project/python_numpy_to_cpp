@@ -313,19 +313,18 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
 
 /* GMRES K for matrix inverse */
 template <typename T, std::size_t M>
-inline Matrix<T, M, M> gmres_k_matrix_inv(const Matrix<T, M, M> In_A,
-                                          T decay_rate, T division_min,
-                                          const Matrix<T, M, M> X_1) {
+inline Matrix<T, M, M>
+gmres_k_matrix_inv(const Matrix<T, M, M> In_A, T decay_rate, T division_min,
+                   std::array<T, M> &rho, std::array<std::size_t, M> &rep_num,
+                   const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
-  Vector<T, M> rho_vec;
-  Vector<std::size_t, M> rep_num_vec;
 
   for (std::size_t i = 0; i < M; i++) {
     Vector<T, M> x;
 
     x = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
-                              division_min, rho_vec[i], rep_num_vec[i]);
+                              division_min, rho[i], rep_num[i]);
     X.set_row(i, x);
   }
 
@@ -612,18 +611,17 @@ template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> In_A,
-    T decay_rate, T division_min, const Matrix<T, M, M> X_1) {
+    T decay_rate, T division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
-  Vector<T, M> rho_vec;
-  Vector<std::size_t, M> rep_num_vec;
 
   for (std::size_t i = 0; i < M; i++) {
     Vector<T, M> x;
 
     x = Base::Matrix::sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                     decay_rate, division_min, rho_vec[i],
-                                     rep_num_vec[i]);
+                                     decay_rate, division_min, rho[i],
+                                     rep_num[i]);
     X.set_row(i, x);
   }
 
@@ -888,7 +886,7 @@ inline Vector<Complex<T>, M> complex_sparse_gmres_k(
 
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
+inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
         In_A,
     T decay_rate, T division_min, const Matrix<Complex<T>, M, M> X_1) {
@@ -904,6 +902,48 @@ inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
                                              decay_rate, division_min,
                                              rho_vec[i], rep_num_vec[i]);
 
+    X.set_row(i, x);
+  }
+
+  return X;
+}
+
+template <typename T, std::size_t M>
+inline Matrix<Complex<T>, M, M>
+complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> In_A, T decay_rate,
+                           T division_min, std::array<T, M> &rho,
+                           std::array<std::size_t, M> &rep_num,
+                           const Matrix<Complex<T>, M, M> X_1) {
+  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+  Matrix<Complex<T>, M, M> X;
+
+  for (std::size_t i = 0; i < M; i++) {
+    Vector<Complex<T>, M> x;
+
+    x = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
+                              division_min, rho[i], rep_num[i]);
+    X.set_row(i, x);
+  }
+
+  return X;
+}
+
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
+    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+        In_A,
+    T decay_rate, T division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num, const Matrix<Complex<T>, M, M> X_1) {
+  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+  Matrix<Complex<T>, M, M> X;
+
+  for (std::size_t i = 0; i < M; i++) {
+    Vector<Complex<T>, M> x;
+
+    x = Base::Matrix::complex_sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
+                                             decay_rate, division_min, rho[i],
+                                             rep_num[i]);
     X.set_row(i, x);
   }
 

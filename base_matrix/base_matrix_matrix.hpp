@@ -312,8 +312,12 @@ public:
 
   inline Matrix<T, M, M> inv() const {
     Matrix<T, M, M> X_temp = Matrix<T, M, M>::identity();
-    Matrix<T, M, M> Inv = gmres_k_matrix_inv(*this, static_cast<T>(0.0),
-                                             static_cast<T>(1.0e-10), X_temp);
+    std::array<T, M> rho;
+    std::array<std::size_t, M> rep_num;
+
+    Matrix<T, M, M> Inv =
+        gmres_k_matrix_inv(*this, static_cast<T>(0.0), static_cast<T>(1.0e-10),
+                           rho, rep_num, X_temp);
 
     return Inv;
   }

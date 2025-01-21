@@ -14,6 +14,10 @@ namespace Matrix {
 
 template <typename T> class Complex {
 public:
+  /* Type */
+  using Value_Type = T;
+
+public:
   Complex() : real(static_cast<T>(0)), imag(static_cast<T>(0)) {}
 
   Complex(const T &real) : real(real), imag(static_cast<T>(0)) {}
