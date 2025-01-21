@@ -16,6 +16,95 @@
 namespace Base {
 namespace Matrix {
 
+/* Sparse Matrix minus */
+// Core loop for addition
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
+          std::size_t End>
+struct SparseMatrixMinusLoop {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+    Y.values[Start] = -A.values[Start];
+    SparseMatrixMinusLoop<T, M, N, RowIndices, RowPointers, J, K, Start + 1,
+                          End>::compute(A, Y);
+  }
+};
+
+// End of core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
+struct SparseMatrixMinusLoop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+    static_cast<void>(A);
+    static_cast<void>(Y);
+    // End of loop, do nothing
+  }
+};
+
+// Row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t J>
+struct SparseMatrixMinusRow {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+    SparseMatrixMinusLoop<T, M, N, RowIndices, RowPointers, J, 0,
+                          RowPointers::list[J],
+                          RowPointers::list[J + 1]>::compute(A, Y);
+    SparseMatrixMinusRow<T, M, N, RowIndices, RowPointers, J - 1>::compute(A,
+                                                                           Y);
+  }
+};
+
+// End of row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+struct SparseMatrixMinusRow<T, M, N, RowIndices, RowPointers, 0> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+    SparseMatrixMinusLoop<T, M, N, RowIndices, RowPointers, 0, 0,
+                          RowPointers::list[0],
+                          RowPointers::list[1]>::compute(A, Y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+static inline void COMPILED_SPARSE_MATRIX_MINUS(
+    const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
+    CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+  SparseMatrixMinusRow<T, M, N, RowIndices, RowPointers, M - 1>::compute(A, Y);
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+inline CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+operator-(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A) {
+  CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> Y;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+         ++k) {
+      Y.values[k] = -A.values[k];
+    }
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  Base::Matrix::COMPILED_SPARSE_MATRIX_MINUS<T, M, N, RowIndices, RowPointers>(
+      A, Y);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return Y;
+}
+
 /* Sparse Matrix multiply Dense Matrix */
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,

@@ -494,6 +494,26 @@ inline auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
 
 /* Matrix Subtraction */
 template <typename T, std::size_t M, std::size_t N>
+inline auto operator-(const Matrix<DefDense, T, M, N> &A)
+    -> Matrix<DefDense, T, M, N> {
+
+  return Matrix<DefDense, T, M, N>(std::move(-A.matrix));
+}
+
+template <typename T, std::size_t M>
+inline auto operator-(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
+
+  return Matrix<DefDiag, T, M>(std::move(-A.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(std::move(-A.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N>
 inline auto operator-(const Matrix<DefDense, T, M, N> &A,
                       const Matrix<DefDense, T, M, N> &B)
     -> Matrix<DefDense, T, M, N> {

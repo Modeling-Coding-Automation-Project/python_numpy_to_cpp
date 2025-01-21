@@ -232,6 +232,37 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
 
 
     /* 演算 */
+    Matrix<DefDense, T, 3, 3> A_minus = -A;
+
+    Matrix<DefDense, T, 3, 3> A_minus_answer({
+        { -1, -2, -3 },
+        { -5, -4, -6 },
+        { -9, -8, -7 }
+        });
+
+    tester.expect_near(A_minus.matrix.data, A_minus_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Dense Matrix minus.");
+
+    Matrix<DefDiag, T, 3> B_minus = -B;
+
+    Matrix<DefDiag, T, 3> B_minus_answer({ -1, -2, -3 });
+
+    tester.expect_near(B_minus.matrix.data, B_minus_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix minus.");
+
+    decltype(C) C_minus = -C;
+    auto C_minus_dense = C_minus.create_dense();
+
+    Matrix<DefDense, T, 3, 3> C_minus_answer({
+        { -1, 0, 0 },
+        { -3, 0, -8 },
+        { 0, -2, -4 }
+        });
+
+    tester.expect_near(C_minus_dense.matrix.data, C_minus_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix minus.");
+
+
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
 
     auto Sparse_add_Diag = C + DiagJ;
