@@ -714,10 +714,15 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     static auto B_inv_solver = make_LinalgSolver(B);
 
     auto B_Inv = B_inv_solver.inv(B);
+    auto B_Inv_dense = B_Inv.create_dense();
 
-    Matrix<DefDiag, T, 3> B_Inv_answer({ 1, 0.5F, 0.333333F });
+    Matrix<DefDense, T, 3, 3> B_Inv_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 0.5F, 0.0F},
+        {0.0F, 0.0F, 0.33333333F}
+        });
 
-    tester.expect_near(B_Inv.matrix.data, B_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(B_Inv_dense.matrix.data, B_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Diag.");
 
     static auto C_inv_solver = make_LinalgSolver(C);
