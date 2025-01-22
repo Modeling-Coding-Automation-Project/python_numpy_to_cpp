@@ -15,28 +15,21 @@ namespace ComplexOperation {
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t N,
           bool IsComplex>
-struct get_real_from_complex_dense_matrix {
+struct GetRealFromComplexDenseMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N>
+struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, true> {
   static Base::Matrix::Matrix<T, M, N>
   get(const Base::Matrix::Matrix<Complex_T, M, N> &input) {
-
-    Base::Matrix::Matrix<T, M, N> result;
-    return result;
+    return Base::Matrix::get_real_matrix_from_complex_matrix(input);
   }
 };
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t N>
-struct get_real_from_complex_dense_matrix<T, Complex_T, M, N, true> {
+struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, false> {
   static Base::Matrix::Matrix<T, M, N>
-  get(const Base::Matrix::Matrix<Complex_T, M, N> &input) {
-    return Base::Matrix::get_real_matrix_from_complex_matrix(input.matrix);
-  }
-};
-
-template <typename T, typename Complex_T, std::size_t M, std::size_t N>
-struct get_real_from_complex_dense_matrix<T, Complex_T, M, N, false> {
-  static Base::Matrix::Matrix<T, M, N>
-  get(const Base::Matrix::Matrix<Complex_T, M, N> &input) {
-    return Base::Matrix::get_real_matrix_from_complex_matrix(input.matrix);
+  get(const Base::Matrix::Matrix<T, M, N> &input) {
+    return input.matrix;
   }
 };
 
@@ -57,7 +50,7 @@ template <typename T, std::size_t M, std::size_t N>
 class Matrix<DefDense, T, M, N> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
   using Matrix_Type = DefDense;
   using SparseAvailable_Type = DenseAvailable<M, N>;
 
@@ -157,6 +150,12 @@ public:
 
     return Matrix<DefDense, Complex<T>, M, N>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
+  }
+
+  inline auto real(void) -> Matrix<DefDense, Value_Type, M, N> {
+    return Matrix<DefDense, Value_Type, M, N>(
+        ComplexOperation::GetRealFromComplexDenseMatrix<
+            Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
   }
 
 public:
