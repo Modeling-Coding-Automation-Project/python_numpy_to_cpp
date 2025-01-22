@@ -77,6 +77,44 @@ struct InverseDiag<T, Complex_T, M, false> {
   }
 };
 
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable, bool IsComplex>
+struct InverseSparse {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable>
+struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
+  static auto
+  compute(const Matrix<DefSparse, Complex_T, M, M, SparseAvailable> &A,
+          const T &decay_rate, const T &division_min, std::array<T, K> &rho,
+          std::array<std::size_t, K> &rep_num,
+          Base::Matrix::Matrix<Complex_T, M, K> &X_1)
+      -> Matrix<DefDense, Complex_T, M, M> {
+
+    X_1 = Base::Matrix::complex_sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+
+    return Matrix<DefDense, Complex_T, M, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable>
+struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
+  static auto compute(const Matrix<DefSparse, T, M, M, SparseAvailable> &A,
+                      const T &decay_rate, const T &division_min,
+                      std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<T, M, K> &X_1)
+      -> Matrix<DefDense, Complex_T, M, M> {
+
+    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+
+    return Matrix<DefDense, Complex_T, M, M>(X_1);
+  }
+};
+
 } // namespace InverseOperation
 
 /* Linalg Solver */
@@ -313,11 +351,10 @@ public:
   inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(A.matrix, this->decay_rate,
-                                                  this->division_min, this->rho,
-                                                  this->rep_num, X_1);
-
-    return Matrix<DefDense, T, M, M>(X_1);
+    return InverseOperation::InverseSparse<
+        Value_Type, T, M, K, SparseAvailable_A,
+        IS_COMPLEX>::compute(A, this->decay_rate, this->division_min, this->rho,
+                             this->rep_num, X_1);
   }
 
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {

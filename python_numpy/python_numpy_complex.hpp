@@ -2,6 +2,7 @@
 #define __PYTHON_NUMPY_COMPLEX_HPP__
 
 #include "base_matrix.hpp"
+#include "python_numpy_templates.hpp"
 
 namespace PythonNumpy {
 
@@ -102,6 +103,65 @@ struct GetImagFromComplexDiagMatrix<T, Complex_T, M, false> {
 
     Base::Matrix::DiagMatrix<T, M> result;
     return result;
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+using BaseMatrixSparseMatrix_Type = Base::Matrix::CompiledSparseMatrix<
+    T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
+    RowPointersFromSparseAvailable<SparseAvailable>>;
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable, bool IsComplex>
+struct GetRealFromComplexSparseMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+struct GetRealFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
+                                      true> {
+  static BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable>
+  get(const BaseMatrixSparseMatrix_Type<Complex_T, M, N, SparseAvailable>
+          &input) {
+
+    return Base::Matrix::get_real_matrix_from_complex_matrix(input);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+struct GetRealFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
+                                      false> {
+  static BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable>
+  get(const BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> &input) {
+
+    return input.matrix;
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable, bool IsComplex>
+struct GetImagFromComplexSparseMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+struct GetImagFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
+                                      true> {
+  static BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable>
+  get(const BaseMatrixSparseMatrix_Type<Complex_T, M, N, SparseAvailable>
+          &input) {
+
+    return Base::Matrix::get_imag_matrix_from_complex_matrix(input);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+struct GetImagFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
+                                      false> {
+  static BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable>
+  get(const BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> &input) {
+
+    return input.matrix;
   }
 };
 

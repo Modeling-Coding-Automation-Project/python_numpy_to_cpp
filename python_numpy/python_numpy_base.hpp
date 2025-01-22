@@ -288,12 +288,15 @@ public:
             Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
   }
 
-  /* Variable */
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
+public:
+  /* Variable */
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
 
@@ -409,10 +412,31 @@ public:
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
-  /* Variable */
+  inline auto real(void)
+      -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
+    return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
+        ComplexOperation::GetRealFromComplexSparseMatrix<
+            Value_Type, T, M, N, SparseAvailable,
+            IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void)
+      -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
+    return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
+        ComplexOperation::GetImagFromComplexSparseMatrix<
+            Value_Type, T, M, N, SparseAvailable,
+            IS_COMPLEX>::get(this->matrix));
+  }
+
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
   _BaseMatrix_Type matrix;
 };
 

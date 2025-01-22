@@ -847,6 +847,57 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         B_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Diag complex imag.");
 
+    auto C_comp_real = C_comp.real();
+    auto C_comp_real_dense = C_comp_real.create_dense();
+
+    Matrix<DefDense, T, 3, 3> C_comp_real_answer({
+        {1.0F, 0.0F, 0.0F},
+        {3.0F, 0.0F, 8.0F},
+        {0.0F, 2.0F, 4.0F}
+        });
+
+    tester.expect_near(C_comp_real_dense.matrix.data, C_comp_real_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix get real.");
+
+    auto C_comp_imag = C_comp.imag();
+    auto C_comp_imag_dense = C_comp_imag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> C_comp_imag_answer({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    tester.expect_near(C_comp_imag_dense.matrix.data, C_comp_imag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check SparseMatrix get imag.");
+
+    static auto C_comp_inv_solver = make_LinalgSolver(C_comp);
+
+    auto C_comp_Inv = C_comp_inv_solver.inv(C_comp);
+    auto C_comp_Inv_real = C_comp_Inv.real();
+
+    Matrix<DefDense, T, 3, 3> C_comp_Inv_answer_real({
+        {1.0F, 0.0F, 0.0F},
+        {0.75F, -0.25F, 0.5F},
+        {-0.375F, 0.125F, 0.0F}
+        });
+
+    tester.expect_near(C_comp_Inv_real.matrix.data,
+        C_comp_Inv_answer_real.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Sparse complex real.");
+
+    auto C_comp_Inv_imag = C_comp_Inv.imag();
+
+    Matrix<DefDense, T, 3, 3> C_comp_Inv_answer_imag({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    tester.expect_near(C_comp_Inv_imag.matrix.data,
+        C_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Sparse complex imag.");
+
 
     tester.throw_error_if_test_failed();
 }

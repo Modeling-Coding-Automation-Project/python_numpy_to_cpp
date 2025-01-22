@@ -821,7 +821,7 @@ inline auto output_matrix_transpose(
   return result;
 }
 
-/* Matrix real from complex */
+/* Convert Real Matrix to Complex Matrix */
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t I>
@@ -869,6 +869,120 @@ convert_matrix_real_to_complex(
   SparseMatrixRealToComplexLoop<T, M, N, RowIndices, RowPointers,
                                 RowPointers::list[M]>::compute(From_matrix,
                                                                To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
+/* Get Real Matrix from Complex Matrix */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t I>
+struct SparseMatrixRealFromComplexLoop {
+  static void
+  compute(const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+              &From_matrix,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &To_matrix) {
+
+    To_matrix.values[I - 1] = From_matrix.values[I - 1].real;
+    SparseMatrixRealFromComplexLoop<T, M, N, RowIndices, RowPointers,
+                                    I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+struct SparseMatrixRealFromComplexLoop<T, M, N, RowIndices, RowPointers, 0> {
+  static void
+  compute(const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+              &From_matrix,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &To_matrix) {
+
+    /* Do Nothing. */
+    static_cast<void>(From_matrix);
+    static_cast<void>(To_matrix);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+inline CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+get_real_matrix_from_complex_matrix(
+    const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+        &From_matrix) {
+
+  CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
+    To_matrix[i] = From_matrix[i].real;
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  SparseMatrixRealFromComplexLoop<T, M, N, RowIndices, RowPointers,
+                                  RowPointers::list[M]>::compute(From_matrix,
+                                                                 To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
+/* Get Imag Matrix from Complex Matrix */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers, std::size_t I>
+struct SparseMatrixImagFromComplexLoop {
+  static void
+  compute(const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+              &From_matrix,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &To_matrix) {
+
+    To_matrix.values[I - 1] = From_matrix.values[I - 1].imag;
+    SparseMatrixImagFromComplexLoop<T, M, N, RowIndices, RowPointers,
+                                    I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+struct SparseMatrixImagFromComplexLoop<T, M, N, RowIndices, RowPointers, 0> {
+  static void
+  compute(const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+              &From_matrix,
+          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &To_matrix) {
+
+    /* Do Nothing. */
+    static_cast<void>(From_matrix);
+    static_cast<void>(To_matrix);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices,
+          typename RowPointers>
+inline CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+get_imag_matrix_from_complex_matrix(
+    const CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
+        &From_matrix) {
+
+  CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
+    To_matrix[i] = From_matrix[i].imag;
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  SparseMatrixImagFromComplexLoop<T, M, N, RowIndices, RowPointers,
+                                  RowPointers::list[M]>::compute(From_matrix,
+                                                                 To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
