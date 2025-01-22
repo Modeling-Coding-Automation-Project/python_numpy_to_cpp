@@ -810,7 +810,19 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(A_comp_Inv_real.matrix.data,
         A_comp_Inv_answer_real.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolver inv Dense complex.");
+        "check LinalgSolver inv Dense complex real.");
+
+    auto A_comp_Inv_imag = A_comp_Inv.imag();
+
+    Matrix<DefDense, T, 3, 3> A_comp_Inv_answer_imag({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    tester.expect_near(A_comp_Inv_imag.matrix.data,
+        A_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Dense complex imag.");
 
 
     tester.throw_error_if_test_failed();

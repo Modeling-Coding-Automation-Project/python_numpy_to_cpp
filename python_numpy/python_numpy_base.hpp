@@ -21,6 +21,7 @@ template <typename T, typename Complex_T, std::size_t M, std::size_t N>
 struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, true> {
   static Base::Matrix::Matrix<T, M, N>
   get(const Base::Matrix::Matrix<Complex_T, M, N> &input) {
+
     return Base::Matrix::get_real_matrix_from_complex_matrix(input);
   }
 };
@@ -29,7 +30,31 @@ template <typename T, typename Complex_T, std::size_t M, std::size_t N>
 struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, false> {
   static Base::Matrix::Matrix<T, M, N>
   get(const Base::Matrix::Matrix<T, M, N> &input) {
+
     return input.matrix;
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N,
+          bool IsComplex>
+struct GetImagFromComplexDenseMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N>
+struct GetImagFromComplexDenseMatrix<T, Complex_T, M, N, true> {
+  static Base::Matrix::Matrix<T, M, N>
+  get(const Base::Matrix::Matrix<Complex_T, M, N> &input) {
+
+    return Base::Matrix::get_imag_matrix_from_complex_matrix(input);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t N>
+struct GetImagFromComplexDenseMatrix<T, Complex_T, M, N, false> {
+  static Base::Matrix::Matrix<T, M, N>
+  get(const Base::Matrix::Matrix<T, M, N> &input) {
+
+    Base::Matrix::Matrix<T, M, N> result;
+    return result;
   }
 };
 
@@ -155,6 +180,12 @@ public:
   inline auto real(void) -> Matrix<DefDense, Value_Type, M, N> {
     return Matrix<DefDense, Value_Type, M, N>(
         ComplexOperation::GetRealFromComplexDenseMatrix<
+            Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void) -> Matrix<DefDense, Value_Type, M, N> {
+    return Matrix<DefDense, Value_Type, M, N>(
+        ComplexOperation::GetImagFromComplexDenseMatrix<
             Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
   }
 
