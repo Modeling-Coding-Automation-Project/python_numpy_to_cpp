@@ -861,7 +861,7 @@ convert_matrix_real_to_complex(
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
-    To_matrix[i].real = From_matrix[i];
+    To_matrix.values[i].real = From_matrix.values[i];
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -918,7 +918,7 @@ get_real_matrix_from_complex_matrix(
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
-    To_matrix[i] = From_matrix[i].real;
+    To_matrix.values[i] = From_matrix.values[i].real;
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -975,7 +975,7 @@ get_imag_matrix_from_complex_matrix(
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t i = 0; i < RowPointers::list[M]; ++i) {
-    To_matrix[i] = From_matrix[i].imag;
+    To_matrix.values[i] = From_matrix.values[i].imag;
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__

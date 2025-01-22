@@ -89,7 +89,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A) {
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
          ++k) {
       Y.values[k] = -A.values[k];
     }
@@ -778,6 +778,14 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
         RowPointers_B>::Y_Type {
 
+  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowIndices_Y;
+
+  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
+      RowPointers_B>::RowPointers_Y;
+
   using Y_Type = typename CompiledSparseOperation::SparseAddSubSparse<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
       RowPointers_B>::Y_Type;
@@ -803,14 +811,6 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowIndices_Y;
-
-  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowPointers_Y;
 
   Base::Matrix::COMPILED_SPARSE_MATRIX_ADD_SPARSE<
       T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y>(A, Y);
