@@ -243,7 +243,8 @@ inline bool operator>=(const Complex<T> &a_comp, const Complex<T> &b_comp) {
 /* complex functions */
 template <typename T>
 inline Complex<T> complex_divide(const Complex<T> &a_comp,
-                                 const Complex<T> &b_comp, T division_min) {
+                                 const Complex<T> &b_comp,
+                                 const T &division_min) {
   Complex<T> result;
 
   T denominator = Base::Utility::avoid_zero_divide(
@@ -259,7 +260,7 @@ inline Complex<T> complex_divide(const Complex<T> &a_comp,
 
 template <typename T>
 inline Complex<T> complex_divide(T a, const Complex<T> &b_comp,
-                                 T division_min) {
+                                 const T &division_min) {
   Complex<T> result;
 
   T denominator = Base::Utility::avoid_zero_divide(
@@ -349,7 +350,8 @@ inline Complex<T> complex_sqrt(const Complex<T> &a_comp,
 }
 
 template <typename T>
-inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
+inline Complex<T> complex_sign(const Complex<T> &a_comp,
+                               const T &division_min) {
   Complex<T> result;
 
   T a_abs_r = Base::Math::rsqrt<T>(

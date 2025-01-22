@@ -58,6 +58,49 @@ struct GetImagFromComplexDenseMatrix<T, Complex_T, M, N, false> {
   }
 };
 
+template <typename T, typename Complex_T, std::size_t M, bool IsComplex>
+struct GetRealFromComplexDiagMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct GetRealFromComplexDiagMatrix<T, Complex_T, M, true> {
+  static Base::Matrix::DiagMatrix<T, M>
+  get(const Base::Matrix::DiagMatrix<Complex_T, M> &input) {
+
+    return Base::Matrix::get_real_matrix_from_complex_matrix(input);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct GetRealFromComplexDiagMatrix<T, Complex_T, M, false> {
+  static Base::Matrix::DiagMatrix<T, M>
+  get(const Base::Matrix::DiagMatrix<T, M> &input) {
+
+    return input.matrix;
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, bool IsComplex>
+struct GetImagFromComplexDiagMatrix {};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct GetImagFromComplexDiagMatrix<T, Complex_T, M, true> {
+  static Base::Matrix::DiagMatrix<T, M>
+  get(const Base::Matrix::DiagMatrix<Complex_T, M> &input) {
+
+    return Base::Matrix::get_imag_matrix_from_complex_matrix(input);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct GetImagFromComplexDiagMatrix<T, Complex_T, M, false> {
+  static Base::Matrix::DiagMatrix<T, M>
+  get(const Base::Matrix::DiagMatrix<T, M> &input) {
+
+    Base::Matrix::DiagMatrix<T, M> result;
+    return result;
+  }
+};
+
 } // namespace ComplexOperation
 
 /* Matrix class definition */
@@ -204,7 +247,7 @@ public:
 template <typename T, std::size_t M> class Matrix<DefDiag, T, M> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
   using Matrix_Type = DefDiag;
   using SparseAvailable_Type = DiagAvailable<M>;
 
@@ -325,9 +368,23 @@ public:
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
+  inline auto real(void) -> Matrix<DefDiag, Value_Type, M> {
+    return Matrix<DefDiag, Value_Type, M>(
+        ComplexOperation::GetRealFromComplexDiagMatrix<
+            Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void) -> Matrix<DefDiag, Value_Type, M> {
+    return Matrix<DefDiag, Value_Type, M>(
+        ComplexOperation::GetImagFromComplexDiagMatrix<
+            Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
+  }
+
   /* Variable */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
@@ -336,7 +393,7 @@ template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
   using Matrix_Type = DefSparse;
   using SparseAvailable_Type = SparseAvailable;
 

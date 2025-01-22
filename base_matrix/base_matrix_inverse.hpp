@@ -953,6 +953,34 @@ inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
   return X;
 }
 
+/* Diag Matrix inverse */
+template <typename T, std::size_t M>
+inline DiagMatrix<T, M> inverse_diag_matrix(const DiagMatrix<T, M> &input,
+                                            const T &division_min) {
+  DiagMatrix<T, M> result;
+
+  for (std::size_t i = 0; i < M; i++) {
+    result[i] = static_cast<T>(1) /
+                Base::Utility::avoid_zero_divide(input.data[i], division_min);
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline DiagMatrix<Complex<T>, M>
+inverse_complex_diag_matrix(const DiagMatrix<Complex<T>, M> &input,
+                            const T &division_min) {
+  DiagMatrix<Complex<T>, M> result;
+
+  for (std::size_t i = 0; i < M; i++) {
+    result[i] = Base::Matrix::complex_divide(static_cast<T>(1), input.data[i],
+                                             division_min);
+  }
+
+  return result;
+}
+
 } // namespace Matrix
 } // namespace Base
 

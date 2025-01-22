@@ -12,7 +12,7 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-23;
 
-namespace Inverse {
+namespace InverseOperation {
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t K,
           bool IsComplex>
@@ -49,7 +49,35 @@ struct InverseDense<T, Complex_T, M, K, false> {
   }
 };
 
-} // namespace Inverse
+template <typename T, typename Complex_T, std::size_t M, bool IsComplex>
+struct InverseDiag {};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct InverseDiag<T, Complex_T, M, true> {
+  static auto compute(const Matrix<DefDiag, Complex_T, M> &A,
+                      const T &division_min,
+                      Base::Matrix::DiagMatrix<Complex_T, M> &X_1)
+      -> Matrix<DefDiag, Complex_T, M> {
+
+    X_1 = Base::Matrix::inverse_complex_diag_matrix(A.matrix, division_min);
+
+    return Matrix<DefDiag, Complex_T, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct InverseDiag<T, Complex_T, M, false> {
+  static auto compute(const Matrix<DefDiag, T, M> &A, const T &division_min,
+                      Base::Matrix::DiagMatrix<T, M> &X_1)
+      -> Matrix<DefDiag, T, M> {
+
+    X_1 = Base::Matrix::inverse_diag_matrix(A.matrix, division_min);
+
+    return Matrix<DefDiag, T, M>(X_1);
+  }
+};
+
+} // namespace InverseOperation
 
 /* Linalg Solver */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
@@ -276,17 +304,10 @@ public:
   inline auto inv(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    return Inverse::InverseDense<Value_Type, T, M, K, IS_COMPLEX>::compute(
-        A, this->decay_rate, this->division_min, this->rho, this->rep_num, X_1);
-  }
-
-  inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
-
-    Base::Matrix::DiagMatrix<T, M> result = A.matrix.inv(this->division_min);
-
-    X_1 = Base::Matrix::output_dense_matrix(result);
-
-    return Matrix<DefDiag, T, M>(std::move(result));
+    return InverseOperation::InverseDense<
+        Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
+                                                  this->division_min, this->rho,
+                                                  this->rep_num, X_1);
   }
 
   inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
@@ -324,7 +345,7 @@ public:
 template <typename T, std::size_t M> class LinalgInvDiag {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
 
 public:
   /* Constructor */
@@ -361,9 +382,8 @@ public:
   /* Function */
   inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
 
-    X_1 = A.matrix.inv(this->division_min);
-
-    return Matrix<DefDiag, T, M>(std::move(X_1));
+    return InverseOperation::InverseDiag<Value_Type, T, M, IS_COMPLEX>::compute(
+        A, this->division_min, X_1);
   }
 
   inline auto get_answer(void) -> Matrix<DefDiag, T, M> {
@@ -375,11 +395,14 @@ public:
   static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
 public:
   /* Variable */
   Base::Matrix::DiagMatrix<T, M> X_1;
 
-  T division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  Value_Type division_min =
+      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
 };
 
 /* make LinalgSolver for inv */
