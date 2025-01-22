@@ -310,7 +310,7 @@ public:
 
 private:
   /* Type */
-  using _Validate_SparseAvailable = ValidateSparseAvailable<SparseAvailable>;
+  using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
   using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
   using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
 
@@ -427,6 +427,8 @@ public:
   /* Constant */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
+
+  static constexpr std::size_t NumberOfValues = _RowPointers_Type::list[M];
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 

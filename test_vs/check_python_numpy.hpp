@@ -665,7 +665,16 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Sparse_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixSparse.");
 
+    auto Sparse_2 = make_MatrixSparse<SparseAvailable_C>(
+        static_cast<T>(1),
+        static_cast<T>(3),
+        static_cast<T>(8),
+        static_cast<T>(2),
+        static_cast<T>(4));
+    auto Sparse_2_dense = Sparse_2.create_dense();
 
+    tester.expect_near(Sparse_2_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_MatrixSparse 2.");
 
 
     tester.throw_error_if_test_failed();
