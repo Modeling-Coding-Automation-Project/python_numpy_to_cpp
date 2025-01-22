@@ -520,6 +520,18 @@ inline void set_sparse_matrix_value(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/* Set Sparse Matrix each element values */
+template <std::size_t ElementToSet, typename T, std::size_t M, std::size_t N,
+          typename RowIndices_A, typename RowPointers_A>
+inline void set_sparse_matrix_element_value(
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const T &value) {
+  static_assert(ElementToSet < RowPointers_A::list[M],
+                "Element number must be less than RowPointers::list[M]");
+
+  A.values[ElementToSet] = value;
+}
+
 /* Get Sparse Matrix Value */
 // check if RowToGet == RowIndices_A::list[K]
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
@@ -717,6 +729,17 @@ inline T get_sparse_matrix_value(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return value;
+}
+
+/* Get Sparse Matrix each element values */
+template <std::size_t ElementToGet, typename T, std::size_t M, std::size_t N,
+          typename RowIndices_A, typename RowPointers_A>
+inline T get_sparse_matrix_element_value(
+    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  static_assert(ElementToGet < RowPointers_A::list[M],
+                "Element number must be less than RowPointers::list[M]");
+
+  return A.values[ElementToGet];
 }
 
 /* Output transpose matrix */

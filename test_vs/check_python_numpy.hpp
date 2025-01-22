@@ -678,6 +678,11 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Sparse_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrix.");
 
+    T sparse_value = Sparse.template get<3>();
+
+    tester.expect_near(sparse_value, static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check SparseMatrix get value.");
+
 
     tester.throw_error_if_test_failed();
 }

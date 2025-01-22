@@ -365,11 +365,21 @@ public:
     return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
   }
 
+  template <std::size_t ELEMENT> inline T get() const {
+
+    return Base::Matrix::get_sparse_matrix_element_value<ELEMENT>(this->matrix);
+  }
+
   template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
     static_assert(COL < M, "Column Index is out of range.");
     static_assert(ROW < N, "Row Index is out of range.");
 
     Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+  }
+
+  template <std::size_t ELEMENT> inline void set(const T &value) {
+
+    Base::Matrix::set_sparse_matrix_element_value<ELEMENT>(this->matrix, value);
   }
 
   constexpr std::size_t rows() const { return ROWS; }
