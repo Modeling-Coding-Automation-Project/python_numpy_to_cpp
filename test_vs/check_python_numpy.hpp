@@ -797,9 +797,9 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         ColumnAvailable<false, true, true>>
         > C_comp({ 1, 3, 8, 2, 4 });
 
-    //static auto A_comp_inv_solver = make_LinalgSolver(A_comp);
+    static auto A_comp_inv_solver = make_LinalgSolver(A_comp);
 
-    //auto A_comp_Inv = A_comp_inv_solver.inv(A_comp);
+    auto A_comp_Inv = A_comp_inv_solver.inv(A_comp);
     //auto A_comp_Inv_real = 
 
     //Matrix<DefDense, Complex<T>, 3, 3> A_comp_Inv_answer_real({

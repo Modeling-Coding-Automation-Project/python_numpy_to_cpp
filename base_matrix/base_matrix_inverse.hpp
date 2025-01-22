@@ -18,7 +18,7 @@ namespace Matrix {
 /* GMRES K */
 template <typename T, std::size_t M>
 inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-                            const Vector<T, M> &x_1, T decay_rate,
+                            const Vector<T, M> &x_1, const T &decay_rate,
                             T division_min, T &rho, std::size_t &rep_num) {
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
@@ -133,8 +133,8 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 
 template <typename T, std::size_t M, std::size_t K>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
-                           Matrix<T, M, K> &X_1, T decay_rate, T division_min,
-                           std::array<T, K> &rho,
+                           Matrix<T, M, K> &X_1, const T &decay_rate,
+                           T division_min, std::array<T, K> &rho,
                            std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
@@ -147,8 +147,8 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
 
 template <typename T, std::size_t M>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
-                           Matrix<T, M, M> &X_1, T decay_rate, T division_min,
-                           std::array<T, M> &rho,
+                           Matrix<T, M, M> &X_1, const T &decay_rate,
+                           T division_min, std::array<T, M> &rho,
                            std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
@@ -163,7 +163,7 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
 template <typename T, std::size_t M, std::size_t N>
 inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
                                  const Vector<T, M> &b, const Vector<T, N> &x_1,
-                                 T decay_rate, T division_min, T &rho,
+                                 T decay_rate, const T &division_min, T &rho,
                                  std::size_t &rep_num) {
   static_assert(M > N, "Column number must be larger than row number.");
 
@@ -284,7 +284,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
 inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
                                 const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1,
-                                T decay_rate, T division_min,
+                                T decay_rate, const T &division_min,
                                 std::array<T, K> &rho,
                                 std::array<std::size_t, K> &rep_num) {
 
@@ -299,7 +299,7 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N>
 inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
                                 const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1,
-                                T decay_rate, T division_min,
+                                T decay_rate, const T &division_min,
                                 std::array<T, M> &rho,
                                 std::array<std::size_t, M> &rep_num) {
 
@@ -314,8 +314,9 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
 /* GMRES K for matrix inverse */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M>
-gmres_k_matrix_inv(const Matrix<T, M, M> In_A, T decay_rate, T division_min,
-                   std::array<T, M> &rho, std::array<std::size_t, M> &rep_num,
+gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
+                   const T &division_min, std::array<T, M> &rho,
+                   std::array<std::size_t, M> &rep_num,
                    const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
@@ -336,7 +337,7 @@ template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Vector<T, M> sparse_gmres_k(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
-    const Vector<T, M> &b, const Vector<T, M> &x_1, T decay_rate,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
@@ -441,7 +442,7 @@ template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_matrix(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
-    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, T decay_rate,
+    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
     T division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num) {
 
@@ -458,7 +459,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline Vector<T, N> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
-    const Vector<T, M> &b, const Vector<T, N> &x_1, T decay_rate,
+    const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
   static_assert(M > N, "Column number must be larger than row number.");
 
@@ -578,7 +579,7 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
 inline void sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
-    const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1, T decay_rate,
+    const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1, const T &decay_rate,
     T division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num) {
 
@@ -594,7 +595,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
-    const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1, T decay_rate,
+    const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1, const T &decay_rate,
     T division_min, std::array<T, M> &rho,
     std::array<std::size_t, M> &rep_num) {
 
@@ -611,7 +612,7 @@ template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> In_A,
-    T decay_rate, T division_min, std::array<T, M> &rho,
+    T decay_rate, const T &division_min, std::array<T, M> &rho,
     std::array<std::size_t, M> &rep_num, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
@@ -630,11 +631,11 @@ inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
 
 /* Complex GMRES K */
 template <typename T, std::size_t M>
-inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
-                                             const Vector<Complex<T>, M> &b,
-                                             const Vector<Complex<T>, M> &x_1,
-                                             T decay_rate, T division_min,
-                                             T &rho, std::size_t &rep_num) {
+inline Vector<Complex<T>, M>
+complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
+                const Vector<Complex<T>, M> &b,
+                const Vector<Complex<T>, M> &x_1, T decay_rate,
+                const T &division_min, T &rho, std::size_t &rep_num) {
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -750,8 +751,9 @@ inline Vector<Complex<T>, M> complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
 template <typename T, std::size_t M, std::size_t K>
 inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const Matrix<Complex<T>, M, K> &B,
-                                   Matrix<Complex<T>, M, K> &X_1, T decay_rate,
-                                   T division_min, std::array<T, K> &rho,
+                                   Matrix<Complex<T>, M, K> &X_1,
+                                   const T &decay_rate, const T &division_min,
+                                   std::array<T, K> &rho,
                                    std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
@@ -765,8 +767,9 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
 template <typename T, std::size_t M>
 inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const DiagMatrix<Complex<T>, M> &B,
-                                   Matrix<Complex<T>, M, M> &X_1, T decay_rate,
-                                   T division_min, std::array<T, M> &rho,
+                                   Matrix<Complex<T>, M, M> &X_1,
+                                   const T &decay_rate, const T &division_min,
+                                   std::array<T, M> &rho,
                                    std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
@@ -783,7 +786,7 @@ inline Vector<Complex<T>, M> complex_sparse_gmres_k(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
-    T decay_rate, T division_min, T &rho, std::size_t &rep_num) {
+    T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -889,7 +892,7 @@ template <typename T, std::size_t M, typename RowIndices_A,
 inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
         In_A,
-    T decay_rate, T division_min, const Matrix<Complex<T>, M, M> X_1) {
+    T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> X_1) {
   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
   Matrix<Complex<T>, M, M> X;
   Vector<T, M> rho_vec;
@@ -909,19 +912,19 @@ inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
 }
 
 template <typename T, std::size_t M>
-inline Matrix<Complex<T>, M, M>
-complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> In_A, T decay_rate,
-                           T division_min, std::array<T, M> &rho,
-                           std::array<std::size_t, M> &rep_num,
-                           const Matrix<Complex<T>, M, M> X_1) {
+inline Matrix<Complex<T>, M, M> complex_gmres_k_matrix_inv(
+    const Matrix<Complex<T>, M, M> In_A, const T &decay_rate,
+    const T &division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num, const Matrix<Complex<T>, M, M> X_1) {
   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
   Matrix<Complex<T>, M, M> X;
 
   for (std::size_t i = 0; i < M; i++) {
     Vector<Complex<T>, M> x;
 
-    x = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
-                              division_min, rho[i], rep_num[i]);
+    x = Base::Matrix::complex_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
+                                      decay_rate, division_min, rho[i],
+                                      rep_num[i]);
     X.set_row(i, x);
   }
 
@@ -933,7 +936,7 @@ template <typename T, std::size_t M, typename RowIndices_A,
 inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
         In_A,
-    T decay_rate, T division_min, std::array<T, M> &rho,
+    T decay_rate, const T &division_min, std::array<T, M> &rho,
     std::array<std::size_t, M> &rep_num, const Matrix<Complex<T>, M, M> X_1) {
   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
   Matrix<Complex<T>, M, M> X;
