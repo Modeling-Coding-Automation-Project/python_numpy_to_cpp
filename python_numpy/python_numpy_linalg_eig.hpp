@@ -104,6 +104,14 @@ public:
     this->_Eigen_solver.iteration_max = iteration_max;
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
@@ -168,6 +176,14 @@ public:
   inline auto get_eigen_vectors(void) -> EigenVectors_Type {
     return EigenVectors_Type(Base::Matrix::DiagMatrix<T, M>::identity());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
@@ -253,6 +269,14 @@ public:
     return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
@@ -393,6 +417,14 @@ public:
         iteration_max_for_eigen_vector;
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
@@ -465,6 +497,14 @@ public:
     return EigenVectors_Type(Base::Matrix::convert_matrix_real_to_complex(
         Base::Matrix::DiagMatrix<T, M>::identity()));
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
@@ -551,6 +591,14 @@ public:
     return ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */

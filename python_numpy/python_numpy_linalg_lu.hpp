@@ -105,6 +105,9 @@ public:
   static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
   Base::Matrix::LUDecomposition<T, M> _LU_decomposer;
