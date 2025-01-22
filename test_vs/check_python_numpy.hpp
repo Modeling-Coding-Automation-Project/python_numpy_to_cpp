@@ -2238,13 +2238,16 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
     auto eigen_values_sparse = eig_solver_sparse.get_eigen_values();
 
+    decltype(eigen_values_sparse) eigen_values_sparse_sorted = eigen_values_sparse;
+    Base::Utility::sort(eigen_values_sparse_sorted.matrix.data);
+
     decltype(eigen_values_sparse) eigen_values_sparse_answer({
         {static_cast<T>(-2.47213595)},
         {static_cast<T>(1.0)},
         {static_cast<T>(6.47213595)}
         });
 
-    tester.expect_near(eigen_values_sparse.matrix.data, eigen_values_sparse_answer.matrix.data,
+    tester.expect_near(eigen_values_sparse_sorted.matrix.data, eigen_values_sparse_answer.matrix.data,
         NEAR_LIMIT_SOFT * std::abs(eigen_values_sparse_answer(0, 0)),
         "check LinalgSolverEigReal eigen values Sparse.");
 
@@ -2265,18 +2268,12 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
     auto eigen_values = eig_solver.get_eigen_values();
 
-    //std::cout << "eigen_values = " << std::endl;
-    //for (size_t j = 0; j < eigen_values.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_values.rows(); ++i) {
-    //        std::cout << eigen_values(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    decltype(eigen_values) eigen_values_sorted = eigen_values;
+    Base::Utility::sort(eigen_values_sorted.matrix.data[0]);
 
     //Matrix<DefDense, T, 4, 1> eigen_values_answer({ {34}, {8.94427191F}, {0}, {-8.94427191F} });
     Matrix<DefDense, T, 3, 1> eigen_values_answer({ {1}, {2}, {3} });
-    tester.expect_near(eigen_values.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_SOFT,
+    tester.expect_near(eigen_values_sorted.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen values.");
 
     eig_solver.set_iteration_max(5);
@@ -2284,7 +2281,11 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     eig_solver.continue_solving_eigen_values();
     eig_solver.continue_solving_eigen_values();
     eigen_values = eig_solver.get_eigen_values();
-    tester.expect_near(eigen_values.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_STRICT,
+
+    eigen_values_sorted = eigen_values;
+    Base::Utility::sort(eigen_values_sorted.matrix.data[0]);
+
+    tester.expect_near(eigen_values_sorted.matrix.data, eigen_values_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEigReal eigen values, strict.");
 
     eig_solver.solve_eigen_vectors(A0);
@@ -2336,8 +2337,12 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     static auto eig_solver_comp_sparse = make_LinalgSolverEig(C);
 
     auto eigen_values_comp_sparse = eig_solver_comp_sparse.get_eigen_values();
+
+    decltype(eigen_values_comp_sparse) eigen_values_comp_sparse_sorted = eigen_values_comp_sparse;
+    Base::Utility::sort(eigen_values_comp_sparse_sorted.matrix.data[0]);
+
     Matrix<DefDense, T, 3, 1> eigen_values_comp_sparse_real(
-        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_sparse.matrix));
+        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_sparse_sorted.matrix));
 
     decltype(eigen_values_comp_sparse_real) eigen_values_comp_sparse_answer({
         {static_cast<T>(-2.47213595)},
@@ -2375,15 +2380,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     static auto eig_solver_comp = make_LinalgSolverEig<T, 3, 5>(A1);
     auto eigen_values_comp = eig_solver_comp.get_eigen_values();
 
-    //std::cout << "eigen_values_comp = " << std::endl;
-    //for (size_t j = 0; j < eigen_values_comp.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_values_comp.rows(); ++i) {
-    //        std::cout << "[" << eigen_values_comp(j, i).real << " ";
-    //        std::cout << "+ " <<  eigen_values_comp(j, i).imag << "j] ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    decltype(eigen_values_comp) eigen_values_comp_sorted = eigen_values_comp;
+    Base::Utility::sort(eigen_values_comp_sorted.matrix.data[0]);
 
     eig_solver_comp.set_iteration_max(5);
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
@@ -2392,12 +2390,12 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {-0.8660254F}, {0.8660254F}, {0.0F} });
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_real(
-        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp.matrix));
+        Base::Matrix::get_real_matrix_from_complex_matrix(eigen_values_comp_sorted.matrix));
     tester.expect_near(eigen_values_comp_real.matrix.data, eigen_values_comp_answer_real.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values real.");
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_imag(
-        Base::Matrix::get_imag_matrix_from_complex_matrix(eigen_values_comp.matrix));
+        Base::Matrix::get_imag_matrix_from_complex_matrix(eigen_values_comp_sorted.matrix));
     tester.expect_near(eigen_values_comp_imag.matrix.data, eigen_values_comp_answer_imag.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values imag.");
 

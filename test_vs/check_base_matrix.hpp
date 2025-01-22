@@ -1906,14 +1906,21 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     eigen_solver.continue_solving_eigen_values();
     eigen_values = eigen_solver.get_eigen_values();
 
-    tester.expect_near(eigen_values, eigen_values_answer, NEAR_LIMIT_SOFT,
+    decltype(eigen_values) eigen_values_sorted = eigen_values;
+    Base::Utility::sort(eigen_values_sorted);
+
+    tester.expect_near(eigen_values_sorted, eigen_values_answer, NEAR_LIMIT_SOFT,
         "check EigenSolverReal eigen values.");
 
     eigen_solver.continue_solving_eigen_values();
     eigen_solver.continue_solving_eigen_values();
     eigen_solver.continue_solving_eigen_values();
     eigen_values = eigen_solver.get_eigen_values();
-    tester.expect_near(eigen_values, eigen_values_answer, NEAR_LIMIT_STRICT,
+
+    eigen_values_sorted = eigen_values;
+    Base::Utility::sort(eigen_values_sorted);
+
+    tester.expect_near(eigen_values_sorted, eigen_values_answer, NEAR_LIMIT_STRICT,
         "check EigenSolverReal eigen values, strict.");
 
     eigen_solver.solve_eigen_vectors(A0);
@@ -1937,7 +1944,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     eigen_solver.solve_eigen_vectors(A0);
     eigen_vectors = eigen_solver.get_eigen_vectors();
     A_mul_V = A0 * eigen_vectors;
-    V_mul_D = eigen_vectors * DiagMatrix<T, 3>(eigen_values_answer);
+    V_mul_D = eigen_vectors * DiagMatrix<T, 3>(eigen_values);
 
     tester.expect_near(A_mul_V.data, V_mul_D.data, NEAR_LIMIT_STRICT,
         "check EigenSolverReal eigen vectors, strict.");
@@ -1953,11 +1960,8 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 #endif
         = eigen_solver_comp.get_eigen_values();
 
-    //std::cout << "eigen_values_comp = ";
-    //for (size_t i = 0; i < eigen_values_comp.size(); ++i) {
-    //    std::cout << eigen_values_comp[i].real << " + " << eigen_values_comp[i].imag << "j, ";
-    //}
-    //std::cout << std::endl << std::endl;
+    decltype(eigen_values_comp) eigen_values_comp_sorted = eigen_values_comp;
+    Base::Utility::sort(eigen_values_comp_sorted);
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<T> eigen_values_comp_answer_real(
@@ -1966,9 +1970,9 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 #endif
         { -1.5F, -1.5F, 6.0F });
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
-    std::vector<T> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    std::vector<T> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #else
-    std::array<T, 3> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    std::array<T, 3> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #endif
 
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_SOFT,
@@ -1982,9 +1986,9 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
         { -0.8660254F, 0.8660254F, 0.0F });
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
-    std::vector<T> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    std::vector<T> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #else
-    std::array<T, 3> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    std::array<T, 3> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #endif
 
     tester.expect_near(eigen_values_comp_imag, eigen_values_comp_answer_imag, NEAR_LIMIT_SOFT,
@@ -1993,10 +1997,13 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     eigen_solver_comp.continue_solving_eigen_values();
     eigen_values_comp = eigen_solver_comp.get_eigen_values();
 
-    eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    eigen_values_comp_sorted = eigen_values_comp;
+    Base::Utility::sort(eigen_values_comp_sorted);
+
+    eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex real eigen values, strict.");
-    eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp);
+    eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 
     tester.expect_near(eigen_values_comp_imag, eigen_values_comp_answer_imag, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex imag eigen values, strict.");
