@@ -1045,6 +1045,33 @@ template <typename SparseAvailable>
 using SparseAvailableTranspose = SparseAvailableMatrixMultiplyTranspose<
     DiagAvailable<SparseAvailable::column_size>, SparseAvailable>;
 
+/* Check SparseAvailable is valid or not */
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
+          std::size_t ColumnIndex>
+struct ValidateSparseAvailableLoop {
+  static_assert(SparseAvailable::column_size == NumberOfRowsFirst,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+
+  // static_assert(NumberOfRowsFirst > 3, "NumberOfRowsFirst value");
+
+  using type = typename ValidateSparseAvailableLoop<
+      GetRestOfSparseAvailable<SparseAvailable, 1>, NumberOfRowsFirst,
+      (ColumnIndex - 1)>::type;
+};
+
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
+struct ValidateSparseAvailableLoop<SparseAvailable, NumberOfRowsFirst, 0> {
+  static_assert(SparseAvailable::column_size == NumberOfRowsFirst,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+
+  using type = SparseAvailable;
+};
+
+template <typename SparseAvailable>
+using ValidateSparseAvailable = typename ValidateSparseAvailableLoop<
+    SparseAvailable, SparseAvailable::column_size,
+    (SparseAvailable::number_of_columns - 1)>::type;
+
 } // namespace Matrix
 } // namespace Base
 

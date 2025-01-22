@@ -86,6 +86,10 @@ template <typename SparseAvailable>
 using SparseAvailableTranspose =
     Base::Matrix::SparseAvailableTranspose<SparseAvailable>;
 
+template <typename SparseAvailable>
+using ValidateSparseAvailable =
+    Base::Matrix::ValidateSparseAvailable<SparseAvailable>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_TEMPLATES_HPP__

@@ -310,6 +310,7 @@ public:
 
 private:
   /* Type */
+  using _Validate = ValidateSparseAvailable<SparseAvailable>;
   using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
   using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
 
