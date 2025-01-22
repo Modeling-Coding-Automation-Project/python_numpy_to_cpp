@@ -613,6 +613,17 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Diag.matrix.data, Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixDiag.");
 
+    auto Diag_2 = make_MatrixDiag<4>(
+        static_cast<T>(1),
+        static_cast<T>(2),
+        static_cast<T>(3),
+        static_cast<T>(4));
+
+    Matrix<DefDiag, T, 4> Diag_2_answer({ 1, 2, 3, 4 });
+
+    tester.expect_near(Diag_2.matrix.data, Diag_2_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_MatrixDiag 2.");
+
     auto Dense = make_Matrix<T, 3, 3>({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
 
     Matrix<DefDense, T, 3, 3> Dense_answer({
@@ -653,6 +664,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
 
     tester.expect_near(Sparse_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixSparse.");
+
 
 
 

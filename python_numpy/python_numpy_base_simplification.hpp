@@ -41,6 +41,38 @@ inline auto make_MatrixDiag(const std::initializer_list<T> &input)
   return Matrix<DefDiag, T, M>(input);
 }
 
+namespace MakeDiagMatrixOperation {
+
+template <std::size_t IndexCount, typename DiagMatrix_Type, typename T>
+void assign_diag_values(DiagMatrix_Type &matrix, T value_1) {
+
+  matrix.template set<IndexCount, IndexCount>(value_1);
+}
+
+template <std::size_t IndexCount, typename DiagMatrix_Type, typename T,
+          typename U, typename... Args>
+void assign_diag_values(DiagMatrix_Type &matrix, T value_1, U value_2,
+                        Args... args) {
+
+  static_assert(std::is_same<T, U>::value, "Arguments must be the same type.");
+
+  matrix.template set<IndexCount, IndexCount>(value_1);
+
+  assign_diag_values<IndexCount + 1>(matrix, value_2, args...);
+}
+
+} // namespace MakeDiagMatrixOperation
+
+template <std::size_t M, typename T, typename... Args>
+inline auto make_MatrixDiag(T value_1, Args... args) -> Matrix<DefDiag, T, M> {
+
+  Matrix<DefDiag, T, M> result;
+
+  MakeDiagMatrixOperation::assign_diag_values<0>(result, value_1, args...);
+
+  return result;
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto
 make_Matrix(const std::initializer_list<std::initializer_list<T>> &input)
