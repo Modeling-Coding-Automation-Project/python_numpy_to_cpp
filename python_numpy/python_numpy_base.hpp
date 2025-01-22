@@ -366,6 +366,9 @@ public:
   }
 
   template <std::size_t ELEMENT> inline T get() const {
+    static_assert(ELEMENT < NumberOfValues,
+                  "ELEMENT must be the same or less than the number "
+                  "of elements of Sparse Matrix.");
 
     return Base::Matrix::get_sparse_matrix_element_value<ELEMENT>(this->matrix);
   }
@@ -378,6 +381,9 @@ public:
   }
 
   template <std::size_t ELEMENT> inline void set(const T &value) {
+    static_assert(ELEMENT < NumberOfValues,
+                  "ELEMENT must be the same or less than the number "
+                  "of elements of Sparse Matrix.");
 
     Base::Matrix::set_sparse_matrix_element_value<ELEMENT>(this->matrix, value);
   }
