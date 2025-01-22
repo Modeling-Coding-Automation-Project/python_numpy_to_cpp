@@ -566,14 +566,14 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    auto Zeros = make_MatrixZeros<T, 4, 3>();
+    auto Zeros = make_DenseMatrixZeros<T, 4, 3>();
 
     Matrix<DefDense, T, 4, 3> Zeros_answer;
 
     tester.expect_near(Zeros.matrix.data, Zeros_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixZeros.");
 
-    auto Ones = make_MatrixOnes<T, 4, 3>();
+    auto Ones = make_DenseMatrixOnes<T, 4, 3>();
 
     Matrix<DefDense, T, 4, 3> Ones_answer({
         {1, 1, 1},
@@ -586,7 +586,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         "check make_MatrixOnes.");
 
 
-    auto Identity = make_MatrixIdentity<T, 3>();
+    auto Identity = make_DiagMatrixIdentity<T, 3>();
     auto Identity_dense = Identity.create_dense();
 
     Matrix<DefDense, T, 3, 3> Identity_answer({
@@ -598,7 +598,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Identity_dense.matrix.data, Identity_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixIdentity.");
 
-    auto Empty = make_MatrixEmpty<T, 3, 4>();
+    auto Empty = make_SparseMatrixEmpty<T, 3, 4>();
     auto Empty_dense = Empty.create_dense();
 
     Matrix<DefDense, T, 3, 4> Empty_answer;
@@ -606,25 +606,17 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Empty_dense.matrix.data, Empty_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixEmpty.");
 
-    auto Diag = make_MatrixDiag<T, 3>({ 1, 2, 3 });
+    auto Diag = make_DiagMatrix<3>(
+        static_cast<T>(1),
+        static_cast<T>(2),
+        static_cast<T>(3));
 
     Matrix<DefDiag, T, 3> Diag_answer({ 1, 2, 3 });
 
     tester.expect_near(Diag.matrix.data, Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixDiag.");
 
-    auto Diag_2 = make_MatrixDiag<4>(
-        static_cast<T>(1),
-        static_cast<T>(2),
-        static_cast<T>(3),
-        static_cast<T>(4));
-
-    Matrix<DefDiag, T, 4> Diag_2_answer({ 1, 2, 3, 4 });
-
-    tester.expect_near(Diag_2.matrix.data, Diag_2_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check make_MatrixDiag 2.");
-
-    auto Dense = make_Matrix<T, 3, 3>({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    auto Dense = make_DenseMatrix<T, 3, 3>({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
 
     Matrix<DefDense, T, 3, 3> Dense_answer({
         {1, 2, 3},
@@ -641,7 +633,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         ColumnAvailable<true, false, true>,
         ColumnAvailable<false, true, true>>;
 
-    auto SparseZeros = make_MatrixSparseZeros<T, SparseAvailable_C>();
+    auto SparseZeros = make_SparseMatrixZeros<T, SparseAvailable_C>();
     auto SparseZeros_dense = SparseZeros.create_dense();
 
     Matrix<DefDense, T, 3, 3> SparseZeros_answer({
@@ -653,7 +645,12 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(SparseZeros_dense.matrix.data, SparseZeros_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixSparseZeros.");
 
-    auto Sparse = make_MatrixSparse<T, SparseAvailable_C>({ 1, 3, 8, 2, 4 });
+    auto Sparse = make_SparseMatrix<SparseAvailable_C>(
+        static_cast<T>(1),
+        static_cast<T>(3),
+        static_cast<T>(8),
+        static_cast<T>(2),
+        static_cast<T>(4));
     auto Sparse_dense = Sparse.create_dense();
 
     Matrix<DefDense, T, 3, 3> Sparse_answer({
@@ -664,17 +661,6 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
 
     tester.expect_near(Sparse_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixSparse.");
-
-    auto Sparse_2 = make_MatrixSparse<SparseAvailable_C>(
-        static_cast<T>(1),
-        static_cast<T>(3),
-        static_cast<T>(8),
-        static_cast<T>(2),
-        static_cast<T>(4));
-    auto Sparse_2_dense = Sparse_2.create_dense();
-
-    tester.expect_near(Sparse_2_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check make_MatrixSparse 2.");
 
 
     tester.throw_error_if_test_failed();
