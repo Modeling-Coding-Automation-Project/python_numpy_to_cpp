@@ -48,7 +48,7 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1) {
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
-  matrix(ColumnCount, RowCount) = value_1;
+  matrix.template set<ColumnCount, RowCount>(value_1);
 }
 
 template <std::size_t ColumnCount, std::size_t RowCount,
@@ -64,7 +64,7 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1, U value_2,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
-  matrix(ColumnCount, RowCount) = value_1;
+  matrix.template set<ColumnCount, RowCount>(value_1);
 
   assign_values<ColumnCount + 1 * (RowCount == (DenseMatrix_Type::ROWS - 1)),
                 ((RowCount + 1) * (RowCount != (DenseMatrix_Type::ROWS - 1)))>(
@@ -92,7 +92,7 @@ inline void assign_values(DiagMatrix_Type &matrix, T value_1) {
   static_assert(IndexCount < DiagMatrix_Type::COLS,
                 "Number of arguments must be less than the number of columns.");
 
-  matrix(IndexCount) = value_1;
+  matrix.template set<IndexCount, IndexCount>(value_1);
 }
 
 template <std::size_t IndexCount, typename DiagMatrix_Type, typename T,
@@ -104,7 +104,7 @@ inline void assign_values(DiagMatrix_Type &matrix, T value_1, U value_2,
   static_assert(IndexCount < DiagMatrix_Type::COLS,
                 "Number of arguments must be less than the number of columns.");
 
-  matrix(IndexCount) = value_1;
+  matrix.template set<IndexCount, IndexCount>(value_1);
 
   assign_values<IndexCount + 1>(matrix, value_2, args...);
 }
