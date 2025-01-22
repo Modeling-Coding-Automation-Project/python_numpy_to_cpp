@@ -310,7 +310,7 @@ public:
 
 private:
   /* Type */
-  using _Validate = ValidateSparseAvailable<SparseAvailable>;
+  using _Validate_SparseAvailable = ValidateSparseAvailable<SparseAvailable>;
   using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
   using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
 
@@ -324,15 +324,9 @@ public:
 
   Matrix(const std::initializer_list<T> &values) : matrix(values) {}
 
-  Matrix(Base::Matrix::CompiledSparseMatrix<
-         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-         RowPointersFromSparseAvailable<SparseAvailable>> &input)
-      : matrix(input) {}
+  Matrix(_BaseMatrix_Type &input) : matrix(input) {}
 
-  Matrix(Base::Matrix::CompiledSparseMatrix<
-         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-         RowPointersFromSparseAvailable<SparseAvailable>> &&input) noexcept
-      : matrix(std::move(input)) {}
+  Matrix(_BaseMatrix_Type &&input) noexcept : matrix(std::move(input)) {}
 
   /* Copy Constructor */
   Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
