@@ -12,7 +12,6 @@ namespace PythonNumpy {
 const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-20;
 const std::size_t DEFAULT_ITERATION_MAX_LINALG_EIG = 10;
 
-/* Able to handle only real number */
 namespace ForLinalgSolverEigReal {
 
 template <typename T, std::size_t M>
@@ -23,6 +22,7 @@ using EigenVectors_Type = Matrix<DefDense, T, M, M>;
 
 } // namespace ForLinalgSolverEigReal
 
+/* Linalg solver for Real Eigen values and vectors of Dense Matrix */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -122,6 +122,7 @@ private:
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
 };
 
+/* Linalg solver for Real Eigen values and vectors of Diag Matrix */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -198,6 +199,7 @@ private:
   Base::Matrix::Matrix<T, M, 1> _eigen_values;
 };
 
+/* Linalg solver for Real Eigen values and vectors of Sparse Matrix */
 template <typename T, std::size_t M, typename SparseAvailable,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -327,7 +329,6 @@ make_LinalgSolverEigReal(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
                                    Default_Iteration_Max>(A);
 }
 
-/* Able to handle complex number */
 namespace ForLinalgSolverEig {
 
 template <typename T, std::size_t M>
@@ -338,6 +339,8 @@ using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
 
 } // namespace ForLinalgSolverEig
 
+/* Linalg solver for Complex Eigen values and vectors of Dense and Sparse Matrix
+ */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -448,6 +451,7 @@ private:
   std::size_t _iteration_max = static_cast<std::size_t>(Default_Iteration_Max);
 };
 
+/* Linalg solver for Complex Eigen values and vectors of Diag Matrix */
 template <typename T, std::size_t M,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
@@ -531,6 +535,7 @@ private:
   EigenValues_Type _eigen_values;
 };
 
+/* Linalg solver for Complex Eigen values and vectors of Sparse Matrix */
 template <typename T, std::size_t M, typename SparseAvailable,
           std::size_t Default_Iteration_Max =
               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
