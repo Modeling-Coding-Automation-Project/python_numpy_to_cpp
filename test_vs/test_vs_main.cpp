@@ -5,7 +5,7 @@
 int main() {
 
     CheckBaseMatrix<double> check_base_matrix_double;
-    check_base_matrix_double.calc();
+    check_base_matrix_double.calc();    
 
     CheckBaseMatrix<float> check_base_matrix_float;
     check_base_matrix_float.calc();

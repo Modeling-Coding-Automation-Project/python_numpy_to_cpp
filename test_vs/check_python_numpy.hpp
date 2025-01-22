@@ -20,12 +20,13 @@ public:
 public:
     /* Function */
     void check_python_numpy_base(void);
+    void check_python_numpy_base_simplification(void);
     void check_python_numpy_left_divide_and_inv(void);
     void check_python_numpy_concatenate(void);
     void check_python_numpy_transpose(void);
     void check_python_numpy_lu(void);
-    void check_check_python_numpy_cholesky(void);
-    void check_check_python_numpy_transpose_operation(void);
+    void check_python_numpy_cholesky(void);
+    void check_python_numpy_transpose_operation(void);
     void check_python_numpy_qr(void);
     void check_python_numpy_eig(void);
 
@@ -37,6 +38,8 @@ void CheckPythonNumpy<T>::calc(void) {
 
     check_python_numpy_base();
 
+    check_python_numpy_base_simplification();
+
     check_python_numpy_left_divide_and_inv();
 
     check_python_numpy_concatenate();
@@ -45,9 +48,9 @@ void CheckPythonNumpy<T>::calc(void) {
 
     check_python_numpy_lu();
 
-    check_check_python_numpy_cholesky();
+    check_python_numpy_cholesky();
 
-    check_check_python_numpy_transpose_operation();
+    check_python_numpy_transpose_operation();
 
     check_python_numpy_qr();
 
@@ -554,6 +557,30 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.throw_error_if_test_failed();
 }
 
+template <typename T>
+void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    auto Zeros = make_MatrixZeros<T, 4, 3>();
+
+    auto Ones = make_MatrixOnes<T, 4, 3>();
+
+    auto Identity = make_MatrixIdentity<T, 3>();
+
+    auto Empty = make_MatrixEmpty<T, 3, 4>();
+
+    auto Diag = make_MatrixDiag<T, 3>({ 1, 2, 3 });
+
+    auto Dense = make_Matrix<T, 3, 3>({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+
+
+    tester.throw_error_if_test_failed();
+}
 
 template <typename T>
 void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
@@ -1710,7 +1737,7 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
 }
 
 template<typename T>
-void CheckPythonNumpy<T>::check_check_python_numpy_cholesky(void) {
+void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     using namespace PythonNumpy;
 
     MCAPTester<T> tester;
@@ -1766,7 +1793,7 @@ void CheckPythonNumpy<T>::check_check_python_numpy_cholesky(void) {
 
 
 template<typename T>
-void CheckPythonNumpy<T>::check_check_python_numpy_transpose_operation(void) {
+void CheckPythonNumpy<T>::check_python_numpy_transpose_operation(void) {
     using namespace PythonNumpy;
 
     MCAPTester<T> tester;

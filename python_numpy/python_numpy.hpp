@@ -2,6 +2,7 @@
 #define __PYTHON_NUMPY_HPP__
 
 #include "python_numpy_base.hpp"
+#include "python_numpy_base_simplification.hpp"
 #include "python_numpy_complex.hpp"
 #include "python_numpy_concatenate.hpp"
 #include "python_numpy_linalg_cholesky.hpp"
