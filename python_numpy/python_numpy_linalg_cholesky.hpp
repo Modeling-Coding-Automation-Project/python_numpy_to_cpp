@@ -14,6 +14,9 @@ class LinalgSolverCholesky {
 public:
   /* Type */
   using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using SparseAvailable_Type = SparseAvailable;
 
 public:

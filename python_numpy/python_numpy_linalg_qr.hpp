@@ -15,6 +15,8 @@ template <typename T, std::size_t M, std::size_t N> class LinalgSolverQR {
 public:
   /* Type */
   using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
 
 public:
   /* Constructor */

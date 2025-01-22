@@ -124,6 +124,9 @@ class LinalgSolver {
 public:
   /* Type */
   using Value_Type = typename UnderlyingType<T>::Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
 
 public:
   /* Constructor */
@@ -383,6 +386,9 @@ template <typename T, std::size_t M> class LinalgInvDiag {
 public:
   /* Type */
   using Value_Type = typename UnderlyingType<T>::Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
 
 public:
   /* Constructor */
@@ -570,6 +576,10 @@ class LinalgLstsqSolver {
 public:
   /* Type */
   using Value_Type = T;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
+
   using SparseAvailable_A_Type = SparseAvailable_A;
   using SparseAvailable_B_Type = SparseAvailable_B;
 

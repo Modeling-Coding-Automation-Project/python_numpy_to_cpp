@@ -29,6 +29,10 @@ template <typename T, std::size_t M,
 class LinalgSolverEigRealDense {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefDense, T, M, M>;
   using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
 
@@ -124,6 +128,10 @@ template <typename T, std::size_t M,
 class LinalgSolverEigRealDiag {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefDiag, T, M>;
   using EigenValues_Type = Matrix<DefDense, T, M, 1>;
   using EigenVectors_Type = Matrix<DefDiag, T, M>;
@@ -196,6 +204,10 @@ template <typename T, std::size_t M, typename SparseAvailable,
 class LinalgSolverEigRealSparse {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
   using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
 
@@ -332,6 +344,10 @@ template <typename T, std::size_t M,
 class LinalgSolverEigDense {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefDense, T, M, M>;
   using EigenSolver_Type = Base::Matrix::EigenSolverComplex<T, M>;
 
@@ -438,6 +454,10 @@ template <typename T, std::size_t M,
 class LinalgSolverEigDiag {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefDiag, T, M>;
   using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
   using EigenVectors_Type = Matrix<DefDiag, Base::Matrix::Complex<T>, M>;
@@ -517,6 +537,10 @@ template <typename T, std::size_t M, typename SparseAvailable,
 class LinalgSolverEigSparse {
 public:
   /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
   using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
   using EigenSolver_Type = Base::Matrix::EigenSolverComplex<T, M>;
 

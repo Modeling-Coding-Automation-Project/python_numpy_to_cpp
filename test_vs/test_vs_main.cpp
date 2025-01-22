@@ -17,14 +17,5 @@ int main() {
     check_python_numpy_float.calc();
 
 
-    //using namespace PythonNumpy;
-
-    //Matrix<DefDense, Complex<double>, 3, 3> A;
-
-    //auto solver = make_LinalgSolver(A);
-
-    //std::cout << solver.IS_COMPLEX;
-
-
     return 0;
 }
