@@ -142,7 +142,10 @@ inline void assign_values(SparseMatrix_Type &matrix, T value_1) {
                 "Number of arguments must be the same or less than the number "
                 "of elements of Sparse Matrix.");
 
-  matrix(IndexCount) = value_1;
+  // Currently the Sparse Matrix stores the values in "values" properties. This
+  // may be not safe if the specification of the Sparse Matrix would be changed.
+  // Using "matrix.template set" is preferable.
+  matrix.matrix.values[IndexCount] = value_1;
 }
 
 template <std::size_t IndexCount, typename SparseMatrix_Type, typename T,
@@ -156,7 +159,10 @@ inline void assign_values(SparseMatrix_Type &matrix, T value_1, U value_2,
                 "Number of arguments must be the same or less than the number "
                 "of elements of Sparse Matrix.");
 
-  matrix(IndexCount) = value_1;
+  // Currently the Sparse Matrix stores the values in "values" properties. This
+  // may be not safe if the specification of the Sparse Matrix would be changed.
+  // Using "matrix.template set" is preferable.
+  matrix.matrix.values[IndexCount] = value_1;
 
   assign_values<IndexCount + 1>(matrix, value_2, args...);
 }
