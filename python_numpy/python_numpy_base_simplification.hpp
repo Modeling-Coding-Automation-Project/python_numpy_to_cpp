@@ -60,6 +60,18 @@ inline auto make_MatrixSparseZeros(void)
   return result;
 }
 
+template <typename T, typename SparseAvailable>
+inline auto make_MatrixSparse(const std::initializer_list<T> &input)
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+              SparseAvailable::column_size, SparseAvailable> {
+
+  Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+         SparseAvailable::column_size, SparseAvailable>
+      result(input);
+
+  return result;
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__

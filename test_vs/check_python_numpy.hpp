@@ -642,6 +642,19 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(SparseZeros_dense.matrix.data, SparseZeros_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_MatrixSparseZeros.");
 
+    auto Sparse = make_MatrixSparse<T, SparseAvailable_C>({ 1, 3, 8, 2, 4 });
+    auto Sparse_dense = Sparse.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(Sparse_dense.matrix.data, Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_MatrixSparse.");
+
+
 
     tester.throw_error_if_test_failed();
 }
