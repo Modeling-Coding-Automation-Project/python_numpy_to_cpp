@@ -6,17 +6,21 @@ using namespace PythonNumpy;
 
 int main() {
 
-  Matrix<DefDense, double, 3, 3> A({{1, 2, 3}, {5, 4, 6}, {9, 8, 7}});
+  // Matrix<DefDense, double, 3, 3> A({{1, 2, 3}, {5, 4, 6}, {9, 8, 7}});
+  auto A = make_DenseMatrix<3, 3>(1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 9.0, 8.0, 7.0);
 
-  Matrix<DefDense, double, 3, 3> A_s({{1, 2, 3}, {5, 4, 6}, {5, 4, 6}});
+  // Matrix<DefDense, double, 3, 3> A_s({{1, 2, 3}, {5, 4, 6}, {5, 4, 6}});
+  auto A_s =
+      make_DenseMatrix<3, 3>(1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 5.0, 4.0, 6.0);
 
-  Matrix<DefDiag, double, 3> B({1, 2, 3});
+  // Matrix<DefDiag, double, 3> B({1, 2, 3});
+  auto B = make_DiagMatrix<3>(1.0, 2.0, 3.0);
 
-  Matrix<DefSparse, double, 3, 3,
-         SparseAvailable<ColumnAvailable<true, false, false>,
-                         ColumnAvailable<true, false, true>,
-                         ColumnAvailable<false, true, true>>>
-      C({1, 3, 8, 2, 4});
+  auto C =
+      make_SparseMatrix<SparseAvailable<ColumnAvailable<true, false, false>,
+                                        ColumnAvailable<true, false, true>,
+                                        ColumnAvailable<false, true, true>>>(
+          1.0, 3.0, 8.0, 2.0, 4.0);
 
   static auto solver = make_LinalgSolver(A);
   auto result = solver.inv(A);
