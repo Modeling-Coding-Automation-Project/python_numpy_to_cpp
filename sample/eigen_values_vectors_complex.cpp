@@ -6,7 +6,8 @@ using namespace PythonNumpy;
 
 int main() {
 
-  Matrix<DefDense, double, 3, 3> A_c({{1, 2, 3}, {3, 1, 2}, {2, 3, 1}});
+  auto A_c =
+      make_DenseMatrix<3, 3>(1.0, 2.0, 3.0, 3.0, 1.0, 2.0, 2.0, 3.0, 1.0);
 
   static auto solver_c = make_LinalgSolverEig(A_c);
   solver_c.solve_eigen_values(A_c);

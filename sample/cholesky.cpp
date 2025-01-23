@@ -6,15 +6,15 @@ using namespace PythonNumpy;
 
 int main() {
 
-  Matrix<DefDense, double, 3, 3> A({{2, 1, 3}, {1, 4, 2}, {3, 2, 6}});
+  auto A = make_DenseMatrix<3, 3>(2.0, 1.0, 3.0, 1.0, 4.0, 2.0, 3.0, 2.0, 6.0);
 
-  Matrix<DefDiag, double, 3> B({1, 2, 3});
+  auto B = make_DiagMatrix<3>(1.0, 2.0, 3.0);
 
-  Matrix<DefSparse, double, 3, 3,
-         SparseAvailable<ColumnAvailable<true, false, false>,
-                         ColumnAvailable<true, false, true>,
-                         ColumnAvailable<false, true, true>>>
-      C({1, 3, 8, 2, 4});
+  auto C =
+      make_SparseMatrix<SparseAvailable<ColumnAvailable<true, false, false>,
+                                        ColumnAvailable<true, false, true>,
+                                        ColumnAvailable<false, true, true>>>(
+          1.0, 3.0, 8.0, 2.0, 4.0);
 
   static auto solver = make_LinalgSolverCholesky(A);
   auto SA = solver.solve(A);
@@ -30,10 +30,12 @@ int main() {
   std::cout << std::endl;
 
   auto result = ATranspose_mul_B(SA, SA);
+  auto result_dense = result.create_dense();
+
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
     for (size_t i = 0; i < result.rows(); ++i) {
-      std::cout << result(j, i) << " ";
+      std::cout << result_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
