@@ -6,15 +6,15 @@ using namespace PythonNumpy;
 
 int main() {
 
-  Matrix<DefDense, double, 3, 3> A({{1, 2, 3}, {5, 4, 6}, {9, 8, 7}});
+  auto A = make_DenseMatrix<3, 3>(1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 9.0, 8.0, 7.0);
 
-  Matrix<DefDiag, double, 3> B({1, 2, 3});
+  auto B = make_DiagMatrix<3>(1.0, 2.0, 3.0);
 
-  Matrix<DefSparse, double, 3, 3,
-         SparseAvailable<ColumnAvailable<true, false, false>,
-                         ColumnAvailable<true, false, true>,
-                         ColumnAvailable<false, true, true>>>
-      C({1, 3, 8, 2, 4});
+  auto C =
+      make_SparseMatrix<SparseAvailable<ColumnAvailable<true, false, false>,
+                                        ColumnAvailable<true, false, true>,
+                                        ColumnAvailable<false, true, true>>>(
+          1.0, 3.0, 8.0, 2.0, 4.0);
 
   auto result = A * C;
 
@@ -28,7 +28,8 @@ int main() {
   std::cout << std::endl;
 
   /* Create Empty Sparse Matrix */
-  Matrix<DefSparse, double, 3, 4, SparseAvailableEmpty<3, 4>> E;
+  auto E = make_SparseMatrixEmpty<double, 3, 4>();
+
   auto E_dense = E.create_dense(); // convert SparseMatrix to DenseMatrix
 
   std::cout << "E = " << std::endl;
