@@ -5,6 +5,9 @@
 
 namespace PythonNumpy {
 
+/* Complex Templates */
+template <typename T> using Is_Complex_Type = Base::Matrix::Is_Complex_Type<T>;
+
 /* Compiled Sparse Matrix Templates */
 template <std::size_t... Sizes>
 using RowIndices = Base::Matrix::RowIndices<Sizes...>;
@@ -78,6 +81,14 @@ template <typename SparseAvailable_A, typename SparseAvailable_B>
 using SparseAvailableMatrixMultiply =
     Base::Matrix::SparseAvailableMatrixMultiply<SparseAvailable_A,
                                                 SparseAvailable_B>;
+
+template <typename SparseAvailable>
+using SparseAvailableTranspose =
+    Base::Matrix::SparseAvailableTranspose<SparseAvailable>;
+
+template <typename SparseAvailable>
+using ValidateSparseAvailable =
+    Base::Matrix::ValidateSparseAvailable<SparseAvailable>;
 
 } // namespace PythonNumpy
 

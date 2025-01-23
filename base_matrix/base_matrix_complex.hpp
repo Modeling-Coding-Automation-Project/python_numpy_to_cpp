@@ -14,6 +14,10 @@ namespace Matrix {
 
 template <typename T> class Complex {
 public:
+  /* Type */
+  using Value_Type = T;
+
+public:
   Complex() : real(static_cast<T>(0)), imag(static_cast<T>(0)) {}
 
   Complex(const T &real) : real(real), imag(static_cast<T>(0)) {}
@@ -184,10 +188,63 @@ inline Complex<T> operator/(const Complex<T> &a_comp, T b) {
   return result;
 }
 
+template <typename T>
+inline bool operator<(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) < (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator<=(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) <= (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator>(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) > (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
+template <typename T>
+inline bool operator>=(const Complex<T> &a_comp, const Complex<T> &b_comp) {
+  bool result = false;
+
+  if ((a_comp.real + a_comp.imag) >= (b_comp.real + b_comp.imag)) {
+    result = true;
+  } else {
+    result = false;
+  }
+
+  return result;
+}
+
 /* complex functions */
 template <typename T>
 inline Complex<T> complex_divide(const Complex<T> &a_comp,
-                                 const Complex<T> &b_comp, T division_min) {
+                                 const Complex<T> &b_comp,
+                                 const T &division_min) {
   Complex<T> result;
 
   T denominator = Base::Utility::avoid_zero_divide(
@@ -203,7 +260,7 @@ inline Complex<T> complex_divide(const Complex<T> &a_comp,
 
 template <typename T>
 inline Complex<T> complex_divide(T a, const Complex<T> &b_comp,
-                                 T division_min) {
+                                 const T &division_min) {
   Complex<T> result;
 
   T denominator = Base::Utility::avoid_zero_divide(
@@ -271,7 +328,30 @@ template <typename T> inline Complex<T> complex_sqrt(const Complex<T> &a_comp) {
 }
 
 template <typename T>
-inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
+inline Complex<T> complex_sqrt(const Complex<T> &a_comp,
+                               const T &division_min) {
+  Complex<T> result;
+
+  T a_abs = Base::Math::sqrt<T>(
+      a_comp.real * a_comp.real + a_comp.imag * a_comp.imag, division_min);
+
+  result.real = Base::Math::sqrt<T>((a_comp.real + a_abs) * static_cast<T>(0.5),
+                                    division_min);
+
+  if (a_comp.imag >= 0) {
+    result.imag = Base::Math::sqrt<T>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5), division_min);
+  } else {
+    result.imag = -Base::Math::sqrt<T>(
+        (-a_comp.real + a_abs) * static_cast<T>(0.5), division_min);
+  }
+
+  return result;
+}
+
+template <typename T>
+inline Complex<T> complex_sign(const Complex<T> &a_comp,
+                               const T &division_min) {
   Complex<T> result;
 
   T a_abs_r = Base::Math::rsqrt<T>(
@@ -282,6 +362,13 @@ inline Complex<T> complex_sign(const Complex<T> &a_comp, T division_min) {
 
   return result;
 }
+
+/* Tmeplate to judge Complex type or not */
+// default
+template <typename T> struct Is_Complex_Type : std::false_type {};
+
+// is Complex
+template <typename T> struct Is_Complex_Type<Complex<T>> : std::true_type {};
 
 } // namespace Matrix
 } // namespace Base

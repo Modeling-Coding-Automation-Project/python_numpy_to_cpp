@@ -24,6 +24,7 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
+  /* Constructor */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverReal()
@@ -112,6 +113,7 @@ public:
     return *this;
   }
 
+public:
   /* Function */
   void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_solve_values_with_qr_method(matrix);
@@ -138,10 +140,12 @@ public:
 
   Matrix<T, M, M> get_eigen_vectors(void) { return this->_eigen_vectors; }
 
+public:
   /* Variable */
   std::size_t iteration_max;
 
 private:
+  /* Variable */
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
@@ -156,6 +160,7 @@ private:
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
+private:
   /* Function */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
@@ -169,7 +174,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -230,7 +235,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k] = R(k, k) + Base::Utility::sign(R(k, k)) * x_abs;
       u[k + 1] = R(k + 1, k);
@@ -292,7 +297,7 @@ private:
     T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
     T c2;
     if (c2_2 >= 0) {
-      c2 = Base::Math::sqrt<T>(c2_2);
+      c2 = Base::Math::sqrt<T>(c2_2, this->_division_min);
     } else {
       c2 = static_cast<T>(0);
     }
@@ -390,6 +395,7 @@ private:
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
+  /* Constructor */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   EigenSolverComplex()
@@ -489,6 +495,7 @@ public:
     return *this;
   }
 
+public:
   /* Function */
   void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_solve_with_qr_method(matrix);
@@ -519,11 +526,13 @@ public:
     return this->_eigen_vectors;
   }
 
+public:
   /* Variable */
   std::size_t iteration_max;
   std::size_t iteration_max_for_eigen_vector;
 
 private:
+  /* Variable */
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
@@ -539,6 +548,7 @@ private:
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
+private:
   /* Function */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
@@ -552,7 +562,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -614,7 +624,7 @@ private:
       if (Base::Utility::near_zero(x_abs, this->_division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
 
       u[k] = R(k, k) +
              Base::Matrix::complex_sign(R(k, k), this->_division_min) * x_abs;
@@ -679,7 +689,7 @@ private:
     Complex<T> c1 = a11 + a22;
 
     Complex<T> c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2);
+    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2, this->_division_min);
 
     Complex<T> mu1 = static_cast<T>(0.5) * (c1 + c2);
     Complex<T> mu2 = static_cast<T>(0.5) * (c1 - c2);

@@ -12,9 +12,122 @@ namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_SOLVER = 1.0e-23;
 
+namespace InverseOperation {
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          bool IsComplex>
+struct InverseDense {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K>
+struct InverseDense<T, Complex_T, M, K, true> {
+  static auto compute(const Matrix<DefDense, Complex_T, M, M> &A,
+                      const T &decay_rate, const T &division_min,
+                      std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<Complex_T, M, K> &X_1)
+      -> Matrix<DefDense, Complex_T, M, M> {
+
+    X_1 = Base::Matrix::complex_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+
+    return Matrix<DefDense, Complex_T, M, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K>
+struct InverseDense<T, Complex_T, M, K, false> {
+  static auto compute(const Matrix<DefDense, T, M, M> &A, const T &decay_rate,
+                      const T &division_min, std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<T, M, K> &X_1)
+      -> Matrix<DefDense, T, M, M> {
+
+    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate, division_min,
+                                           rho, rep_num, X_1);
+
+    return Matrix<DefDense, T, M, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, bool IsComplex>
+struct InverseDiag {};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct InverseDiag<T, Complex_T, M, true> {
+  static auto compute(const Matrix<DefDiag, Complex_T, M> &A,
+                      const T &division_min,
+                      Base::Matrix::DiagMatrix<Complex_T, M> &X_1)
+      -> Matrix<DefDiag, Complex_T, M> {
+
+    X_1 = Base::Matrix::inverse_complex_diag_matrix(A.matrix, division_min);
+
+    return Matrix<DefDiag, Complex_T, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M>
+struct InverseDiag<T, Complex_T, M, false> {
+  static auto compute(const Matrix<DefDiag, T, M> &A, const T &division_min,
+                      Base::Matrix::DiagMatrix<T, M> &X_1)
+      -> Matrix<DefDiag, T, M> {
+
+    X_1 = Base::Matrix::inverse_diag_matrix(A.matrix, division_min);
+
+    return Matrix<DefDiag, T, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable, bool IsComplex>
+struct InverseSparse {};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable>
+struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
+  static auto
+  compute(const Matrix<DefSparse, Complex_T, M, M, SparseAvailable> &A,
+          const T &decay_rate, const T &division_min, std::array<T, K> &rho,
+          std::array<std::size_t, K> &rep_num,
+          Base::Matrix::Matrix<Complex_T, M, K> &X_1)
+      -> Matrix<DefDense, Complex_T, M, M> {
+
+    X_1 = Base::Matrix::complex_sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+
+    return Matrix<DefDense, Complex_T, M, M>(X_1);
+  }
+};
+
+template <typename T, typename Complex_T, std::size_t M, std::size_t K,
+          typename SparseAvailable>
+struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
+  static auto compute(const Matrix<DefSparse, T, M, M, SparseAvailable> &A,
+                      const T &decay_rate, const T &division_min,
+                      std::array<T, K> &rho,
+                      std::array<std::size_t, K> &rep_num,
+                      Base::Matrix::Matrix<T, M, K> &X_1)
+      -> Matrix<DefDense, Complex_T, M, M> {
+
+    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+
+    return Matrix<DefDense, Complex_T, M, M>(X_1);
+  }
+};
+
+} // namespace InverseOperation
+
+/* Linalg Solver */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
 class LinalgSolver {
+public:
+  /* Type */
+  using Value_Type = typename UnderlyingType<T>::Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
+
 public:
   /* Constructor */
   LinalgSolver() {}
@@ -232,65 +345,129 @@ public:
   inline auto inv(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, this->decay_rate,
-                                           this->division_min, X_1);
-
-    return Matrix<DefDense, T, M, M>(X_1);
-  }
-
-  inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
-
-    Base::Matrix::DiagMatrix<T, M> result = A.matrix.inv(this->division_min);
-
-    X_1 = Base::Matrix::output_dense_matrix(result);
-
-    return Matrix<DefDiag, T, M>(std::move(result));
+    return InverseOperation::InverseDense<
+        Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
+                                                  this->division_min, this->rho,
+                                                  this->rep_num, X_1);
   }
 
   inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(A.matrix, this->decay_rate,
-                                                  this->division_min, X_1);
-
-    return Matrix<DefDense, T, M, M>(X_1);
+    return InverseOperation::InverseSparse<
+        Value_Type, T, M, K, SparseAvailable_A,
+        IS_COMPLEX>::compute(A, this->decay_rate, this->division_min, this->rho,
+                             this->rep_num, X_1);
   }
 
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = K;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
   /* Variable */
   Base::Matrix::Matrix<T, M, K> X_1;
 
-  T decay_rate = static_cast<T>(0);
-  T division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
-  std::array<T, K> rho;
+  Value_Type decay_rate = static_cast<Value_Type>(0);
+  Value_Type division_min =
+      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  std::array<Value_Type, K> rho;
   std::array<std::size_t, K> rep_num;
+};
+
+template <typename T, std::size_t M> class LinalgInvDiag {
+public:
+  /* Type */
+  using Value_Type = typename UnderlyingType<T>::Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
+
+public:
+  /* Constructor */
+  LinalgInvDiag() {}
+
+  LinalgInvDiag(const Matrix<DefDiag, T, M> &A) { this->inv(A); }
+
+  /* Copy Constructor */
+  LinalgInvDiag(const LinalgInvDiag<T, M> &other)
+      : X_1(other.X_1), division_min(other.division_min) {}
+
+  LinalgInvDiag<T, M> &operator=(const LinalgInvDiag<T, M> &other) {
+    if (this != &other) {
+      this->X_1 = other.X_1;
+      this->division_min = other.division_min;
+    }
+    return *this;
+  }
+
+  /* Move Constructor */
+  LinalgInvDiag(LinalgInvDiag<T, M> &&other) noexcept
+      : X_1(std::move(other.X_1)), division_min(std::move(other.division_min)) {
+  }
+
+  LinalgInvDiag<T, M> &operator=(LinalgInvDiag<T, M> &&other) {
+    if (this != &other) {
+      this->X_1 = std::move(other.X_1);
+      this->division_min = std::move(other.division_min);
+    }
+    return *this;
+  }
+
+public:
+  /* Function */
+  inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
+
+    return InverseOperation::InverseDiag<Value_Type, T, M, IS_COMPLEX>::compute(
+        A, this->division_min, X_1);
+  }
+
+  inline auto get_answer(void) -> Matrix<DefDiag, T, M> {
+    return Matrix<DefDiag, T, M>(this->X_1);
+  }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
+  Base::Matrix::DiagMatrix<T, M> X_1;
+
+  Value_Type division_min =
+      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
 };
 
 /* make LinalgSolver for inv */
 template <typename T, std::size_t M, std::size_t K = 1,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, 1>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+          typename SparseAvailable_A = SparseAvailable_NoUse<M, M>,
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A)
     -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
 
   return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A);
 }
 
-template <typename T, std::size_t M, std::size_t K = 1,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, 1>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+template <typename T, std::size_t M>
 inline auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
+    -> LinalgInvDiag<T, M> {
 
-  return LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B>(A);
+  return LinalgInvDiag<T, M>(A);
 }
 
 template <typename T, std::size_t M, std::size_t K = 1,
           typename SparseAvailable_A,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto
 make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
     -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
@@ -310,8 +487,8 @@ inline auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A,
 }
 
 template <typename T, std::size_t M, std::size_t K = 1,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, 1>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+          typename SparseAvailable_A = SparseAvailable_NoUse<M, M>,
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolver(const Matrix<DefDense, T, M, M> &A,
                               const Matrix<DefDiag, T, M> &B)
     -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
@@ -341,8 +518,8 @@ inline auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A,
 }
 
 template <typename T, std::size_t M, std::size_t K = 1,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, 1>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+          typename SparseAvailable_A = SparseAvailable_NoUse<M, M>,
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgSolver(const Matrix<DefDiag, T, M> &A,
                               const Matrix<DefDiag, T, M> &B)
     -> LinalgSolver<T, M, M, SparseAvailable_A, SparseAvailable_B> {
@@ -373,7 +550,7 @@ make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
 
 template <typename T, std::size_t M, std::size_t K = 1,
           typename SparseAvailable_A,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, 1>>
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto
 make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                   const Matrix<DefDiag, T, M> &B)
@@ -396,6 +573,16 @@ make_LinalgSolver(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
 class LinalgLstsqSolver {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
+
+  using SparseAvailable_A_Type = SparseAvailable_A;
+  using SparseAvailable_B_Type = SparseAvailable_B;
+
 public:
   /* Constructor */
   LinalgLstsqSolver() {}
@@ -565,6 +752,12 @@ public:
     return Matrix<DefDense, T, N, K>(this->X_1);
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = K;
+
+public:
   /* Properties */
   Base::Matrix::Matrix<T, N, K> X_1;
 
@@ -588,7 +781,7 @@ inline auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K = 1,
           typename SparseAvailable_A = SparseAvailable_NoUse<M, N>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, N>>
+          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
 inline auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
                                    const Matrix<DefDiag, T, M> &B)
     -> LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B> {

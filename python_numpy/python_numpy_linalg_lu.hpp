@@ -14,6 +14,14 @@ const double DEFAULT_DIVISION_MIN_LINALG_LU = 1.0e-10;
 template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverLU {
 public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using SparseAvailable_Type = SparseAvailable;
+
+public:
   /* Constructor */
   LinalgSolverLU() {}
 
@@ -94,6 +102,14 @@ public:
   }
 
   inline T get_det() { return this->_LU_decomposer.get_determinant(); }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */

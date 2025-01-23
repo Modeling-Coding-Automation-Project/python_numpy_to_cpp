@@ -2,6 +2,7 @@
 #define __PYTHON_NUMPY_BASE_HPP__
 
 #include "base_matrix.hpp"
+#include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
@@ -25,7 +26,9 @@ template <typename T, std::size_t M, std::size_t N>
 class Matrix<DefDense, T, M, N> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
+  using Matrix_Type = DefDense;
+  using SparseAvailable_Type = DenseAvailable<M, N>;
 
 public:
   /* Constructor */
@@ -119,26 +122,42 @@ public:
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
-  inline auto create_complex(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, N> {
+  inline auto create_complex(void) -> Matrix<DefDense, Complex<T>, M, N> {
 
-    Matrix<DefDense, Base::Matrix::Complex<T>, M, N> Complex_matrix(
+    return Matrix<DefDense, Complex<T>, M, N>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
-
-    return Complex_matrix;
   }
 
-  /* Variable */
+  inline auto real(void) -> Matrix<DefDense, Value_Type, M, N> {
+    return Matrix<DefDense, Value_Type, M, N>(
+        ComplexOperation::GetRealFromComplexDenseMatrix<
+            Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void) -> Matrix<DefDense, Value_Type, M, N> {
+    return Matrix<DefDense, Value_Type, M, N>(
+        ComplexOperation::GetImagFromComplexDenseMatrix<
+            Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
+  }
+
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
   Base::Matrix::Matrix<T, M, N> matrix;
 };
 
 template <typename T, std::size_t M> class Matrix<DefDiag, T, M> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
+  using Matrix_Type = DefDiag;
+  using SparseAvailable_Type = DiagAvailable<M>;
 
 public:
   /* Constructor */
@@ -251,10 +270,33 @@ public:
 
   inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
 
-  /* Variable */
+  inline auto create_complex(void) -> Matrix<DefDiag, Complex<T>, M> {
+
+    return Matrix<DefDiag, Complex<T>, M>(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
+  }
+
+  inline auto real(void) -> Matrix<DefDiag, Value_Type, M> {
+    return Matrix<DefDiag, Value_Type, M>(
+        ComplexOperation::GetRealFromComplexDiagMatrix<
+            Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void) -> Matrix<DefDiag, Value_Type, M> {
+    return Matrix<DefDiag, Value_Type, M>(
+        ComplexOperation::GetImagFromComplexDiagMatrix<
+            Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
+  }
+
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = M;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
 
@@ -262,7 +304,19 @@ template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Type */
-  using Value_Type = T;
+  using Value_Type = typename UnderlyingType<T>::Type;
+  using Matrix_Type = DefSparse;
+  using SparseAvailable_Type = SparseAvailable;
+
+private:
+  /* Type */
+  using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
+  using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
+  using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
+
+  using _BaseMatrix_Type =
+      Base::Matrix::CompiledSparseMatrix<T, M, N, _RowIndices_Type,
+                                         _RowPointers_Type>;
 
 public:
   /* Constructor */
@@ -270,15 +324,9 @@ public:
 
   Matrix(const std::initializer_list<T> &values) : matrix(values) {}
 
-  Matrix(Base::Matrix::CompiledSparseMatrix<
-         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-         RowPointersFromSparseAvailable<SparseAvailable>> &input)
-      : matrix(input) {}
+  Matrix(_BaseMatrix_Type &input) : matrix(input) {}
 
-  Matrix(Base::Matrix::CompiledSparseMatrix<
-         T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-         RowPointersFromSparseAvailable<SparseAvailable>> &&input) noexcept
-      : matrix(std::move(input)) {}
+  Matrix(_BaseMatrix_Type &&input) noexcept : matrix(std::move(input)) {}
 
   /* Copy Constructor */
   Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
@@ -317,11 +365,27 @@ public:
     return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
   }
 
+  template <std::size_t ELEMENT> inline T get() const {
+    static_assert(ELEMENT < NumberOfValues,
+                  "ELEMENT must be the same or less than the number "
+                  "of elements of Sparse Matrix.");
+
+    return Base::Matrix::get_sparse_matrix_element_value<ELEMENT>(this->matrix);
+  }
+
   template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
     static_assert(COL < M, "Column Index is out of range.");
     static_assert(ROW < N, "Row Index is out of range.");
 
     Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+  }
+
+  template <std::size_t ELEMENT> inline void set(const T &value) {
+    static_assert(ELEMENT < NumberOfValues,
+                  "ELEMENT must be the same or less than the number "
+                  "of elements of Sparse Matrix.");
+
+    Base::Matrix::set_sparse_matrix_element_value<ELEMENT>(this->matrix, value);
   }
 
   constexpr std::size_t rows() const { return ROWS; }
@@ -344,19 +408,49 @@ public:
     return this->matrix.values[value_index];
   }
 
-  inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
-    return Matrix<DefDense, T, N, M>(
+  inline auto transpose(void)
+      -> Matrix<DefSparse, T, N, M, SparseAvailableTranspose<SparseAvailable>> {
+
+    return Matrix<DefSparse, T, N, M,
+                  SparseAvailableTranspose<SparseAvailable>>(
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
-  /* Variable */
+  inline auto create_complex(void)
+      -> Matrix<DefSparse, Complex<T>, M, N, SparseAvailable> {
+
+    return Matrix<DefSparse, Complex<T>, M, N, SparseAvailable>(
+        Base::Matrix::convert_matrix_real_to_complex(this->matrix));
+  }
+
+  inline auto real(void)
+      -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
+    return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
+        ComplexOperation::GetRealFromComplexSparseMatrix<
+            Value_Type, T, M, N, SparseAvailable,
+            IS_COMPLEX>::get(this->matrix));
+  }
+
+  inline auto imag(void)
+      -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
+    return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
+        ComplexOperation::GetImagFromComplexSparseMatrix<
+            Value_Type, T, M, N, SparseAvailable,
+            IS_COMPLEX>::get(this->matrix));
+  }
+
+public:
+  /* Constant */
   static constexpr std::size_t ROWS = N;
   static constexpr std::size_t COLS = M;
 
-  Base::Matrix::CompiledSparseMatrix<
-      T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-      RowPointersFromSparseAvailable<SparseAvailable>>
-      matrix;
+  static constexpr std::size_t NumberOfValues = _RowPointers_Type::list[M];
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
+  _BaseMatrix_Type matrix;
 };
 
 /* Matrix Addition */
@@ -478,6 +572,26 @@ inline auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
 }
 
 /* Matrix Subtraction */
+template <typename T, std::size_t M, std::size_t N>
+inline auto operator-(const Matrix<DefDense, T, M, N> &A)
+    -> Matrix<DefDense, T, M, N> {
+
+  return Matrix<DefDense, T, M, N>(std::move(-A.matrix));
+}
+
+template <typename T, std::size_t M>
+inline auto operator-(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
+
+  return Matrix<DefDiag, T, M>(std::move(-A.matrix));
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+
+  return Matrix<DefSparse, T, M, N, SparseAvailable>(std::move(-A.matrix));
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto operator-(const Matrix<DefDense, T, M, N> &A,
                       const Matrix<DefDense, T, M, N> &B)

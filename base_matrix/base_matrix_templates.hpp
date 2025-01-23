@@ -962,6 +962,116 @@ using SparseAvailableMatrixMultiply =
         SparseAvailable_A, SparseAvailable_B,
         (SparseAvailable_A::number_of_columns - 1)>::type;
 
+/* SparseAvailable Multiply Transpose
+ * (SparseAvailable_BT will be calculated as transpose) */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t COL, std::size_t ROW, std::size_t N_Idx>
+struct SparseAvailableMatrixMultiplyTransposeElement {
+  static constexpr bool value =
+      LogicalAnd<SparseAvailable_A::lists[COL][N_Idx],
+                 SparseAvailable_BT::lists[ROW][N_Idx]>::value;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t COL, std::size_t ROW, std::size_t N_Idx>
+struct SparseAvailableMatrixMultiplyTransposeMultiplyLoop {
+  using type = ConcatenateColumnAvailable<
+      typename SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
+          SparseAvailable_A, SparseAvailable_BT, COL, ROW, (N_Idx - 1)>::type,
+      ColumnAvailable<SparseAvailableMatrixMultiplyTransposeElement<
+          SparseAvailable_A, SparseAvailable_BT, COL, ROW, N_Idx>::value>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t COL, std::size_t ROW>
+struct SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
+    SparseAvailable_A, SparseAvailable_BT, COL, ROW, 0> {
+  using type = ColumnAvailable<SparseAvailableMatrixMultiplyTransposeElement<
+      SparseAvailable_A, SparseAvailable_BT, COL, ROW, 0>::value>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t COL, std::size_t J_Idx>
+struct SparseAvailableMatrixMultiplyTransposeRowLoop {
+  using type = ConcatenateColumnAvailable<
+      typename SparseAvailableMatrixMultiplyTransposeRowLoop<
+          SparseAvailable_A, SparseAvailable_BT, COL, (J_Idx - 1)>::type,
+      ColumnAvailable<ColumnAvailableElementWiseOr<
+          typename SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
+              SparseAvailable_A, SparseAvailable_BT, COL, J_Idx,
+              (SparseAvailable_A::column_size - 1)>::type,
+          (SparseAvailable_A::column_size - 1)>::value>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t COL>
+struct SparseAvailableMatrixMultiplyTransposeRowLoop<
+    SparseAvailable_A, SparseAvailable_BT, COL, 0> {
+  using type = ColumnAvailable<ColumnAvailableElementWiseOr<
+      typename SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
+          SparseAvailable_A, SparseAvailable_BT, COL, 0,
+          (SparseAvailable_A::column_size - 1)>::type,
+      (SparseAvailable_A::column_size - 1)>::value>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t I_Idx>
+struct SparseAvailableMatrixMultiplyTransposeColumnLoop {
+  using type = ConcatenateSparseAvailableVertically<
+      typename SparseAvailableMatrixMultiplyTransposeColumnLoop<
+          SparseAvailable_A, SparseAvailable_BT, (I_Idx - 1)>::type,
+      SparseAvailableColumns<
+          typename SparseAvailableMatrixMultiplyTransposeRowLoop<
+              SparseAvailable_A, SparseAvailable_BT, I_Idx,
+              (SparseAvailable_BT::number_of_columns - 1)>::type>>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT>
+struct SparseAvailableMatrixMultiplyTransposeColumnLoop<SparseAvailable_A,
+                                                        SparseAvailable_BT, 0> {
+  using type = SparseAvailableColumns<
+      typename SparseAvailableMatrixMultiplyTransposeRowLoop<
+          SparseAvailable_A, SparseAvailable_BT, 0,
+          (SparseAvailable_BT::number_of_columns - 1)>::type>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_BT>
+using SparseAvailableMatrixMultiplyTranspose =
+    typename SparseAvailableMatrixMultiplyTransposeColumnLoop<
+        SparseAvailable_A, SparseAvailable_BT,
+        (SparseAvailable_A::number_of_columns - 1)>::type;
+
+template <typename SparseAvailable>
+using SparseAvailableTranspose = SparseAvailableMatrixMultiplyTranspose<
+    DiagAvailable<SparseAvailable::column_size>, SparseAvailable>;
+
+/* Check SparseAvailable is valid or not */
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
+          std::size_t ColumnIndex>
+struct ValidateSparseAvailableLoop {
+  static_assert(SparseAvailable::column_size == NumberOfRowsFirst,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+
+  // static_assert(NumberOfRowsFirst > 3, "NumberOfRowsFirst value");
+
+  using type = typename ValidateSparseAvailableLoop<
+      GetRestOfSparseAvailable<SparseAvailable, 1>, NumberOfRowsFirst,
+      (ColumnIndex - 1)>::type;
+};
+
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
+struct ValidateSparseAvailableLoop<SparseAvailable, NumberOfRowsFirst, 0> {
+  static_assert(SparseAvailable::column_size == NumberOfRowsFirst,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+
+  using type = SparseAvailable;
+};
+
+template <typename SparseAvailable>
+using ValidateSparseAvailable = typename ValidateSparseAvailableLoop<
+    SparseAvailable, SparseAvailable::column_size,
+    (SparseAvailable::number_of_columns - 1)>::type;
+
 } // namespace Matrix
 } // namespace Base
 

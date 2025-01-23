@@ -909,6 +909,129 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/* Convert Real Matrix to Complex */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t I>
+struct DiagMatrixRealToComplexLoop {
+  static void compute(const DiagMatrix<T, M> &From_matrix,
+                      DiagMatrix<Complex<T>, M> &To_matrix) {
+    To_matrix[I].real = From_matrix[I];
+    DiagMatrixRealToComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M>
+struct DiagMatrixRealToComplexLoop<T, M, 0> {
+  static void compute(const DiagMatrix<T, M> &From_matrix,
+                      DiagMatrix<Complex<T>, M> &To_matrix) {
+    To_matrix[0].real = From_matrix[0];
+  }
+};
+
+template <typename T, std::size_t M>
+inline DiagMatrix<Complex<T>, M>
+convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
+
+  DiagMatrix<Complex<T>, M> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    To_matrix[i].real = From_matrix[i];
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  DiagMatrixRealToComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
+/* Get Real Matrix from Complex */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t I>
+struct DiagMatrixRealFromComplexLoop {
+  static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                      DiagMatrix<T, M> &To_matrix) {
+    To_matrix[I] = From_matrix[I].real;
+    DiagMatrixRealFromComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M>
+struct DiagMatrixRealFromComplexLoop<T, M, 0> {
+  static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                      DiagMatrix<T, M> &To_matrix) {
+    To_matrix[0] = From_matrix[0].real;
+  }
+};
+
+template <typename T, std::size_t M>
+inline auto get_real_matrix_from_complex_matrix(
+    const DiagMatrix<Complex<T>, M> &From_matrix) -> DiagMatrix<T, M> {
+
+  DiagMatrix<T, M> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    To_matrix[i] = From_matrix[i].real;
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  DiagMatrixRealFromComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
+/* Get Imag Matrix from Complex */
+/* Helper struct for unrolling the loop */
+template <typename T, std::size_t M, std::size_t I>
+struct DiagMatrixImagFromComplexLoop {
+  static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                      DiagMatrix<T, M> &To_matrix) {
+    To_matrix[I] = From_matrix[I].imag;
+    DiagMatrixImagFromComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+  }
+};
+
+/* Specialization to end the recursion */
+template <typename T, std::size_t M>
+struct DiagMatrixImagFromComplexLoop<T, M, 0> {
+  static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                      DiagMatrix<T, M> &To_matrix) {
+    To_matrix[0] = From_matrix[0].imag;
+  }
+};
+
+template <typename T, std::size_t M>
+inline auto get_imag_matrix_from_complex_matrix(
+    const DiagMatrix<Complex<T>, M> &From_matrix) -> DiagMatrix<T, M> {
+
+  DiagMatrix<T, M> To_matrix;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    To_matrix[i] = From_matrix[i].imag;
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  DiagMatrixImagFromComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return To_matrix;
+}
+
 } // namespace Matrix
 } // namespace Base
 

@@ -13,6 +13,12 @@ const double DEFAULT_DIVISION_MIN_LINALG_QR = 1.0e-10;
 
 template <typename T, std::size_t M, std::size_t N> class LinalgSolverQR {
 public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+public:
   /* Constructor */
   LinalgSolverQR() {}
 
@@ -74,6 +80,11 @@ public:
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = N;
 
 private:
   /* Properties */
@@ -197,6 +208,14 @@ public:
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = N;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */

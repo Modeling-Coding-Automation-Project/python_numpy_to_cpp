@@ -12,23 +12,46 @@ namespace PythonNumpy {
 const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-20;
 const std::size_t DEFAULT_ITERATION_MAX_LINALG_EIG = 10;
 
-/* Able to handle only real number */
-template <typename T, std::size_t M> class LinalgSolverEigReal {
+namespace ForLinalgSolverEigReal {
+
+template <typename T, std::size_t M>
+using EigenValues_Type = Matrix<DefDense, T, M, 1>;
+
+template <typename T, std::size_t M>
+using EigenVectors_Type = Matrix<DefDense, T, M, M>;
+
+} // namespace ForLinalgSolverEigReal
+
+/* Linalg solver for Real Eigen values and vectors of Dense Matrix */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
+class LinalgSolverEigRealDense {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefDense, T, M, M>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
+
 public:
   /* Constructor */
-  LinalgSolverEigReal() {}
+  LinalgSolverEigRealDense() {}
 
-  LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A) {
-    this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
-        A.matrix, DEFAULT_ITERATION_MAX_LINALG_EIG, this->_division_min);
+  LinalgSolverEigRealDense(const A_Type &A) {
+    this->_Eigen_solver =
+        EigenSolver_Type(A.matrix, Default_Iteration_Max, this->_division_min);
   }
 
   /* Copy Constructor */
-  LinalgSolverEigReal(const LinalgSolverEigReal<T, M> &other)
+  LinalgSolverEigRealDense(const LinalgSolverEigRealDense<T, M> &other)
       : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min) {
   }
 
-  LinalgSolverEigReal<T, M> &operator=(const LinalgSolverEigReal<T, M> &other) {
+  LinalgSolverEigRealDense<T, M> &
+  operator=(const LinalgSolverEigRealDense<T, M> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
       this->_division_min = other._division_min;
@@ -37,12 +60,12 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverEigReal(LinalgSolverEigReal<T, M> &&other) noexcept
+  LinalgSolverEigRealDense(LinalgSolverEigRealDense<T, M> &&other) noexcept
       : _Eigen_solver(std::move(other._Eigen_solver)),
         _division_min(std::move(other._division_min)) {}
 
-  LinalgSolverEigReal<T, M> &
-  operator=(LinalgSolverEigReal<T, M> &&other) noexcept {
+  LinalgSolverEigRealDense<T, M> &
+  operator=(LinalgSolverEigRealDense<T, M> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
       this->_division_min = std::move(other._division_min);
@@ -51,7 +74,7 @@ public:
   }
 
   /* Solve function */
-  inline void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_values(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_values(A.matrix);
   }
 
@@ -59,18 +82,21 @@ public:
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  inline void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.get_eigen_vectors());
   }
 
   inline std::size_t get_iteration_max(void) {
@@ -82,26 +108,48 @@ public:
     this->_Eigen_solver.iteration_max = iteration_max;
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
-  Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
+  EigenSolver_Type _Eigen_solver;
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
 };
 
-template <typename T, std::size_t M> class LinalgSolverEigRealDiag {
+/* Linalg solver for Real Eigen values and vectors of Diag Matrix */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
+class LinalgSolverEigRealDiag {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefDiag, T, M>;
+  using EigenValues_Type = Matrix<DefDense, T, M, 1>;
+  using EigenVectors_Type = Matrix<DefDiag, T, M>;
+
 public:
   /* Constructor */
   LinalgSolverEigRealDiag() {}
 
-  LinalgSolverEigRealDiag(const Matrix<DefDiag, T, M> &A) {
+  LinalgSolverEigRealDiag(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
-  void solve_eigen_values(const Matrix<DefDiag, T, M> &A) {
+  void solve_eigen_values(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
-  void solve_eigen_vectors(const Matrix<DefDiag, T, M> &A) {
+  void solve_eigen_vectors(const A_Type &A) {
     this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
   }
 
@@ -130,28 +178,49 @@ public:
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(this->_eigen_values);
+  inline auto get_eigen_values(void) -> EigenValues_Type {
+    return EigenValues_Type(this->_eigen_values);
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDiag, T, M> {
-    return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
+  inline auto get_eigen_vectors(void) -> EigenVectors_Type {
+    return EigenVectors_Type(Base::Matrix::DiagMatrix<T, M>::identity());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
   Base::Matrix::Matrix<T, M, 1> _eigen_values;
 };
 
-template <typename T, std::size_t M, typename SparseAvailable>
+/* Linalg solver for Real Eigen values and vectors of Sparse Matrix */
+template <typename T, std::size_t M, typename SparseAvailable,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 class LinalgSolverEigRealSparse {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverReal<T, M>;
+
 public:
   /* Constructor */
   LinalgSolverEigRealSparse() {}
 
-  LinalgSolverEigRealSparse(
-      const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->solve_eigen_values(A);
+  LinalgSolverEigRealSparse(const A_Type &A) {
+    this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
+        Base::Matrix::output_dense_matrix(A.matrix), Default_Iteration_Max,
+        this->_division_min);
   }
 
   /* Copy Constructor */
@@ -188,74 +257,119 @@ public:
   }
 
   /* Solve method */
-  inline void
-  solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver = Base::Matrix::EigenSolverReal<T, M>(
-        A.matrix.create_dense(), this->_iteration_max, this->_division_min);
+  inline void solve_eigen_values(const A_Type &A) {
+    this->_Eigen_solver.solve_eigen_values(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
-  inline void
-  solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
+  }
+
+  inline void solve_eigen_vectors(const A_Type &A) {
+    this->_Eigen_solver.solve_eigen_vectors(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
   /* Get */
-  inline auto get_eigen_values(void) -> Matrix<DefDense, T, M, 1> {
-    return Matrix<DefDense, T, M, 1>(
+  inline auto get_eigen_values(void)
+      -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
   }
 
-  inline auto get_eigen_vectors(void) -> Matrix<DefDense, T, M, M> {
-    return Matrix<DefDense, T, M, M>(this->_Eigen_solver.get_eigen_vectors());
+  inline auto get_eigen_vectors(void)
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.get_eigen_vectors());
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
   Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
-  std::size_t _iteration_max =
-      static_cast<std::size_t>(DEFAULT_ITERATION_MAX_LINALG_EIG);
+  std::size_t _iteration_max = Default_Iteration_Max;
 };
 
-/* make LinalgSolverEig */
-template <typename T, std::size_t M>
+/* make LinalgSolverEig Real */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto make_LinalgSolverEigReal(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolverEigReal<T, M> {
+    -> LinalgSolverEigRealDense<T, M, Default_Iteration_Max> {
 
-  return LinalgSolverEigReal<T, M>(A);
+  return LinalgSolverEigRealDense<T, M, Default_Iteration_Max>(A);
 }
 
-template <typename T, std::size_t M>
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto make_LinalgSolverEigReal(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolverEigRealDiag<T, M> {
+    -> LinalgSolverEigRealDiag<T, M, Default_Iteration_Max> {
 
-  return LinalgSolverEigRealDiag<T, M>(A);
+  return LinalgSolverEigRealDiag<T, M, Default_Iteration_Max>(A);
 }
 
-template <typename T, std::size_t M, typename SparseAvailable>
+template <typename T, std::size_t M, typename SparseAvailable,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto
 make_LinalgSolverEigReal(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
-    -> LinalgSolverEigRealSparse<T, M, SparseAvailable> {
+    -> LinalgSolverEigRealSparse<T, M, SparseAvailable, Default_Iteration_Max> {
 
-  return LinalgSolverEigRealSparse<T, M, SparseAvailable>(A);
+  return LinalgSolverEigRealSparse<T, M, SparseAvailable,
+                                   Default_Iteration_Max>(A);
 }
 
-/* Able to handle complex number */
-template <typename T, std::size_t M> class LinalgSolverEig {
+namespace ForLinalgSolverEig {
+
+template <typename T, std::size_t M>
+using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
+
+template <typename T, std::size_t M>
+using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
+
+} // namespace ForLinalgSolverEig
+
+/* Linalg solver for Complex Eigen values and vectors of Dense and Sparse Matrix
+ */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
+class LinalgSolverEigDense {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefDense, T, M, M>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverComplex<T, M>;
+
 public:
   /* Constructor */
-  LinalgSolverEig() {}
+  LinalgSolverEigDense() {}
 
-  LinalgSolverEig(const Matrix<DefDense, T, M, M> &A) {
-    this->solve_eigen_values(A);
+  LinalgSolverEigDense(const A_Type &A) {
+    this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
+        A.matrix, Default_Iteration_Max, this->_division_min);
   }
 
   /* Copy Constructor */
-  LinalgSolverEig(const LinalgSolverEig<T, M> &other)
+  LinalgSolverEigDense(const LinalgSolverEigDense<T, M> &other)
       : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min),
         _iteration_max(other._iteration_max) {}
 
-  LinalgSolverEig<T, M> &operator=(const LinalgSolverEig<T, M> &other) {
+  LinalgSolverEigDense<T, M> &
+  operator=(const LinalgSolverEigDense<T, M> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
       this->_division_min = other._division_min;
@@ -265,12 +379,13 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverEig(LinalgSolverEig<T, M> &&other) noexcept
+  LinalgSolverEigDense(LinalgSolverEigDense<T, M> &&other) noexcept
       : _Eigen_solver(std::move(other._Eigen_solver)),
         _division_min(std::move(other._division_min)),
         _iteration_max(std::move(other._iteration_max)) {}
 
-  LinalgSolverEig<T, M> &operator=(LinalgSolverEig<T, M> &&other) noexcept {
+  LinalgSolverEigDense<T, M> &
+  operator=(LinalgSolverEigDense<T, M> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
       this->_division_min = std::move(other._division_min);
@@ -280,30 +395,29 @@ public:
   }
 
   /* Solve method */
-  inline void solve_eigen_values(const Matrix<DefDense, T, M, M> &A) {
-    this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
-        A.matrix, this->_iteration_max, this->_division_min);
+  inline void solve_eigen_values(const A_Type &A) {
+    this->_Eigen_solver.solve_eigen_values(A.matrix);
   }
 
   inline void continue_solving_eigen_values(void) {
     this->_Eigen_solver.continue_solving_eigen_values();
   }
 
-  inline void solve_eigen_vectors(const Matrix<DefDense, T, M, M> &A) {
+  inline void solve_eigen_vectors(const A_Type &A) {
     this->_Eigen_solver.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
   inline auto get_eigen_values(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
+      -> ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
   inline auto get_eigen_vectors(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
@@ -322,21 +436,44 @@ public:
         iteration_max_for_eigen_vector;
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
-  Base::Matrix::EigenSolverComplex<T, M> _Eigen_solver;
+  EigenSolver_Type _Eigen_solver;
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
-  std::size_t _iteration_max =
-      static_cast<std::size_t>(DEFAULT_ITERATION_MAX_LINALG_EIG);
+  std::size_t _iteration_max = static_cast<std::size_t>(Default_Iteration_Max);
 };
 
-template <typename T, std::size_t M> class LinalgSolverEigDiag {
+/* Linalg solver for Complex Eigen values and vectors of Diag Matrix */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
+class LinalgSolverEigDiag {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefDiag, T, M>;
+  using EigenValues_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>;
+  using EigenVectors_Type = Matrix<DefDiag, Base::Matrix::Complex<T>, M>;
+
 public:
   /* Constructor */
   LinalgSolverEigDiag() {}
 
-  LinalgSolverEigDiag(const Matrix<DefDiag, T, M> &A) {
-    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
+  LinalgSolverEigDiag(const A_Type &A) {
+    this->_eigen_values =
+        EigenValues_Type(Base::Matrix::convert_matrix_real_to_complex(
+            Base::Matrix::Matrix<T, M, 1>(A.matrix.data)));
   }
 
   /* Copy Constructor */
@@ -364,39 +501,62 @@ public:
 
   /* Solve method */
   inline void solve_eigen_values(const Matrix<DefDiag, T, M> &A) {
-    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
+    this->_eigen_values =
+        EigenValues_Type(Base::Matrix::convert_matrix_real_to_complex(
+            Base::Matrix::Matrix<T, M, 1>(A.matrix.data)));
   }
 
   inline void solve_eigen_vectors(const Matrix<DefDiag, T, M> &A) {
-    this->_eigen_values = Base::Matrix::Matrix<T, M, 1>(A.matrix.data);
+    this->_eigen_values =
+        EigenValues_Type(Base::Matrix::convert_matrix_real_to_complex(
+            Base::Matrix::Matrix<T, M, 1>(A.matrix.data)));
   }
 
   /* Get */
-  inline auto get_eigen_values(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
-        this->_eigen_values);
+  inline auto get_eigen_values(void) -> EigenValues_Type {
+    return EigenValues_Type(this->_eigen_values);
   }
 
-  inline auto get_eigen_vectors(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
-        Base::Matrix::DiagMatrix<T, M>::identity());
+  inline auto get_eigen_vectors(void) -> EigenVectors_Type {
+    return EigenVectors_Type(Base::Matrix::convert_matrix_real_to_complex(
+        Base::Matrix::DiagMatrix<T, M>::identity()));
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
-  Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1> _eigen_values;
+  EigenValues_Type _eigen_values;
 };
 
-template <typename T, std::size_t M, typename SparseAvailable>
+/* Linalg solver for Complex Eigen values and vectors of Sparse Matrix */
+template <typename T, std::size_t M, typename SparseAvailable,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 class LinalgSolverEigSparse {
+public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using A_Type = Matrix<DefSparse, T, M, M, SparseAvailable>;
+  using EigenSolver_Type = Base::Matrix::EigenSolverComplex<T, M>;
+
 public:
   /* Constructor */
   LinalgSolverEigSparse() {}
 
-  LinalgSolverEigSparse(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->solve_eigen_values(A);
+  LinalgSolverEigSparse(const A_Type &A) {
+    this->_Eigen_solver =
+        EigenSolver_Type(Base::Matrix::output_dense_matrix(A.matrix),
+                         Default_Iteration_Max, this->_division_min);
   }
 
   /* Copy Constructor */
@@ -433,60 +593,76 @@ public:
   }
 
   /* Solve method */
-  inline void
-  solve_eigen_values(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver = Base::Matrix::EigenSolverComplex<T, M>(
-        A.matrix.create_dense(), this->_iteration_max, this->_division_min);
+  inline void solve_eigen_values(const A_Type &A) {
+    this->_Eigen_solver.solve_eigen_values(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
-  inline void
-  solve_eigen_vectors(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix.create_dense());
+  inline void continue_solving_eigen_values(void) {
+    this->_Eigen_solver.continue_solving_eigen_values();
+  }
+
+  inline void solve_eigen_vectors(const A_Type &A) {
+    this->_Eigen_solver.solve_eigen_vectors(
+        Base::Matrix::output_dense_matrix(A.matrix));
   }
 
   /* Get */
   inline auto get_eigen_values(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, 1> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, 1>(
+      -> ForLinalgSolverEig::EigenValues_Type<T, M> {
+    return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
             this->_Eigen_solver.get_eigen_values()));
   }
 
   inline auto get_eigen_vectors(void)
-      -> Matrix<DefDense, Base::Matrix::Complex<T>, M, M> {
-    return Matrix<DefDense, Base::Matrix::Complex<T>, M, M>(
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
         this->_Eigen_solver.get_eigen_vectors());
   }
 
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Variable */
-  Base::Matrix::EigenSolverComplex<T, M> _Eigen_solver;
+  EigenSolver_Type _Eigen_solver;
   T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
-  std::size_t _iteration_max =
-      static_cast<std::size_t>(DEFAULT_ITERATION_MAX_LINALG_EIG);
+  std::size_t _iteration_max = Default_Iteration_Max;
 };
 
-/* make LinalgSolverEig */
-template <typename T, std::size_t M>
+/* make LinalgSolverEig Complex */
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto make_LinalgSolverEig(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolverEig<T, M> {
+    -> LinalgSolverEigDense<T, M, Default_Iteration_Max> {
 
-  return LinalgSolverEig<T, M>(A);
+  return LinalgSolverEigDense<T, M, Default_Iteration_Max>(A);
 }
 
-template <typename T, std::size_t M>
+template <typename T, std::size_t M,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto make_LinalgSolverEig(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolverEigDiag<T, M> {
+    -> LinalgSolverEigDiag<T, M, Default_Iteration_Max> {
 
-  return LinalgSolverEigDiag<T, M>(A);
+  return LinalgSolverEigDiag<T, M, Default_Iteration_Max>(A);
 }
 
-template <typename T, std::size_t M, typename SparseAvailable>
+template <typename T, std::size_t M, typename SparseAvailable,
+          std::size_t Default_Iteration_Max =
+              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
 inline auto
 make_LinalgSolverEig(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
-    -> LinalgSolverEigSparse<T, M, SparseAvailable> {
+    -> LinalgSolverEigSparse<T, M, SparseAvailable, Default_Iteration_Max> {
 
-  return LinalgSolverEigSparse<T, M, SparseAvailable>(A);
+  return LinalgSolverEigSparse<T, M, SparseAvailable, Default_Iteration_Max>(A);
 }
 
 } // namespace PythonNumpy

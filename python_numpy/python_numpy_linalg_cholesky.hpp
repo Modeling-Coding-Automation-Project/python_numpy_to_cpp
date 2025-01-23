@@ -12,6 +12,14 @@ namespace PythonNumpy {
 template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverCholesky {
 public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+  using SparseAvailable_Type = SparseAvailable;
+
+public:
   /* Constructor */
   LinalgSolverCholesky() {}
 
@@ -104,6 +112,14 @@ public:
 
     return Matrix<DefDense, T, M, M>(this->_cholesky_decomposed_matrix);
   }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 private:
   /* Variable */
