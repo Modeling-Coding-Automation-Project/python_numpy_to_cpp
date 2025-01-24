@@ -118,7 +118,8 @@ public:
   template <typename U, std::size_t P, std::size_t P_idx>
   struct CreateIdentityCore {
     static void compute(Matrix<U, M, M> &identity) {
-      identity(P_idx, P_idx) = static_cast<U>(1);
+
+      identity.template set<P_idx, P_idx>(static_cast<U>(1));
       CreateIdentityCore<U, P, P_idx - 1>::compute(identity);
     }
   };
@@ -126,7 +127,8 @@ public:
   // Termination condition: P_idx == 0
   template <typename U, std::size_t P> struct CreateIdentityCore<U, P, 0> {
     static void compute(Matrix<U, P, P> &identity) {
-      identity(0, 0) = static_cast<U>(1);
+
+      identity.template set<0, 0>(static_cast<U>(1));
     }
   };
 
@@ -159,7 +161,8 @@ public:
             std::size_t J_idx>
   struct MatrixOnesColumn {
     static void compute(Matrix<U, O, P> &Ones) {
-      Ones(I, J_idx) = static_cast<U>(1);
+
+      Ones.template set<I, J_idx>(static_cast<U>(1));
       MatrixOnesColumn<U, O, P, I, J_idx - 1>::compute(Ones);
     }
   };
@@ -168,7 +171,8 @@ public:
   template <typename U, std::size_t O, std::size_t P, std::size_t I>
   struct MatrixOnesColumn<U, O, P, I, 0> {
     static void compute(Matrix<U, O, P> &Ones) {
-      Ones(I, 0) = static_cast<U>(1);
+
+      Ones.template set<I, 0>(static_cast<U>(1));
     }
   };
 
@@ -322,6 +326,22 @@ public:
     return Inv;
   }
 
+  /* Get Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> inline T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    return data[ROW][COL];
+  }
+
+  /* Set Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    data[ROW][COL] = value;
+  }
+
   inline T get_trace() const { return output_matrix_trace(*this); }
 
 /* Variable */
@@ -338,9 +358,10 @@ template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
 struct MatrixSwapColumnsCore {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
-    temp = mat(col_1, N_idx);
-    mat(col_1, N_idx) = mat(col_2, N_idx);
-    mat(col_2, N_idx) = temp;
+
+    temp = mat.data[N_idx][col_1];
+    mat.data[N_idx][col_1] = mat.data[N_idx][col_2];
+    mat.data[N_idx][col_2] = temp;
     MatrixSwapColumnsCore<T, M, N, N_idx - 1>::compute(col_1, col_2, mat, temp);
   }
 };
@@ -350,9 +371,10 @@ template <typename T, std::size_t M, std::size_t N>
 struct MatrixSwapColumnsCore<T, M, N, 0> {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
-    temp = mat(col_1, 0);
-    mat(col_1, 0) = mat(col_2, 0);
-    mat(col_2, 0) = temp;
+
+    temp = mat.data[0][col_1];
+    mat.data[0][col_1] = mat.data[0][col_2];
+    mat.data[0][col_2] = temp;
   }
 };
 
@@ -378,9 +400,10 @@ inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t i = 0; i < N; i++) {
-    temp = mat(col_1, i);
-    mat(col_1, i) = mat(col_2, i);
-    mat(col_2, i) = temp;
+
+    temp = mat.data[i][col_1];
+    mat.data[i][col_1] = mat.data[i][col_2];
+    mat.data[i][col_2] = temp;
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -412,7 +435,8 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
 // calculate trace of matrix
 template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
   static T compute(const Matrix<T, N, N> &mat) {
-    return mat(I, I) + MatrixTraceCore<T, N, I - 1>::compute(mat);
+    return mat.template get<I, I>() +
+           MatrixTraceCore<T, N, I - 1>::compute(mat);
   }
 };
 
@@ -423,7 +447,9 @@ static inline T COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
 
 // if I == 0
 template <typename T, std::size_t N> struct MatrixTraceCore<T, N, 0> {
-  static T compute(const Matrix<T, N, N> &mat) { return mat(0, 0); }
+  static T compute(const Matrix<T, N, N> &mat) {
+    return mat.template get<0, 0>();
+  }
 };
 
 template <typename T, std::size_t M, std::size_t N>
