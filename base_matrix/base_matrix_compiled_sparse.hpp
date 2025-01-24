@@ -876,6 +876,7 @@ struct SparseMatrixRealToComplexLoop {
       const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &From_matrix,
       CompiledSparseMatrix<Complex<T>, M, N, RowIndices, RowPointers>
           &To_matrix) {
+
     To_matrix.values[I - 1].real = From_matrix.values[I - 1];
     SparseMatrixRealToComplexLoop<T, M, N, RowIndices, RowPointers,
                                   I - 1>::compute(From_matrix, To_matrix);
