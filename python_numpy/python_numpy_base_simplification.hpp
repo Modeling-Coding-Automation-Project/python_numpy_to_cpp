@@ -177,6 +177,15 @@ inline auto make_SparseMatrix(T value_1, Args... args)
   return result;
 }
 
+template <typename T, std::size_t M, std::size_t N, typename... Args>
+inline auto
+make_SparseMatrixFromDenseMatrix(Matrix<DefDense, T, M, N> &dense_matrix)
+    -> Matrix<DefSparse, T, M, N, DenseAvailable<M, N>> {
+
+  return Matrix<DefSparse, T, M, N, DenseAvailable<M, N>>(
+      create_compiled_sparse(dense_matrix.matrix));
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__

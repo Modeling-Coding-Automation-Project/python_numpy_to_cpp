@@ -683,6 +683,12 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(sparse_value, static_cast<T>(2), NEAR_LIMIT_STRICT,
         "check SparseMatrix get value.");
 
+    auto CD = make_SparseMatrixFromDenseMatrix(Dense);
+    auto CD_dense = CD.create_dense();
+
+    tester.expect_near(CD_dense.matrix.data, Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_SparseMatrixFromDenseMatrix.");
+
 
     tester.throw_error_if_test_failed();
 }

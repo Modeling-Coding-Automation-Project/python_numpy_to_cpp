@@ -174,7 +174,9 @@ inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
 template <typename T, std::size_t M, std::size_t M_idx>
 struct DiagMatrixAddMatrixCore {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(M_idx, M_idx) += A[M_idx];
+
+    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
+                                      A[M_idx]);
     DiagMatrixAddMatrixCore<T, M, M_idx - 1>::compute(A, result);
   }
 };
@@ -182,7 +184,8 @@ struct DiagMatrixAddMatrixCore {
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct DiagMatrixAddMatrixCore<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(0, 0) += A[0];
+
+    result.template set<0, 0>(result.template get<0, 0>() + A[0]);
   }
 };
 
@@ -324,7 +327,9 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
 template <typename T, std::size_t M, std::size_t M_idx>
 struct DiagMatrixSubMatrixCore {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(M_idx, M_idx) += A[M_idx];
+
+    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
+                                      A[M_idx]);
     DiagMatrixSubMatrixCore<T, M, M_idx - 1>::compute(A, result);
   }
 };
@@ -332,7 +337,8 @@ struct DiagMatrixSubMatrixCore {
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct DiagMatrixSubMatrixCore<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(0, 0) += A[0];
+
+    result.template set<0, 0>(result.template get<0, 0>() + A[0]);
   }
 };
 
@@ -366,7 +372,9 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
 template <typename T, std::size_t M, std::size_t M_idx>
 struct MatrixSubDiagMatrixCore {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(M_idx, M_idx) -= A[M_idx];
+
+    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() -
+                                      A[M_idx]);
     MatrixSubDiagMatrixCore<T, M, M_idx - 1>::compute(A, result);
   }
 };
@@ -374,7 +382,7 @@ struct MatrixSubDiagMatrixCore {
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct MatrixSubDiagMatrixCore<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result(0, 0) -= A[0];
+    result.template set<0, 0>(result.template get<0, 0>() - A[0]);
   }
 };
 
@@ -569,7 +577,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
 struct DiagMatrixMultiplyMatrixCore {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(J, K) = A[J] * B(J, K);
+
+    result.template set<J, K>(A[J] * B.template get<J, K>());
     DiagMatrixMultiplyMatrixCore<T, M, N, J, K - 1>::compute(A, B, result);
   }
 };
@@ -579,7 +588,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct DiagMatrixMultiplyMatrixCore<T, M, N, J, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(J, 0) = A[J] * B(J, 0);
+
+    result.template set<J, 0>(A[J] * B.template get<J, 0>());
   }
 };
 
@@ -638,7 +648,8 @@ template <typename T, std::size_t L, std::size_t M, std::size_t I,
 struct DiagMatrixMultiplierCore {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    result(I, J) = A(I, J) * B[J];
+
+    result.template set<I, J>(A.template get<I, J>() * B[J]);
     DiagMatrixMultiplierCore<T, L, M, I, J - 1>::compute(A, B, result);
   }
 };
@@ -648,7 +659,8 @@ template <typename T, std::size_t L, std::size_t M, std::size_t I>
 struct DiagMatrixMultiplierCore<T, L, M, I, 0> {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    result(I, 0) = A(I, 0) * B[0];
+
+    result.template set<I, 0>(A.template get<I, 0>() * B[0]);
   }
 };
 
@@ -744,7 +756,8 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 template <typename T, std::size_t M, std::size_t I>
 struct DiagMatrixToDenseCore {
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
-    result(I, I) = A[I];
+
+    result.template set<I, I>(A[I]);
     DiagMatrixToDenseCore<T, M, I - 1>::assign(result, A);
   }
 };
@@ -752,7 +765,7 @@ struct DiagMatrixToDenseCore {
 // Base case for recursion termination
 template <typename T, std::size_t M> struct DiagMatrixToDenseCore<T, M, 0> {
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
-    result(0, 0) = A[0];
+    result.template set<0, 0>(A[0]);
   }
 };
 

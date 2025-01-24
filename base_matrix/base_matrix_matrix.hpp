@@ -118,7 +118,8 @@ public:
   template <typename U, std::size_t P, std::size_t P_idx>
   struct CreateIdentityCore {
     static void compute(Matrix<U, M, M> &identity) {
-      identity(P_idx, P_idx) = static_cast<U>(1);
+
+      identity.template set<P_idx, P_idx>(static_cast<U>(1));
       CreateIdentityCore<U, P, P_idx - 1>::compute(identity);
     }
   };
@@ -126,7 +127,8 @@ public:
   // Termination condition: P_idx == 0
   template <typename U, std::size_t P> struct CreateIdentityCore<U, P, 0> {
     static void compute(Matrix<U, P, P> &identity) {
-      identity(0, 0) = static_cast<U>(1);
+
+      identity.template set<0, 0>(static_cast<U>(1));
     }
   };
 
@@ -159,7 +161,8 @@ public:
             std::size_t J_idx>
   struct MatrixOnesColumn {
     static void compute(Matrix<U, O, P> &Ones) {
-      Ones(I, J_idx) = static_cast<U>(1);
+
+      Ones.template set<I, J_idx>(static_cast<U>(1));
       MatrixOnesColumn<U, O, P, I, J_idx - 1>::compute(Ones);
     }
   };
@@ -168,7 +171,8 @@ public:
   template <typename U, std::size_t O, std::size_t P, std::size_t I>
   struct MatrixOnesColumn<U, O, P, I, 0> {
     static void compute(Matrix<U, O, P> &Ones) {
-      Ones(I, 0) = static_cast<U>(1);
+
+      Ones.template set<I, 0>(static_cast<U>(1));
     }
   };
 
@@ -322,6 +326,22 @@ public:
     return Inv;
   }
 
+  /* Get Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> inline T get() const {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    return data[ROW][COL];
+  }
+
+  /* Set Dense Matrix value */
+  template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
+    static_assert(COL < M, "Column Index is out of range.");
+    static_assert(ROW < N, "Row Index is out of range.");
+
+    data[ROW][COL] = value;
+  }
+
   inline T get_trace() const { return output_matrix_trace(*this); }
 
 /* Variable */
@@ -338,9 +358,10 @@ template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
 struct MatrixSwapColumnsCore {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
-    temp = mat(col_1, N_idx);
-    mat(col_1, N_idx) = mat(col_2, N_idx);
-    mat(col_2, N_idx) = temp;
+
+    temp = mat.data[N_idx][col_1];
+    mat.data[N_idx][col_1] = mat.data[N_idx][col_2];
+    mat.data[N_idx][col_2] = temp;
     MatrixSwapColumnsCore<T, M, N, N_idx - 1>::compute(col_1, col_2, mat, temp);
   }
 };
@@ -350,9 +371,10 @@ template <typename T, std::size_t M, std::size_t N>
 struct MatrixSwapColumnsCore<T, M, N, 0> {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
-    temp = mat(col_1, 0);
-    mat(col_1, 0) = mat(col_2, 0);
-    mat(col_2, 0) = temp;
+
+    temp = mat.data[0][col_1];
+    mat.data[0][col_1] = mat.data[0][col_2];
+    mat.data[0][col_2] = temp;
   }
 };
 
@@ -378,9 +400,10 @@ inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t i = 0; i < N; i++) {
-    temp = mat(col_1, i);
-    mat(col_1, i) = mat(col_2, i);
-    mat(col_2, i) = temp;
+
+    temp = mat.data[i][col_1];
+    mat.data[i][col_1] = mat.data[i][col_2];
+    mat.data[i][col_2] = temp;
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -412,7 +435,8 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
 // calculate trace of matrix
 template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
   static T compute(const Matrix<T, N, N> &mat) {
-    return mat(I, I) + MatrixTraceCore<T, N, I - 1>::compute(mat);
+    return mat.template get<I, I>() +
+           MatrixTraceCore<T, N, I - 1>::compute(mat);
   }
 };
 
@@ -423,7 +447,9 @@ static inline T COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
 
 // if I == 0
 template <typename T, std::size_t N> struct MatrixTraceCore<T, N, 0> {
-  static T compute(const Matrix<T, N, N> &mat) { return mat(0, 0); }
+  static T compute(const Matrix<T, N, N> &mat) {
+    return mat.template get<0, 0>();
+  }
 };
 
 template <typename T, std::size_t M, std::size_t N>
@@ -453,7 +479,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixAdderColumn {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J_idx) = A(I, J_idx) + B(I, J_idx);
+
+    result.template set<I, J_idx>(A.template get<I, J_idx>() +
+                                  B.template get<I, J_idx>());
     MatrixAdderColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
   }
 };
@@ -463,7 +491,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixAdderColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) = A(I, 0) + B(I, 0);
+
+    result.template set<I, 0>(A.template get<I, 0>() + B.template get<I, 0>());
   }
 };
 
@@ -522,7 +551,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixSubtractorColumn {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J_idx) = A(I, J_idx) - B(I, J_idx);
+
+    result.template set<I, J_idx>(A.template get<I, J_idx>() -
+                                  B.template get<I, J_idx>());
     MatrixSubtractorColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
   }
 };
@@ -532,7 +563,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixSubtractorColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) = A(I, 0) - B(I, 0);
+
+    result.template set<I, 0>(A.template get<I, 0>() - B.template get<I, 0>());
   }
 };
 
@@ -589,7 +621,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
 struct MatrixMinusColumn {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
-    result(I, J_idx) = -A(I, J_idx);
+
+    result.template set<I, J_idx>(-A.template get<I, J_idx>());
     MatrixMinusColumn<T, M, N, I, J_idx - 1>::compute(A, result);
   }
 };
@@ -598,7 +631,8 @@ struct MatrixMinusColumn {
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixMinusColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
-    result(I, 0) = -A(I, 0);
+
+    result.template set<I, 0>(-A.template get<I, 0>());
   }
 };
 
@@ -653,7 +687,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixMultiplyScalarColumn {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
-    result(I, J_idx) = scalar * mat(I, J_idx);
+
+    result.template set<I, J_idx>(scalar * mat.template get<I, J_idx>());
     MatrixMultiplyScalarColumn<T, M, N, I, J_idx - 1>::compute(scalar, mat,
                                                                result);
   }
@@ -664,7 +699,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixMultiplyScalarColumn<T, M, N, I, 0> {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
-    result(I, 0) = scalar * mat(I, 0);
+
+    result.template set<I, 0>(scalar * mat.template get<I, 0>());
   }
 };
 
@@ -739,21 +775,21 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 
 /* Matrix multiply Vector */
 // when J_idx < N
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J>
 struct MatrixVectorMultiplierCore {
-  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
-                   std::size_t i) {
-    return mat(i, J) * vec[J] +
-           MatrixVectorMultiplierCore<T, M, N, J - 1>::compute(mat, vec, i);
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
+
+    return mat.template get<I, J>() * vec[J] +
+           MatrixVectorMultiplierCore<T, M, N, I, J - 1>::compute(mat, vec);
   }
 };
 
 // if J == 0
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixVectorMultiplierCore<T, M, N, 0> {
-  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
-                   std::size_t i) {
-    return mat(i, 0) * vec[0];
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct MatrixVectorMultiplierCore<T, M, N, I, 0> {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
+    return mat.template get<I, 0>() * vec[0];
   }
 };
 
@@ -763,7 +799,7 @@ struct MatrixVectorMultiplierRow {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
     result[I] =
-        MatrixVectorMultiplierCore<T, M, N, N - 1>::compute(mat, vec, I);
+        MatrixVectorMultiplierCore<T, M, N, I, N - 1>::compute(mat, vec);
     MatrixVectorMultiplierRow<T, M, N, I - 1>::compute(mat, vec, result);
   }
 };
@@ -774,7 +810,7 @@ struct MatrixVectorMultiplierRow<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
     result[0] =
-        MatrixVectorMultiplierCore<T, M, N, N - 1>::compute(mat, vec, 0);
+        MatrixVectorMultiplierCore<T, M, N, 0, N - 1>::compute(mat, vec);
   }
 };
 
@@ -809,22 +845,24 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
 }
 
 // calculate if K_idx > 0
-template <typename T, std::size_t L, std::size_t N, std::size_t K_idx>
+template <typename T, std::size_t L, std::size_t N, std::size_t J,
+          std::size_t K_idx>
 struct VectorMatrixMultiplierCore {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
-                      Matrix<T, L, N> &result, std::size_t j) {
-    result(K_idx, j) = vec[K_idx] * mat(0, j);
-    VectorMatrixMultiplierCore<T, L, N, K_idx - 1>::compute(vec, mat, result,
-                                                            j);
+                      Matrix<T, L, N> &result) {
+
+    result.template set<K_idx, J>(vec[K_idx] * mat.template get<0, J>());
+    VectorMatrixMultiplierCore<T, L, N, J, K_idx - 1>::compute(vec, mat,
+                                                               result);
   }
 };
 
 // if K_idx = 0
-template <typename T, std::size_t L, std::size_t N>
-struct VectorMatrixMultiplierCore<T, L, N, 0> {
+template <typename T, std::size_t L, std::size_t N, std::size_t J>
+struct VectorMatrixMultiplierCore<T, L, N, J, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
-                      Matrix<T, L, N> &result, std::size_t j) {
-    result(0, j) = vec[0] * mat(0, j);
+                      Matrix<T, L, N> &result) {
+    result.template set<0, J>(vec[0] * mat.template get<0, J>());
   }
 };
 
@@ -833,7 +871,7 @@ template <typename T, std::size_t L, std::size_t N, std::size_t J>
 struct VectorMatrixMultiplierColumn {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, J);
+    VectorMatrixMultiplierCore<T, L, N, J, L - 1>::compute(vec, mat, result);
     VectorMatrixMultiplierColumn<T, L, N, J - 1>::compute(vec, mat, result);
   }
 };
@@ -843,7 +881,7 @@ template <typename T, std::size_t L, std::size_t N>
 struct VectorMatrixMultiplierColumn<T, L, N, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, 0);
+    VectorMatrixMultiplierCore<T, L, N, 0, L - 1>::compute(vec, mat, result);
   }
 };
 
@@ -883,7 +921,7 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t I>
 struct ColVectorMatrixMultiplierCore {
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
-    return vec[I] * mat(I, J) +
+    return vec[I] * mat.template get<I, J>() +
            ColVectorMatrixMultiplierCore<T, M, N, J, I - 1>::compute(vec, mat);
   }
 };
@@ -892,7 +930,7 @@ struct ColVectorMatrixMultiplierCore {
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct ColVectorMatrixMultiplierCore<T, M, N, J, 0> {
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
-    return vec[0] * mat(0, J);
+    return vec[0] * mat.template get<0, J>();
   }
 };
 
@@ -956,7 +994,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct MatrixMultiplierCore {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
-    return A(I, K_idx) * B(K_idx, J) +
+
+    return A.template get<I, K_idx>() * B.template get<K_idx, J>() +
            MatrixMultiplierCore<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
   }
 };
@@ -966,7 +1005,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
 struct MatrixMultiplierCore<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
-    return A(I, 0) * B(0, J);
+
+    return A.template get<I, 0>() * B.template get<0, J>();
   }
 };
 
@@ -976,7 +1016,9 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplierColumn {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J) = MatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(A, B);
+
+    result.template set<I, J>(
+        MatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(A, B));
     MatrixMultiplierColumn<T, M, K, N, I, J - 1>::compute(A, B, result);
   }
 };
@@ -987,7 +1029,9 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplierColumn<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) = MatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(A, B);
+
+    result.template set<I, 0>(
+        MatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(A, B));
   }
 };
 
@@ -1050,7 +1094,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
 struct MatrixTransposeColumn {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
-    result(J_idx, I) = A(I, J_idx);
+
+    result.template set<J_idx, I>(A.template get<I, J_idx>());
     MatrixTransposeColumn<T, M, N, I, J_idx - 1>::compute(A, result);
   }
 };
@@ -1059,7 +1104,8 @@ struct MatrixTransposeColumn {
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixTransposeColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
-    result(0, I) = A(I, 0);
+
+    result.template set<0, I>(A.template get<I, 0>());
   }
 };
 
@@ -1113,8 +1159,9 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct UpperTriangularMatrixMultiplierCore {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
+
     return (K_idx >= I)
-               ? (A(I, K_idx) * B(K_idx, J) +
+               ? (A.template get<I, K_idx>() * B.template get<K_idx, J>() +
                   UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
                                                       K_idx - 1>::compute(A, B))
                : static_cast<T>(0);
@@ -1127,6 +1174,7 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
                                            static_cast<std::size_t>(-1)> {
   static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
+
     return static_cast<T>(0);
   }
 };
@@ -1136,7 +1184,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
 struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, I> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
-    return A(I, I) * B(I, J);
+
+    return A.template get<I, I>() * B.template get<I, J>();
   }
 };
 
@@ -1146,9 +1195,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct UpperTriangularMatrixMultiplierColumn {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J) =
+
+    result.template set<I, J>(
         UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(
-            A, B);
+            A, B));
     UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, J - 1>::compute(
         A, B, result);
   }
@@ -1160,9 +1210,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) =
+
+    result.template set<I, 0>(
         UpperTriangularMatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(
-            A, B);
+            A, B));
   }
 };
 
@@ -1231,7 +1282,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct MatrixTransposeMultiplyMatrixCore {
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
-    return A(K_idx, I) * B(K_idx, J) +
+
+    return A.template get<K_idx, I>() * B.template get<K_idx, J>() +
            MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J,
                                              K_idx - 1>::compute(A, B);
   }
@@ -1242,7 +1294,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
 struct MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
-    return A(0, I) * B(0, J);
+
+    return A.template get<0, I>() * B.template get<0, J>();
   }
 };
 
@@ -1252,9 +1305,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixTransposeMultiplyMatrixColumn {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J) =
+
+    result.template set<I, J>(
         MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
     MatrixTransposeMultiplyMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
                                                                        result);
   }
@@ -1266,9 +1320,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixTransposeMultiplyMatrixColumn<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) =
+
+    result.template set<I, 0>(
         MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
   }
 };
 
@@ -1329,22 +1384,22 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
 
 /* Transpose Matrix multiply Vector  */
 // when M_idx < M
-template <typename T, std::size_t M, std::size_t N, std::size_t M_idx>
+template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
+          std::size_t M_idx>
 struct MatrixTransposeVectorMultiplierCore {
-  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
-                   std::size_t n) {
-    return mat(M_idx, n) * vec[M_idx] +
-           MatrixTransposeVectorMultiplierCore<T, M, N, M_idx - 1>::compute(
-               mat, vec, n);
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
+
+    return mat.template get<M_idx, N_idx>() * vec[M_idx] +
+           MatrixTransposeVectorMultiplierCore<T, M, N, N_idx,
+                                               M_idx - 1>::compute(mat, vec);
   }
 };
 
 // if M_idx == 0
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixTransposeVectorMultiplierCore<T, M, N, 0> {
-  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
-                   std::size_t n) {
-    return mat(0, n) * vec[0];
+template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
+struct MatrixTransposeVectorMultiplierCore<T, M, N, N_idx, 0> {
+  static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
+    return mat.template get<0, N_idx>() * vec[0];
   }
 };
 
@@ -1354,8 +1409,8 @@ struct MatrixTransposeVectorMultiplierColumn {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
     result[N_idx] =
-        MatrixTransposeVectorMultiplierCore<T, M, N, M - 1>::compute(mat, vec,
-                                                                     N_idx);
+        MatrixTransposeVectorMultiplierCore<T, M, N, N_idx, M - 1>::compute(
+            mat, vec);
     MatrixTransposeVectorMultiplierColumn<T, M, N, N_idx - 1>::compute(mat, vec,
                                                                        result);
   }
@@ -1366,8 +1421,8 @@ template <typename T, std::size_t M, std::size_t N>
 struct MatrixTransposeVectorMultiplierColumn<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
-    result[0] = MatrixTransposeVectorMultiplierCore<T, M, N, M - 1>::compute(
-        mat, vec, 0);
+    result[0] = MatrixTransposeVectorMultiplierCore<T, M, N, 0, M - 1>::compute(
+        mat, vec);
   }
 };
 
@@ -1409,7 +1464,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct MatrixMultiplyTransposeMatrixCore {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
-    return A(I, K_idx) * B(J, K_idx) +
+
+    return A.template get<I, K_idx>() * B.template get<J, K_idx>() +
            MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J,
                                              K_idx - 1>::compute(A, B);
   }
@@ -1420,7 +1476,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
 struct MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
-    return A(I, 0) * B(J, 0);
+
+    return A.template get<I, 0>() * B.template get<J, 0>();
   }
 };
 
@@ -1430,9 +1487,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplyTransposeMatrixColumn {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J) =
+
+    result.template set<I, J>(
         MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
     MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
                                                                        result);
   }
@@ -1444,9 +1502,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) =
+
+    result.template set<I, 0>(
         MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
   }
 };
 
@@ -1515,7 +1574,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixRealToComplexColumn {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    To_matrix(I, J_idx).real = From_matrix(I, J_idx);
+
+    To_matrix(I, J_idx).real = From_matrix.template get<I, J_idx>();
     MatrixRealToComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                               To_matrix);
   }
@@ -1526,7 +1586,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixRealToComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    To_matrix(I, 0).real = From_matrix(I, 0);
+
+    To_matrix(I, 0).real = From_matrix.template get<I, 0>();
   }
 };
 
@@ -1589,7 +1650,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixRealFromComplexColumn {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, J_idx) = From_matrix(I, J_idx).real;
+
+    To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).real);
     MatrixRealFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                                 To_matrix);
   }
@@ -1600,7 +1662,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixRealFromComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, 0) = From_matrix(I, 0).real;
+
+    To_matrix.template set<I, 0>(From_matrix(I, 0).real);
   }
 };
 
@@ -1664,7 +1727,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixImagFromComplexColumn {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, J_idx) = From_matrix(I, J_idx).imag;
+
+    To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).imag);
     MatrixImagFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                                 To_matrix);
   }
@@ -1675,7 +1739,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixImagFromComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, 0) = From_matrix(I, 0).imag;
+
+    To_matrix.template set<I, 0>(From_matrix(I, 0).imag);
   }
 };
 
