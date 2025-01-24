@@ -1464,7 +1464,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct MatrixMultiplyTransposeMatrixCore {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
-    return A(I, K_idx) * B(J, K_idx) +
+
+    return A.template get<I, K_idx>() * B.template get<J, K_idx>() +
            MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J,
                                              K_idx - 1>::compute(A, B);
   }
@@ -1475,7 +1476,8 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
 struct MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
-    return A(I, 0) * B(J, 0);
+
+    return A.template get<I, 0>() * B.template get<J, 0>();
   }
 };
 
@@ -1485,9 +1487,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplyTransposeMatrixColumn {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    result(I, J) =
+
+    result.template set<I, J>(
         MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
     MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
                                                                        result);
   }
@@ -1499,9 +1502,10 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    result(I, 0) =
+
+    result.template set<I, 0>(
         MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
-                                                                            B);
+                                                                            B));
   }
 };
 
@@ -1570,7 +1574,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixRealToComplexColumn {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    To_matrix(I, J_idx).real = From_matrix(I, J_idx);
+
+    To_matrix(I, J_idx).real = From_matrix.template get<I, J_idx>();
     MatrixRealToComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                               To_matrix);
   }
@@ -1581,7 +1586,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixRealToComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    To_matrix(I, 0).real = From_matrix(I, 0);
+
+    To_matrix(I, 0).real = From_matrix.template get<I, 0>();
   }
 };
 
@@ -1644,7 +1650,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixRealFromComplexColumn {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, J_idx) = From_matrix(I, J_idx).real;
+
+    To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).real);
     MatrixRealFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                                 To_matrix);
   }
@@ -1655,7 +1662,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixRealFromComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, 0) = From_matrix(I, 0).real;
+
+    To_matrix.template set<I, 0>(From_matrix(I, 0).real);
   }
 };
 
@@ -1719,7 +1727,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct MatrixImagFromComplexColumn {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, J_idx) = From_matrix(I, J_idx).imag;
+
+    To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).imag);
     MatrixImagFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
                                                                 To_matrix);
   }
@@ -1730,7 +1739,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I>
 struct MatrixImagFromComplexColumn<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    To_matrix(I, 0) = From_matrix(I, 0).imag;
+
+    To_matrix.template set<I, 0>(From_matrix(I, 0).imag);
   }
 };
 
