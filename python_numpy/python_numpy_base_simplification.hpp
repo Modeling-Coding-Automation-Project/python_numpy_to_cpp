@@ -177,76 +177,13 @@ inline auto make_SparseMatrix(T value_1, Args... args)
   return result;
 }
 
-namespace MakeSparseMatrixOperation {
-
-// when J_idx < N
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
-          std::size_t I, std::size_t J_idx>
-struct SparseMatrixSetDenseMatrixColumn {
-  static void
-  compute(Matrix<DefSparse, T, M, N, SparseAvailable> &sparse_matrix,
-          const Matrix<DefDense, T, M, N> &dense_matrix) {
-
-    sparse_matrix.template set<I, J_idx>(dense_matrix.template get<I, J_idx>());
-
-    SparseMatrixSetDenseMatrixColumn<T, M, N, SparseAvailable, I,
-                                     J_idx - 1>::compute(sparse_matrix,
-                                                         dense_matrix);
-  }
-};
-
-// column recursion termination
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
-          std::size_t I>
-struct SparseMatrixSetDenseMatrixColumn<T, M, N, SparseAvailable, I, 0> {
-  static void
-  compute(Matrix<DefSparse, T, M, N, SparseAvailable> &sparse_matrix,
-          const Matrix<DefDense, T, M, N> &dense_matrix) {
-
-    sparse_matrix.template set<I, 0>(dense_matrix.template get<I, 0>());
-  }
-};
-
-// when I_idx < M
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
-          std::size_t I_idx>
-struct SparseMatrixSetDenseMatrixRow {
-  static void
-  compute(Matrix<DefSparse, T, M, N, SparseAvailable> &sparse_matrix,
-          const Matrix<DefDense, T, M, N> &dense_matrix) {
-    SparseMatrixSetDenseMatrixColumn<T, M, N, SparseAvailable, I_idx,
-                                     N - 1>::compute(sparse_matrix,
-                                                     dense_matrix);
-    SparseMatrixSetDenseMatrixRow<T, M, N, SparseAvailable, I_idx - 1>::compute(
-        sparse_matrix, dense_matrix);
-  }
-};
-
-// row recursion termination
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
-struct SparseMatrixSetDenseMatrixRow<T, M, N, SparseAvailable, 0> {
-  static void
-  compute(Matrix<DefSparse, T, M, N, SparseAvailable> &sparse_matrix,
-          const Matrix<DefDense, T, M, N> &dense_matrix) {
-    SparseMatrixSetDenseMatrixColumn<T, M, N, SparseAvailable, 0,
-                                     N - 1>::compute(sparse_matrix,
-                                                     dense_matrix);
-  }
-};
-
-} // namespace MakeSparseMatrixOperation
-
 template <typename T, std::size_t M, std::size_t N, typename... Args>
 inline auto
 make_SparseMatrixFromDenseMatrix(Matrix<DefDense, T, M, N> &dense_matrix)
     -> Matrix<DefSparse, T, M, N, DenseAvailable<M, N>> {
 
-  Matrix<DefSparse, T, M, N, DenseAvailable<M, N>> result;
-
-  MakeSparseMatrixOperation::SparseMatrixSetDenseMatrixRow<
-      T, M, N, DenseAvailable<M, N>, M - 1>::compute(result, dense_matrix);
-
-  return result;
+  return Matrix<DefSparse, T, M, N, DenseAvailable<M, N>>(
+      create_compiled_sparse(dense_matrix.matrix));
 }
 
 } // namespace PythonNumpy
