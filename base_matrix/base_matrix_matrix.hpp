@@ -845,22 +845,24 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
 }
 
 // calculate if K_idx > 0
-template <typename T, std::size_t L, std::size_t N, std::size_t K_idx>
+template <typename T, std::size_t L, std::size_t N, std::size_t J,
+          std::size_t K_idx>
 struct VectorMatrixMultiplierCore {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
-                      Matrix<T, L, N> &result, std::size_t j) {
-    result(K_idx, j) = vec[K_idx] * mat(0, j);
-    VectorMatrixMultiplierCore<T, L, N, K_idx - 1>::compute(vec, mat, result,
-                                                            j);
+                      Matrix<T, L, N> &result) {
+
+    result.template set<K_idx, J>(vec[K_idx] * mat.template get<0, J>());
+    VectorMatrixMultiplierCore<T, L, N, J, K_idx - 1>::compute(vec, mat,
+                                                               result);
   }
 };
 
 // if K_idx = 0
-template <typename T, std::size_t L, std::size_t N>
-struct VectorMatrixMultiplierCore<T, L, N, 0> {
+template <typename T, std::size_t L, std::size_t N, std::size_t J>
+struct VectorMatrixMultiplierCore<T, L, N, J, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
-                      Matrix<T, L, N> &result, std::size_t j) {
-    result(0, j) = vec[0] * mat(0, j);
+                      Matrix<T, L, N> &result) {
+    result.template set<0, J>(vec[0] * mat.template get<0, J>());
   }
 };
 
@@ -869,7 +871,7 @@ template <typename T, std::size_t L, std::size_t N, std::size_t J>
 struct VectorMatrixMultiplierColumn {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, J);
+    VectorMatrixMultiplierCore<T, L, N, J, L - 1>::compute(vec, mat, result);
     VectorMatrixMultiplierColumn<T, L, N, J - 1>::compute(vec, mat, result);
   }
 };
@@ -879,7 +881,7 @@ template <typename T, std::size_t L, std::size_t N>
 struct VectorMatrixMultiplierColumn<T, L, N, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, L - 1>::compute(vec, mat, result, 0);
+    VectorMatrixMultiplierCore<T, L, N, 0, L - 1>::compute(vec, mat, result);
   }
 };
 
