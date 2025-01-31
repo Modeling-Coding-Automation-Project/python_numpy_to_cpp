@@ -117,24 +117,24 @@ public:
     return Matrix<DefDense, T, M, N>(Base::Matrix::Matrix<T, M, N>::ones());
   }
 
-  inline auto transpose(void) -> Matrix<DefDense, T, N, M> {
+  inline auto transpose(void) const -> Matrix<DefDense, T, N, M> {
     return Matrix<DefDense, T, N, M>(
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
-  inline auto create_complex(void) -> Matrix<DefDense, Complex<T>, M, N> {
+  inline auto create_complex(void) const -> Matrix<DefDense, Complex<T>, M, N> {
 
     return Matrix<DefDense, Complex<T>, M, N>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
-  inline auto real(void) -> Matrix<DefDense, Value_Type, M, N> {
+  inline auto real(void) const -> Matrix<DefDense, Value_Type, M, N> {
     return Matrix<DefDense, Value_Type, M, N>(
         ComplexOperation::GetRealFromComplexDenseMatrix<
             Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
   }
 
-  inline auto imag(void) -> Matrix<DefDense, Value_Type, M, N> {
+  inline auto imag(void) const -> Matrix<DefDense, Value_Type, M, N> {
     return Matrix<DefDense, Value_Type, M, N>(
         ComplexOperation::GetImagFromComplexDenseMatrix<
             Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
@@ -263,26 +263,26 @@ public:
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
-  inline auto create_dense(void) -> Matrix<DefDense, T, M, M> {
+  inline auto create_dense(void) const -> Matrix<DefDense, T, M, M> {
     return Matrix<DefDense, T, M, M>(
         Base::Matrix::output_dense_matrix(this->matrix));
   }
 
-  inline auto transpose(void) -> Matrix<DefDiag, T, M> { return *this; }
+  inline auto transpose(void) const -> Matrix<DefDiag, T, M> { return *this; }
 
-  inline auto create_complex(void) -> Matrix<DefDiag, Complex<T>, M> {
+  inline auto create_complex(void) const -> Matrix<DefDiag, Complex<T>, M> {
 
     return Matrix<DefDiag, Complex<T>, M>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
-  inline auto real(void) -> Matrix<DefDiag, Value_Type, M> {
+  inline auto real(void) const -> Matrix<DefDiag, Value_Type, M> {
     return Matrix<DefDiag, Value_Type, M>(
         ComplexOperation::GetRealFromComplexDiagMatrix<
             Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
   }
 
-  inline auto imag(void) -> Matrix<DefDiag, Value_Type, M> {
+  inline auto imag(void) const -> Matrix<DefDiag, Value_Type, M> {
     return Matrix<DefDiag, Value_Type, M>(
         ComplexOperation::GetImagFromComplexDiagMatrix<
             Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
@@ -353,7 +353,7 @@ public:
   }
 
   /* Function */
-  inline auto create_dense(void) -> Matrix<DefDense, T, M, N> {
+  inline auto create_dense(void) const -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>(
         Base::Matrix::output_dense_matrix(this->matrix));
   }
@@ -408,7 +408,7 @@ public:
     return this->matrix.values[value_index];
   }
 
-  inline auto transpose(void)
+  inline auto transpose(void) const
       -> Matrix<DefSparse, T, N, M, SparseAvailableTranspose<SparseAvailable>> {
 
     return Matrix<DefSparse, T, N, M,
@@ -416,14 +416,14 @@ public:
         Base::Matrix::output_matrix_transpose(this->matrix));
   }
 
-  inline auto create_complex(void)
+  inline auto create_complex(void) const
       -> Matrix<DefSparse, Complex<T>, M, N, SparseAvailable> {
 
     return Matrix<DefSparse, Complex<T>, M, N, SparseAvailable>(
         Base::Matrix::convert_matrix_real_to_complex(this->matrix));
   }
 
-  inline auto real(void)
+  inline auto real(void) const
       -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
     return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
         ComplexOperation::GetRealFromComplexSparseMatrix<
@@ -431,7 +431,7 @@ public:
             IS_COMPLEX>::get(this->matrix));
   }
 
-  inline auto imag(void)
+  inline auto imag(void) const
       -> Matrix<DefSparse, Value_Type, M, N, SparseAvailable> {
     return Matrix<DefSparse, Value_Type, M, N, SparseAvailable>(
         ComplexOperation::GetImagFromComplexSparseMatrix<
