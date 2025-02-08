@@ -1770,6 +1770,39 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Empty and Sparse.");
 
+    /* Block結合 */
+    auto ABCE_block = concatenate_block(A, B, C, Empty);
+    ConcatenateBlock_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
+    ABCE_block_t = ABCE_block;
+    auto ABCE_block_t_dense = ABCE_block_t.create_dense();
+
+    Matrix<DefDense, T, 6, 6> ABCE_block_answer({
+        {1, 2, 3, 1, 0, 0},
+        {5, 4, 6, 0, 2, 0},
+        {9, 8, 7, 0, 0, 3},
+        {1, 0, 0, 0, 0, 0},
+        {3, 0, 8, 0, 0, 0},
+        {0, 2, 4, 0, 0, 0}
+        });
+
+    tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate block Dense, Diag, Sparse and Empty.");
+
+    update_block_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
+    auto ABCE_block_dense = ABCE_block.create_dense();
+
+    Matrix<DefDense, T, 6, 6> ABCE_block_answer_2({
+        {1, 2, 3, 2, 0, 0},
+        {5, 4, 6, 0, 4, 0},
+        {9, 8, 7, 0, 0, 6},
+        {1, 0, 0, 0, 0, 0},
+        {3, 0, 8, 0, 0, 0},
+        {0, 2, 4, 0, 0, 0}
+        });
+
+    tester.expect_near(ABCE_block_dense.matrix.data, ABCE_block_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
+
 
     tester.throw_error_if_test_failed();
 }
