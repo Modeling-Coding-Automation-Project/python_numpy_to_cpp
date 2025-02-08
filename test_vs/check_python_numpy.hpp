@@ -1922,7 +1922,8 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         >K_s({ 1, 8, 3, 3, 4 });
 
     /* コレスキー分解 */
-    static auto Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
+    LinalgSolverCholesky_Type<decltype(K)> Chol_solver;
+    Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
     auto A_ch_dense = A_ch.create_dense();
@@ -1935,8 +1936,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     tester.expect_near(A_ch_dense.matrix.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverCholesky solve Dense.");
 
-
-
+    /* ゼロフラグの確認 */
     auto Zeros = make_DenseMatrixZeros<T, 3, 3>();
 
     static auto Chol_solver_zero = make_LinalgSolverCholesky<decltype(Zeros)>();
@@ -1957,7 +1957,10 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     tester.expect_near(zero_div_flag, true, 0,
         "check LinalgSolverCholesky zero_div_flag.");
 
-    static auto Chol_solver_B = make_LinalgSolverCholesky<decltype(B)>();
+    /* コレスキー分解　対角 */
+    LinalgSolverCholesky_Type<decltype(B)> Chol_solver_B;
+    Chol_solver_B = make_LinalgSolverCholesky<decltype(B)>();
+
     auto B_ch = Chol_solver_B.solve(B);
     auto B_ch_dense = B_ch.create_dense();
 
@@ -1970,7 +1973,10 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     tester.expect_near(B_ch_dense.matrix.data, B_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverCholesky solve Diag.");
 
-    static auto Chol_solver_s = make_LinalgSolverCholesky<decltype(K_s)>();
+    /* コレスキー分解 スパース */
+    LinalgSolverCholesky_Type<decltype(K_s)> Chol_solver_s;
+    Chol_solver_s = make_LinalgSolverCholesky<decltype(K_s)>();
+
     auto K_s_ch = Chol_solver_s.solve(K_s);
     auto K_s_ch_dense = K_s_ch.create_dense();
 

@@ -140,6 +140,10 @@ inline auto make_LinalgSolverCholesky(void)
                               typename A_Type::SparseAvailable_Type>();
 }
 
+/* LinalgSolverCholesky Type */
+template <typename A_Type>
+using LinalgSolverCholesky_Type = decltype(make_LinalgSolverCholesky<A_Type>());
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_LINALG_CHOLESKY_HPP__
