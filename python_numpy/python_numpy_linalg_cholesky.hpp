@@ -131,6 +131,10 @@ public:
   /* Function */
   inline bool get_zero_div_flag() const { return this->_zero_div_flag; }
 
+  inline void set_division_min(const _T &division_min_in) {
+    this->division_min = division_min_in;
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = A_Type::COLS;

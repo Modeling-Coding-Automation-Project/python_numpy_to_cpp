@@ -22,19 +22,17 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverQR() { this->_QR_decomposer.division_min = this->_division_min; }
+  LinalgSolverQR() {}
 
   /* Copy Constructor */
   LinalgSolverQR(const LinalgSolverQR<T, M, N> &other)
       : _QR_decomposer(other._QR_decomposer),
-        _R_triangular(other._R_triangular), _division_min(other._division_min) {
-  }
+        _R_triangular(other._R_triangular) {}
 
   LinalgSolverQR<T, M, N> &operator=(const LinalgSolverQR<T, M, N> &other) {
     if (this != &other) {
       this->_QR_decomposer = other._QR_decomposer;
       this->_R_triangular = other._R_triangular;
-      this->_division_min = other._division_min;
     }
     return *this;
   }
@@ -42,14 +40,12 @@ public:
   /* Move Constructor */
   LinalgSolverQR(LinalgSolverQR<T, M, N> &&other) noexcept
       : _QR_decomposer(std::move(other._QR_decomposer)),
-        _R_triangular(std::move(other._R_triangular)),
-        _division_min(std::move(other._division_min)) {}
+        _R_triangular(std::move(other._R_triangular)) {}
 
   LinalgSolverQR<T, M, N> &operator=(LinalgSolverQR<T, M, N> &&other) noexcept {
     if (this != &other) {
       this->_QR_decomposer = std::move(other._QR_decomposer);
       this->_R_triangular = std::move(other._R_triangular);
-      this->_division_min = std::move(other._division_min);
     }
     return *this;
   }
@@ -80,6 +76,10 @@ public:
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
   }
 
+  inline void set_division_min(const T &division_min) {
+    this->_QR_decomposer.division_min = division_min;
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = M;
@@ -92,8 +92,6 @@ private:
       T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
       Base::Matrix::UpperTriangularRowPointers<M, N>>
       _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
-
-  T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_QR);
 };
 
 template <typename T, std::size_t M> class LinalgSolverQRDiag {
@@ -142,23 +140,19 @@ template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 class LinalgSolverQRSparse {
 public:
   /* Constructor */
-  LinalgSolverQRSparse() {
-    this->_QR_decomposer.division_min = this->_division_min;
-  }
+  LinalgSolverQRSparse() {}
 
   /* Copy Constructor */
   LinalgSolverQRSparse(
       const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other)
       : _QR_decomposer(other._QR_decomposer),
-        _R_triangular(other._R_triangular), _division_min(other._division_min) {
-  }
+        _R_triangular(other._R_triangular) {}
 
   LinalgSolverQRSparse<T, M, N, SparseAvailable> &
   operator=(const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other) {
     if (this != &other) {
       this->_QR_decomposer = other._QR_decomposer;
       this->_R_triangular = other._R_triangular;
-      this->_division_min = other._division_min;
     }
     return *this;
   }
@@ -167,25 +161,23 @@ public:
   LinalgSolverQRSparse(
       LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept
       : _QR_decomposer(std::move(other._QR_decomposer)),
-        _R_triangular(std::move(other._R_triangular)),
-        _division_min(std::move(other._division_min)) {}
+        _R_triangular(std::move(other._R_triangular)) {}
 
   LinalgSolverQRSparse<T, M, N, SparseAvailable> &
   operator=(LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_QR_decomposer = std::move(other._QR_decomposer);
       this->_R_triangular = std::move(other._R_triangular);
-      this->_division_min = std::move(other._division_min);
     }
     return *this;
   }
 
-  /* Solve function */
+public:
+  /* Function */
   inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->_QR_decomposer.solve(A.matrix);
   }
 
-  /* Get Q, R */
   inline auto get_R(void)
       -> Matrix<DefSparse, T, M, N,
                 CreateSparseAvailableFromIndicesAndPointers<
@@ -202,6 +194,10 @@ public:
 
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
     return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
+  }
+
+  inline void set_division_min(const T &division_min) {
+    this->_QR_decomposer.division_min = division_min;
   }
 
 public:
@@ -223,8 +219,6 @@ private:
       T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
       Base::Matrix::UpperTriangularRowPointers<M, N>>
       _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
-
-  T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_QR);
 };
 
 /* make LinalgSolverQR */

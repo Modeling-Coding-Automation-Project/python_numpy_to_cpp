@@ -1896,6 +1896,7 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
 
     /* LU分解 */
     LinalgSolverLU_Type<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
+    A_LU_solver.set_division_min(static_cast<T>(1.0e-10));
     A_LU_solver.solve(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
@@ -1931,6 +1932,8 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         "check LinalgSolverLU L multiply U Diag.");
 
 
+
+
     tester.throw_error_if_test_failed();
 }
 
@@ -1957,6 +1960,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
 
     /* コレスキー分解 */
     LinalgSolverCholesky_Type<decltype(K)> Chol_solver;
+    Chol_solver.set_division_min(static_cast<T>(1.0e-10));
     Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
@@ -2279,6 +2283,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
     /* QR分解 */
     LinalgSolverQR_Type<decltype(A)> QR_solver_dense = make_LinalgSolverQR<decltype(A)>();
+    QR_solver_dense.set_division_min(static_cast<T>(1.0e-10F));
     QR_solver_dense.solve(A);
 
     auto Q = QR_solver_dense.get_Q();

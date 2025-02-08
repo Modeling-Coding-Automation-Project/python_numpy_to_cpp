@@ -44,7 +44,6 @@ public:
       typename std::enable_if<Is_Dense_Matrix<U>::value>::type * = nullptr>
   LinalgSolverLU() {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
-    this->_LU_decomposer.division_min = this->division_min;
   }
 
   template <typename U = A_Type,
@@ -56,18 +55,16 @@ public:
       typename std::enable_if<Is_Sparse_Matrix<U>::value>::type * = nullptr>
   LinalgSolverLU() {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
-    this->_LU_decomposer.division_min = this->division_min;
   }
 
   /* Copy Constructor */
   LinalgSolverLU(const LinalgSolverLU<A_Type> &other)
-      : division_min(other.division_min), _LU_decomposer(other._LU_decomposer),
+      : _LU_decomposer(other._LU_decomposer),
         _L_triangular(other._L_triangular), _U_triangular(other._U_triangular) {
   }
 
   LinalgSolverLU<A_Type> &operator=(const LinalgSolverLU<A_Type> &other) {
     if (this != &other) {
-      this->division_min = other.division_min;
       this->_LU_decomposer = other._LU_decomposer;
       this->_L_triangular = other._L_triangular;
       this->_U_triangular = other._U_triangular;
@@ -77,14 +74,13 @@ public:
 
   /* Move Constructor */
   LinalgSolverLU(LinalgSolverLU<A_Type> &&other) noexcept
-      : division_min(std::move(other.division_min)),
-        _LU_decomposer(std::move(other._LU_decomposer)),
+      : _LU_decomposer(std::move(other._LU_decomposer)),
         _L_triangular(std::move(other._L_triangular)),
         _U_triangular(std::move(other._U_triangular)) {}
 
   LinalgSolverLU<A_Type> &operator=(LinalgSolverLU<A_Type> &&other) noexcept {
     if (this != &other) {
-      this->division_min = std::move(other.division_min);
+
       this->_LU_decomposer = std::move(other._LU_decomposer);
       this->_L_triangular = std::move(other._L_triangular);
       this->_U_triangular = std::move(other._U_triangular);
@@ -132,6 +128,11 @@ public:
 
   inline _T get_det() { return this->_LU_decomposer.get_determinant(); }
 
+  /* Set */
+  inline void set_division_min(const _T &division_min) {
+    this->_LU_decomposer.division_min = division_min;
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = A_Type::COLS;
@@ -139,10 +140,6 @@ public:
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<_T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
-
-public:
-  /* Variable */
-  _T division_min = static_cast<_T>(DEFAULT_DIVISION_MIN_LINALG_LU);
 
 private:
   /* Variable */
