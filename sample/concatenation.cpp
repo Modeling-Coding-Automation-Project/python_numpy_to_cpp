@@ -16,6 +16,8 @@ int main() {
                                         ColumnAvailable<false, true, true>>>(
           1.0, 3.0, 8.0, 2.0, 4.0);
 
+  auto E = make_SparseMatrixEmpty<double, 3, 3>();
+
   auto vertical = concatenate_vertically(A, C);
 
   auto vertical_dense = vertical.create_dense();
@@ -77,6 +79,35 @@ int main() {
   for (size_t j = 0; j < A_h_B_dense.cols(); ++j) {
     for (size_t i = 0; i < A_h_B_dense.rows(); ++i) {
       std::cout << A_h_B_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  /* Concatenate Block */
+  using ABCE_Type =
+      ConcatenateBlock_Type<decltype(A), decltype(B), decltype(C), decltype(E)>;
+
+  ABCE_Type ABCE = concatenate_block(A, B, C, E);
+  auto ABCE_dense = ABCE.create_dense();
+
+  std::cout << "ABCE = " << std::endl;
+  for (size_t j = 0; j < ABCE_dense.cols(); ++j) {
+    for (size_t i = 0; i < ABCE_dense.rows(); ++i) {
+      std::cout << ABCE_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  /* Update Block */
+  update_block_concatenated_matrix(ABCE, A, 2.0 * B, C, E);
+  ABCE_dense = ABCE.create_dense();
+
+  std::cout << "ABCE = " << std::endl;
+  for (size_t j = 0; j < ABCE_dense.cols(); ++j) {
+    for (size_t i = 0; i < ABCE_dense.rows(); ++i) {
+      std::cout << ABCE_dense(j, i) << " ";
     }
     std::cout << std::endl;
   }
