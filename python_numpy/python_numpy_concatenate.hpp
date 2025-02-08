@@ -6,6 +6,7 @@
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
+#include <utility>
 
 namespace PythonNumpy {
 
@@ -464,6 +465,15 @@ concatenate_horizontally(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                                                        SparseAvailable_B>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
 }
+
+/* Concatenation Type */
+template <typename A_Type, typename B_Type>
+using ConcatenateVertically_Type = decltype(concatenate_vertically(
+    std::declval<A_Type>(), std::declval<B_Type>()));
+
+template <typename A_Type, typename B_Type>
+using ConcatenateHorizontally_Type = decltype(concatenate_horizontally(
+    std::declval<A_Type>(), std::declval<B_Type>()));
 
 } // namespace PythonNumpy
 
