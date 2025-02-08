@@ -809,8 +809,6 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_C_x.matrix.data, C_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Sparse and Sparse.");
 
-#if 0
-
     /* 矩形　左除算 */
     Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
     Matrix<DefDiag, T, 4> BL({ 1, 2, 3, 4 });
@@ -823,7 +821,9 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         >
         CL({ 1, 3, 2, 8, 4, 1 });
 
-    static auto AL_AL_lstsq_solver = make_LinalgLstsqSolver(AL, AL);
+    static auto AL_AL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(AL)>();
+    AL_AL_lstsq_solver.set_division_min(static_cast<T>(1.0e-10));
+    AL_AL_lstsq_solver.set_decay_rate(static_cast<T>(0));
 
     auto AL_AL_x = AL_AL_lstsq_solver.solve(AL, AL);
 
@@ -836,7 +836,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_AL_x.matrix.data, AL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Dense.");
 
-    static auto AL_BL_lstsq_solver = make_LinalgLstsqSolver(AL, BL);
+    static auto AL_BL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(BL)>();
 
     auto AL_BL_x = AL_BL_lstsq_solver.solve(AL, BL);
 
@@ -849,7 +849,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_BL_x.matrix.data, AL_BL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Diag.");
 
-    static auto AL_CL_lstsq_solver = make_LinalgLstsqSolver(AL, CL);
+    static auto AL_CL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(CL)>();
 
     auto AL_CL_x = AL_CL_lstsq_solver.solve(AL, CL);
 
@@ -862,7 +862,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_CL_x.matrix.data, AL_CL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Sparse.");
 
-    static auto CL_AL_lstsq_solver = make_LinalgLstsqSolver(CL, AL);
+    static auto CL_AL_lstsq_solver = make_LinalgLstsqSolver<decltype(CL), decltype(AL)>();
 
     auto CL_AL_x = CL_AL_lstsq_solver.solve(CL, AL);
 
@@ -875,7 +875,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(CL_AL_x.matrix.data, CL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Sparse and Dense.");
 
-    static auto CL_CL_lstsq_solver = make_LinalgLstsqSolver(CL, CL);
+    static auto CL_CL_lstsq_solver = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
 
     auto CL_CL_x = CL_CL_lstsq_solver.solve(CL, CL);
 
@@ -889,7 +889,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         "check LinalgLstsqSolver solve Sparse and Sparse.");
 
     /* 逆行列 */
-    static auto A_inv_solver = make_LinalgSolver(A);
+    static auto A_inv_solver = make_LinalgSolverInv<decltype(A)>();
 
     auto A_Inv = A_inv_solver.inv(A);
 
@@ -902,7 +902,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_Inv.matrix.data, A_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Dense.");
 
-    static auto B_inv_solver = make_LinalgSolver(B);
+    static auto B_inv_solver = make_LinalgSolverInv<decltype(B)>();
 
     auto B_Inv = B_inv_solver.inv(B);
     B_Inv = B_inv_solver.get_answer();
@@ -917,7 +917,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_Inv_dense.matrix.data, B_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Diag.");
 
-    static auto C_inv_solver = make_LinalgSolver(C);
+    static auto C_inv_solver = make_LinalgSolverInv<decltype(C)>();
 
     auto C_Inv = C_inv_solver.inv(C);
 
@@ -929,6 +929,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(C_Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse.");
+
+#if 0
 
     /* 逆行列 複素数 */
     Matrix<DefDense, Complex<T>, 3, 3> A_comp({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });

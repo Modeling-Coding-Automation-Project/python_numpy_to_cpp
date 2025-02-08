@@ -403,12 +403,12 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverInv(void)
     -> LinalgSolver<typename A_Type::Value_Type, A_Type::COLS, A_Type::COLS,
-                    typename A_Type::SparseAvailable,
-                    typename A_Type::SparseAvailable> {
+                    typename A_Type::SparseAvailable_Type,
+                    typename A_Type::SparseAvailable_Type> {
 
-  return LinalgSolver<A_Type::Value_Type, A_Type::COLS, A_Type::COLS,
-                      typename A_Type::SparseAvailable,
-                      typename A_Type::SparseAvailable>();
+  return LinalgSolver<typename A_Type::Value_Type, A_Type::COLS, A_Type::COLS,
+                      typename A_Type::SparseAvailable_Type,
+                      typename A_Type::SparseAvailable_Type>();
 }
 
 template <typename A_Type, typename std::enable_if<
@@ -585,42 +585,6 @@ public:
   /* Constructor */
   LinalgLstsqSolver() {}
 
-  LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                    const Matrix<DefDense, T, M, K> &B) {
-
-    this->solve(A, B);
-  }
-
-  LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                    const Matrix<DefDiag, T, M> &B) {
-
-    this->solve(A, B);
-  }
-
-  LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
-
-    this->solve(A, B);
-  }
-
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                    const Matrix<DefDense, T, M, K> &B) {
-
-    this->solve(A, B);
-  }
-
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                    const Matrix<DefDiag, T, M> &B) {
-
-    this->solve(A, B);
-  }
-
-  LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B) {
-
-    this->solve(A, B);
-  }
-
   /* Copy Constructor */
   LinalgLstsqSolver(const LinalgLstsqSolver<T, M, N, K, SparseAvailable_A,
                                             SparseAvailable_B> &other)
@@ -750,6 +714,14 @@ public:
     return Matrix<DefDense, T, N, K>(this->X_1);
   }
 
+  inline void set_decay_rate(const T &decay_rate_in) {
+    this->decay_rate = decay_rate_in;
+  }
+
+  inline void set_division_min(const T &division_min_in) {
+    this->division_min = division_min_in;
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = N;
@@ -766,73 +738,100 @@ public:
 };
 
 /* make LinalgLstsqSolver */
-template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, N>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, N>>
-inline auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                                   const Matrix<DefDense, T, M, K> &B)
-    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, B_Type::ROWS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, B_Type::ROWS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t K = 1,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, N>,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, M>>
-inline auto make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                                   const Matrix<DefDiag, T, M> &B)
-    -> LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, A_Type::COLS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, A_Type::COLS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename SparseAvailable_A = SparseAvailable_NoUse<M, N>,
-          typename SparseAvailable_B>
-inline auto
-make_LinalgLstsqSolver(const Matrix<DefDense, T, M, N> &A,
-                       const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
-    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, B_Type::ROWS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, B_Type::ROWS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename SparseAvailable_A,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, N>>
-inline auto
-make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                       const Matrix<DefDense, T, M, K> &B)
-    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, B_Type::ROWS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, B_Type::ROWS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t K = 1,
-          typename SparseAvailable_A,
-          typename SparseAvailable_B = SparseAvailable_NoUse<M, N>>
-inline auto
-make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                       const Matrix<DefDiag, T, M> &B)
-    -> LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, A_Type::COLS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, M, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, A_Type::COLS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
-template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename SparseAvailable_A, typename SparseAvailable_B>
-inline auto
-make_LinalgLstsqSolver(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
-                       const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
-    -> LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B> {
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgLstsqSolver(void)
+    -> LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                         A_Type::ROWS, B_Type::ROWS,
+                         typename A_Type::SparseAvailable_Type,
+                         typename B_Type::SparseAvailable_Type> {
 
-  return LinalgLstsqSolver<T, M, N, K, SparseAvailable_A, SparseAvailable_B>(A,
-                                                                             B);
+  return LinalgLstsqSolver<typename A_Type::Value_Type, A_Type::COLS,
+                           A_Type::ROWS, B_Type::ROWS,
+                           typename A_Type::SparseAvailable_Type,
+                           typename B_Type::SparseAvailable_Type>();
 }
 
 } // namespace PythonNumpy
