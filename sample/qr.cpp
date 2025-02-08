@@ -16,10 +16,14 @@ int main() {
                                         ColumnAvailable<false, true, true>>>(
           1.0, 3.0, 8.0, 2.0, 4.0);
 
-  static auto solver = make_LinalgSolverQR(A);
-  solver.solve(A);
-  auto Q = solver.get_Q();
-  auto R = solver.get_R();
+  auto solver = make_LinalgSolverQR<decltype(A)>();
+  // Or, you can use "LinalgSolverQR_Type" to declare the type of
+  // LinalgSolverQR.
+  LinalgSolverQR_Type<decltype(A)> solver_t = solver;
+
+  solver_t.solve(A);
+  auto Q = solver_t.get_Q();
+  auto R = solver_t.get_R();
 
   std::cout << "Q = " << std::endl;
   for (size_t j = 0; j < Q.cols(); ++j) {
