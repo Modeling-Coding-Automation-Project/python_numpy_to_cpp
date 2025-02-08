@@ -2278,7 +2278,8 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
 
     /* QR分解 */
-    static auto QR_solver_dense = make_LinalgSolverQR(A);
+    LinalgSolverQR_Type<decltype(A)> QR_solver_dense = make_LinalgSolverQR<decltype(A)>();
+    QR_solver_dense.solve(A);
 
     auto Q = QR_solver_dense.get_Q();
     auto R = QR_solver_dense.get_R();
@@ -2304,7 +2305,8 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(QR_result.matrix.data, QR_result_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR Q multiply R Dense.");
 
-    static auto QR_solver_diag = make_LinalgSolverQR(B);
+    LinalgSolverQR_Type<decltype(B)> QR_solver_diag = make_LinalgSolverQR<decltype(B)>();
+    QR_solver_diag.solve(B);
 
     auto R_diag = QR_solver_diag.get_R();
     auto R_diag_dense = R_diag.create_dense();
@@ -2318,7 +2320,8 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(R_diag_dense.matrix.data, R_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR R Diag.");
 
-    static auto QR_solver_sparse = make_LinalgSolverQR(C);
+    LinalgSolverQR_Type<decltype(C)> QR_solver_sparse = make_LinalgSolverQR<decltype(C)>();
+    QR_solver_sparse.solve(C);
     auto C_QR = QR_solver_sparse.get_Q() * QR_solver_sparse.get_R();
 
     Matrix<DefDense, T, 3, 3> C_QR_answer({

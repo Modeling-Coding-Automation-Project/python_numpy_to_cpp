@@ -16,6 +16,8 @@
 namespace Base {
 namespace Matrix {
 
+constexpr double DEFAULT_DIVISION_MIN_QR = 1.0e-10;
+
 /* Given's Rotation */
 template <typename T, std::size_t M, std::size_t N>
 static inline void
@@ -67,24 +69,20 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
 
 template <typename T, std::size_t M, std::size_t N> class QRDecomposition {
 public:
-  QRDecomposition() : _division_min(static_cast<T>(0)) {}
-
-  QRDecomposition(const Matrix<T, M, N> &A, T division_min)
-      : _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix(A),
-        _division_min(division_min) {
-    this->_decompose();
-  }
+  QRDecomposition()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
+        _Q_matrix(Matrix<T, M, M>::identity()) {}
 
   /* Copy Constructor */
   QRDecomposition(const QRDecomposition<T, M, N> &other)
-      : _Q_matrix(other._Q_matrix), _R_matrix(other._R_matrix),
-        _division_min(other._division_min) {}
+      : division_min(other.division_min), _Q_matrix(other._Q_matrix),
+        _R_matrix(other._R_matrix) {}
 
   QRDecomposition<T, M, N> &operator=(const QRDecomposition<T, M, N> &other) {
     if (this != &other) {
+      this->division_min = other.division_min;
       this->_Q_matrix = other._Q_matrix;
       this->_R_matrix = other._R_matrix;
-      this->_division_min = other._division_min;
     }
 
     return *this;
@@ -92,38 +90,47 @@ public:
 
   /* Move Constructor */
   QRDecomposition(QRDecomposition<T, M, N> &&other) noexcept
-      : _Q_matrix(std::move(other._Q_matrix)),
-        _R_matrix(std::move(other._R_matrix)),
-        _division_min(other._division_min) {}
+      : division_min(other.division_min), _Q_matrix(std::move(other._Q_matrix)),
+        _R_matrix(std::move(other._R_matrix)) {}
 
   QRDecomposition<T, M, N> &
   operator=(QRDecomposition<T, M, N> &&other) noexcept {
     if (this != &other) {
+      this->division_min = other.division_min;
       this->_Q_matrix = std::move(other._Q_matrix);
       this->_R_matrix = std::move(other._R_matrix);
-      this->_division_min = other._division_min;
     }
 
     return *this;
   }
 
   /* Function */
+  inline void solve(const Matrix<T, M, N> &A) {
+    this->_R_matrix = A;
+    this->_decompose();
+  }
+
   inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+
   inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
+
+public:
+  /* Variable */
+  T division_min;
 
 private:
   /* Variable */
   Matrix<T, M, M> _Q_matrix;
   Matrix<T, M, N> _R_matrix;
-  T _division_min;
 
+private:
   /* Function */
   inline void _decompose() {
     for (std::size_t j = 0; j < N; ++j) {
       for (std::size_t i = j + 1; i < M; ++i) {
 
         if (!Base::Utility::near_zero(this->_R_matrix(i, j),
-                                      this->_division_min)) {
+                                      this->division_min)) {
           this->_givensRotation(i, j);
         }
       }
@@ -132,57 +139,74 @@ private:
 
   inline void _givensRotation(std::size_t i, std::size_t j) {
     Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                                    this->_division_min);
+                                    this->division_min);
   }
 };
 
 template <typename T, std::size_t M> class QRDecompositionDiag {
 public:
-  QRDecompositionDiag() : _division_min(static_cast<T>(0)) {}
+  /* Constructor */
+  QRDecompositionDiag()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
+        _Q_matrix(DiagMatrix<T, M>::identity()) {}
 
-  QRDecompositionDiag(const DiagMatrix<T, M> &A, T division_min)
-      : _Q_matrix(DiagMatrix<T, M>::identity()), _R_matrix(A),
-        _division_min(division_min) {}
+public:
+  /* Function */
+  inline void solve(const DiagMatrix<T, M> &A) { this->_R_matrix = A; }
 
   inline DiagMatrix<T, M> get_Q() const { return this->_Q_matrix; }
+
   inline DiagMatrix<T, M> get_R() const { return this->_R_matrix; }
 
+public:
+  /* Variable */
+  T division_min;
+
 private:
+  /* Variable */
   DiagMatrix<T, M> _Q_matrix;
   DiagMatrix<T, M> _R_matrix;
-  T _division_min;
 };
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 class QRDecompositionSparse {
 public:
-  QRDecompositionSparse() : _division_min(static_cast<T>(0)) {}
+  /* Constructor */
+  QRDecompositionSparse()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
+        _Q_matrix(Matrix<T, M, M>::identity()) {}
 
-  QRDecompositionSparse(
-      const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-      T division_min)
-      : _Q_matrix(Matrix<T, M, M>::identity()),
-        _R_matrix(Base::Matrix::output_dense_matrix(A)),
-        _division_min(division_min) {
+public:
+  /* Function */
+  inline void
+  solve(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+    this->_R_matrix = Base::Matrix::output_dense_matrix(A);
     this->_decompose(A);
   }
 
   inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+
   inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
 
+public:
+  /* Variable */
+  T division_min;
+
 private:
+  /* Variable */
   Matrix<T, M, M> _Q_matrix;
   Matrix<T, M, N> _R_matrix;
-  T _division_min;
 
+private:
+  /* Function */
   inline void _decompose(
       const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t k = RowPointers_A::list[i];
            k < RowPointers_A::list[i + 1]; k++) {
         if ((i >= RowIndices_A::list[k] + 1) &&
-            (!Base::Utility::near_zero(A.values[k], this->_division_min))) {
+            (!Base::Utility::near_zero(A.values[k], this->division_min))) {
           this->_givensRotation(i, RowIndices_A::list[k]);
         }
       }
@@ -191,7 +215,7 @@ private:
 
   inline void _givensRotation(std::size_t i, std::size_t j) {
     Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                                    this->_division_min);
+                                    this->division_min);
   }
 };
 
