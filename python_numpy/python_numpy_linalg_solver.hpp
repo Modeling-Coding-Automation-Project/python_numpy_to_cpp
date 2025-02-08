@@ -401,7 +401,7 @@ public:
 template <
     typename A_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
-inline auto make_LinalgSolver(void)
+inline auto make_LinalgSolverInv(void)
     -> LinalgSolver<typename A_Type::Value_Type, A_Type::COLS, A_Type::COLS,
                     typename A_Type::SparseAvailable,
                     typename A_Type::SparseAvailable> {
@@ -413,7 +413,7 @@ inline auto make_LinalgSolver(void)
 
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
-inline auto make_LinalgSolver(void)
+inline auto make_LinalgSolverInv(void)
     -> LinalgInvDiag<typename A_Type::Value_Type, A_Type::COLS> {
 
   return LinalgInvDiag<typename A_Type::Value_Type, A_Type::COLS>();
@@ -422,7 +422,7 @@ inline auto make_LinalgSolver(void)
 template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
-inline auto make_LinalgSolver(void)
+inline auto make_LinalgSolverInv(void)
     -> LinalgSolver<typename A_Type::Value_Type, A_Type::COLS, A_Type::COLS,
                     typename A_Type::SparseAvailable_Type,
                     typename A_Type::SparseAvailable_Type> {
@@ -431,6 +431,10 @@ inline auto make_LinalgSolver(void)
                       typename A_Type::SparseAvailable_Type,
                       typename A_Type::SparseAvailable_Type>();
 }
+
+/* LinalgSolver for inv Type */
+template <typename A_Type>
+using LinalgSolverInv_Type = decltype(make_LinalgSolverInv<A_Type>());
 
 /* make LinalgSolver */
 template <
@@ -558,6 +562,10 @@ inline auto make_LinalgSolver(void)
                       typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
+
+/* LinalgSolver Type */
+template <typename A_Type, typename B_Type>
+using LinalgSolver_Type = decltype(make_LinalgSolver<A_Type, B_Type>());
 
 /* least-squares solution to a linear matrix equation */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
