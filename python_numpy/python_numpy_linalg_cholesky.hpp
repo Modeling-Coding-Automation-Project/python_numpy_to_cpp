@@ -164,6 +164,10 @@ inline auto make_LinalgSolverCholesky(void) -> LinalgSolverCholesky<A_Type> {
   return LinalgSolverCholesky<A_Type>();
 }
 
+/* LinalgSolverCholesky Type */
+template <typename A_Type>
+using LinalgSolverCholesky_Type = LinalgSolverCholesky<A_Type>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_LINALG_CHOLESKY_HPP__

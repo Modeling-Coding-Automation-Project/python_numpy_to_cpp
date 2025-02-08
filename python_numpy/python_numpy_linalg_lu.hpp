@@ -171,6 +171,9 @@ inline auto make_LinalgSolverLU(void) -> LinalgSolverLU<A_Type> {
   return LinalgSolverLU<A_Type>();
 }
 
+/* LinalgSolverLU Type */
+template <typename A_Type> using LinalgSolverLU_Type = LinalgSolverLU<A_Type>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_LINALG_LU_HPP__

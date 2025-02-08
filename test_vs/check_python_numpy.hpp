@@ -1895,7 +1895,7 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
-    LinalgSolverLU<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
+    LinalgSolverLU_Type<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
     A_LU_solver.solve(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
@@ -1956,7 +1956,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         >K_s({ 1, 8, 3, 3, 4 });
 
     /* コレスキー分解 */
-    LinalgSolverCholesky<decltype(K)> Chol_solver;
+    LinalgSolverCholesky_Type<decltype(K)> Chol_solver;
     Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
@@ -1992,7 +1992,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         "check LinalgSolverCholesky zero_div_flag.");
 
     /* コレスキー分解　対角 */
-    LinalgSolverCholesky<decltype(B)> Chol_solver_B;
+    LinalgSolverCholesky_Type<decltype(B)> Chol_solver_B;
     Chol_solver_B = make_LinalgSolverCholesky<decltype(B)>();
 
     auto B_ch = Chol_solver_B.solve(B);
@@ -2008,7 +2008,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         "check LinalgSolverCholesky solve Diag.");
 
     /* コレスキー分解 スパース */
-    LinalgSolverCholesky<decltype(K_s)> Chol_solver_s;
+    LinalgSolverCholesky_Type<decltype(K_s)> Chol_solver_s;
     Chol_solver_s = make_LinalgSolverCholesky<decltype(K_s)>();
 
     auto K_s_ch = Chol_solver_s.solve(K_s);
