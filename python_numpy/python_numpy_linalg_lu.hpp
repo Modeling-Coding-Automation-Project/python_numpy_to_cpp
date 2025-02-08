@@ -6,6 +6,8 @@
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
+#include <type_traits>
+#include <utility>
 
 namespace PythonNumpy {
 
@@ -37,7 +39,25 @@ private:
 
 public:
   /* Constructor */
+  template <
+      typename U = A_Type,
+      typename std::enable_if<Is_Dense_Matrix<U>::value>::type * = nullptr>
+  LinalgSolverLU() {
+    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
+    this->_LU_decomposer.division_min = this->division_min;
+  }
+
+  template <typename U = A_Type,
+            typename std::enable_if<Is_Diag_Matrix<U>::value>::type * = nullptr>
   LinalgSolverLU() {}
+
+  template <
+      typename U = A_Type,
+      typename std::enable_if<Is_Sparse_Matrix<U>::value>::type * = nullptr>
+  LinalgSolverLU() {
+    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
+    this->_LU_decomposer.division_min = this->division_min;
+  }
 
   /* Copy Constructor */
   LinalgSolverLU(const LinalgSolverLU<A_Type> &other)
@@ -74,8 +94,6 @@ public:
 
   /* Solve function */
   inline void solve(const Matrix<DefDense, _T, A_Type::COLS, A_Type::COLS> &A) {
-    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
-    this->_LU_decomposer.division_min = this->division_min;
     this->_LU_decomposer.solve(A.matrix);
   }
 
@@ -86,10 +104,8 @@ public:
 
   inline void solve(const Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                                  SparseAvailable_Type> &A) {
-    auto A_dense = A.matrix.create_dense();
 
-    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
-    this->_LU_decomposer.division_min = this->division_min;
+    auto A_dense = A.matrix.create_dense();
     this->_LU_decomposer.solve(A_dense);
   }
 
