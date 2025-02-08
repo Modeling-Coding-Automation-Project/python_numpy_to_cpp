@@ -1878,7 +1878,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         ColumnAvailable<false, true, true>>
         >K_s({ 1, 8, 3, 3, 4 });
 
-    static auto Chol_solver = make_LinalgSolverCholesky(K);
+    static auto Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
     auto A_ch_d = Base::Matrix::output_dense_matrix(A_ch.matrix);
@@ -1898,6 +1898,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         });
     tester.expect_near(A_ch_d.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverCholesky solve.");
+
 
     tester.throw_error_if_test_failed();
 }
