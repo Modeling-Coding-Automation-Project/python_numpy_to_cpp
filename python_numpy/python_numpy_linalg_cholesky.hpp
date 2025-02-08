@@ -9,6 +9,8 @@
 
 namespace PythonNumpy {
 
+constexpr double DEFAULT_DIVISION_MIN_LINALG_CHOLESKY = 1.0e-10;
+
 template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverCholesky {
 public:
@@ -29,13 +31,15 @@ public:
 
   /* Copy Constructor */
   LinalgSolverCholesky(const LinalgSolverCholesky<T, M, SparseAvailable> &other)
-      : _cholesky_decomposed_matrix(other._cholesky_decomposed_matrix),
+      : division_min(other.division_min),
+        _cholesky_decomposed_matrix(other._cholesky_decomposed_matrix),
         _cholesky_decomposed_triangular(other._cholesky_decomposed_triangular),
         _zero_div_flag(other._zero_div_flag) {}
 
   LinalgSolverCholesky<T, M, SparseAvailable> &
   operator=(const LinalgSolverCholesky<T, M, SparseAvailable> &other) {
     if (this != &other) {
+      this->division_min = other.division_min;
       this->_cholesky_decomposed_matrix = other._cholesky_decomposed_matrix;
       this->_cholesky_decomposed_triangular =
           other._cholesky_decomposed_triangular;
@@ -47,7 +51,8 @@ public:
   /* Move Constructor */
   LinalgSolverCholesky(
       LinalgSolverCholesky<T, M, SparseAvailable> &&other) noexcept
-      : _cholesky_decomposed_matrix(
+      : division_min(std::move(other.division_min)),
+        _cholesky_decomposed_matrix(
             std::move(other._cholesky_decomposed_matrix)),
         _cholesky_decomposed_triangular(
             std::move(other._cholesky_decomposed_triangular)),
@@ -56,6 +61,7 @@ public:
   LinalgSolverCholesky<T, M, SparseAvailable> &
   operator=(LinalgSolverCholesky<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
+      this->division_min = std::move(other.division_min);
       this->_cholesky_decomposed_matrix =
           std::move(other._cholesky_decomposed_matrix);
       this->_cholesky_decomposed_triangular =
@@ -71,7 +77,8 @@ public:
 
     this->_cholesky_decomposed_matrix =
         Base::Matrix::cholesky_decomposition<T, M>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->_zero_div_flag);
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
+            this->_zero_div_flag);
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_upper(
         this->_cholesky_decomposed_triangular,
@@ -98,7 +105,8 @@ public:
 
     this->_cholesky_decomposed_matrix =
         Base::Matrix::cholesky_decomposition_sparse<T, M>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->_zero_div_flag);
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
+            this->_zero_div_flag);
 
     Base::Matrix::TriangularSparse<T, M, M>::set_values_upper(
         this->_cholesky_decomposed_triangular,
@@ -119,6 +127,10 @@ public:
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
+public:
+  /* Variable */
+  T division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_CHOLESKY);
 
 private:
   /* Variable */
