@@ -19,6 +19,10 @@ public:
 
   using SparseAvailable_Type = SparseAvailable;
 
+  using UpperTriangular_SparseAvailable_Type =
+      CreateSparseAvailableFromIndicesAndPointers<
+          M, UpperTriangularRowIndices<M, M>, UpperTriangularRowPointers<M, M>>;
+
 public:
   /* Constructor */
   LinalgSolverCholesky() {}
@@ -63,10 +67,7 @@ public:
 
   /* Solve function */
   inline auto solve(const Matrix<DefDense, T, M, M> &A)
-      -> Matrix<DefSparse, T, M, M,
-                CreateSparseAvailableFromIndicesAndPointers<
-                    M, UpperTriangularRowIndices<M, M>,
-                    UpperTriangularRowPointers<M, M>>> {
+      -> Matrix<DefSparse, T, M, M, UpperTriangular_SparseAvailable_Type> {
 
     this->_cholesky_decomposed_matrix =
         Base::Matrix::cholesky_decomposition<T, M>(
@@ -76,10 +77,7 @@ public:
         this->_cholesky_decomposed_triangular,
         this->_cholesky_decomposed_matrix);
 
-    return Matrix<DefSparse, T, M, M,
-                  CreateSparseAvailableFromIndicesAndPointers<
-                      M, UpperTriangularRowIndices<M, M>,
-                      UpperTriangularRowPointers<M, M>>>(
+    return Matrix<DefSparse, T, M, M, UpperTriangular_SparseAvailable_Type>(
         this->_cholesky_decomposed_triangular);
   }
 
@@ -96,7 +94,7 @@ public:
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
-      -> Matrix<DefDense, T, M, M> {
+      -> Matrix<DefSparse, T, M, M, UpperTriangular_SparseAvailable_Type> {
 
     this->_cholesky_decomposed_matrix =
         Base::Matrix::cholesky_decomposition_sparse<T, M>(
@@ -106,10 +104,7 @@ public:
         this->_cholesky_decomposed_triangular,
         this->_cholesky_decomposed_matrix);
 
-    return Matrix<DefSparse, T, M, M,
-                  CreateSparseAvailableFromIndicesAndPointers<
-                      M, UpperTriangularRowIndices<M, M>,
-                      UpperTriangularRowPointers<M, M>>>(
+    return Matrix<DefSparse, T, M, M, UpperTriangular_SparseAvailable_Type>(
         this->_cholesky_decomposed_triangular);
   }
 

@@ -1856,17 +1856,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
-    Matrix<DefSparse, T, 3, 3,
-        SparseAvailable<
-        ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, false, true>,
-        ColumnAvailable<false, true, true>>
-        > C({ 1, 3, 8, 2, 4 });
-
-
-    /* コレスキー分解 */
     Matrix<DefDense, T, 3, 3> K({
         {10, 1, 2},
         {1, 20, 4},
@@ -1874,30 +1864,71 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         });
     Matrix<DefSparse, T, 3, 3, SparseAvailable<
         ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, true, true>,
+        ColumnAvailable<false, true, true>,
         ColumnAvailable<false, true, true>>
         >K_s({ 1, 8, 3, 3, 4 });
 
+    /* コレスキー分解 */
     static auto Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
-    auto A_ch_d = Base::Matrix::output_dense_matrix(A_ch.matrix);
-    //std::cout << "A_ch_d = " << std::endl;
-    //for (size_t j = 0; j < A_ch_d.cols(); ++j) {
-    //    for (size_t i = 0; i < A_ch_d.rows(); ++i) {
-    //        std::cout << A_ch_d(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto A_ch_dense = A_ch.create_dense();
 
     Matrix<DefDense, T, 3, 3> A_ch_answer({
         {3.16228F, 0.316228F, 0.632456F},
         {0, 4.46094F, 0.851838F},
         {0, 0, 5.37349F}
         });
-    tester.expect_near(A_ch_d.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolverCholesky solve.");
+    tester.expect_near(A_ch_dense.matrix.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Dense.");
+
+
+
+    auto Zeros = make_DenseMatrixZeros<T, 3, 3>();
+
+    static auto Chol_solver_zero = make_LinalgSolverCholesky<decltype(Zeros)>();
+    auto Zeros_ch = Chol_solver_zero.solve(Zeros);
+    auto Zeros_ch_dense = Zeros_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Zeros_ch_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(Zeros_ch_dense.matrix.data, Zeros_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Dense Zero.");
+
+    bool zero_div_flag = Chol_solver_zero.get_zero_div_flag();
+
+    tester.expect_near(zero_div_flag, true, 0,
+        "check LinalgSolverCholesky zero_div_flag.");
+
+    static auto Chol_solver_B = make_LinalgSolverCholesky<decltype(B)>();
+    auto B_ch = Chol_solver_B.solve(B);
+    auto B_ch_dense = B_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> B_ch_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 1.41421356F, 0.0F},
+        {0.0F, 0.0F, 1.73205081F}
+        });
+
+    tester.expect_near(B_ch_dense.matrix.data, B_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Diag.");
+
+    static auto Chol_solver_s = make_LinalgSolverCholesky<decltype(K_s)>();
+    auto K_s_ch = Chol_solver_s.solve(K_s);
+    auto K_s_ch_dense = K_s_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> K_s_ch_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 2.82842712F, 1.06066017F},
+        {0.0F, 0.0F, 1.6955825F}
+        });
+
+    tester.expect_near(K_s_ch_dense.matrix.data, K_s_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Sparse.");
 
 
     tester.throw_error_if_test_failed();
