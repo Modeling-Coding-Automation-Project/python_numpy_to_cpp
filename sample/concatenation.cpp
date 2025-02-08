@@ -51,6 +51,36 @@ int main() {
     }
     std::cout << std::endl;
   }
+  std::cout << std::endl;
+
+  /* Create Concatenated Type */
+  using A_v_C_Type = ConcatenateVertically_Type<decltype(A), decltype(C)>;
+
+  A_v_C_Type A_v_C = vertical;
+  auto A_v_C_dense = A_v_C.create_dense();
+
+  std::cout << "vertical = " << std::endl;
+  for (size_t j = 0; j < A_v_C_dense.cols(); ++j) {
+    for (size_t i = 0; i < A_v_C_dense.rows(); ++i) {
+      std::cout << A_v_C_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  using A_h_B_Type = ConcatenateHorizontally_Type<decltype(A), decltype(B)>;
+
+  A_h_B_Type A_h_B = horizontal;
+  auto A_h_B_dense = A_h_B.create_dense();
+
+  std::cout << "horizontal = " << std::endl;
+  for (size_t j = 0; j < A_h_B_dense.cols(); ++j) {
+    for (size_t i = 0; i < A_h_B_dense.rows(); ++i) {
+      std::cout << A_h_B_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
 
   return 0;
 }
