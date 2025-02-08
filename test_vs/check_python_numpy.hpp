@@ -1895,7 +1895,8 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
-    static auto A_LU_solver = make_LinalgSolverLU(A);
+    LinalgSolverLU_Type<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
+    A_LU_solver.solve(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
     auto A_LU_dense = A_LU.create_dense();
@@ -1909,13 +1910,13 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
     tester.expect_near(A_LU_dense.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U Dense.");
 
-    //std::cout << "det = " << LU_solver.get_det() << std::endl << std::endl;
 
     T det_answer = 30;
     tester.expect_near(A_LU_solver.get_det(), det_answer, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU det.");
 
-    auto B_LU_solver = make_LinalgSolverLU(B);
+    auto B_LU_solver = make_LinalgSolverLU<decltype(B)>();
+    B_LU_solver.solve(B);
 
     auto B_LU = B_LU_solver.get_L() * B_LU_solver.get_U();
     auto B_LU_dense = B_LU.create_dense();

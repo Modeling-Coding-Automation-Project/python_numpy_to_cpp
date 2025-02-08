@@ -776,6 +776,18 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
       std::move(A.matrix * B.matrix));
 }
 
+/* Matrix Type Checker */
+template <typename MatrixInput>
+using Is_Dense_Matrix =
+    std::is_same<typename MatrixInput::Matrix_Type, DefDense>;
+
+template <typename MatrixInput>
+using Is_Diag_Matrix = std::is_same<typename MatrixInput::Matrix_Type, DefDiag>;
+
+template <typename MatrixInput>
+using Is_Sparse_Matrix =
+    std::is_same<typename MatrixInput::Matrix_Type, DefSparse>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_HPP__

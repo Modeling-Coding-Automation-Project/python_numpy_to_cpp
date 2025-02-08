@@ -302,20 +302,12 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
     /* LU分解 */
     Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
-    Matrix<T, 3, 3> H_lu({ {0, 2, 9}, {8, 5, 4}, {6, 3, 7} });
+    LUDecomposition<T, 3> lu;
+    lu.division_min = static_cast<T>(1.0e-10F);
 
-    LUDecomposition<T, 3> lu(H, static_cast<T>(1.0e-10F));
+    Vector<T, 3> xx = lu.solve(H, b);
+
     Matrix<T, 3, 3> L = lu.get_L();
-    Vector<T, 3> xx = lu.solve(b);
-
-    //std::cout << "L = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 3; ++i) {
-    //        std::cout << L(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
 
     Matrix<T, 3, 3> L_answer({
         { 1, 0, 0 },
@@ -325,20 +317,11 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
     tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition L.");
 
-    //std::cout << "A^-1 * b = ";
-    //for (size_t i = 0; i < xx.size(); ++i) {
-    //    std::cout << xx[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
     Vector<T, 3> xx_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition solve.");
 
     T det = lu.get_determinant();
-    //std::cout << "det = " << det << std::endl;
-    //std::cout << std::endl;
 
     T det_answer = -95.0F;
     tester.expect_near(det, det_answer, NEAR_LIMIT_STRICT,
@@ -1495,12 +1478,14 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     D[1] = 2.0F;
     D[2] = 3.0F;
 
+    T division_min = static_cast<T>(1.0e-10F);
+
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
 
     Matrix<T, 3, 3> K_ch;
     bool flag = false;
-    K_ch = cholesky_decomposition(K, K_ch, flag);
+    K_ch = cholesky_decomposition(K, K_ch, division_min, flag);
 
     //std::cout << "K_ch = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
@@ -1543,7 +1528,7 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 1, 2, 1, 2 >,
         RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
-    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, flag);
+    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, division_min, flag);
 
     Matrix<T, 3, 3> K_ch_sparse_2 = matrix_multiply_AT_mul_B(K_ch_sparse, K_ch_sparse);
 
