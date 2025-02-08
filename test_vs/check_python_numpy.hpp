@@ -2283,7 +2283,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
     /* QR分解 */
     LinalgSolverQR_Type<decltype(A)> QR_solver_dense = make_LinalgSolverQR<decltype(A)>();
-    QR_solver_dense.set_division_min(static_cast<T>(1.0e-10F));
+    QR_solver_dense.set_division_min(static_cast<T>(1.0e-10));
     QR_solver_dense.solve(A);
 
     auto Q = QR_solver_dense.get_Q();
@@ -2326,6 +2326,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         "check LinalgSolverQR R Diag.");
 
     LinalgSolverQR_Type<decltype(C)> QR_solver_sparse = make_LinalgSolverQR<decltype(C)>();
+    QR_solver_sparse.set_division_min(static_cast<T>(1.0e-10));
     QR_solver_sparse.solve(C);
     auto C_QR = QR_solver_sparse.get_Q() * QR_solver_sparse.get_R();
 
