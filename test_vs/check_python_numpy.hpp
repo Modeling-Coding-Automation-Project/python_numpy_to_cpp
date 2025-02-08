@@ -1895,7 +1895,7 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
-    LinalgSolverLU_Type<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
+    LinalgSolverLU<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
     A_LU_solver.solve(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();

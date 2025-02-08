@@ -27,9 +27,8 @@ public:
 
   /* Copy Constructor */
   LUDecomposition(const LUDecomposition<T, M> &other)
-      : _Lower(other._Lower), _Upper(other._Upper),
-        _pivot_index_vec(other._pivot_index_vec),
-        division_min(other.division_min) {}
+      : division_min(other.division_min), _Lower(other._Lower),
+        _Upper(other._Upper), _pivot_index_vec(other._pivot_index_vec) {}
 
   LUDecomposition<T, M> &operator=(const LUDecomposition<T, M> &other) {
     if (this != &other) {
@@ -43,9 +42,9 @@ public:
 
   /* Move Constructor */
   LUDecomposition(LUDecomposition<T, M> &&other) noexcept
-      : _Lower(std::move(other._Lower)), _Upper(std::move(other._Upper)),
-        _pivot_index_vec(std::move(other._pivot_index_vec)),
-        division_min(std::move(other.division_min)) {}
+      : division_min(std::move(other.division_min)),
+        _Lower(std::move(other._Lower)), _Upper(std::move(other._Upper)),
+        _pivot_index_vec(std::move(other._pivot_index_vec)) {}
 
   LUDecomposition<T, M> &operator=(LUDecomposition<T, M> &&other) noexcept {
     if (this != &other) {

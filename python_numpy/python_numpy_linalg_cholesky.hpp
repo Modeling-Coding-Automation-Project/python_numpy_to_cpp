@@ -109,7 +109,7 @@ public:
   }
 
   inline auto solve(const Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
-                                 typename A_Type::SparseAvailable_Type> &A)
+                                 SparseAvailable_Type> &A)
       -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                 UpperTriangular_SparseAvailable_Type> {
 
