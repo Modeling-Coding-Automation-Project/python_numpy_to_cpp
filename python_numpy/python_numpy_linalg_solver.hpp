@@ -303,6 +303,14 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  inline void set_decay_rate(const T &decay_rate_in) {
+    this->decay_rate = decay_rate_in;
+  }
+
+  inline void set_division_min(const T &division_min_in) {
+    this->division_min = division_min_in;
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = M;
@@ -368,6 +376,10 @@ public:
 
   inline auto get_answer(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(this->X_1);
+  }
+
+  inline void set_division_min(const T &division_min_in) {
+    this->division_min = division_min_in;
   }
 
 public:

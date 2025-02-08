@@ -715,6 +715,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
 
     static auto A_A_linalg_solver = make_LinalgSolver<decltype(A), decltype(A)>();
+    A_A_linalg_solver.set_division_min(static_cast<T>(1.0e-10));
+    A_A_linalg_solver.set_decay_rate(static_cast<T>(0));
 
     auto A_A_x = A_A_linalg_solver.solve(A, A);
 
