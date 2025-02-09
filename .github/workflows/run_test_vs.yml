@@ -2,7 +2,7 @@ name: Run test VS
 
 on:
   push:
-    branches: [ develop, create_transpose_type ]
+    branches: [ develop ]
 
 jobs:
   build:
