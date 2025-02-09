@@ -35,7 +35,8 @@ public:
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),
-        _eigen_values(M, static_cast<T>(0)), _eigen_vectors(),
+        _eigen_values(M, static_cast<T>(0)),
+        _eigen_vectors(Matrix<T, M, M>::ones()),
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
 
@@ -46,7 +47,7 @@ public:
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),
-        _eigen_values(), _eigen_vectors(),
+        _eigen_values(), _eigen_vectors(Matrix<T, M, M>::ones()),
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
 
@@ -416,8 +417,8 @@ public:
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
         _Hessen(), _eigen_values(M, static_cast<Complex<T>>(0)),
-        _eigen_vectors(), _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {
-  }
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
+        _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
 #else // __BASE_MATRIX_USE_STD_VECTOR__
 
@@ -427,7 +428,8 @@ public:
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
-        _Hessen(), _eigen_values(), _eigen_vectors(),
+        _Hessen(), _eigen_values(),
+        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
 #endif // __BASE_MATRIX_USE_STD_VECTOR__

@@ -9,8 +9,6 @@
 
 namespace PythonNumpy {
 
-const double DEFAULT_DIVISION_MIN_LINALG_EIG = 1.0e-20;
-
 namespace ForLinalgSolverEigReal {
 
 template <typename T, std::size_t M>
