@@ -1948,11 +1948,16 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     tester.expect_near(A_mul_V.data, V_mul_D.data, NEAR_LIMIT_STRICT,
         "check EigenSolverReal eigen vectors, strict.");
 
-#if 0
 
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
-    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-20F));
+    EigenSolverComplex<T, 3> eigen_solver_comp;
+    eigen_solver_comp.set_iteration_max(5);
+    eigen_solver_comp.set_iteration_max_for_eigen_vector(15);
+    eigen_solver_comp.set_division_min(static_cast<T>(1.0e-20F));
+
+    eigen_solver_comp.solve_eigen_values(A1);
+
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<Complex<T>> eigen_values_comp
 #else
@@ -2053,7 +2058,6 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     tester.expect_near(A_mul_V_imag.data, V_mul_D_imag.data, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex imag eigen vectors, strict.");
 
-#endif
 
     tester.throw_error_if_test_failed();
 }

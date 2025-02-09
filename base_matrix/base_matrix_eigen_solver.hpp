@@ -130,6 +130,10 @@ public:
     this->small_value = small_value_in;
   }
 
+  inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
+    this->gmres_k_decay_rate = gmres_k_decay_rate_in;
+  }
+
 public:
   /* Variable */
   std::size_t iteration_max;
@@ -387,53 +391,23 @@ private:
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
   /* Constructor */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
-
   EigenSolverComplex()
-      : iteration_max(0), iteration_max_for_eigen_vector(0),
-        _eigen_values(M, static_cast<T>(0)), _division_min(static_cast<T>(0)),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
-
-  EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
-                     T division_min)
-      : iteration_max(iteration_max),
-        iteration_max_for_eigen_vector(iteration_max * 3),
-        _eigen_values(M, static_cast<T>(0)), _division_min(division_min),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
-    static_assert(M > 1, "Matrix must be larger than 2x2.");
-
-    this->_solve_with_qr_method(matrix);
-  }
-
-#else // __BASE_MATRIX_USE_STD_VECTOR__
-
-  EigenSolverComplex()
-      : iteration_max(0), iteration_max_for_eigen_vector(0), _eigen_values{},
-        _division_min(static_cast<T>(0)),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {}
-
-  EigenSolverComplex(const Matrix<T, M, M> &matrix, std::size_t iteration_max,
-                     T division_min)
-      : iteration_max(iteration_max),
-        iteration_max_for_eigen_vector(iteration_max * 3), _eigen_values{},
-        _division_min(division_min),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()) {
-    static_assert(M > 1, "Matrix must be larger than 2x2.");
-
-    this->_solve_with_qr_method(matrix);
-  }
-
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
+        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
+        gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
+        _Hessen(), _eigen_values(), _eigen_vectors(),
+        _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
-      : iteration_max(other.iteration_max),
-        iteration_max_for_eigen_vector(other.iteration_max_for_eigen_vector),
-        _House(other._House), _Hessen(other._Hessen),
-        _eigen_values(other._eigen_values), _division_min(other._division_min),
-        _eigen_vectors(other._eigen_vectors), _small_value(other._small_value),
-        _gmres_k_decay_rate(other._gmres_k_decay_rate),
-        _gmres_k_rho(other._gmres_k_rho),
+      : iteration_max(other.iteration_max), division_min(other.division_min),
+        small_value(other.small_value),
+        gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
+        _House_comp(other._House_comp), _Hessen(other._Hessen),
+        _eigen_values(other._eigen_values),
+        _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
         _gmres_k_rep_num(other._gmres_k_rep_num) {}
 
   EigenSolverComplex &operator=(EigenSolverComplex<T, M> &other) {
@@ -441,13 +415,14 @@ public:
       this->iteration_max = other.iteration_max;
       this->iteration_max_for_eigen_vector =
           other.iteration_max_for_eigen_vector;
+      this->division_min = other.division_min;
+      this->small_value = other.small_value;
+      this->gmres_k_decay_rate = other.gmres_k_decay_rate;
       this->_House = other._House;
+      this->_House_comp = other._House_comp;
       this->_Hessen = other._Hessen;
       this->_eigen_values = other._eigen_values;
-      this->_division_min = other._division_min;
       this->_eigen_vectors = other._eigen_vectors;
-      this->_small_value = other._small_value;
-      this->_gmres_k_decay_rate = other._gmres_k_decay_rate;
       this->_gmres_k_rho = other._gmres_k_rho;
       this->_gmres_k_rep_num = other._gmres_k_rep_num;
     }
@@ -459,12 +434,14 @@ public:
       : iteration_max(std::move(other.iteration_max)),
         iteration_max_for_eigen_vector(
             std::move(other.iteration_max_for_eigen_vector)),
-        _House(std::move(other._House)), _Hessen(std::move(other._Hessen)),
+        division_min(std::move(other.division_min)),
+        small_value(std::move(other.small_value)),
+        gmres_k_decay_rate(std::move(other.gmres_k_decay_rate)),
+        _House(std::move(other._House)),
+        _House_comp(std::move(other._House_comp)),
+        _Hessen(std::move(other._Hessen)),
         _eigen_values(std::move(other._eigen_values)),
-        _division_min(std::move(other._division_min)),
         _eigen_vectors(std::move(other._eigen_vectors)),
-        _small_value(std::move(other._small_value)),
-        _gmres_k_decay_rate(std::move(other._gmres_k_decay_rate)),
         _gmres_k_rho(std::move(other._gmres_k_rho)),
         _gmres_k_rep_num(std::move(other._gmres_k_rep_num)) {}
 
@@ -473,13 +450,14 @@ public:
       this->iteration_max = std::move(other.iteration_max);
       this->iteration_max_for_eigen_vector =
           std::move(other.iteration_max_for_eigen_vector);
+      this->division_min = std::move(other.division_min);
+      this->small_value = std::move(other.small_value);
+      this->gmres_k_decay_rate = std::move(other.gmres_k_decay_rate);
       this->_House = std::move(other._House);
+      this->_House_comp = std::move(other._House_comp);
       this->_Hessen = std::move(other._Hessen);
       this->_eigen_values = std::move(other._eigen_values);
-      this->_division_min = std::move(other._division_min);
       this->_eigen_vectors = std::move(other._eigen_vectors);
-      this->_small_value = std::move(other._small_value);
-      this->_gmres_k_decay_rate = std::move(other._gmres_k_decay_rate);
       this->_gmres_k_rho = std::move(other._gmres_k_rho);
       this->_gmres_k_rep_num = std::move(other._gmres_k_rep_num);
     }
@@ -488,39 +466,65 @@ public:
 
 public:
   /* Function */
-  void solve_eigen_values(const Matrix<T, M, M> &matrix) {
+  inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_solve_with_qr_method(matrix);
   }
 
-  void continue_solving_eigen_values(void) {
+  inline void continue_solving_eigen_values(void) {
     this->_continue_solving_values_with_qr_method();
   }
 
-  void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
+  inline void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-  void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
+  inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_with_qr_method(matrix);
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
-  std::vector<Complex<T>> get_eigen_values(void) { return this->_eigen_values; }
+  inline std::vector<Complex<T>> get_eigen_values(void) {
+    return this->_eigen_values;
+  }
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
-  std::array<Complex<T>, M> get_eigen_values(void) {
+  inline std::array<Complex<T>, M> get_eigen_values(void) {
     return this->_eigen_values;
   }
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
-  Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
+  inline Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
+  }
+
+  inline void set_iteration_max(const std::size_t &iteration_max_in) {
+    this->iteration_max = iteration_max_in;
+  }
+
+  inline void set_iteration_max_for_eigen_vector(
+      const std::size_t &iteration_max_for_eigen_vector_in) {
+    this->iteration_max_for_eigen_vector = iteration_max_for_eigen_vector_in;
+  }
+
+  inline void set_division_min(const T &division_min_in) {
+    this->division_min = division_min_in;
+  }
+
+  inline void set_small_value(const T &small_value_in) {
+    this->small_value = small_value_in;
+  }
+
+  inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
+    this->gmres_k_decay_rate = gmres_k_decay_rate_in;
   }
 
 public:
   /* Variable */
   std::size_t iteration_max;
   std::size_t iteration_max_for_eigen_vector;
+  T division_min;
+  T small_value;
+  T gmres_k_decay_rate;
 
 private:
   /* Variable */
@@ -532,10 +536,7 @@ private:
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<Complex<T>, M> _eigen_values;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
-  T _division_min;
   Matrix<Complex<T>, M, M> _eigen_vectors;
-  T _small_value = static_cast<T>(EIGEN_SMALL_VALUE);
-  T _gmres_k_decay_rate = static_cast<T>(0);
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
@@ -550,10 +551,10 @@ private:
       for (std::size_t i = k + 1; i < M; ++i) {
         x_abs += R(i, k) * R(i, k);
       }
-      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
 
       u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
       T u_abs = u[k + 1] * u[k + 1];
@@ -587,7 +588,7 @@ private:
 
           this->_House.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
-              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
           this->_House.row_indices[H_value_count] = j;
           H_value_count++;
@@ -612,13 +613,13 @@ private:
       for (std::size_t i = k; i < k + 2; ++i) {
         x_abs += Base::Matrix::complex_abs_sq(R(i, k));
       }
-      if (Base::Utility::near_zero(x_abs, this->_division_min)) {
+      if (Base::Utility::near_zero(x_abs, this->division_min)) {
         continue;
       }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->_division_min);
+      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
 
       u[k] = R(k, k) +
-             Base::Matrix::complex_sign(R(k, k), this->_division_min) * x_abs;
+             Base::Matrix::complex_sign(R(k, k), this->division_min) * x_abs;
       u[k + 1] = R(k + 1, k);
       T u_abs = Base::Matrix::complex_abs_sq(u[k]) +
                 Base::Matrix::complex_abs_sq(u[k + 1]);
@@ -651,7 +652,7 @@ private:
           this->_House_comp.values[H_value_count] -=
               static_cast<T>(2) *
               (u[i] * Base::Matrix::complex_conjugate(u[j])) /
-              Base::Utility::avoid_zero_divide(u_abs, this->_division_min);
+              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
           this->_House_comp.row_indices[H_value_count] = j;
           H_value_count++;
@@ -680,7 +681,7 @@ private:
     Complex<T> c1 = a11 + a22;
 
     Complex<T> c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2, this->_division_min);
+    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2, this->division_min);
 
     Complex<T> mu1 = static_cast<T>(0.5) * (c1 + c2);
     Complex<T> mu2 = static_cast<T>(0.5) * (c1 - c2);
@@ -718,7 +719,7 @@ private:
           A(i, i) += mu;
         }
 
-        if (Base::Matrix::complex_abs(A(k - 1, k - 2)) < this->_division_min) {
+        if (Base::Matrix::complex_abs(A(k - 1, k - 2)) < this->division_min) {
           break;
         }
       }
@@ -739,7 +740,7 @@ private:
       Matrix<Complex<T>, M, M> A =
           Base::Matrix::convert_matrix_real_to_complex(matrix);
 
-      Complex<T> mu = this->_eigen_values[k] + this->_small_value;
+      Complex<T> mu = this->_eigen_values[k] + this->small_value;
       for (std::size_t i = 0; i < M; ++i) {
         A(i, i) -= mu;
       }
@@ -753,10 +754,10 @@ private:
         Vector<Complex<T>, M> x_old = x;
 
         x = Base::Matrix::complex_gmres_k(
-            A, x_old, x, this->gmres_k_decay_rate, this->_division_min,
+            A, x_old, x, this->gmres_k_decay_rate, this->division_min,
             this->_gmres_k_rho, this->_gmres_k_rep_num);
 
-        Base::Matrix::complex_vector_normalize(x, this->_division_min);
+        Base::Matrix::complex_vector_normalize(x, this->division_min);
 
         // conversion check
         bool converged = true;
@@ -765,7 +766,7 @@ private:
                               Base::Math::abs(x_old[i].real)) +
                   Base::Math::abs(Base::Math::abs(x[i].imag) -
                                   Base::Math::abs(x_old[i].imag)) >
-              this->_division_min) {
+              this->division_min) {
             converged = false;
             break;
           }
