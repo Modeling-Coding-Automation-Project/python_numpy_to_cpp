@@ -718,8 +718,13 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver
         = make_LinalgSolver<decltype(A), decltype(A)>();
+
     A_A_linalg_solver.set_division_min(static_cast<T>(1.0e-10));
     A_A_linalg_solver.set_decay_rate(static_cast<T>(0));
+
+    LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver_copy = A_A_linalg_solver;
+    LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver_move = std::move(A_A_linalg_solver_copy);
+    A_A_linalg_solver = A_A_linalg_solver_move;
 
     auto A_A_x = A_A_linalg_solver.solve(A, A);
 
@@ -880,6 +885,10 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     LinalgLstsqSolver_Type<decltype(CL), decltype(CL )> CL_CL_lstsq_solver
         = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
 
+    LinalgLstsqSolver_Type<decltype(CL), decltype(CL)> CL_CL_lstsq_solver_copy = CL_CL_lstsq_solver;
+    LinalgLstsqSolver_Type<decltype(CL), decltype(CL)> CL_CL_lstsq_solver_move = std::move(CL_CL_lstsq_solver_copy);
+    CL_CL_lstsq_solver = CL_CL_lstsq_solver_move;
+
     auto CL_CL_x = CL_CL_lstsq_solver.solve(CL, CL);
 
     Matrix<DefDense, T, 3, 3> CL_CL_x_answer({
@@ -897,6 +906,10 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     auto A_Inv = A_inv_solver.inv(A);
 
+    LinalgSolverInv_Type<decltype(A)> A_inv_solver_copy = A_inv_solver;
+    LinalgSolverInv_Type<decltype(A)> A_inv_solver_move = std::move(A_inv_solver_copy);
+    A_inv_solver = A_inv_solver_move;
+
     Matrix<DefDense, T, 3, 3> A_Inv_answer({
         {-6.66666667e-01F, 3.33333333e-01F, 0.0F },
         {6.33333333e-01F, -6.66666667e-01F, 3.00000000e-01F },
@@ -907,6 +920,10 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         "check LinalgSolver inv Dense.");
 
     static auto B_inv_solver = make_LinalgSolverInv<decltype(B)>();
+
+    LinalgSolverInv_Type<decltype(B)> B_inv_solver_copy = B_inv_solver;
+    LinalgSolverInv_Type<decltype(B)> B_inv_solver_move = std::move(B_inv_solver_copy);
+    B_inv_solver = B_inv_solver_move;
 
     auto B_Inv = B_inv_solver.inv(B);
     B_Inv = B_inv_solver.get_answer();
@@ -1973,6 +1990,10 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     Chol_solver.set_division_min(static_cast<T>(1.0e-10));
     Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
+    LinalgSolverCholesky_Type<decltype(K)> Chol_solver_copy = Chol_solver;
+    LinalgSolverCholesky_Type<decltype(K)> Chol_solver_move = std::move(Chol_solver_copy);
+    Chol_solver = std::move(Chol_solver_move);
+
     auto A_ch = Chol_solver.solve(K);
     auto A_ch_dense = A_ch.create_dense();
 
@@ -2300,6 +2321,10 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     QR_solver_dense.set_division_min(static_cast<T>(1.0e-10));
     QR_solver_dense.solve(A);
 
+    LinalgSolverQR_Type<decltype(A)> QR_solver_dense_copy = QR_solver_dense;
+    LinalgSolverQR_Type<decltype(A)> QR_solver_dense_move = std::move(QR_solver_dense_copy);
+    QR_solver_dense = QR_solver_dense_move;
+
     auto Q = QR_solver_dense.get_Q();
     auto R = QR_solver_dense.get_R();
     auto R_dense = R.create_dense();
@@ -2327,6 +2352,10 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     LinalgSolverQR_Type<decltype(B)> QR_solver_diag = make_LinalgSolverQR<decltype(B)>();
     QR_solver_diag.solve(B);
 
+    LinalgSolverQR_Type<decltype(B)> QR_solver_diag_copy = QR_solver_diag;
+    LinalgSolverQR_Type<decltype(B)> QR_solver_diag_move = std::move(QR_solver_diag_copy);
+    QR_solver_diag = QR_solver_diag_move;
+
     auto R_diag = QR_solver_diag.get_R();
     auto R_diag_dense = R_diag.create_dense();
 
@@ -2341,6 +2370,11 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
     LinalgSolverQR_Type<decltype(C)> QR_solver_sparse = make_LinalgSolverQR<decltype(C)>();
     QR_solver_sparse.set_division_min(static_cast<T>(1.0e-10));
+
+    LinalgSolverQR_Type<decltype(C)> QR_solver_sparse_copy = QR_solver_sparse;
+    LinalgSolverQR_Type<decltype(C)> QR_solver_sparse_move = std::move(QR_solver_sparse_copy);
+    QR_solver_sparse = QR_solver_sparse_move;
+
     QR_solver_sparse.solve(C);
     auto C_QR = QR_solver_sparse.get_Q() * QR_solver_sparse.get_R();
 
@@ -2378,6 +2412,11 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     /* 対角行列の固有値 実数 */
     LinalgSolverEigReal_Type<decltype(B)> eig_solver_diag
         = make_LinalgSolverEigReal<decltype(B)>();
+
+    LinalgSolverEigReal_Type<decltype(B)> eig_solver_diag_copy = eig_solver_diag;
+    LinalgSolverEigReal_Type<decltype(B)> eig_solver_diag_move = std::move(eig_solver_diag_copy);
+    eig_solver_diag = eig_solver_diag_move;
+
     eig_solver_diag.solve_eigen_values(B);
 
     auto eigen_values_diag = eig_solver_diag.get_eigen_values();
@@ -2400,6 +2439,10 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         = make_LinalgSolverEigReal<decltype(C)>();
     eig_solver_sparse.set_iteration_max(10);
     eig_solver_sparse.set_division_min(static_cast<T>(1.0e-20));
+
+    LinalgSolverEigReal_Type<decltype(C)> eig_solver_sparse_copy = eig_solver_sparse;
+    LinalgSolverEigReal_Type<decltype(C)> eig_solver_sparse_move = std::move(eig_solver_sparse_copy);
+    eig_solver_sparse = eig_solver_sparse_move;
 
     eig_solver_sparse.solve_eigen_values(C);
 
@@ -2434,6 +2477,10 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         = make_LinalgSolverEigReal<decltype(A0)>();
     eig_solver.set_iteration_max(10);
     eig_solver.solve_eigen_values(A0);
+
+    LinalgSolverEigReal_Type<decltype(A)> eig_solver_copy = eig_solver;
+    LinalgSolverEigReal_Type<decltype(A)> eig_solver_move = std::move(eig_solver_copy);
+    eig_solver = eig_solver_move;
 
     auto eigen_values = eig_solver.get_eigen_values();
 
@@ -2480,6 +2527,10 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     static auto eig_solver_diag_comp = make_LinalgSolverEig<decltype(B)>();
     eig_solver_diag_comp.solve_eigen_values(B);
 
+    LinalgSolverEig_Type<decltype(B)> eig_solver_diag_comp_copy = eig_solver_diag_comp;
+    LinalgSolverEig_Type<decltype(B)> eig_solver_diag_comp_move = std::move(eig_solver_diag_comp_copy);
+    eig_solver_diag_comp = eig_solver_diag_comp_move;
+
     auto eigen_values_comp_diag = eig_solver_diag_comp.get_eigen_values();
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_diag_real(
@@ -2509,6 +2560,10 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     eig_solver_comp_sparse.set_iteration_max(10);
     eig_solver_comp_sparse.set_iteration_max_for_eigen_vector(30);
     eig_solver_comp_sparse.set_division_min(static_cast<T>(1.0e-20));
+
+    LinalgSolverEig_Type<decltype(C)> eig_solver_comp_sparse_copy = eig_solver_comp_sparse;
+    LinalgSolverEig_Type<decltype(C)> eig_solver_comp_sparse_move = std::move(eig_solver_comp_sparse_copy);
+    eig_solver_comp_sparse = eig_solver_comp_sparse_move;
 
     eig_solver_comp_sparse.solve_eigen_values(C);
 
@@ -2559,6 +2614,10 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     eig_solver_comp.set_iteration_max(5);
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
     eig_solver_comp.set_division_min(static_cast<T>(1.0e-20));
+
+    LinalgSolverEig_Type<decltype(A1)> eig_solver_comp_copy = eig_solver_comp;
+    LinalgSolverEig_Type<decltype(A1)> eig_solver_comp_move = std::move(eig_solver_comp_copy);
+    eig_solver_comp = eig_solver_comp_move;
 
     eig_solver_comp.solve_eigen_values(A1);
 

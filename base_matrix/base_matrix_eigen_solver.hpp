@@ -62,7 +62,7 @@ public:
         _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
         _gmres_k_rep_num(other._gmres_k_rep_num) {}
 
-  EigenSolverReal &operator=(EigenSolverReal<T, M> &other) {
+  EigenSolverReal &operator=(const EigenSolverReal<T, M> &other) {
     if (this != &other) {
       this->iteration_max = other.iteration_max;
       this->division_min = other.division_min;
@@ -445,7 +445,7 @@ public:
         _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
         _gmres_k_rep_num(other._gmres_k_rep_num) {}
 
-  EigenSolverComplex &operator=(EigenSolverComplex<T, M> &other) {
+  EigenSolverComplex &operator=(const EigenSolverComplex<T, M> &other) {
     if (this != &other) {
       this->iteration_max = other.iteration_max;
       this->iteration_max_for_eigen_vector =
