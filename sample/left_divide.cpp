@@ -18,8 +18,12 @@ int main() {
                                         ColumnAvailable<false, true, true>>>(
           1.0, 3.0, 8.0, 2.0, 4.0);
 
-  static auto solver = make_LinalgSolver(A, C);
-  auto result = solver.solve(A, C);
+  auto solver = make_LinalgSolver<decltype(A), decltype(C)>();
+  // Or, you can use "LinalgSolver_Type" to declare the type of
+  // LinalgSolver.
+  LinalgSolver_Type<decltype(A), decltype(C)> solver_t = solver;
+
+  auto result = solver_t.solve(A, C);
 
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {
