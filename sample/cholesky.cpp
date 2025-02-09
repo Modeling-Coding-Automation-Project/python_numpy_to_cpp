@@ -12,12 +12,16 @@ int main() {
 
   auto C =
       make_SparseMatrix<SparseAvailable<ColumnAvailable<true, false, false>,
-                                        ColumnAvailable<true, false, true>,
+                                        ColumnAvailable<false, true, true>,
                                         ColumnAvailable<false, true, true>>>(
-          1.0, 3.0, 8.0, 2.0, 4.0);
+          1.0, 8.0, 3.0, 3.0, 4.0);
 
-  static auto solver = make_LinalgSolverCholesky(A);
-  auto SA = solver.solve(A);
+  auto solver = make_LinalgSolverCholesky<decltype(A)>();
+  // Or, you can use "LinalgSolverCholesky_Type" to declare the type of
+  // LinalgSolverCholesky.
+  LinalgSolverCholesky_Type<decltype(A)> solver_t = solver;
+
+  auto SA = solver_t.solve(A);
 
   auto SA_dense = SA.create_dense();
   std::cout << "SA = " << std::endl;

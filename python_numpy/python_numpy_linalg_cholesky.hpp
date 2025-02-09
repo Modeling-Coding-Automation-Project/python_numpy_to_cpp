@@ -9,37 +9,42 @@
 
 namespace PythonNumpy {
 
-template <typename T, std::size_t M, typename SparseAvailable>
-class LinalgSolverCholesky {
+constexpr double DEFAULT_DIVISION_MIN_LINALG_CHOLESKY = 1.0e-10;
+
+template <typename A_Type> class LinalgSolverCholesky {
 public:
   /* Type */
-  using Value_Type = T;
-  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+  using Value_Type = typename A_Type::Value_Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
                 "Value data type must be float or double.");
 
-  using SparseAvailable_Type = SparseAvailable;
+  using SparseAvailable_Type = typename A_Type::SparseAvailable_Type;
+
+  using UpperTriangular_SparseAvailable_Type =
+      CreateSparseAvailableFromIndicesAndPointers<
+          A_Type::COLS, UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
+          UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
+
+private:
+  /* Type */
+  using _T = typename A_Type::Value_Type;
 
 public:
   /* Constructor */
   LinalgSolverCholesky() {}
 
-  LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A) { this->solve(A); }
-
-  LinalgSolverCholesky(const Matrix<DefDiag, T, M> &A) { this->solve(A); }
-
-  LinalgSolverCholesky(const Matrix<DefSparse, T, M, M, SparseAvailable> &A) {
-    this->solve(A);
-  }
-
   /* Copy Constructor */
-  LinalgSolverCholesky(const LinalgSolverCholesky<T, M, SparseAvailable> &other)
-      : _cholesky_decomposed_matrix(other._cholesky_decomposed_matrix),
+  LinalgSolverCholesky(const LinalgSolverCholesky<A_Type> &other)
+      : division_min(other.division_min),
+        _cholesky_decomposed_matrix(other._cholesky_decomposed_matrix),
         _cholesky_decomposed_triangular(other._cholesky_decomposed_triangular),
         _zero_div_flag(other._zero_div_flag) {}
 
-  LinalgSolverCholesky<T, M, SparseAvailable> &
-  operator=(const LinalgSolverCholesky<T, M, SparseAvailable> &other) {
+  LinalgSolverCholesky<A_Type> &
+  operator=(const LinalgSolverCholesky<A_Type> &other) {
     if (this != &other) {
+      this->division_min = other.division_min;
       this->_cholesky_decomposed_matrix = other._cholesky_decomposed_matrix;
       this->_cholesky_decomposed_triangular =
           other._cholesky_decomposed_triangular;
@@ -49,17 +54,18 @@ public:
   }
 
   /* Move Constructor */
-  LinalgSolverCholesky(
-      LinalgSolverCholesky<T, M, SparseAvailable> &&other) noexcept
-      : _cholesky_decomposed_matrix(
+  LinalgSolverCholesky(LinalgSolverCholesky<A_Type> &&other) noexcept
+      : division_min(std::move(other.division_min)),
+        _cholesky_decomposed_matrix(
             std::move(other._cholesky_decomposed_matrix)),
         _cholesky_decomposed_triangular(
             std::move(other._cholesky_decomposed_triangular)),
         _zero_div_flag(std::move(other._zero_div_flag)) {}
 
-  LinalgSolverCholesky<T, M, SparseAvailable> &
-  operator=(LinalgSolverCholesky<T, M, SparseAvailable> &&other) noexcept {
+  LinalgSolverCholesky<A_Type> &
+  operator=(LinalgSolverCholesky<A_Type> &&other) noexcept {
     if (this != &other) {
+      this->division_min = std::move(other.division_min);
       this->_cholesky_decomposed_matrix =
           std::move(other._cholesky_decomposed_matrix);
       this->_cholesky_decomposed_triangular =
@@ -70,91 +76,101 @@ public:
   }
 
   /* Solve function */
-  inline auto solve(const Matrix<DefDense, T, M, M> &A)
-      -> Matrix<DefSparse, T, M, M,
-                CreateSparseAvailableFromIndicesAndPointers<
-                    M, UpperTriangularRowIndices<M, M>,
-                    UpperTriangularRowPointers<M, M>>> {
+  inline auto solve(const Matrix<DefDense, _T, A_Type::COLS, A_Type::COLS> &A)
+      -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+                UpperTriangular_SparseAvailable_Type> {
 
     this->_cholesky_decomposed_matrix =
-        Base::Matrix::cholesky_decomposition<T, M>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->_zero_div_flag);
+        Base::Matrix::cholesky_decomposition<_T, A_Type::COLS>(
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
+            this->_zero_div_flag);
 
-    Base::Matrix::TriangularSparse<T, M, M>::set_values_upper(
-        this->_cholesky_decomposed_triangular,
-        this->_cholesky_decomposed_matrix);
+    Base::Matrix::TriangularSparse<_T, A_Type::COLS, A_Type::COLS>::
+        set_values_upper(this->_cholesky_decomposed_triangular,
+                         this->_cholesky_decomposed_matrix);
 
-    return Matrix<DefSparse, T, M, M,
-                  CreateSparseAvailableFromIndicesAndPointers<
-                      M, UpperTriangularRowIndices<M, M>,
-                      UpperTriangularRowPointers<M, M>>>(
+    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+                  UpperTriangular_SparseAvailable_Type>(
         this->_cholesky_decomposed_triangular);
   }
 
-  inline auto solve(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
+  inline auto solve(const Matrix<DefDiag, _T, A_Type::COLS> &A)
+      -> Matrix<DefDiag, _T, A_Type::COLS> {
 
-    Base::Matrix::DiagMatrix<T, M> Diag(this->_cholesky_decomposed_matrix(0));
+    Base::Matrix::DiagMatrix<_T, A_Type::COLS> Diag(
+        this->_cholesky_decomposed_matrix(0));
 
-    Diag = Base::Matrix::cholesky_decomposition_diag<T, M>(
+    Diag = Base::Matrix::cholesky_decomposition_diag<_T, A_Type::COLS>(
         A.matrix, Diag, this->_zero_div_flag);
 
     this->_cholesky_decomposed_matrix(0) = Diag.data;
 
-    return Matrix<DefDiag, T, M>(Diag);
+    return Matrix<DefDiag, _T, A_Type::COLS>(Diag);
   }
 
-  inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
-      -> Matrix<DefDense, T, M, M> {
+  inline auto solve(const Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+                                 SparseAvailable_Type> &A)
+      -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+                UpperTriangular_SparseAvailable_Type> {
 
     this->_cholesky_decomposed_matrix =
-        Base::Matrix::cholesky_decomposition_sparse<T, M>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->_zero_div_flag);
+        Base::Matrix::cholesky_decomposition_sparse<_T, A_Type::COLS>(
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
+            this->_zero_div_flag);
 
-    return Matrix<DefDense, T, M, M>(this->_cholesky_decomposed_matrix);
+    Base::Matrix::TriangularSparse<_T, A_Type::COLS, A_Type::COLS>::
+        set_values_upper(this->_cholesky_decomposed_triangular,
+                         this->_cholesky_decomposed_matrix);
+
+    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+                  UpperTriangular_SparseAvailable_Type>(
+        this->_cholesky_decomposed_triangular);
+  }
+
+public:
+  /* Function */
+  inline bool get_zero_div_flag() const { return this->_zero_div_flag; }
+
+  inline void set_division_min(const _T &division_min_in) {
+    this->division_min = division_min_in;
   }
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = A_Type::COLS;
+  static constexpr std::size_t ROWS = A_Type::ROWS;
 
-  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<_T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
+public:
+  /* Variable */
+  _T division_min = static_cast<_T>(DEFAULT_DIVISION_MIN_LINALG_CHOLESKY);
 
 private:
   /* Variable */
-  Base::Matrix::Matrix<T, M, M> _cholesky_decomposed_matrix;
-  Base::Matrix::CompiledSparseMatrix<T, M, M, UpperTriangularRowIndices<M, M>,
-                                     UpperTriangularRowPointers<M, M>>
+  Base::Matrix::Matrix<_T, A_Type::COLS, A_Type::COLS>
+      _cholesky_decomposed_matrix;
+  Base::Matrix::CompiledSparseMatrix<
+      _T, A_Type::COLS, A_Type::COLS,
+      UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
+      UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>
       _cholesky_decomposed_triangular =
-          Base::Matrix::TriangularSparse<T, M, M>::create_upper();
+          Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                         A_Type::COLS>::create_upper();
   bool _zero_div_flag = false;
 };
 
 /* make LinalgSolverCholesky */
-template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
-inline auto make_LinalgSolverCholesky(const Matrix<DefDense, T, M, M> &A)
-    -> LinalgSolverCholesky<T, M, SparseAvailable> {
+template <typename A_Type>
+inline auto make_LinalgSolverCholesky(void) -> LinalgSolverCholesky<A_Type> {
 
-  return LinalgSolverCholesky<T, M, SparseAvailable>(A);
+  return LinalgSolverCholesky<A_Type>();
 }
 
-template <typename T, std::size_t M,
-          typename SparseAvailable = SparseAvailable_NoUse<M, M>>
-inline auto make_LinalgSolverCholesky(const Matrix<DefDiag, T, M> &A)
-    -> LinalgSolverCholesky<T, M, SparseAvailable> {
-
-  return LinalgSolverCholesky<T, M, SparseAvailable>(A);
-}
-
-template <typename T, std::size_t M, typename SparseAvailable>
-inline auto
-make_LinalgSolverCholesky(const Matrix<DefSparse, T, M, M, SparseAvailable> &A)
-    -> LinalgSolverCholesky<T, M, SparseAvailable> {
-
-  return LinalgSolverCholesky<T, M, SparseAvailable>(A);
-}
+/* LinalgSolverCholesky Type */
+template <typename A_Type>
+using LinalgSolverCholesky_Type = LinalgSolverCholesky<A_Type>;
 
 } // namespace PythonNumpy
 

@@ -22,8 +22,12 @@ int main() {
                                         ColumnAvailable<false, true, true>>>(
           1.0, 3.0, 8.0, 2.0, 4.0);
 
-  static auto solver = make_LinalgSolver(A);
-  auto result = solver.inv(A);
+  auto solver = make_LinalgSolverInv<decltype(A)>();
+  // Or, you can use "LinalgSolverInv_Type" to declare the type of
+  // LinalgSolverInv.
+  LinalgSolverInv_Type<decltype(A)> solver_t = solver;
+
+  auto result = solver_t.inv(A);
 
   std::cout << "result = " << std::endl;
   for (size_t j = 0; j < result.cols(); ++j) {

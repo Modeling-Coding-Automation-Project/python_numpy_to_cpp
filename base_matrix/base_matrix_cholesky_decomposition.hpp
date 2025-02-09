@@ -14,12 +14,10 @@
 namespace Base {
 namespace Matrix {
 
-constexpr double CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT = 1.0e-20;
-
 template <typename T, std::size_t M>
-inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
-                                              const Matrix<T, M, M> &Y_b,
-                                              bool &zero_div_flag) {
+inline Matrix<T, M, M>
+cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
+                       const T &division_min, bool &zero_div_flag) {
   Matrix<T, M, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
@@ -30,9 +28,7 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt<T>(
-          temp, static_cast<T>(
-                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
       Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = 1; j < M; ++j) {
@@ -49,9 +45,7 @@ inline Matrix<T, M, M> cholesky_decomposition(const Matrix<T, M, M> &U,
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt<T>(
-          temp, static_cast<T>(
-                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
       Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = i + 1; j < M; ++j) {
@@ -101,7 +95,7 @@ template <typename T, std::size_t M, typename RowIndices_U,
           typename RowPointers_U>
 inline Matrix<T, M, M> cholesky_decomposition_sparse(
     const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
-    const Matrix<T, M, M> &Y_b, bool &zero_div_flag) {
+    const Matrix<T, M, M> &Y_b, const T &division_min, bool &zero_div_flag) {
   Matrix<T, M, M> U_dense = Base::Matrix::output_dense_matrix(U);
   Matrix<T, M, M> Y;
 
@@ -113,9 +107,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt<T>(
-          temp, static_cast<T>(
-                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
       Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = 1; j < M; ++j) {
@@ -132,9 +124,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
         return Y_b;
       }
 
-      T temp_inv = Base::Math::rsqrt<T>(
-          temp, static_cast<T>(
-                    Base::Matrix::CHOLESKY_DECOMPOSITION_DIVISION_MIN_DEFAULT));
+      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
       Y(i, i) = static_cast<T>(1) / temp_inv;
 
       for (std::size_t j = i + 1; j < M; ++j) {

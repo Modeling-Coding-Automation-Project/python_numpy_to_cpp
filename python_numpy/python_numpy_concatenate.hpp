@@ -6,6 +6,7 @@
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
+#include <utility>
 
 namespace PythonNumpy {
 
@@ -463,6 +464,47 @@ concatenate_horizontally(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                 ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                                        SparseAvailable_B>>(
       Base::Matrix::concatenate_horizontally(A.matrix, B.matrix));
+}
+
+/* Concatenation Type */
+template <typename A_Type, typename B_Type>
+using ConcatenateVertically_Type = decltype(concatenate_vertically(
+    std::declval<A_Type>(), std::declval<B_Type>()));
+
+template <typename A_Type, typename B_Type>
+using ConcatenateHorizontally_Type = decltype(concatenate_horizontally(
+    std::declval<A_Type>(), std::declval<B_Type>()));
+
+/* Concatenate block Type */
+template <typename A_Type, typename B_Type, typename C_Type, typename D_Type>
+using ConcatenateBlock_Type =
+    ConcatenateHorizontally_Type<ConcatenateVertically_Type<A_Type, C_Type>,
+                                 ConcatenateVertically_Type<B_Type, D_Type>>;
+
+template <typename A_Type, typename B_Type, typename C_Type, typename D_Type>
+inline void update_block_concatenated_matrix(
+    ConcatenateBlock_Type<A_Type, B_Type, C_Type, D_Type> &Y, const A_Type &A,
+    const B_Type &B, const C_Type &C, const D_Type &D) {
+
+  ConcatenateVertically_Type<A_Type, C_Type> A_v_C =
+      concatenate_vertically(A, C);
+  ConcatenateVertically_Type<B_Type, D_Type> B_v_D =
+      concatenate_vertically(B, D);
+
+  Base::Matrix::update_horizontally_concatenated_matrix(Y.matrix, A_v_C.matrix,
+                                                        B_v_D.matrix);
+}
+
+template <typename A_Type, typename B_Type, typename C_Type, typename D_Type>
+inline auto concatenate_block(const A_Type &A, const B_Type &B, const C_Type &C,
+                              const D_Type &D)
+    -> ConcatenateBlock_Type<A_Type, B_Type, C_Type, D_Type> {
+
+  ConcatenateBlock_Type<A_Type, B_Type, C_Type, D_Type> Y;
+
+  update_block_concatenated_matrix(Y, A, B, C, D);
+
+  return Y;
 }
 
 } // namespace PythonNumpy

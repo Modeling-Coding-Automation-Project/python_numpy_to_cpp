@@ -302,20 +302,12 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
     /* LU分解 */
     Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
-    Matrix<T, 3, 3> H_lu({ {0, 2, 9}, {8, 5, 4}, {6, 3, 7} });
+    LUDecomposition<T, 3> lu;
+    lu.division_min = static_cast<T>(1.0e-10F);
 
-    LUDecomposition<T, 3> lu(H, static_cast<T>(1.0e-10F));
+    Vector<T, 3> xx = lu.solve(H, b);
+
     Matrix<T, 3, 3> L = lu.get_L();
-    Vector<T, 3> xx = lu.solve(b);
-
-    //std::cout << "L = " << std::endl;
-    //for (size_t j = 0; j < 3; ++j) {
-    //    for (size_t i = 0; i < 3; ++i) {
-    //        std::cout << L(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
 
     Matrix<T, 3, 3> L_answer({
         { 1, 0, 0 },
@@ -325,20 +317,11 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
     tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition L.");
 
-    //std::cout << "A^-1 * b = ";
-    //for (size_t i = 0; i < xx.size(); ++i) {
-    //    std::cout << xx[i] << " ";
-    //}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
-
     Vector<T, 3> xx_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
         "check LU Decomposition solve.");
 
     T det = lu.get_determinant();
-    //std::cout << "det = " << det << std::endl;
-    //std::cout << std::endl;
 
     T det_answer = -95.0F;
     tester.expect_near(det, det_answer, NEAR_LIMIT_STRICT,
@@ -1495,12 +1478,14 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     D[1] = 2.0F;
     D[2] = 3.0F;
 
+    T division_min = static_cast<T>(1.0e-10F);
+
     /* コレスキー分解 */
     Matrix<T, 3, 3> K({ {10, 1, 2}, {1, 20, 4}, {2, 4, 30} });
 
     Matrix<T, 3, 3> K_ch;
     bool flag = false;
-    K_ch = cholesky_decomposition(K, K_ch, flag);
+    K_ch = cholesky_decomposition(K, K_ch, division_min, flag);
 
     //std::cout << "K_ch = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
@@ -1543,7 +1528,7 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 1, 2, 1, 2 >,
         RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
-    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, flag);
+    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, division_min, flag);
 
     Matrix<T, 3, 3> K_ch_sparse_2 = matrix_multiply_AT_mul_B(K_ch_sparse, K_ch_sparse);
 
@@ -1576,7 +1561,9 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
-    QRDecomposition<T, 3, 3> qr(C_dense, static_cast<T>(1.0e-10F));
+    QRDecomposition<T, 3, 3> qr;
+    qr.division_min = static_cast<T>(1.0e-10F);
+    qr.solve(C_dense);
 
     Matrix<T, 3, 3> Q = qr.get_Q();
     Matrix<T, 3, 3> R = qr.get_R();
@@ -1598,8 +1585,11 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
     tester.expect_near(Q.data, Q_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition Q.");
 
+
     QRDecompositionSparse<T, 3, 3, RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> qr_s(SparseCc, static_cast<T>(1.0e-10F));
+        RowPointers<0, 1, 3, 5>> qr_s;
+    qr_s.division_min = static_cast<T>(1.0e-10F);
+    qr_s.solve(SparseCc);
 
     Matrix<T, 3, 3> Q_s = qr_s.get_Q();
 
@@ -1629,7 +1619,10 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
     tester.expect_near(R.data, R_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition R.");
 
-    QRDecompositionDiag<T, 3> qr_d(DiagJ, static_cast<T>(1.0e-10F));
+    QRDecompositionDiag<T, 3> qr_d;
+    qr_d.division_min = static_cast<T>(1.0e-10F);
+    qr_d.solve(DiagJ);
+
     DiagMatrix<T, 3> Q_d = qr_d.get_Q();
 
     DiagMatrix<T, 3> Q_d_answer({ 1, 1, 1 });
@@ -1883,7 +1876,12 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     Matrix<T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<T, 4, 4> Ae({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
 
-    EigenSolverReal<T, 3> eigen_solver(A0, 5, static_cast<T>(1.0e-20F));
+    EigenSolverReal<T, 3> eigen_solver;
+    eigen_solver.set_iteration_max(5);
+    eigen_solver.set_division_min(static_cast<T>(1.0e-20F));
+
+    eigen_solver.solve_eigen_values(A0);
+
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
 #else
@@ -1911,6 +1909,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     tester.expect_near(eigen_values_sorted, eigen_values_answer, NEAR_LIMIT_SOFT,
         "check EigenSolverReal eigen values.");
+
 
     eigen_solver.continue_solving_eigen_values();
     eigen_solver.continue_solving_eigen_values();
@@ -1952,7 +1951,13 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
-    EigenSolverComplex<T, 3> eigen_solver_comp(A1, 5, static_cast<T>(1.0e-20F));
+    EigenSolverComplex<T, 3> eigen_solver_comp;
+    eigen_solver_comp.set_iteration_max(5);
+    eigen_solver_comp.set_iteration_max_for_eigen_vector(15);
+    eigen_solver_comp.set_division_min(static_cast<T>(1.0e-20F));
+
+    eigen_solver_comp.solve_eigen_values(A1);
+
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
     std::vector<Complex<T>> eigen_values_comp
 #else

@@ -7,14 +7,23 @@ using namespace PythonNumpy;
 int main() {
 
   auto A = make_DenseMatrix<3, 3>(1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 9.0, 8.0, 7.0);
+  // If you want to use specific type of Dense Matrix, you can use
+  // "DenseMatrix_Type".
+  DenseMatrix_Type<double, 3, 3> A_t = A;
 
   auto B = make_DiagMatrix<3>(1.0, 2.0, 3.0);
+  // If you want to use specific type of Diag Matrix, you can use
+  // "DiagMatrix_Type".
+  DiagMatrix_Type<double, 3> B_t = B;
 
-  auto C =
-      make_SparseMatrix<SparseAvailable<ColumnAvailable<true, false, false>,
-                                        ColumnAvailable<true, false, true>,
-                                        ColumnAvailable<false, true, true>>>(
-          1.0, 3.0, 8.0, 2.0, 4.0);
+  using SparseAvailable_C = SparseAvailable<ColumnAvailable<true, false, false>,
+                                            ColumnAvailable<true, false, true>,
+                                            ColumnAvailable<false, true, true>>;
+
+  auto C = make_SparseMatrix<SparseAvailable_C>(1.0, 3.0, 8.0, 2.0, 4.0);
+  // If you want to use specific type of Sparse Matrix, you can use
+  // "SparseMatrix_Type".
+  SparseMatrix_Type<double, SparseAvailable_C> C_t = C;
 
   auto result = A * C;
 

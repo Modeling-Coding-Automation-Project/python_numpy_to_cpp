@@ -566,7 +566,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    auto Zeros = make_DenseMatrixZeros<T, 4, 3>();
+    DenseMatrix_Type<T, 4, 3> Zeros = make_DenseMatrixZeros<T, 4, 3>();
 
     Matrix<DefDense, T, 4, 3> Zeros_answer;
 
@@ -606,7 +606,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Empty_dense.matrix.data, Empty_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixEmpty.");
 
-    auto Diag = make_DiagMatrix<3>(
+    DiagMatrix_Type<T, 3> Diag = make_DiagMatrix<3>(
         static_cast<T>(1),
         static_cast<T>(2),
         static_cast<T>(3));
@@ -661,7 +661,8 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(SparseZeros_dense.matrix.data, SparseZeros_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixZeros.");
 
-    auto Sparse = make_SparseMatrix<SparseAvailable_C>(
+    SparseMatrix_Type<T, SparseAvailable_C> Sparse
+        = make_SparseMatrix<SparseAvailable_C>(
         static_cast<T>(1),
         static_cast<T>(3),
         static_cast<T>(8),
@@ -714,7 +715,10 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
 
-    static auto A_A_linalg_solver = make_LinalgSolver(A, A);
+    LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver
+        = make_LinalgSolver<decltype(A), decltype(A)>();
+    A_A_linalg_solver.set_division_min(static_cast<T>(1.0e-10));
+    A_A_linalg_solver.set_decay_rate(static_cast<T>(0));
 
     auto A_A_x = A_A_linalg_solver.solve(A, A);
 
@@ -727,7 +731,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_A_x.matrix.data, A_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Dense and Dense.");
 
-    static auto A_B_linalg_solver = make_LinalgSolver(A, B);
+    static auto A_B_linalg_solver = make_LinalgSolver<decltype(A), decltype(B)>();
 
     auto A_B_x = A_B_linalg_solver.solve(A, B);
 
@@ -740,7 +744,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_B_x.matrix.data, A_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Dense and Diag.");
 
-    static auto A_C_linalg_solver = make_LinalgSolver(A, C);
+    static auto A_C_linalg_solver = make_LinalgSolver<decltype(A), decltype(C)>();
 
     auto A_C_x = A_C_linalg_solver.solve(A, C);
 
@@ -753,7 +757,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_C_x.matrix.data, A_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Dense and Sparse.");
 
-    static auto B_A_linalg_solver = make_LinalgSolver(B, A);
+    static auto B_A_linalg_solver = make_LinalgSolver<decltype(B), decltype(A)>();
 
     auto B_A_x = B_A_linalg_solver.solve(B, A);
 
@@ -766,7 +770,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_A_x.matrix.data, B_A_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Diag and Dense.");
 
-    static auto B_B_linalg_solver = make_LinalgSolver(B, B);
+    static auto B_B_linalg_solver = make_LinalgSolver<decltype(B), decltype(B)>();
 
     auto B_B_x = B_B_linalg_solver.solve(B, B);
     auto B_B_x_dense = B_B_x.create_dense();
@@ -780,7 +784,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_B_x_dense.matrix.data, B_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Diag and Diag.");
 
-    static auto B_C_linalg_solver = make_LinalgSolver(B, C);
+    static auto B_C_linalg_solver = make_LinalgSolver<decltype(B), decltype(C)>();
 
     auto B_C_x = B_C_linalg_solver.solve(B, C);
 
@@ -793,7 +797,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_C_x.matrix.data, B_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Diag and Sparse.");
 
-    static auto C_C_linalg_solver = make_LinalgSolver(C, C);
+    static auto C_C_linalg_solver = make_LinalgSolver<decltype(C), decltype(C)>();
 
     auto C_C_x = C_C_linalg_solver.solve(C, C);
 
@@ -818,7 +822,9 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         >
         CL({ 1, 3, 2, 8, 4, 1 });
 
-    static auto AL_AL_lstsq_solver = make_LinalgLstsqSolver(AL, AL);
+    static auto AL_AL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(AL)>();
+    AL_AL_lstsq_solver.set_division_min(static_cast<T>(1.0e-10));
+    AL_AL_lstsq_solver.set_decay_rate(static_cast<T>(0));
 
     auto AL_AL_x = AL_AL_lstsq_solver.solve(AL, AL);
 
@@ -831,7 +837,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_AL_x.matrix.data, AL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Dense.");
 
-    static auto AL_BL_lstsq_solver = make_LinalgLstsqSolver(AL, BL);
+    static auto AL_BL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(BL)>();
 
     auto AL_BL_x = AL_BL_lstsq_solver.solve(AL, BL);
 
@@ -844,7 +850,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_BL_x.matrix.data, AL_BL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Diag.");
 
-    static auto AL_CL_lstsq_solver = make_LinalgLstsqSolver(AL, CL);
+    static auto AL_CL_lstsq_solver = make_LinalgLstsqSolver<decltype(AL), decltype(CL)>();
 
     auto AL_CL_x = AL_CL_lstsq_solver.solve(AL, CL);
 
@@ -857,7 +863,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(AL_CL_x.matrix.data, AL_CL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Dense and Sparse.");
 
-    static auto CL_AL_lstsq_solver = make_LinalgLstsqSolver(CL, AL);
+    static auto CL_AL_lstsq_solver = make_LinalgLstsqSolver<decltype(CL), decltype(AL)>();
 
     auto CL_AL_x = CL_AL_lstsq_solver.solve(CL, AL);
 
@@ -870,7 +876,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(CL_AL_x.matrix.data, CL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Sparse and Dense.");
 
-    static auto CL_CL_lstsq_solver = make_LinalgLstsqSolver(CL, CL);
+    LinalgLstsqSolver_Type<decltype(CL), decltype(CL )> CL_CL_lstsq_solver
+        = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
 
     auto CL_CL_x = CL_CL_lstsq_solver.solve(CL, CL);
 
@@ -884,7 +891,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         "check LinalgLstsqSolver solve Sparse and Sparse.");
 
     /* 逆行列 */
-    static auto A_inv_solver = make_LinalgSolver(A);
+    LinalgSolverInv_Type<decltype(A)> A_inv_solver
+        = make_LinalgSolverInv<decltype(A)>();
 
     auto A_Inv = A_inv_solver.inv(A);
 
@@ -897,7 +905,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_Inv.matrix.data, A_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Dense.");
 
-    static auto B_inv_solver = make_LinalgSolver(B);
+    static auto B_inv_solver = make_LinalgSolverInv<decltype(B)>();
 
     auto B_Inv = B_inv_solver.inv(B);
     B_Inv = B_inv_solver.get_answer();
@@ -912,7 +920,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_Inv_dense.matrix.data, B_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Diag.");
 
-    static auto C_inv_solver = make_LinalgSolver(C);
+    static auto C_inv_solver = make_LinalgSolverInv<decltype(C)>();
 
     auto C_Inv = C_inv_solver.inv(C);
 
@@ -925,6 +933,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse.");
 
+
     /* 逆行列 複素数 */
     Matrix<DefDense, Complex<T>, 3, 3> A_comp({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDiag, Complex<T>, 3> B_comp({ 1, 2, 3 });
@@ -935,7 +944,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         ColumnAvailable<false, true, true>>
         > C_comp({ 1, 3, 8, 2, 4 });
 
-    static auto A_comp_inv_solver = make_LinalgSolver(A_comp);
+    static auto A_comp_inv_solver = make_LinalgSolverInv<decltype(A_comp)>();
 
     auto A_comp_Inv = A_comp_inv_solver.inv(A_comp);
     auto A_comp_Inv_real = A_comp_Inv.real();
@@ -962,7 +971,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         A_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Dense complex imag.");
 
-    static auto B_comp_inv_solver = make_LinalgSolver(B_comp);
+    static auto B_comp_inv_solver = make_LinalgSolverInv<decltype(B_comp)>();
 
     auto B_comp_Inv = B_comp_inv_solver.inv(B_comp);
     auto B_comp_Inv_real = B_comp_Inv.real();
@@ -1009,7 +1018,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_comp_imag_dense.matrix.data, C_comp_imag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix get imag.");
 
-    static auto C_comp_inv_solver = make_LinalgSolver(C_comp);
+    static auto C_comp_inv_solver = make_LinalgSolverInv<decltype(C_comp)>();
 
     auto C_comp_Inv = C_comp_inv_solver.inv(C_comp);
     auto C_comp_Inv_real = C_comp_Inv.real();
@@ -1077,6 +1086,8 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
     /* 結合 */
     auto A_v_A = concatenate_vertically(A, A);
+    ConcatenateVertically_Type<decltype(A), decltype(A)> A_v_A_t;
+    A_v_A_t = A_v_A;
 
     Matrix<DefDense, T, 6, 3> A_v_A_answer({
         { 1, 2, 3 },
@@ -1087,7 +1098,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 9, 8, 7 }
         });
 
-    tester.expect_near(A_v_A.matrix.data, A_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_v_A_t.matrix.data, A_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Dense.");
 
     update_vertically_concatenated_matrix(A_v_A, static_cast<T>(2) * A, A);
@@ -1105,7 +1116,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update vertically concatenated matrix Dense and Dense.");
 
     auto A_v_B = concatenate_vertically(A, B);
-    auto A_v_B_dense = A_v_B.create_dense();
+    ConcatenateVertically_Type<decltype(A), decltype(B)> A_v_B_t;
+    A_v_B_t = A_v_B;
+    auto A_v_B_t_dense = A_v_B_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> A_v_B_answer({
         { 1, 2, 3 },
@@ -1116,11 +1129,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 0, 3 }
         });
 
-    tester.expect_near(A_v_B_dense.matrix.data, A_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_v_B_t_dense.matrix.data, A_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Diag.");
 
     update_vertically_concatenated_matrix(A_v_B, A, static_cast<T>(2) * B);
-    A_v_B_dense = A_v_B.create_dense();
+    auto A_v_B_dense = A_v_B.create_dense();
 
     Matrix<DefDense, T, 6, 3> A_v_B_answer_2({
         { 1, 2, 3 },
@@ -1136,7 +1149,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
 
     auto A_v_C = concatenate_vertically(A, C);
-    auto A_v_C_dense = A_v_C.create_dense();
+    ConcatenateVertically_Type<decltype(A), decltype(C)> A_v_C_t;
+    A_v_C_t = A_v_C;
+    auto A_v_C_t_dense = A_v_C_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> A_v_C_answer({
         { 1, 2, 3 },
@@ -1147,11 +1162,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 2, 4 }
         });
 
-    tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_v_C_t_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Sparse.");
 
     update_vertically_concatenated_matrix(A_v_C, A, static_cast<T>(2) * C);
-    A_v_C_dense = A_v_C.create_dense();
+    auto A_v_C_dense = A_v_C.create_dense();
 
     Matrix<DefDense, T, 6, 3> A_v_C_answer_2({
         { 1, 2, 3 },
@@ -1166,7 +1181,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update vertically concatenated matrix Dense and Sparse.");
 
     auto A_v_E = concatenate_vertically(A, Empty);
-    auto A_v_E_dense = A_v_E.create_dense();
+    ConcatenateVertically_Type<decltype(A), decltype(Empty)> A_v_E_t;
+    A_v_E_t = A_v_E;
+    auto A_v_E_t_dense = A_v_E_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> A_v_E_answer({
         { 1, 2, 3 },
@@ -1177,11 +1194,28 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 0, 0 }
         });
 
-    tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(A_v_E_t_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Dense and Empty.");
 
+    update_vertically_concatenated_matrix(A_v_E, static_cast<T>(2) * A, Empty);
+    auto A_v_E_dense = A_v_E.create_dense();
+
+    Matrix<DefDense, T, 6, 3> A_v_E_answer_2({
+        { 2, 4, 6 },
+        { 10, 8, 12 },
+        { 18, 16, 14 },
+        { 0, 0, 0 },
+        { 0, 0, 0 },
+        { 0, 0, 0 }
+        });
+
+    tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check update vertically concatenated matrix Dense and Empty.");
+
     auto B_v_A = concatenate_vertically(B, A);
-    auto B_v_A_dense = B_v_A.create_dense();
+    ConcatenateVertically_Type<decltype(B), decltype(A)> B_v_A_t;
+    B_v_A_t = B_v_A;
+    auto B_v_A_t_dense = B_v_A_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_A_answer({
         { 1, 0, 0 },
@@ -1192,11 +1226,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 9, 8, 7 }
         });
 
-    tester.expect_near(B_v_A_dense.matrix.data, B_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(B_v_A_t_dense.matrix.data, B_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Diag and Dense.");
 
     update_vertically_concatenated_matrix(B_v_A, static_cast<T>(2) * B, A);
-    B_v_A_dense = B_v_A.create_dense();
+    auto B_v_A_dense = B_v_A.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_A_answer_2({
         { 2, 0, 0 },
@@ -1211,7 +1245,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update vertically concatenated matrix Diag and Dense.");
 
     auto B_v_B = concatenate_vertically(B, B * static_cast<T>(2));
-    auto B_v_B_dense = B_v_B.create_dense();
+    ConcatenateVertically_Type<decltype(B), decltype(B)> B_v_B_t;
+    B_v_B_t = B_v_B;
+    auto B_v_B_t_dense = B_v_B_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_B_answer({
         { 1, 0, 0 },
@@ -1222,11 +1258,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 0, 6 }
         });
 
-    tester.expect_near(B_v_B_dense.matrix.data, B_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(B_v_B_t_dense.matrix.data, B_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Diag and Diag.");
 
     update_vertically_concatenated_matrix(B_v_B, static_cast<T>(2) * B, B);
-    B_v_B_dense = B_v_B.create_dense();
+    auto B_v_B_dense = B_v_B.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_B_answer_2({
         { 2, 0, 0 },
@@ -1241,7 +1277,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update vertically concatenated matrix Diag and Diag.");
 
     auto B_v_C = concatenate_vertically(B, C);
-    auto B_v_C_dense = B_v_C.create_dense();
+    ConcatenateVertically_Type<decltype(B), decltype(C)> B_v_C_t;
+    B_v_C_t = B_v_C;
+    auto B_v_C_t_dense = B_v_C_t.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_C_answer({
         { 1, 0, 0 },
@@ -1252,11 +1290,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 2, 4 }
         });
 
-    tester.expect_near(B_v_C_dense.matrix.data, B_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(B_v_C_t_dense.matrix.data, B_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Diag and Sparse.");
 
     update_vertically_concatenated_matrix(B_v_C, B, static_cast<T>(2) * C);
-    B_v_C_dense = B_v_C.create_dense();
+    auto B_v_C_dense = B_v_C.create_dense();
 
     Matrix<DefDense, T, 6, 3> B_v_C_answer_2({
         { 1, 0, 0 },
@@ -1286,7 +1324,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate vertically Diag and Empty.");
 
     auto C_v_A = concatenate_vertically(C, A);
-    auto C_v_A_dense = C_v_A.create_dense();
+    ConcatenateVertically_Type<decltype(C), decltype(A)> C_v_A_t;
+    C_v_A_t = C_v_A;
+    auto C_v_A_t_dense = C_v_A.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_A_answer({
         { 1, 0, 0 },
@@ -1297,11 +1337,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 9, 8, 7 },
         });
 
-    tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(C_v_A_t_dense.matrix.data, C_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Sparse and Dense.");
 
     update_vertically_concatenated_matrix(C_v_A, C, static_cast<T>(2) * A);
-    C_v_A_dense = C_v_A.create_dense();
+    auto C_v_A_dense = C_v_A.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_A_answer_2({
         { 1, 0, 0 },
@@ -1331,7 +1371,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate vertically Empty and Dense.");
 
     auto C_v_B = concatenate_vertically(C, B);
-    auto C_v_B_dense = C_v_B.create_dense();
+    ConcatenateVertically_Type<decltype(C), decltype(B)> C_v_B_t;
+    C_v_B_t = C_v_B;
+    auto C_v_B_t_dense = C_v_B.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_B_answer({
         { 1, 0, 0 },
@@ -1342,11 +1384,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         { 0, 0, 3 }
         });
 
-    tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(C_v_B_t_dense.matrix.data, C_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Sparse and Diag.");
 
     update_vertically_concatenated_matrix(C_v_B, C, static_cast<T>(2) * B);
-    C_v_B_dense = C_v_B.create_dense();
+    auto C_v_B_dense = C_v_B.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_B_answer_2({
         { 1, 0, 0 },
@@ -1376,7 +1418,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate vertically Empty and Diag.");
 
     auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
-    auto C_v_C_dense = C_v_C.create_dense();
+    ConcatenateVertically_Type<decltype(C), decltype(C)> C_v_C_t;
+    C_v_C_t = C_v_C;
+    auto C_v_C_t_dense = C_v_C.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_C_answer({
     { 1, 0, 0 },
@@ -1387,11 +1431,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     { 0, 4, 8 }
         });
 
-    tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(C_v_C_t_dense.matrix.data, C_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate vertically Sparse and Sparse.");
 
     update_vertically_concatenated_matrix(C_v_C, static_cast<T>(2) * C, C);
-    C_v_C_dense = C_v_C.create_dense();
+    auto C_v_C_dense = C_v_C.create_dense();
 
     Matrix<DefDense, T, 6, 3> C_v_C_answer_2({
         { 2, 0, 0 },
@@ -1421,6 +1465,8 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate vertically Empty and Sparse.");
 
     auto AL_h_AL = concatenate_horizontally(AL, AL);
+    ConcatenateHorizontally_Type<decltype(AL), decltype(AL)> AL_h_AL_t;
+    AL_h_AL_t = AL_h_AL;
 
     Matrix<DefDense, T, 4, 6> AL_h_AL_answer({
         {1, 2, 3, 1, 2, 3},
@@ -1429,7 +1475,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {2, 2, 3, 2, 2, 3}
         });
 
-    tester.expect_near(AL_h_AL.matrix.data, AL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(AL_h_AL_t.matrix.data, AL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Dense and Dense.");
 
     update_horizontally_concatenated_matrix(AL_h_AL, static_cast<T>(2) * AL, AL);
@@ -1445,7 +1491,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update horizontally concatenated matrix Dense and Dense.");
 
     auto AL_h_BL = concatenate_horizontally(AL, BL);
-    auto AL_h_BL_dense = AL_h_BL.create_dense();
+    ConcatenateHorizontally_Type<decltype(AL), decltype(BL)> AL_h_BL_t;
+    AL_h_BL_t = AL_h_BL;
+    auto AL_h_BL_t_dense = AL_h_BL_t.create_dense();
 
     Matrix<DefDense, T, 4, 7> AL_h_BL_answer({
         {1, 2, 3, 1, 0, 0, 0},
@@ -1454,11 +1502,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {2, 2, 3, 0, 0, 0, 4}
         });
 
-    tester.expect_near(AL_h_BL_dense.matrix.data, AL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(AL_h_BL_t_dense.matrix.data, AL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Dense and Diag.");
 
     update_horizontally_concatenated_matrix(AL_h_BL, AL, static_cast<T>(2) * BL);
-    AL_h_BL_dense = AL_h_BL.create_dense();
+    auto AL_h_BL_dense = AL_h_BL.create_dense();
 
     Matrix<DefDense, T, 4, 7> AL_h_BL_answer_2({
         {1, 2, 3, 2, 0, 0, 0},
@@ -1471,7 +1519,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update horizontally concatenated matrix Dense and Diag.");
 
     auto AL_h_CL = concatenate_horizontally(AL, CL);
-    auto AL_h_CL_dense = AL_h_CL.create_dense();
+    ConcatenateHorizontally_Type<decltype(AL), decltype(CL)> AL_h_CL_t;
+    AL_h_CL_t = AL_h_CL;
+    auto AL_h_CL_t_dense = AL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 6> AL_h_CL_answer({
         {1, 2, 3, 1, 3, 0},
@@ -1480,11 +1530,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {2, 2, 3, 0, 1, 0}
         });
 
-    tester.expect_near(AL_h_CL_dense.matrix.data, AL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(AL_h_CL_t_dense.matrix.data, AL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Dense and Sparse.");
 
     update_horizontally_concatenated_matrix(AL_h_CL, AL, static_cast<T>(2) * CL);
-    AL_h_CL_dense = AL_h_CL.create_dense();
+    auto AL_h_CL_dense = AL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 6> AL_h_CL_answer_2({
         {1, 2, 3, 2, 6, 0},
@@ -1510,7 +1560,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate horizontally Dense and Empty.");
 
     auto BL_h_AL = concatenate_horizontally(BL, AL);
-    auto BL_h_AL_dense = BL_h_AL.create_dense();
+    ConcatenateHorizontally_Type<decltype(BL), decltype(AL)> BL_h_AL_t;
+    BL_h_AL_t = BL_h_AL;
+    auto BL_h_AL_t_dense = BL_h_AL.create_dense();
 
     Matrix<DefDense, T, 4, 7> BL_h_AL_answer({
         {1, 0, 0, 0, 1, 2, 3},
@@ -1519,11 +1571,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 0, 0, 4, 2, 2, 3}
         });
 
-    tester.expect_near(BL_h_AL_dense.matrix.data, BL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(BL_h_AL_t_dense.matrix.data, BL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Dense.");
 
     update_horizontally_concatenated_matrix(BL_h_AL, static_cast<T>(2) * BL, AL);
-    BL_h_AL_dense = BL_h_AL.create_dense();
+    auto BL_h_AL_dense = BL_h_AL.create_dense();
 
     Matrix<DefDense, T, 4, 7> BL_h_AL_answer_2({
         {2, 0, 0, 0, 1, 2, 3},
@@ -1536,7 +1588,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update horizontally concatenated matrix Diag and Dense.");
 
     auto BL_h_BL = concatenate_horizontally(BL, BL * static_cast<T>(2));
-    auto BL_h_BL_dense = BL_h_BL.create_dense();
+    ConcatenateHorizontally_Type<decltype(BL), decltype(BL)> BL_h_BL_t;
+    BL_h_BL_t = BL_h_BL;
+    auto BL_h_BL_t_dense = BL_h_BL.create_dense();
 
     Matrix<DefDense, T, 4, 8> BL_h_BL_answer({
         {1, 0, 0, 0, 2, 0, 0, 0},
@@ -1545,11 +1599,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 0, 0, 4, 0, 0, 0, 8}
         });
 
-    tester.expect_near(BL_h_BL_dense.matrix.data, BL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(BL_h_BL_t_dense.matrix.data, BL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Diag.");
 
     update_horizontally_concatenated_matrix(BL_h_BL, static_cast<T>(2) * BL, BL);
-    BL_h_BL_dense = BL_h_BL.create_dense();
+    auto BL_h_BL_dense = BL_h_BL.create_dense();
 
     Matrix<DefDense, T, 4, 8> BL_h_BL_answer_2({
         {2, 0, 0, 0, 1, 0, 0, 0},
@@ -1562,7 +1616,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check update horizontally concatenated matrix Diag and Diag.");
 
     auto BL_h_CL = concatenate_horizontally(BL, CL);
-    auto BL_h_CL_dense = BL_h_CL.create_dense();
+    ConcatenateHorizontally_Type<decltype(BL), decltype(CL)> BL_h_CL_t;
+    BL_h_CL_t = BL_h_CL;
+    auto BL_h_CL_t_dense = BL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 7> BL_h_CL_answer({
         {1, 0, 0, 0, 1, 3, 0},
@@ -1571,11 +1627,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 0, 0, 4, 0, 1, 0}
         });
 
-    tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(BL_h_CL_t_dense.matrix.data, BL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Diag and Sparse.");
 
     update_horizontally_concatenated_matrix(BL_h_CL, static_cast<T>(2) * BL, CL);
-    BL_h_CL_dense = BL_h_CL.create_dense();
+    auto BL_h_CL_dense = BL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 7> BL_h_CL_answer_2({
         {2, 0, 0, 0, 1, 3, 0},
@@ -1601,7 +1657,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate horizontally Diag and Empty.");
 
     auto CL_h_AL = concatenate_horizontally(CL, AL);
-    auto CL_h_AL_dense = CL_h_AL.create_dense();
+    ConcatenateHorizontally_Type<decltype(CL), decltype(AL)> CL_h_AL_t;
+    CL_h_AL_t = CL_h_AL;
+    auto CL_h_AL_t_dense = CL_h_AL.create_dense();
 
     Matrix<DefDense, T, 4, 6> CL_h_AL_answer({
         {1, 3, 0, 1, 2, 3},
@@ -1610,11 +1668,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 1, 0, 2, 2, 3}
         });
 
-    tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(CL_h_AL_t_dense.matrix.data, CL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Dense.");
 
     update_horizontally_concatenated_matrix(CL_h_AL, CL, static_cast<T>(2) * AL);
-    CL_h_AL_dense = CL_h_AL.create_dense();
+    auto CL_h_AL_dense = CL_h_AL.create_dense();
 
     Matrix<DefDense, T, 4, 6> CL_h_AL_answer_2({
         {1, 3, 0, 2, 4, 6},
@@ -1640,7 +1698,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate horizontally Empty and Dense.");
 
     auto CL_h_BL = concatenate_horizontally(CL, BL);
-    auto CL_h_BL_dense = CL_h_BL.create_dense();
+    ConcatenateHorizontally_Type<decltype(CL), decltype(BL)> CL_h_BL_t;
+    CL_h_BL_t = CL_h_BL;
+    auto CL_h_BL_t_dense = CL_h_BL.create_dense();
 
     Matrix<DefDense, T, 4, 7> CL_h_BL_answer({
         {1, 3, 0, 1, 0, 0, 0},
@@ -1649,11 +1709,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 1, 0, 0, 0, 0, 4}
         });
 
-    tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(CL_h_BL_t_dense.matrix.data, CL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Diag.");
 
     update_horizontally_concatenated_matrix(CL_h_BL, CL, static_cast<T>(2) * BL);
-    CL_h_BL_dense = CL_h_BL.create_dense();
+    auto CL_h_BL_dense = CL_h_BL.create_dense();
 
     Matrix<DefDense, T, 4, 7> CL_h_BL_answer_2({
         {1, 3, 0, 2, 0, 0, 0},
@@ -1679,7 +1739,9 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate horizontally Empty and Diag.");
 
     auto CL_h_CL = concatenate_horizontally(CL, CL);
-    auto CL_h_CL_dense = CL_h_CL.create_dense();
+    ConcatenateHorizontally_Type<decltype(CL), decltype(CL)> CL_h_CL_t;
+    CL_h_CL_t = CL_h_CL;
+    auto CL_h_CL_t_dense = CL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 6> CL_h_CL_answer({
         {1, 3, 0, 1, 3, 0},
@@ -1688,11 +1750,11 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         {0, 1, 0, 0, 1, 0}
         });
 
-    tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(CL_h_CL_t_dense.matrix.data, CL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Sparse and Sparse.");
 
     update_horizontally_concatenated_matrix(CL_h_CL, static_cast<T>(2) * CL, CL);
-    CL_h_CL_dense = CL_h_CL.create_dense();
+    auto CL_h_CL_dense = CL_h_CL.create_dense();
 
     Matrix<DefDense, T, 4, 6> CL_h_CL_answer_2({
         {2, 6, 0, 1, 3, 0},
@@ -1716,6 +1778,39 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
     tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate horizontally Empty and Sparse.");
+
+    /* Block結合 */
+    auto ABCE_block = concatenate_block(A, B, C, Empty);
+    ConcatenateBlock_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
+    ABCE_block_t = ABCE_block;
+    auto ABCE_block_t_dense = ABCE_block_t.create_dense();
+
+    Matrix<DefDense, T, 6, 6> ABCE_block_answer({
+        {1, 2, 3, 1, 0, 0},
+        {5, 4, 6, 0, 2, 0},
+        {9, 8, 7, 0, 0, 3},
+        {1, 0, 0, 0, 0, 0},
+        {3, 0, 8, 0, 0, 0},
+        {0, 2, 4, 0, 0, 0}
+        });
+
+    tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate block Dense, Diag, Sparse and Empty.");
+
+    update_block_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
+    auto ABCE_block_dense = ABCE_block.create_dense();
+
+    Matrix<DefDense, T, 6, 6> ABCE_block_answer_2({
+        {1, 2, 3, 2, 0, 0},
+        {5, 4, 6, 0, 4, 0},
+        {9, 8, 7, 0, 0, 6},
+        {1, 0, 0, 0, 0, 0},
+        {3, 0, 8, 0, 0, 0},
+        {0, 2, 4, 0, 0, 0}
+        });
+
+    tester.expect_near(ABCE_block_dense.matrix.data, ABCE_block_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
 
 
     tester.throw_error_if_test_failed();
@@ -1809,7 +1904,9 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* LU分解 */
-    static auto A_LU_solver = make_LinalgSolverLU(A);
+    LinalgSolverLU_Type<decltype(A)> A_LU_solver = make_LinalgSolverLU<decltype(A)>();
+    A_LU_solver.set_division_min(static_cast<T>(1.0e-10));
+    A_LU_solver.solve(A);
 
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
     auto A_LU_dense = A_LU.create_dense();
@@ -1823,13 +1920,13 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
     tester.expect_near(A_LU_dense.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U Dense.");
 
-    //std::cout << "det = " << LU_solver.get_det() << std::endl << std::endl;
 
     T det_answer = 30;
     tester.expect_near(A_LU_solver.get_det(), det_answer, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU det.");
 
-    auto B_LU_solver = make_LinalgSolverLU(B);
+    auto B_LU_solver = make_LinalgSolverLU<decltype(B)>();
+    B_LU_solver.solve(B);
 
     auto B_LU = B_LU_solver.get_L() * B_LU_solver.get_U();
     auto B_LU_dense = B_LU.create_dense();
@@ -1844,6 +1941,8 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
         "check LinalgSolverLU L multiply U Diag.");
 
 
+
+
     tester.throw_error_if_test_failed();
 }
 
@@ -1856,17 +1955,7 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
-    Matrix<DefSparse, T, 3, 3,
-        SparseAvailable<
-        ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, false, true>,
-        ColumnAvailable<false, true, true>>
-        > C({ 1, 3, 8, 2, 4 });
-
-
-    /* コレスキー分解 */
     Matrix<DefDense, T, 3, 3> K({
         {10, 1, 2},
         {1, 20, 4},
@@ -1874,30 +1963,79 @@ void CheckPythonNumpy<T>::check_python_numpy_cholesky(void) {
         });
     Matrix<DefSparse, T, 3, 3, SparseAvailable<
         ColumnAvailable<true, false, false>,
-        ColumnAvailable<true, true, true>,
+        ColumnAvailable<false, true, true>,
         ColumnAvailable<false, true, true>>
         >K_s({ 1, 8, 3, 3, 4 });
 
-    static auto Chol_solver = make_LinalgSolverCholesky(K);
+    /* コレスキー分解 */
+    LinalgSolverCholesky_Type<decltype(K)> Chol_solver;
+    Chol_solver.set_division_min(static_cast<T>(1.0e-10));
+    Chol_solver = make_LinalgSolverCholesky<decltype(K)>();
 
     auto A_ch = Chol_solver.solve(K);
-    auto A_ch_d = Base::Matrix::output_dense_matrix(A_ch.matrix);
-    //std::cout << "A_ch_d = " << std::endl;
-    //for (size_t j = 0; j < A_ch_d.cols(); ++j) {
-    //    for (size_t i = 0; i < A_ch_d.rows(); ++i) {
-    //        std::cout << A_ch_d(j, i) << " ";
-    //    }
-    //    std::cout << std::endl;
-    //}
-    //std::cout << std::endl;
+    auto A_ch_dense = A_ch.create_dense();
 
     Matrix<DefDense, T, 3, 3> A_ch_answer({
         {3.16228F, 0.316228F, 0.632456F},
         {0, 4.46094F, 0.851838F},
         {0, 0, 5.37349F}
         });
-    tester.expect_near(A_ch_d.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check LinalgSolverCholesky solve.");
+    tester.expect_near(A_ch_dense.matrix.data, A_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Dense.");
+
+    /* ゼロフラグの確認 */
+    auto Zeros = make_DenseMatrixZeros<T, 3, 3>();
+
+    static auto Chol_solver_zero = make_LinalgSolverCholesky<decltype(Zeros)>();
+    auto Zeros_ch = Chol_solver_zero.solve(Zeros);
+    auto Zeros_ch_dense = Zeros_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Zeros_ch_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(Zeros_ch_dense.matrix.data, Zeros_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Dense Zero.");
+
+    bool zero_div_flag = Chol_solver_zero.get_zero_div_flag();
+
+    tester.expect_near(zero_div_flag, true, 0,
+        "check LinalgSolverCholesky zero_div_flag.");
+
+    /* コレスキー分解　対角 */
+    LinalgSolverCholesky_Type<decltype(B)> Chol_solver_B;
+    Chol_solver_B = make_LinalgSolverCholesky<decltype(B)>();
+
+    auto B_ch = Chol_solver_B.solve(B);
+    auto B_ch_dense = B_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> B_ch_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 1.41421356F, 0.0F},
+        {0.0F, 0.0F, 1.73205081F}
+        });
+
+    tester.expect_near(B_ch_dense.matrix.data, B_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Diag.");
+
+    /* コレスキー分解 スパース */
+    LinalgSolverCholesky_Type<decltype(K_s)> Chol_solver_s;
+    Chol_solver_s = make_LinalgSolverCholesky<decltype(K_s)>();
+
+    auto K_s_ch = Chol_solver_s.solve(K_s);
+    auto K_s_ch_dense = K_s_ch.create_dense();
+
+    Matrix<DefDense, T, 3, 3> K_s_ch_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 2.82842712F, 1.06066017F},
+        {0.0F, 0.0F, 1.6955825F}
+        });
+
+    tester.expect_near(K_s_ch_dense.matrix.data, K_s_ch_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverCholesky solve Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }
@@ -2153,7 +2291,9 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
 
     /* QR分解 */
-    static auto QR_solver_dense = make_LinalgSolverQR(A);
+    LinalgSolverQR_Type<decltype(A)> QR_solver_dense = make_LinalgSolverQR<decltype(A)>();
+    QR_solver_dense.set_division_min(static_cast<T>(1.0e-10));
+    QR_solver_dense.solve(A);
 
     auto Q = QR_solver_dense.get_Q();
     auto R = QR_solver_dense.get_R();
@@ -2179,7 +2319,8 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(QR_result.matrix.data, QR_result_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR Q multiply R Dense.");
 
-    static auto QR_solver_diag = make_LinalgSolverQR(B);
+    LinalgSolverQR_Type<decltype(B)> QR_solver_diag = make_LinalgSolverQR<decltype(B)>();
+    QR_solver_diag.solve(B);
 
     auto R_diag = QR_solver_diag.get_R();
     auto R_diag_dense = R_diag.create_dense();
@@ -2193,7 +2334,9 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(R_diag_dense.matrix.data, R_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR R Diag.");
 
-    static auto QR_solver_sparse = make_LinalgSolverQR(C);
+    LinalgSolverQR_Type<decltype(C)> QR_solver_sparse = make_LinalgSolverQR<decltype(C)>();
+    QR_solver_sparse.set_division_min(static_cast<T>(1.0e-10));
+    QR_solver_sparse.solve(C);
     auto C_QR = QR_solver_sparse.get_Q() * QR_solver_sparse.get_R();
 
     Matrix<DefDense, T, 3, 3> C_QR_answer({
@@ -2228,7 +2371,9 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* 対角行列の固有値 実数 */
-    static auto eig_solver_diag = make_LinalgSolverEigReal(B);
+    LinalgSolverEigReal_Type<decltype(B)> eig_solver_diag
+        = make_LinalgSolverEigReal<decltype(B)>();
+    eig_solver_diag.solve_eigen_values(B);
 
     auto eigen_values_diag = eig_solver_diag.get_eigen_values();
 
@@ -2244,8 +2389,14 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(eigen_vectors_diag.matrix.data, eigen_vectors_diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEigReal eigen vectors Diag.");
 
+
     /* スパース行列の固有値 実数 */
-    static auto eig_solver_sparse = make_LinalgSolverEigReal(C);
+    LinalgSolverEigReal_Type<decltype(C)> eig_solver_sparse
+        = make_LinalgSolverEigReal<decltype(C)>();
+    eig_solver_sparse.set_iteration_max(10);
+    eig_solver_sparse.set_division_min(static_cast<T>(1.0e-20));
+
+    eig_solver_sparse.solve_eigen_values(C);
 
     auto eigen_values_sparse = eig_solver_sparse.get_eigen_values();
 
@@ -2271,11 +2422,13 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V_sparse.matrix.data, V_mul_D_sparse.matrix.data, NEAR_LIMIT_SOFT * static_cast<T>(10),
         "check LinalgSolverEigReal eigen vectors Sparse.");
 
-
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
     //Matrix<DefDense, T, 4, 4> A2({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
-    static auto eig_solver = make_LinalgSolverEigReal(A0);
+    LinalgSolverEigReal_Type<decltype(A)> eig_solver
+        = make_LinalgSolverEigReal<decltype(A0)>();
+    eig_solver.set_iteration_max(10);
+    eig_solver.solve_eigen_values(A0);
 
     auto eigen_values = eig_solver.get_eigen_values();
 
@@ -2317,8 +2470,9 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V.matrix.data, V_mul_D.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen vectors.");
 
+
     /* 対角行列の固有値 複素数 */
-    static auto eig_solver_diag_comp = make_LinalgSolverEig(B);
+    static auto eig_solver_diag_comp = make_LinalgSolverEig<decltype(B)>();
     eig_solver_diag_comp.solve_eigen_values(B);
 
     auto eigen_values_comp_diag = eig_solver_diag_comp.get_eigen_values();
@@ -2345,7 +2499,13 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         "check LinalgSolverEig eigen vectors Diag.");
 
     /* スパース行列の固有値 複素数 */
-    static auto eig_solver_comp_sparse = make_LinalgSolverEig(C);
+    LinalgSolverEig_Type<decltype(C)> eig_solver_comp_sparse
+        = make_LinalgSolverEig<decltype(C)>();
+    eig_solver_comp_sparse.set_iteration_max(10);
+    eig_solver_comp_sparse.set_iteration_max_for_eigen_vector(30);
+    eig_solver_comp_sparse.set_division_min(static_cast<T>(1.0e-20));
+
+    eig_solver_comp_sparse.solve_eigen_values(C);
 
     auto eigen_values_comp_sparse = eig_solver_comp_sparse.get_eigen_values();
 
@@ -2384,18 +2544,24 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V_imag_sparse.matrix.data, V_mul_D_imag_sparse.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen vectors imag sparse.");
 
+
     /* 複素数固有値 */
     Matrix<DefDense, T, 3, 3> A1({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
     Matrix<DefDense, Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
 
-    static auto eig_solver_comp = make_LinalgSolverEig<T, 3, 5>(A1);
+    LinalgSolverEig_Type<decltype(A1)> eig_solver_comp
+        = make_LinalgSolverEig<decltype(A1)>();
+    eig_solver_comp.set_iteration_max(5);
+    eig_solver_comp.set_iteration_max_for_eigen_vector(15);
+    eig_solver_comp.set_division_min(static_cast<T>(1.0e-20));
+
+    eig_solver_comp.solve_eigen_values(A1);
+
     auto eigen_values_comp = eig_solver_comp.get_eigen_values();
 
     decltype(eigen_values_comp) eigen_values_comp_sorted = eigen_values_comp;
     Base::Utility::sort(eigen_values_comp_sorted.matrix.data[0]);
 
-    eig_solver_comp.set_iteration_max(5);
-    eig_solver_comp.set_iteration_max_for_eigen_vector(15);
 
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_real({ {-1.5F}, {-1.5F}, {6.0F} });
     Matrix<DefDense, T, 3, 1> eigen_values_comp_answer_imag({ {-0.8660254F}, {0.8660254F}, {0.0F} });
@@ -2458,6 +2624,7 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     V_mul_D_imag.matrix = Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp.matrix);
     tester.expect_near(A_mul_V_imag.matrix.data, V_mul_D_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen vectors imag, strict.");
+
 
     tester.throw_error_if_test_failed();
 }
