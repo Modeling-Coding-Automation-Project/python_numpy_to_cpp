@@ -566,7 +566,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
-    auto Zeros = make_DenseMatrixZeros<T, 4, 3>();
+    DenseMatrix_Type<T, 4, 3> Zeros = make_DenseMatrixZeros<T, 4, 3>();
 
     Matrix<DefDense, T, 4, 3> Zeros_answer;
 
@@ -606,7 +606,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Empty_dense.matrix.data, Empty_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixEmpty.");
 
-    auto Diag = make_DiagMatrix<3>(
+    DiagMatrix_Type<T, 3> Diag = make_DiagMatrix<3>(
         static_cast<T>(1),
         static_cast<T>(2),
         static_cast<T>(3));
@@ -661,7 +661,8 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(SparseZeros_dense.matrix.data, SparseZeros_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixZeros.");
 
-    auto Sparse = make_SparseMatrix<SparseAvailable_C>(
+    SparseMatrix_Type<T, SparseAvailable_C> Sparse
+        = make_SparseMatrix<SparseAvailable_C>(
         static_cast<T>(1),
         static_cast<T>(3),
         static_cast<T>(8),

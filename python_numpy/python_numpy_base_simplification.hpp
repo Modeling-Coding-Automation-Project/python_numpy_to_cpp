@@ -186,6 +186,17 @@ make_SparseMatrixFromDenseMatrix(Matrix<DefDense, T, M, N> &dense_matrix)
       create_compiled_sparse(dense_matrix.matrix));
 }
 
+/* Type */
+template <typename T, std::size_t M, std::size_t N>
+using DenseMatrix_Type = Matrix<DefDense, T, M, N>;
+
+template <typename T, std::size_t M>
+using DiagMatrix_Type = Matrix<DefDiag, T, M>;
+
+template <typename T, typename SparseAvailable>
+using SparseMatrix_Type =
+    decltype(make_SparseMatrixZeros<T, SparseAvailable>());
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
