@@ -20,6 +20,7 @@
 namespace Base {
 namespace Matrix {
 
+const std::size_t DEFAULT_ITERATION_MAX_EIGEN_SOLVER = 10;
 const double DEFAULT_DIVISION_MIN_EIGEN_SOLVER = 1.0e-20;
 const double EIGEN_SMALL_VALUE = 1.0e-6;
 
@@ -27,7 +28,7 @@ template <typename T, std::size_t M> class EigenSolverReal {
 public:
   /* Constructor */
   EigenSolverReal()
-      : iteration_max(0),
+      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),

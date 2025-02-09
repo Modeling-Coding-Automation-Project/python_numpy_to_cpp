@@ -23,10 +23,7 @@ using EigenVectors_Type = Matrix<DefDense, T, M, M>;
 } // namespace ForLinalgSolverEigReal
 
 /* Linalg solver for Real Eigen values and vectors of Dense Matrix */
-template <typename T, std::size_t M,
-          std::size_t Default_Iteration_Max =
-              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
-class LinalgSolverEigRealDense {
+template <typename T, std::size_t M> class LinalgSolverEigRealDense {
 public:
   /* Type */
   using Value_Type = T;
@@ -42,28 +39,24 @@ public:
 
   /* Copy Constructor */
   LinalgSolverEigRealDense(const LinalgSolverEigRealDense<T, M> &other)
-      : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min) {
-  }
+      : _Eigen_solver(other._Eigen_solver) {}
 
   LinalgSolverEigRealDense<T, M> &
   operator=(const LinalgSolverEigRealDense<T, M> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
-      this->_division_min = other._division_min;
     }
     return *this;
   }
 
   /* Move Constructor */
   LinalgSolverEigRealDense(LinalgSolverEigRealDense<T, M> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)),
-        _division_min(std::move(other._division_min)) {}
+      : _Eigen_solver(std::move(other._Eigen_solver)) {}
 
   LinalgSolverEigRealDense<T, M> &
   operator=(LinalgSolverEigRealDense<T, M> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
-      this->_division_min = std::move(other._division_min);
     }
     return *this;
   }
@@ -122,14 +115,10 @@ public:
 private:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
-  T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
 };
 
 /* Linalg solver for Real Eigen values and vectors of Diag Matrix */
-template <typename T, std::size_t M,
-          std::size_t Default_Iteration_Max =
-              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
-class LinalgSolverEigRealDiag {
+template <typename T, std::size_t M> class LinalgSolverEigRealDiag {
 public:
   /* Type */
   using Value_Type = T;
@@ -201,9 +190,7 @@ private:
 };
 
 /* Linalg solver for Real Eigen values and vectors of Sparse Matrix */
-template <typename T, std::size_t M, typename SparseAvailable,
-          std::size_t Default_Iteration_Max =
-              PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>
+template <typename T, std::size_t M, typename SparseAvailable>
 class LinalgSolverEigRealSparse {
 public:
   /* Type */
@@ -221,15 +208,12 @@ public:
   /* Copy Constructor */
   LinalgSolverEigRealSparse(
       const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other)
-      : _Eigen_solver(other._Eigen_solver), _division_min(other._division_min),
-        _iteration_max(other._iteration_max) {}
+      : _Eigen_solver(other._Eigen_solver) {}
 
   LinalgSolverEigRealSparse<T, M, SparseAvailable> &
   operator=(const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other) {
     if (this != &other) {
       this->_Eigen_solver = other._Eigen_solver;
-      this->_division_min = other._division_min;
-      this->_iteration_max = other._iteration_max;
     }
     return *this;
   }
@@ -237,16 +221,12 @@ public:
   /* Move Constructor */
   LinalgSolverEigRealSparse(
       LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)),
-        _division_min(std::move(other._division_min)),
-        _iteration_max(std::move(other._iteration_max)) {}
+      : _Eigen_solver(std::move(other._Eigen_solver)) {}
 
   LinalgSolverEigRealSparse<T, M, SparseAvailable> &
   operator=(LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
       this->_Eigen_solver = std::move(other._Eigen_solver);
-      this->_division_min = std::move(other._division_min);
-      this->_iteration_max = std::move(other._iteration_max);
     }
     return *this;
   }
@@ -303,8 +283,6 @@ public:
 private:
   /* Variable */
   Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
-  T _division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_EIG);
-  std::size_t _iteration_max = Default_Iteration_Max;
 };
 
 /* make LinalgSolverEig Real */
@@ -313,39 +291,38 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEigReal()
     -> LinalgSolverEigRealDense<typename A_Type::Value_Complex_Type,
-                                A_Type::COLS,
-                                PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG> {
+                                A_Type::COLS> {
 
-  return LinalgSolverEigRealDense<
-      typename A_Type::Value_Complex_Type, A_Type::COLS,
-      PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>();
+  return LinalgSolverEigRealDense<typename A_Type::Value_Complex_Type,
+                                  A_Type::COLS>();
 }
 
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEigReal()
     -> LinalgSolverEigRealDiag<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS,
-                               PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG> {
+                               A_Type::COLS> {
 
-  return LinalgSolverEigRealDiag<
-      typename A_Type::Value_Complex_Type, A_Type::COLS,
-      PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>();
+  return LinalgSolverEigRealDiag<typename A_Type::Value_Complex_Type,
+                                 A_Type::COLS>();
 }
 
 template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
-inline auto make_LinalgSolverEigReal() -> LinalgSolverEigRealSparse<
-    typename A_Type::Value_Complex_Type, A_Type::COLS,
-    typename A_Type::SparseAvailable_Type,
-    PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG> {
+inline auto make_LinalgSolverEigReal()
+    -> LinalgSolverEigRealSparse<typename A_Type::Value_Complex_Type,
+                                 A_Type::COLS,
+                                 typename A_Type::SparseAvailable_Type> {
 
-  return LinalgSolverEigRealSparse<
-      typename A_Type::Value_Complex_Type, A_Type::COLS,
-      typename A_Type::SparseAvailable_Type,
-      PythonNumpy::DEFAULT_ITERATION_MAX_LINALG_EIG>();
+  return LinalgSolverEigRealSparse<typename A_Type::Value_Complex_Type,
+                                   A_Type::COLS,
+                                   typename A_Type::SparseAvailable_Type>();
 }
+
+/* LinalgSolverEig Real Type */
+template <typename A_Type>
+using LinalgSolverEigReal_Type = decltype(make_LinalgSolverEigReal<A_Type>());
 
 namespace ForLinalgSolverEig {
 

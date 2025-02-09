@@ -2370,7 +2370,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         > C({ 1, 3, 8, 2, 4 });
 
     /* 対角行列の固有値 実数 */
-    static auto eig_solver_diag = make_LinalgSolverEigReal<decltype(B)>();
+    LinalgSolverEigReal_Type<decltype(B)> eig_solver_diag
+        = make_LinalgSolverEigReal<decltype(B)>();
     eig_solver_diag.solve_eigen_values(B);
 
     auto eigen_values_diag = eig_solver_diag.get_eigen_values();
@@ -2389,7 +2390,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
 
     /* スパース行列の固有値 実数 */
-    static auto eig_solver_sparse = make_LinalgSolverEigReal<decltype(C)>();
+    LinalgSolverEigReal_Type<decltype(C)> eig_solver_sparse
+        = make_LinalgSolverEigReal<decltype(C)>();
     eig_solver_sparse.set_iteration_max(10);
     eig_solver_sparse.set_division_min(static_cast<T>(1.0e-20));
 
@@ -2419,12 +2421,12 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V_sparse.matrix.data, V_mul_D_sparse.matrix.data, NEAR_LIMIT_SOFT * static_cast<T>(10),
         "check LinalgSolverEigReal eigen vectors Sparse.");
 
-#if 0
-
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
     //Matrix<DefDense, T, 4, 4> A2({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
-    static auto eig_solver = make_LinalgSolverEigReal<decltype(A0)>();
+    LinalgSolverEigReal_Type<decltype(A)> eig_solver
+        = make_LinalgSolverEigReal<decltype(A0)>();
+    eig_solver.set_iteration_max(10);
     eig_solver.solve_eigen_values(A0);
 
     auto eigen_values = eig_solver.get_eigen_values();
@@ -2467,7 +2469,7 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V.matrix.data, V_mul_D.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen vectors.");
 
-
+#if 0
 
     /* 対角行列の固有値 複素数 */
     static auto eig_solver_diag_comp = make_LinalgSolverEig(B);
