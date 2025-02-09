@@ -784,6 +784,9 @@ template <typename A_Type, typename B_Type>
 using A_Multiply_B_Type =
     decltype(std::declval<A_Type>() * std::declval<B_Type>());
 
+template <typename A_Type>
+using Transpose_Type = decltype(std::declval<A_Type>().transpose());
+
 /* Matrix Type Checker */
 template <typename MatrixInput>
 using Is_Dense_Matrix =

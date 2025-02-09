@@ -1847,7 +1847,7 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose(void) {
         CL({ 1, 3, 2, 8, 4, 1 });
 
     /* 転置 */
-    auto AT = A.transpose();
+    Transpose_Type<decltype(A)> AT = A.transpose();
 
     Matrix<DefDense, T, 3, 3> AT_answer({
         {1, 5, 9},
@@ -1858,7 +1858,7 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose(void) {
     tester.expect_near(AT.matrix.data, AT_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check transpose Dense.");
 
-    auto CL_T = CL.transpose();
+    Transpose_Type<decltype(CL)> CL_T = CL.transpose();
     auto CL_T_dense = CL_T.create_dense();
 
     Matrix<DefDense, T, 3, 4> CL_T_answer({
