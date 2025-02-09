@@ -9,12 +9,16 @@ int main() {
   auto A_r =
       make_DenseMatrix<3, 3>(6.0, -3.0, 5.0, -1.0, 4.0, -5.0, -3.0, 3.0, -4.0);
 
-  static auto solver_r = make_LinalgSolverEigReal(A_r);
-  solver_r.solve_eigen_values(A_r);
-  auto eigen_values_r = solver_r.get_eigen_values();
+  auto solver_r = make_LinalgSolverEigReal<decltype(A_r)>();
+  // Or, you can use "LinalgSolverEigReal_Type" to declare the type of
+  // LinalgSolverEigReal.
+  LinalgSolverEigReal_Type<decltype(A_r)> solver_r_t = solver_r;
 
-  solver_r.solve_eigen_vectors(A_r);
-  auto eigen_vectors_r = solver_r.get_eigen_vectors();
+  solver_r_t.solve_eigen_values(A_r);
+  auto eigen_values_r = solver_r_t.get_eigen_values();
+
+  solver_r_t.solve_eigen_vectors(A_r);
+  auto eigen_vectors_r = solver_r_t.get_eigen_vectors();
 
   std::cout << "eigen_values_r = " << std::endl;
   for (size_t j = 0; j < eigen_values_r.cols(); ++j) {

@@ -436,8 +436,9 @@ public:
 
   /* Copy Constructor */
   EigenSolverComplex(const EigenSolverComplex<T, M> &other)
-      : iteration_max(other.iteration_max), division_min(other.division_min),
-        small_value(other.small_value),
+      : iteration_max(other.iteration_max),
+        iteration_max_for_eigen_vector(other.iteration_max_for_eigen_vector),
+        division_min(other.division_min), small_value(other.small_value),
         gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
         _House_comp(other._House_comp), _Hessen(other._Hessen),
         _eigen_values(other._eigen_values),
