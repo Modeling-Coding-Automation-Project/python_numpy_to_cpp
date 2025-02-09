@@ -585,12 +585,12 @@ public:
   }
 
   /* Set */
-  inline void set_iteration_max(std::size_t iteration_max) {
+  inline void set_iteration_max(const std::size_t &iteration_max) {
     this->_Eigen_solver.iteration_max = iteration_max;
   }
 
   inline void set_iteration_max_for_eigen_vector(
-      std::size_t iteration_max_for_eigen_vector) {
+      const std::size_t &iteration_max_for_eigen_vector) {
     this->_Eigen_solver.iteration_max_for_eigen_vector =
         iteration_max_for_eigen_vector;
   }
