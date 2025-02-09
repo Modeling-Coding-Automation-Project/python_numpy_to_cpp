@@ -53,7 +53,7 @@ public:
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
-  EigenSolverReal(EigenSolverReal<T, M> &other)
+  EigenSolverReal(const EigenSolverReal<T, M> &other)
       : iteration_max(other.iteration_max), division_min(other.division_min),
         small_value(other.small_value),
         gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
@@ -433,7 +433,7 @@ public:
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
-  EigenSolverComplex(EigenSolverComplex<T, M> &other)
+  EigenSolverComplex(const EigenSolverComplex<T, M> &other)
       : iteration_max(other.iteration_max), division_min(other.division_min),
         small_value(other.small_value),
         gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
