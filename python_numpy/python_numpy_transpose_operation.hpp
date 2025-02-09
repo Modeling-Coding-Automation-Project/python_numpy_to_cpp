@@ -6,6 +6,7 @@
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
+#include <utility>
 
 namespace PythonNumpy {
 
@@ -103,6 +104,11 @@ A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable_A> &A,
       matrix_multiply_SparseA_mul_SparseBTranspose(A.matrix, B.matrix));
 }
 
+/* A_mul_BTranspose Type */
+template <typename A_Type, typename B_Type>
+using A_mul_BTranspose_Type =
+    decltype(A_mul_BTranspose(std::declval<A_Type>(), std::declval<B_Type>()));
+
 /* (transpose matrix) * (matrix) */
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
@@ -198,6 +204,11 @@ ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable_A> &A,
       Base::Matrix::matrix_multiply_SparseATranspose_mul_SparseB(A.matrix,
                                                                  B.matrix));
 }
+
+/* ATranspose_mul_B Type */
+template <typename A_Type, typename B_Type>
+using ATranspose_mul_B_Type =
+    decltype(ATranspose_mul_B(std::declval<A_Type>(), std::declval<B_Type>()));
 
 } // namespace PythonNumpy
 

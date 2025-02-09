@@ -304,11 +304,11 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
-  inline void set_decay_rate(const T &decay_rate_in) {
+  inline void set_decay_rate(const Value_Type &decay_rate_in) {
     this->decay_rate = decay_rate_in;
   }
 
-  inline void set_division_min(const T &division_min_in) {
+  inline void set_division_min(const Value_Type &division_min_in) {
     this->division_min = division_min_in;
   }
 
@@ -751,11 +751,11 @@ public:
     return Matrix<DefDense, T, N, K>(this->X_1);
   }
 
-  inline void set_decay_rate(const T &decay_rate_in) {
+  inline void set_decay_rate(const Value_Type &decay_rate_in) {
     this->decay_rate = decay_rate_in;
   }
 
-  inline void set_division_min(const T &division_min_in) {
+  inline void set_division_min(const Value_Type &division_min_in) {
     this->division_min = division_min_in;
   }
 
@@ -771,9 +771,10 @@ public:
   /* Properties */
   Base::Matrix::Matrix<T, N, K> X_1;
 
-  T decay_rate = static_cast<T>(0);
-  T division_min = static_cast<T>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
-  std::array<T, K> rho;
+  Value_Type decay_rate = static_cast<Value_Type>(0);
+  Value_Type division_min =
+      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  std::array<Value_Type, K> rho;
   std::array<std::size_t, K> rep_num;
 };
 
