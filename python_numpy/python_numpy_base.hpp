@@ -27,6 +27,7 @@ class Matrix<DefDense, T, M, N> {
 public:
   /* Type */
   using Value_Type = typename UnderlyingType<T>::Type;
+  using Value_Complex_Type = T;
   using Matrix_Type = DefDense;
   using SparseAvailable_Type = DenseAvailable<M, N>;
 
@@ -156,6 +157,7 @@ template <typename T, std::size_t M> class Matrix<DefDiag, T, M> {
 public:
   /* Type */
   using Value_Type = typename UnderlyingType<T>::Type;
+  using Value_Complex_Type = T;
   using Matrix_Type = DefDiag;
   using SparseAvailable_Type = DiagAvailable<M>;
 
@@ -305,6 +307,7 @@ class Matrix<DefSparse, T, M, N, SparseAvailable> {
 public:
   /* Type */
   using Value_Type = typename UnderlyingType<T>::Type;
+  using Value_Complex_Type = T;
   using Matrix_Type = DefSparse;
   using SparseAvailable_Type = SparseAvailable;
 

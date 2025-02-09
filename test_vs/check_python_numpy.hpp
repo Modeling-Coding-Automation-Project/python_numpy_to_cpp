@@ -875,7 +875,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(CL_AL_x.matrix.data, CL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Sparse and Dense.");
 
-    static auto CL_CL_lstsq_solver = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
+    LinalgLstsqSolver_Type<decltype(CL), decltype(CL )> CL_CL_lstsq_solver
+        = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
 
     auto CL_CL_x = CL_CL_lstsq_solver.solve(CL, CL);
 
@@ -889,7 +890,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         "check LinalgLstsqSolver solve Sparse and Sparse.");
 
     /* 逆行列 */
-    static auto A_inv_solver = make_LinalgSolverInv<decltype(A)>();
+    LinalgSolverInv_Type<decltype(A)> A_inv_solver
+        = make_LinalgSolverInv<decltype(A)>();
 
     auto A_Inv = A_inv_solver.inv(A);
 
@@ -930,7 +932,6 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_Inv.matrix.data, Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse.");
 
-#if 0
 
     /* 逆行列 複素数 */
     Matrix<DefDense, Complex<T>, 3, 3> A_comp({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
@@ -942,7 +943,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         ColumnAvailable<false, true, true>>
         > C_comp({ 1, 3, 8, 2, 4 });
 
-    static auto A_comp_inv_solver = make_LinalgSolver(A_comp);
+    static auto A_comp_inv_solver = make_LinalgSolverInv<decltype(A_comp)>();
 
     auto A_comp_Inv = A_comp_inv_solver.inv(A_comp);
     auto A_comp_Inv_real = A_comp_Inv.real();
@@ -969,7 +970,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         A_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Dense complex imag.");
 
-    static auto B_comp_inv_solver = make_LinalgSolver(B_comp);
+    static auto B_comp_inv_solver = make_LinalgSolverInv<decltype(B_comp)>();
 
     auto B_comp_Inv = B_comp_inv_solver.inv(B_comp);
     auto B_comp_Inv_real = B_comp_Inv.real();
@@ -1016,7 +1017,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_comp_imag_dense.matrix.data, C_comp_imag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix get imag.");
 
-    static auto C_comp_inv_solver = make_LinalgSolver(C_comp);
+    static auto C_comp_inv_solver = make_LinalgSolverInv<decltype(C_comp)>();
 
     auto C_comp_Inv = C_comp_inv_solver.inv(C_comp);
     auto C_comp_Inv_real = C_comp_Inv.real();
@@ -1043,7 +1044,6 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         C_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse complex imag.");
 
-#endif
 
     tester.throw_error_if_test_failed();
 }
