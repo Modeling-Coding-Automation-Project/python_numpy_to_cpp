@@ -197,6 +197,9 @@ template <typename T, typename SparseAvailable>
 using SparseMatrix_Type =
     decltype(make_SparseMatrixZeros<T, SparseAvailable>());
 
+template <typename T, std::size_t M, std::size_t N>
+using SparseMatrixEmpty_Type = decltype(make_SparseMatrixEmpty<T, M, N>());
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__

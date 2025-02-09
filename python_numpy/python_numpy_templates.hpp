@@ -69,9 +69,6 @@ template <std::size_t M, std::size_t N>
 using UpperTriangularRowPointers =
     Base::Matrix::UpperTriangularRowPointers<M, N>;
 
-template <std::size_t M, std::size_t N>
-using SparseAvailable_NoUse = DenseAvailableEmpty<M, N>;
-
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using MatrixAddSubSparseAvailable =
     Base::Matrix::MatrixAddSubSparseAvailable<SparseAvailable_A,
