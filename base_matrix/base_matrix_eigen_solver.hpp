@@ -27,6 +27,20 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
   /* Constructor */
+
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+
+  EigenSolverReal()
+      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
+        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
+        gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),
+        _eigen_values(M, static_cast<T>(0)), _eigen_vectors(),
+        _gmres_k_rho(static_cast<std::size_t>(0)),
+        _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
+
+#else // __BASE_MATRIX_USE_STD_VECTOR__
+
   EigenSolverReal()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
@@ -35,6 +49,8 @@ public:
         _eigen_values(), _eigen_vectors(),
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
+
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   EigenSolverReal(EigenSolverReal<T, M> &other)
@@ -390,7 +406,21 @@ private:
 
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
-  /* Constructor */
+/* Constructor */
+#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+
+  EigenSolverComplex()
+      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
+        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
+        gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
+        _Hessen(), _eigen_values(M, static_cast<Complex<T>>(0)),
+        _eigen_vectors(), _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {
+  }
+
+#else // __BASE_MATRIX_USE_STD_VECTOR__
+
   EigenSolverComplex()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
@@ -399,6 +429,8 @@ public:
         gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
         _Hessen(), _eigen_values(), _eigen_vectors(),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
+
+#endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   EigenSolverComplex(EigenSolverComplex<T, M> &other)
