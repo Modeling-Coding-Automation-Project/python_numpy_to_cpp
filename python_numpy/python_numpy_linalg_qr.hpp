@@ -85,6 +85,9 @@ public:
   static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = N;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 private:
   /* Properties */
   Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;

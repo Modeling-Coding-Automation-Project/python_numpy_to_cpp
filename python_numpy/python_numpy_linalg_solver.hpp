@@ -764,6 +764,9 @@ public:
   static constexpr std::size_t COLS = N;
   static constexpr std::size_t ROWS = K;
 
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+  static_assert(!IS_COMPLEX, "Complex type is not supported.");
+
 public:
   /* Properties */
   Base::Matrix::Matrix<T, N, K> X_1;
