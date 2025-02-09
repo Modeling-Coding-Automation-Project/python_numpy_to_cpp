@@ -353,7 +353,8 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(Dense_mul_Dense.matrix.data, Dense_mul_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check DenseMatrix multiply DenseMatrix.");
 
-    auto Dense_mul_Diag = AA * B;
+    A_Multiply_B_Type<decltype(AA), decltype(B)>
+        Dense_mul_Diag = AA * B;
 
     Matrix<DefDense, T, 4, 3> Dense_mul_Diag_answer({
         { 1, 6, 0 },

@@ -779,6 +779,11 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
       std::move(A.matrix * B.matrix));
 }
 
+/* Type */
+template <typename A_Type, typename B_Type>
+using A_Multiply_B_Type =
+    decltype(std::declval<A_Type>() * std::declval<B_Type>());
+
 /* Matrix Type Checker */
 template <typename MatrixInput>
 using Is_Dense_Matrix =
