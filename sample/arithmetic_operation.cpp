@@ -50,31 +50,36 @@ int main() {
   }
   std::cout << std::endl;
 
-  /* Concatenate Two Matrices */
-  auto concat_A_B = concatenate_vertically(A, B);
-  auto concat_A_B_dense =
-      concat_A_B.create_dense(); // convert SparseMatrix to DenseMatrix
+  /* Transpose */
+  auto A_T = A.transpose();
 
-  std::cout << "concat_A_B = " << std::endl;
-  for (size_t i = 0; i < concat_A_B_dense.cols(); ++i) {
-    for (size_t j = 0; j < concat_A_B_dense.rows(); ++j) {
-      std::cout << concat_A_B_dense(i, j) << " ";
+  std::cout << "A_T = " << std::endl;
+  for (size_t i = 0; i < A_T.cols(); ++i) {
+    for (size_t j = 0; j < A_T.rows(); ++j) {
+      std::cout << A_T(i, j) << " ";
     }
     std::cout << std::endl;
   }
   std::cout << std::endl;
 
-  // if you want to expand columns and rows of sparse matrix, you should use
-  // Empty Sparse Matrix and "concatenate_horizontally" and
-  // "concatenate_vertically".
-  auto concat_E_C = concatenate_horizontally(E, C);
-  auto concat_E_C_dense =
-      concat_E_C.create_dense(); // convert SparseMatrix to DenseMatrix
+  /* Transpose Multiply */
+  auto A_T_mul_C = ATranspose_mul_B(A, C);
 
-  std::cout << "concat_E_C = " << std::endl;
-  for (size_t i = 0; i < concat_E_C_dense.cols(); ++i) {
-    for (size_t j = 0; j < concat_E_C_dense.rows(); ++j) {
-      std::cout << concat_E_C_dense(i, j) << " ";
+  std::cout << "A_T_mul_C = " << std::endl;
+  for (size_t i = 0; i < A_T_mul_C.cols(); ++i) {
+    for (size_t j = 0; j < A_T_mul_C.rows(); ++j) {
+      std::cout << A_T_mul_C(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto A_mul_C_T = A_mul_BTranspose(A, C);
+
+  std::cout << "A_mul_C_T = " << std::endl;
+  for (size_t i = 0; i < A_mul_C_T.cols(); ++i) {
+    for (size_t j = 0; j < A_mul_C_T.rows(); ++j) {
+      std::cout << A_mul_C_T(i, j) << " ";
     }
     std::cout << std::endl;
   }

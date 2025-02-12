@@ -125,18 +125,19 @@ public:
 };
 
 /* Matrix Addition */
+namespace DiagMatrixAddDiagMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixAdderCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] + B[M_idx];
-    DiagMatrixAdderCore<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, M_idx - 1>::compute(A, B, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct DiagMatrixAdderCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] + B[0];
@@ -144,11 +145,12 @@ template <typename T, std::size_t M> struct DiagMatrixAdderCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_ADDER(const DiagMatrix<T, M> &A,
-                                              const DiagMatrix<T, M> &B,
-                                              DiagMatrix<T, M> &result) {
-  DiagMatrixAdderCore<T, M, M - 1>::compute(A, B, result);
+inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                    DiagMatrix<T, M> &result) {
+  Core<T, M, M - 1>::compute(A, B, result);
 }
+
+} // namespace DiagMatrixAddDiagMatrix
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
@@ -163,26 +165,27 @@ inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_ADDER<T, M>(A, B, result);
+  DiagMatrixAddDiagMatrix::compute<T, M>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace DiagMatrixAddMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixAddMatrixCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
                                       A[M_idx]);
-    DiagMatrixAddMatrixCore<T, M, M_idx - 1>::compute(A, result);
+    Core<T, M, M_idx - 1>::compute(A, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct DiagMatrixAddMatrixCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<0, 0>(result.template get<0, 0>() + A[0]);
@@ -190,10 +193,11 @@ template <typename T, std::size_t M> struct DiagMatrixAddMatrixCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_ADD_MATRIX(const DiagMatrix<T, M> &A,
-                                                   Matrix<T, M, M> &result) {
-  DiagMatrixAddMatrixCore<T, M, M - 1>::compute(A, result);
+inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+  Core<T, M, M - 1>::compute(A, result);
 }
+
+} // namespace DiagMatrixAddMatrix
 
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
@@ -208,7 +212,7 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
+  DiagMatrixAddMatrix::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -228,7 +232,7 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_ADD_MATRIX<T, M>(A, result);
+  DiagMatrixAddMatrix::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -236,27 +240,29 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
 }
 
 /* Minus */
+namespace DiagMatrixMinus {
+
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t I_idx>
-struct DiagMatrixMinusLoop {
+template <typename T, std::size_t M, std::size_t I_idx> struct Loop {
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     result[I_idx] = -A[I_idx];
-    DiagMatrixMinusLoop<T, M, I_idx - 1>::compute(A, result);
+    Loop<T, M, I_idx - 1>::compute(A, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M> struct DiagMatrixMinusLoop<T, M, 0> {
+template <typename T, std::size_t M> struct Loop<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     result[0] = -A[0];
   }
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_MATRIX_MINUS_DIAG_MATRIX(const DiagMatrix<T, M> &A,
-                                                     DiagMatrix<T, M> &result) {
-  DiagMatrixMinusLoop<T, M, M - 1>::compute(A, result);
+inline void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
+  Loop<T, M, M - 1>::compute(A, result);
 }
+
+} // namespace DiagMatrixMinus
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
@@ -270,7 +276,7 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_MINUS_DIAG_MATRIX<T, M>(A, result);
+  DiagMatrixMinus::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -278,18 +284,19 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
 }
 
 /* Matrix Subtraction */
+namespace DiagMatrixSubDiagMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixSubtractorCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] - B[M_idx];
-    DiagMatrixSubtractorCore<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, M_idx - 1>::compute(A, B, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct DiagMatrixSubtractorCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] - B[0];
@@ -297,11 +304,12 @@ template <typename T, std::size_t M> struct DiagMatrixSubtractorCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_SUBTRACTOR(const DiagMatrix<T, M> &A,
-                                                   const DiagMatrix<T, M> &B,
-                                                   DiagMatrix<T, M> &result) {
-  DiagMatrixSubtractorCore<T, M, M - 1>::compute(A, B, result);
+inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                    DiagMatrix<T, M> &result) {
+  Core<T, M, M - 1>::compute(A, B, result);
 }
+
+} // namespace DiagMatrixSubDiagMatrix
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
@@ -316,26 +324,27 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_SUBTRACTOR<T, M>(A, B, result);
+  DiagMatrixSubDiagMatrix::compute<T, M>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace DiagMatrixSubMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixSubMatrixCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
                                       A[M_idx]);
-    DiagMatrixSubMatrixCore<T, M, M_idx - 1>::compute(A, result);
+    Core<T, M, M_idx - 1>::compute(A, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct DiagMatrixSubMatrixCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<0, 0>(result.template get<0, 0>() + A[0]);
@@ -343,10 +352,11 @@ template <typename T, std::size_t M> struct DiagMatrixSubMatrixCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_SUB_MATRIX(const Matrix<T, M, M> &A,
-                                                   Matrix<T, M, M> &result) {
-  DiagMatrixSubMatrixCore<T, M, M - 1>::compute(A, result);
+inline void compute(const Matrix<T, M, M> &A, Matrix<T, M, M> &result) {
+  Core<T, M, M - 1>::compute(A, result);
 }
+
+} // namespace DiagMatrixSubMatrix
 
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
@@ -361,36 +371,38 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_SUB_MATRIX<T, M>(A, result);
+  DiagMatrixSubMatrix::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace MatrixSubDiagMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct MatrixSubDiagMatrixCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() -
                                       A[M_idx]);
-    MatrixSubDiagMatrixCore<T, M, M_idx - 1>::compute(A, result);
+    Core<T, M, M_idx - 1>::compute(A, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct MatrixSubDiagMatrixCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     result.template set<0, 0>(result.template get<0, 0>() - A[0]);
   }
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_MATRIX_SUB_DIAG_MATRIX(const DiagMatrix<T, M> &A,
-                                                   Matrix<T, M, M> &result) {
-  MatrixSubDiagMatrixCore<T, M, M - 1>::compute(A, result);
+inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+  Core<T, M, M - 1>::compute(A, result);
 }
+
+} // namespace MatrixSubDiagMatrix
 
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
@@ -405,27 +417,27 @@ inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_SUB_DIAG_MATRIX<T, M>(B, result);
+  MatrixSubDiagMatrix::compute<T, M>(B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
-/* Matrix multiply Scalar */
+/* Diag Matrix multiply Scalar */
+namespace DiagMatrixMultiplyScalar {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixMultiplyScalarCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = mat[M_idx] * scalar;
-    DiagMatrixMultiplyScalarCore<T, M, M_idx - 1>::compute(mat, scalar, result);
+    Core<T, M, M_idx - 1>::compute(mat, scalar, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M>
-struct DiagMatrixMultiplyScalarCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     result[0] = mat[0] * scalar;
@@ -433,10 +445,12 @@ struct DiagMatrixMultiplyScalarCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR(
-    const DiagMatrix<T, M> &mat, const T &scalar, DiagMatrix<T, M> &result) {
-  DiagMatrixMultiplyScalarCore<T, M, M - 1>::compute(mat, scalar, result);
+inline void compute(const DiagMatrix<T, M> &mat, const T &scalar,
+                    DiagMatrix<T, M> &result) {
+  Core<T, M, M - 1>::compute(mat, scalar, result);
 }
+
+} // namespace DiagMatrixMultiplyScalar
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
@@ -450,7 +464,7 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
+  DiagMatrixMultiplyScalar::compute<T, M>(A, scalar, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -469,27 +483,27 @@ inline DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_SCALAR<T, M>(A, scalar, result);
+  DiagMatrixMultiplyScalar::compute<T, M>(A, scalar, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
-/* Matrix multiply Vector */
+/* Diag Matrix multiply Vector */
+namespace DiagMatrixMultiplyVector {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixMultiplyVectorCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
                       Vector<T, M> &result) {
     result[M_idx] = A[M_idx] * vec[M_idx];
-    DiagMatrixMultiplyVectorCore<T, M, M_idx - 1>::compute(A, vec, result);
+    Core<T, M, M_idx - 1>::compute(A, vec, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M>
-struct DiagMatrixMultiplyVectorCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
                       Vector<T, M> &result) {
     result[0] = A[0] * vec[0];
@@ -497,10 +511,12 @@ struct DiagMatrixMultiplyVectorCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR(
-    const DiagMatrix<T, M> &A, const Vector<T, M> &vec, Vector<T, M> &result) {
-  DiagMatrixMultiplyVectorCore<T, M, M - 1>::compute(A, vec, result);
+inline void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
+                    Vector<T, M> &result) {
+  Core<T, M, M - 1>::compute(A, vec, result);
 }
+
+} // namespace DiagMatrixMultiplyVector
 
 template <typename T, std::size_t M>
 inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
@@ -515,7 +531,7 @@ inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_VECTOR<T, M>(A, vec, result);
+  DiagMatrixMultiplyVector::compute<T, M>(A, vec, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -523,19 +539,19 @@ inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
 }
 
 /* Matrix Multiplication */
+namespace DiagMatrixMultiplyDiagMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixMultiplyDiagCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] * B[M_idx];
-    DiagMatrixMultiplyDiagCore<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, M_idx - 1>::compute(A, B, result);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M>
-struct DiagMatrixMultiplyDiagCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] * B[0];
@@ -543,12 +559,12 @@ struct DiagMatrixMultiplyDiagCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void
-COMPILED_DIAG_MATRIX_MULTIPLY_DIAG(const DiagMatrix<T, M> &A,
-                                   const DiagMatrix<T, M> &B,
-                                   DiagMatrix<T, M> &result) {
-  DiagMatrixMultiplyDiagCore<T, M, M - 1>::compute(A, B, result);
+inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                    DiagMatrix<T, M> &result) {
+  Core<T, M, M - 1>::compute(A, B, result);
 }
+
+} // namespace DiagMatrixMultiplyDiagMatrix
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
@@ -563,7 +579,7 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_DIAG<T, M>(A, B, result);
+  DiagMatrixMultiplyDiagMatrix::compute<T, M>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -571,21 +587,23 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
 }
 
 /* Diag Matrix Multiply Matrix */
+namespace DiagMatrixMultiplyMatrix {
+
 // Core multiplication for DiagMatrix and Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t K>
-struct DiagMatrixMultiplyMatrixCore {
+struct Core {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
     result.template set<J, K>(A[J] * B.template get<J, K>());
-    DiagMatrixMultiplyMatrixCore<T, M, N, J, K - 1>::compute(A, B, result);
+    Core<T, M, N, J, K - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for K == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct DiagMatrixMultiplyMatrixCore<T, M, N, J, 0> {
+struct Core<T, M, N, J, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
@@ -595,30 +613,29 @@ struct DiagMatrixMultiplyMatrixCore<T, M, N, J, 0> {
 
 // Column-wise multiplication
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct DiagMatrixMultiplyMatrixColumn {
+struct Column {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    DiagMatrixMultiplyMatrixCore<T, M, N, J, N - 1>::compute(A, B, result);
-    DiagMatrixMultiplyMatrixColumn<T, M, N, J - 1>::compute(A, B, result);
+    Core<T, M, N, J, N - 1>::compute(A, B, result);
+    Column<T, M, N, J - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for J == 0
-template <typename T, std::size_t M, std::size_t N>
-struct DiagMatrixMultiplyMatrixColumn<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    DiagMatrixMultiplyMatrixCore<T, M, N, 0, N - 1>::compute(A, B, result);
+    Core<T, M, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX(const DiagMatrix<T, M> &A,
-                                     const Matrix<T, M, N> &B,
-                                     Matrix<T, M, N> &result) {
-  DiagMatrixMultiplyMatrixColumn<T, M, N, M - 1>::compute(A, B, result);
+inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                    Matrix<T, M, N> &result) {
+  Column<T, M, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace DiagMatrixMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
@@ -635,28 +652,30 @@ inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_MULTIPLY_MATRIX<T, M, N>(A, B, result);
+  DiagMatrixMultiplyMatrix::compute<T, M, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace MatrixMultiplyDiagMatrix {
+
 // Core multiplication for each element
 template <typename T, std::size_t L, std::size_t M, std::size_t I,
           std::size_t J>
-struct DiagMatrixMultiplierCore {
+struct Core {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
 
     result.template set<I, J>(A.template get<I, J>() * B[J]);
-    DiagMatrixMultiplierCore<T, L, M, I, J - 1>::compute(A, B, result);
+    Core<T, L, M, I, J - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for J = 0
 template <typename T, std::size_t L, std::size_t M, std::size_t I>
-struct DiagMatrixMultiplierCore<T, L, M, I, 0> {
+struct Core<T, L, M, I, 0> {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
 
@@ -666,30 +685,29 @@ struct DiagMatrixMultiplierCore<T, L, M, I, 0> {
 
 // Column-wise multiplication
 template <typename T, std::size_t L, std::size_t M, std::size_t I>
-struct DiagMatrixMultiplierColumn {
+struct Column {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    DiagMatrixMultiplierCore<T, L, M, I, M - 1>::compute(A, B, result);
-    DiagMatrixMultiplierColumn<T, L, M, I - 1>::compute(A, B, result);
+    Core<T, L, M, I, M - 1>::compute(A, B, result);
+    Column<T, L, M, I - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for I = 0
-template <typename T, std::size_t L, std::size_t M>
-struct DiagMatrixMultiplierColumn<T, L, M, 0> {
+template <typename T, std::size_t L, std::size_t M> struct Column<T, L, M, 0> {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    DiagMatrixMultiplierCore<T, L, M, 0, M - 1>::compute(A, B, result);
+    Core<T, L, M, 0, M - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t L, std::size_t M>
-static inline void
-COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX(const Matrix<T, L, M> &A,
-                                     const DiagMatrix<T, M> &B,
-                                     Matrix<T, L, M> &result) {
-  DiagMatrixMultiplierColumn<T, L, M, L - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
+                    Matrix<T, L, M> &result) {
+  Column<T, L, M, L - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixMultiplyDiagMatrix
 
 template <typename T, std::size_t L, std::size_t M>
 inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
@@ -706,7 +724,7 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_MULTIPLY_DIAG_MATRIX<T, L, M>(A, B, result);
+  MatrixMultiplyDiagMatrix::compute<T, L, M>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -714,23 +732,26 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
 }
 
 /* Trace */
+namespace DiagMatrixTrace {
+
 // Base case: when index reaches 0
-template <typename T, std::size_t M, std::size_t Index>
-struct DiagMatrixTraceCalculator {
+template <typename T, std::size_t M, std::size_t Index> struct Core {
   static T compute(const DiagMatrix<T, M> &A) {
-    return A[Index] + DiagMatrixTraceCalculator<T, M, Index - 1>::compute(A);
+    return A[Index] + Core<T, M, Index - 1>::compute(A);
   }
 };
 
 // Specialization for the base case when Index is 0
-template <typename T, std::size_t M> struct DiagMatrixTraceCalculator<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
 };
 
 template <typename T, std::size_t M>
-static inline T COMPILED_DIAG_TRACE_CALCULATOR(const DiagMatrix<T, M> &A) {
-  return DiagMatrixTraceCalculator<T, M, M - 1>::compute(A);
+inline T compute(const DiagMatrix<T, M> &A) {
+  return Core<T, M, M - 1>::compute(A);
 }
+
+} // namespace DiagMatrixTrace
 
 template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
@@ -744,7 +765,7 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  trace = Base::Matrix::COMPILED_DIAG_TRACE_CALCULATOR<T, M>(A);
+  trace = DiagMatrixTrace::compute<T, M>(A);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -752,28 +773,30 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 }
 
 /* Create dense */
+namespace DiagMatrixToDense {
+
 // Diagonal element assignment core
-template <typename T, std::size_t M, std::size_t I>
-struct DiagMatrixToDenseCore {
+template <typename T, std::size_t M, std::size_t I> struct Core {
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
 
     result.template set<I, I>(A[I]);
-    DiagMatrixToDenseCore<T, M, I - 1>::assign(result, A);
+    Core<T, M, I - 1>::assign(result, A);
   }
 };
 
 // Base case for recursion termination
-template <typename T, std::size_t M> struct DiagMatrixToDenseCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
     result.template set<0, 0>(A[0]);
   }
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_TO_DENSE(const DiagMatrix<T, M> &A,
-                                                 Matrix<T, M, M> &result) {
-  DiagMatrixToDenseCore<T, M, M - 1>::assign(result, A);
+inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+  Core<T, M, M - 1>::assign(result, A);
 }
+
+} // namespace DiagMatrixToDense
 
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
@@ -787,7 +810,7 @@ inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_TO_DENSE<T, M>(A, result);
+  DiagMatrixToDense::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -795,19 +818,20 @@ inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
 }
 
 /* Diag Matrix divide Diag Matrix */
+namespace DiagMatrixDivideDiagMatrix {
+
 // M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx>
-struct DiagMatrixDividerCore {
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[M_idx] =
         A[M_idx] / Base::Utility::avoid_zero_divide(B[M_idx], division_min);
-    DiagMatrixDividerCore<T, M, M_idx - 1>::compute(A, B, result, division_min);
+    Core<T, M, M_idx - 1>::compute(A, B, result, division_min);
   }
 };
 
 // Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct DiagMatrixDividerCore<T, M, 0> {
+template <typename T, std::size_t M> struct Core<T, M, 0> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[0] = A[0] / Base::Utility::avoid_zero_divide(B[0], division_min);
@@ -815,12 +839,12 @@ template <typename T, std::size_t M> struct DiagMatrixDividerCore<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
-static inline void COMPILED_DIAG_MATRIX_DIVIDER(const DiagMatrix<T, M> &A,
-                                                const DiagMatrix<T, M> &B,
-                                                DiagMatrix<T, M> &result,
-                                                const T division_min) {
-  DiagMatrixDividerCore<T, M, M - 1>::compute(A, B, result, division_min);
+inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                    DiagMatrix<T, M> &result, const T division_min) {
+  Core<T, M, M - 1>::compute(A, B, result, division_min);
 }
+
+} // namespace DiagMatrixDivideDiagMatrix
 
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
@@ -836,7 +860,7 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_MATRIX_DIVIDER<T, M>(A, B, result, division_min);
+  DiagMatrixDivideDiagMatrix::compute<T, M>(A, B, result, division_min);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -844,22 +868,23 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
 }
 
 /* Diag Matrix Inverse multiply Matrix */
+namespace DiagMatrixInverseMultiplyMatrix {
+
 // core multiplication for each element
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t K>
-struct DiagInvMultiplyDenseColumn {
+struct Column {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, K) =
         B(J, K) / Base::Utility::avoid_zero_divide(A[J], division_min);
-    DiagInvMultiplyDenseColumn<T, M, N, J, K - 1>::compute(A, B, result,
-                                                           division_min);
+    Column<T, M, N, J, K - 1>::compute(A, B, result, division_min);
   }
 };
 
 // if K == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct DiagInvMultiplyDenseColumn<T, M, N, J, 0> {
+struct Column<T, M, N, J, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, 0) =
@@ -868,34 +893,29 @@ struct DiagInvMultiplyDenseColumn<T, M, N, J, 0> {
 };
 
 // Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct DiagInvMultiplyDenseRow {
+template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    DiagInvMultiplyDenseColumn<T, M, N, J, N - 1>::compute(A, B, result,
-                                                           division_min);
-    DiagInvMultiplyDenseRow<T, M, N, J - 1>::compute(A, B, result,
-                                                     division_min);
+    Column<T, M, N, J, N - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, J - 1>::compute(A, B, result, division_min);
   }
 };
 
 // if J == 0
-template <typename T, std::size_t M, std::size_t N>
-struct DiagInvMultiplyDenseRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    DiagInvMultiplyDenseColumn<T, M, N, 0, N - 1>::compute(A, B, result,
-                                                           division_min);
+    Column<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_DIAG_INV_MULTIPLY_DENSE(const DiagMatrix<T, M> &A,
-                                                    const Matrix<T, M, N> &B,
-                                                    Matrix<T, M, N> &result,
-                                                    T division_min) {
-  DiagInvMultiplyDenseRow<T, M, N, M - 1>::compute(A, B, result, division_min);
+inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
+                    Matrix<T, M, N> &result, T division_min) {
+  Row<T, M, N, M - 1>::compute(A, B, result, division_min);
 }
+
+} // namespace DiagMatrixInverseMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
@@ -914,8 +934,7 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_DIAG_INV_MULTIPLY_DENSE<T, M, N>(A, B, result,
-                                                          division_min);
+  DiagMatrixInverseMultiplyMatrix::compute<T, M, N>(A, B, result, division_min);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -923,6 +942,8 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
 }
 
 /* Convert Real Matrix to Complex */
+namespace DiagMatrixRealToComplex {
+
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t I>
 struct DiagMatrixRealToComplexLoop {
@@ -943,6 +964,14 @@ struct DiagMatrixRealToComplexLoop<T, M, 0> {
 };
 
 template <typename T, std::size_t M>
+inline void compute(const DiagMatrix<T, M> &From_matrix,
+                    DiagMatrix<Complex<T>, M> &To_matrix) {
+  DiagMatrixRealToComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+}
+
+} // namespace DiagMatrixRealToComplex
+
+template <typename T, std::size_t M>
 inline DiagMatrix<Complex<T>, M>
 convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
 
@@ -956,7 +985,7 @@ convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixRealToComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+  DiagMatrixRealToComplex::compute<T, M>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -964,24 +993,32 @@ convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
 }
 
 /* Get Real Matrix from Complex */
+namespace GetRealDiagMatrixFromComplex {
+
 /* Helper struct for unrolling the loop */
-template <typename T, std::size_t M, std::size_t I>
-struct DiagMatrixRealFromComplexLoop {
+template <typename T, std::size_t M, std::size_t I> struct Loop {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[I] = From_matrix[I].real;
-    DiagMatrixRealFromComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+    Loop<T, M, I - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 /* Specialization to end the recursion */
-template <typename T, std::size_t M>
-struct DiagMatrixRealFromComplexLoop<T, M, 0> {
+template <typename T, std::size_t M> struct Loop<T, M, 0> {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[0] = From_matrix[0].real;
   }
 };
+
+template <typename T, std::size_t M>
+inline void compute(const DiagMatrix<Complex<T>, 3> &From_matrix,
+                    DiagMatrix<T, 3> &To_matrix) {
+  Loop<T, M, M - 1>::compute(From_matrix, To_matrix);
+}
+
+} // namespace GetRealDiagMatrixFromComplex
 
 template <typename T, std::size_t M>
 inline auto get_real_matrix_from_complex_matrix(
@@ -997,7 +1034,7 @@ inline auto get_real_matrix_from_complex_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixRealFromComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+  GetRealDiagMatrixFromComplex::compute<T, M>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1005,24 +1042,32 @@ inline auto get_real_matrix_from_complex_matrix(
 }
 
 /* Get Imag Matrix from Complex */
+namespace GetImagDiagMatrixFromComplex {
+
 /* Helper struct for unrolling the loop */
-template <typename T, std::size_t M, std::size_t I>
-struct DiagMatrixImagFromComplexLoop {
+template <typename T, std::size_t M, std::size_t I> struct Loop {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[I] = From_matrix[I].imag;
-    DiagMatrixImagFromComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+    Loop<T, M, I - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 /* Specialization to end the recursion */
-template <typename T, std::size_t M>
-struct DiagMatrixImagFromComplexLoop<T, M, 0> {
+template <typename T, std::size_t M> struct Loop<T, M, 0> {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[0] = From_matrix[0].imag;
   }
 };
+
+template <typename T, std::size_t M>
+inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                    DiagMatrix<T, M> &To_matrix) {
+  Loop<T, M, M - 1>::compute(From_matrix, To_matrix);
+}
+
+} // namespace GetImagDiagMatrixFromComplex
 
 template <typename T, std::size_t M>
 inline auto get_imag_matrix_from_complex_matrix(
@@ -1038,7 +1083,7 @@ inline auto get_imag_matrix_from_complex_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixImagFromComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+  GetImagDiagMatrixFromComplex::compute<T, M>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 

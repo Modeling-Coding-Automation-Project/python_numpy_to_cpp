@@ -19,6 +19,8 @@ namespace Base {
 namespace Matrix {
 
 /* Set values for Upper Triangular Sparse Matrix */
+namespace SetValuesForUpperTriangularSparseMatrix {
+
 // Calculate consecutive index at compile time
 template <std::size_t I, std::size_t J, std::size_t N> struct ConsecutiveIndex {
   static constexpr std::size_t value = (I * (2 * N - I + 1)) / 2 + (J - I);
@@ -79,14 +81,18 @@ struct SetUpperRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void SET_UPPER_TRIANGULAR_VALUES(
-    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                         UpperTriangularRowPointers<M, N>> &A,
-    const Matrix<T, M, N> &B) {
+inline void
+compute(CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                             UpperTriangularRowPointers<M, N>> &A,
+        const Matrix<T, M, N> &B) {
   SetUpperRow<T, M, N, M - 1>::compute(A, B);
 }
 
+} // namespace SetValuesForUpperTriangularSparseMatrix
+
 /* Set values for Lower Triangular Sparse Matrix */
+namespace SetValuesForLowerTriangularSparseMatrix {
+
 // Calculate consecutive index at compile time for lower triangular matrix
 template <std::size_t I, std::size_t J, std::size_t N>
 struct ConsecutiveIndexLower {
@@ -148,12 +154,14 @@ struct SetLowerRow<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void SET_LOWER_TRIANGULAR_VALUES(
-    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                         LowerTriangularRowPointers<M, N>> &A,
-    const Matrix<T, M, N> &B) {
+inline void
+compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                             LowerTriangularRowPointers<M, N>> &A,
+        const Matrix<T, M, N> &B) {
   SetLowerRow<T, M, N, M - 1>::compute(A, B);
 }
+
+} // namespace SetValuesForLowerTriangularSparseMatrix
 
 template <typename T, std::size_t M, std::size_t N> class TriangularSparse {
 public:
@@ -197,7 +205,7 @@ public:
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+    SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(Y, A);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -224,7 +232,7 @@ public:
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    Base::Matrix::SET_UPPER_TRIANGULAR_VALUES<T, M, N>(A, B);
+    SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(A, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
   }
@@ -267,7 +275,7 @@ public:
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(Y, A);
+    SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(Y, A);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -294,7 +302,7 @@ public:
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    Base::Matrix::SET_LOWER_TRIANGULAR_VALUES<T, M, N>(A, B);
+    SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(A, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
   }
