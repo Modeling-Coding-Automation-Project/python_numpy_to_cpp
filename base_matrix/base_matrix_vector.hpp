@@ -179,6 +179,8 @@ public:
 };
 
 /* Normalize */
+namespace VectorNormalize {
+
 template <typename T, std::size_t N, std::size_t Index>
 struct VectorNormalizeCore {
   static void compute(Vector<T, N> &vec, T norm_inv) {
@@ -193,9 +195,11 @@ template <typename T, std::size_t N> struct VectorNormalizeCore<T, N, 0> {
 };
 
 template <typename T, std::size_t N>
-static inline void COMPILED_VECTOR_NORMALIZE(Vector<T, N> &vec, T norm_inv) {
+inline void compute(Vector<T, N> &vec, T norm_inv) {
   VectorNormalizeCore<T, N, N - 1>::compute(vec, norm_inv);
 }
+
+} // namespace VectorNormalize
 
 template <typename T, std::size_t N>
 inline void vector_normalize(Vector<T, N> &vec) {
@@ -209,7 +213,7 @@ inline void vector_normalize(Vector<T, N> &vec) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+  VectorNormalize::compute<T, N>(vec, norm_inv);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -226,33 +230,35 @@ inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_NORMALIZE<T, N>(vec, norm_inv);
+  VectorNormalize::compute<T, N>(vec, norm_inv);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
 /* Scalar Addition */
+namespace VectorAddScalar {
+
 // Vector Add Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx>
-struct VectorAddScalarCore {
+template <typename T, std::size_t N, std::size_t N_idx> struct Core {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[N_idx] = vec[N_idx] + scalar;
-    VectorAddScalarCore<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
   }
 };
 
 // Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct VectorAddScalarCore<T, N, 0> {
+template <typename T, std::size_t N> struct Core<T, N, 0> {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[0] = vec[0] + scalar;
   }
 };
 
 template <typename T, std::size_t N>
-static inline void COMPILED_VECTOR_ADD_SCALAR(const Vector<T, N> &vec, T scalar,
-                                              Vector<T, N> &result) {
-  VectorAddScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+inline void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
+  Core<T, N, N - 1>::compute(vec, scalar, result);
 }
+
+} // namespace VectorAddScalar
 
 template <typename T, std::size_t N>
 inline Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
@@ -266,7 +272,7 @@ inline Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
+  VectorAddScalar::compute<T, N>(vec, scalar, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -285,7 +291,7 @@ inline Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_ADD_SCALAR<T, N>(vec, scalar, result);
+  VectorAddScalar::compute<T, N>(vec, scalar, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -293,28 +299,30 @@ inline Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
 }
 
 /* Scalar Subtraction */
+namespace VectorSubScalar {
+
 // Vector Sub Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx>
-struct VectorSubScalarCore {
+template <typename T, std::size_t N, std::size_t N_idx> struct Core {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[N_idx] = vec[N_idx] - scalar;
-    VectorSubScalarCore<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
   }
 };
 
 // Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct VectorSubScalarCore<T, N, 0> {
+template <typename T, std::size_t N> struct Core<T, N, 0> {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[0] = vec[0] - scalar;
   }
 };
 
 template <typename T, std::size_t N>
-static inline void COMPILED_VECTOR_SUB_SCALAR(const Vector<T, N> &vec,
-                                              const T &scalar,
-                                              Vector<T, N> &result) {
-  VectorSubScalarCore<T, N, N - 1>::compute(vec, scalar, result);
+inline void compute(const Vector<T, N> &vec, const T &scalar,
+                    Vector<T, N> &result) {
+  Core<T, N, N - 1>::compute(vec, scalar, result);
 }
+
+} // namespace VectorSubScalar
 
 template <typename T, std::size_t N>
 inline Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
@@ -328,7 +336,7 @@ inline Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_SUB_SCALAR<T, N>(vec, scalar, result);
+  VectorSubScalar::compute<T, N>(vec, scalar, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
