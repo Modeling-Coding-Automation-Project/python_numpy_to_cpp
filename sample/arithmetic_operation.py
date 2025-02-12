@@ -8,17 +8,22 @@ result = A @ C
 
 print("result =")
 print(result)
+print("\n")
 
 # Create Zero Matrix
 E = np.zeros((3, 3))
 
-# Concatenate Two Matrices
-concat_A_B = np.concatenate((A, B), axis=0)
+# Transpose
+print("A^T =")
+print(A.T)
+print("\n")
 
-print("concat_A_B =")
-print(concat_A_B)
+# Transpose multiply
 
-concat_E_C = np.concatenate((E, C), axis=1)
+print("A^T * C =")
+print(A.T @ C)
+print("\n")
 
-print("concat_E_C =")
-print(concat_E_C)
+print("A * C^T =")
+print(A @ C.T)
+print("\n")
