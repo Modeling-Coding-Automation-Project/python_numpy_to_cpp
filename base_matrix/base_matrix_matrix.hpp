@@ -353,22 +353,23 @@ public:
 };
 
 /* swap columns */
+namespace MatrixSwapColumns {
+
 // Swap N_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
-struct MatrixSwapColumnsCore {
+struct Core {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
 
     temp = mat.data[N_idx][col_1];
     mat.data[N_idx][col_1] = mat.data[N_idx][col_2];
     mat.data[N_idx][col_2] = temp;
-    MatrixSwapColumnsCore<T, M, N, N_idx - 1>::compute(col_1, col_2, mat, temp);
+    Core<T, M, N, N_idx - 1>::compute(col_1, col_2, mat, temp);
   }
 };
 
 // Termination condition: N_idx == 0
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixSwapColumnsCore<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Core<T, M, N, 0> {
   static void compute(std::size_t col_1, std::size_t col_2,
                       Matrix<T, M, N> &mat, T temp) {
 
@@ -379,11 +380,12 @@ struct MatrixSwapColumnsCore<T, M, N, 0> {
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_MATRIX_COLUMN_SWAP(std::size_t col_1,
-                                               std::size_t col_2,
-                                               Matrix<T, M, N> &mat, T &temp) {
-  MatrixSwapColumnsCore<T, M, N, N - 1>::compute(col_1, col_2, mat, temp);
+inline void compute(std::size_t col_1, std::size_t col_2, Matrix<T, M, N> &mat,
+                    T &temp) {
+  Core<T, M, N, N - 1>::compute(col_1, col_2, mat, temp);
 }
+
+} // namespace MatrixSwapColumns
 
 template <typename T, std::size_t M, std::size_t N>
 inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
@@ -408,7 +410,7 @@ inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_COLUMN_SWAP<T, M, N>(col_1, col_2, mat, temp);
+  MatrixSwapColumns::compute<T, M, N>(col_1, col_2, mat, temp);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -432,25 +434,28 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
 }
 
 /* Trace */
+namespace MatrixTrace {
+
 // calculate trace of matrix
-template <typename T, std::size_t N, std::size_t I> struct MatrixTraceCore {
+template <typename T, std::size_t N, std::size_t I> struct Core {
   static T compute(const Matrix<T, N, N> &mat) {
-    return mat.template get<I, I>() +
-           MatrixTraceCore<T, N, I - 1>::compute(mat);
+    return mat.template get<I, I>() + Core<T, N, I - 1>::compute(mat);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N>
-static inline T COMPILED_MATRIX_TRACE(const Matrix<T, M, N> &mat) {
-  return MatrixTraceCore<T, N, N - 1>::compute(mat);
-}
-
 // if I == 0
-template <typename T, std::size_t N> struct MatrixTraceCore<T, N, 0> {
+template <typename T, std::size_t N> struct Core<T, N, 0> {
   static T compute(const Matrix<T, N, N> &mat) {
     return mat.template get<0, 0>();
   }
 };
+
+template <typename T, std::size_t M, std::size_t N>
+inline T compute(const Matrix<T, M, N> &mat) {
+  return Core<T, N, N - 1>::compute(mat);
+}
+
+} // namespace MatrixTrace
 
 template <typename T, std::size_t M, std::size_t N>
 inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
@@ -465,7 +470,7 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  trace = Base::Matrix::COMPILED_MATRIX_TRACE<T, M, N>(mat);
+  trace = MatrixTrace::compute<T, M, N>(mat);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -473,22 +478,24 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
 }
 
 /* Matrix Addition */
+namespace MatrixAddMatrix {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixAdderColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
     result.template set<I, J_idx>(A.template get<I, J_idx>() +
                                   B.template get<I, J_idx>());
-    MatrixAdderColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
+    Column<T, M, N, I, J_idx - 1>::compute(A, B, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixAdderColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
@@ -498,29 +505,29 @@ struct MatrixAdderColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixAdderRow {
+struct Row {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixAdderColumn<T, M, N, I_idx, N - 1>::compute(A, B, result);
-    MatrixAdderRow<T, M, N, I_idx - 1>::compute(A, B, result);
+    Column<T, M, N, I_idx, N - 1>::compute(A, B, result);
+    Row<T, M, N, I_idx - 1>::compute(A, B, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixAdderRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixAdderColumn<T, M, N, 0, N - 1>::compute(A, B, result);
+    Column<T, M, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_MATRIX_ADD_MATRIX(const Matrix<T, M, N> &A,
-                                              const Matrix<T, M, N> &B,
-                                              Matrix<T, M, N> &result) {
-  MatrixAdderRow<T, M, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixAddMatrix
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
@@ -537,7 +544,7 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_ADD_MATRIX<T, M, N>(A, B, result);
+  MatrixAddMatrix::compute<T, M, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -545,22 +552,24 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
 }
 
 /* Matrix Subtraction */
+namespace MatrixSubMatrix {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixSubtractorColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
     result.template set<I, J_idx>(A.template get<I, J_idx>() -
                                   B.template get<I, J_idx>());
-    MatrixSubtractorColumn<T, M, N, I, J_idx - 1>::compute(A, B, result);
+    Column<T, M, N, I, J_idx - 1>::compute(A, B, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixSubtractorColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
@@ -570,29 +579,29 @@ struct MatrixSubtractorColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixSubtractorRow {
+struct Row {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixSubtractorColumn<T, M, N, I_idx, N - 1>::compute(A, B, result);
-    MatrixSubtractorRow<T, M, N, I_idx - 1>::compute(A, B, result);
+    Column<T, M, N, I_idx, N - 1>::compute(A, B, result);
+    Row<T, M, N, I_idx - 1>::compute(A, B, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixSubtractorRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixSubtractorColumn<T, M, N, 0, N - 1>::compute(A, B, result);
+    Column<T, M, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_MATRIX_SUB_MATRIX(const Matrix<T, M, N> &A,
-                                              const Matrix<T, M, N> &B,
-                                              Matrix<T, M, N> &result) {
-  MatrixSubtractorRow<T, M, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixSubMatrix
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
@@ -609,27 +618,29 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_SUB_MATRIX<T, M, N>(A, B, result);
+  MatrixSubMatrix::compute<T, M, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace MatrixMinus {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixMinusColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
 
     result.template set<I, J_idx>(-A.template get<I, J_idx>());
-    MatrixMinusColumn<T, M, N, I, J_idx - 1>::compute(A, result);
+    Column<T, M, N, I, J_idx - 1>::compute(A, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixMinusColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
 
     result.template set<I, 0>(-A.template get<I, 0>());
@@ -638,26 +649,26 @@ struct MatrixMinusColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixMinusRow {
+struct Row {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
-    MatrixMinusColumn<T, M, N, I_idx, N - 1>::compute(A, result);
-    MatrixMinusRow<T, M, N, I_idx - 1>::compute(A, result);
+    Column<T, M, N, I_idx, N - 1>::compute(A, result);
+    Row<T, M, N, I_idx - 1>::compute(A, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixMinusRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
-    MatrixMinusColumn<T, M, N, 0, N - 1>::compute(A, result);
+    Column<T, M, N, 0, N - 1>::compute(A, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_MATRIX_MINUS_MATRIX(const Matrix<T, M, N> &A,
-                                                Matrix<T, M, N> &result) {
-  MatrixMinusRow<T, M, N, M - 1>::compute(A, result);
+inline void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
+  Row<T, M, N, M - 1>::compute(A, result);
 }
+
+} // namespace MatrixMinus
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
@@ -673,7 +684,7 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_MINUS_MATRIX<T, M, N>(A, result);
+  MatrixMinus::compute<T, M, N>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -681,22 +692,23 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
 }
 
 /* (Scalar) * (Matrix) */
+namespace MatrixMultiplyScalar {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixMultiplyScalarColumn {
+struct Column {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
 
     result.template set<I, J_idx>(scalar * mat.template get<I, J_idx>());
-    MatrixMultiplyScalarColumn<T, M, N, I, J_idx - 1>::compute(scalar, mat,
-                                                               result);
+    Column<T, M, N, I, J_idx - 1>::compute(scalar, mat, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixMultiplyScalarColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
 
@@ -706,30 +718,29 @@ struct MatrixMultiplyScalarColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixMultiplyScalarRow {
+struct Row {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplyScalarColumn<T, M, N, I_idx, N - 1>::compute(scalar, mat,
-                                                               result);
-    MatrixMultiplyScalarRow<T, M, N, I_idx - 1>::compute(scalar, mat, result);
+    Column<T, M, N, I_idx, N - 1>::compute(scalar, mat, result);
+    Row<T, M, N, I_idx - 1>::compute(scalar, mat, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixMultiplyScalarRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplyScalarColumn<T, M, N, 0, N - 1>::compute(scalar, mat, result);
+    Column<T, M, N, 0, N - 1>::compute(scalar, mat, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_SCALAR_MULTIPLY_MATRIX(const T &scalar,
-                                                   const Matrix<T, M, N> &mat,
-                                                   Matrix<T, M, N> &result) {
-  MatrixMultiplyScalarRow<T, M, N, M - 1>::compute(scalar, mat, result);
+inline void compute(const T &scalar, const Matrix<T, M, N> &mat,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, N, M - 1>::compute(scalar, mat, result);
 }
+
+} // namespace MatrixMultiplyScalar
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
@@ -745,7 +756,7 @@ inline Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
+  MatrixMultiplyScalar::compute<T, M, N>(scalar, mat, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -766,7 +777,7 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_SCALAR_MULTIPLY_MATRIX<T, M, N>(scalar, mat, result);
+  MatrixMultiplyScalar::compute<T, M, N>(scalar, mat, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -774,51 +785,51 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 }
 
 /* Matrix multiply Vector */
+namespace MatrixMultiplyVector {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J>
-struct MatrixVectorMultiplierCore {
+struct Core {
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
 
     return mat.template get<I, J>() * vec[J] +
-           MatrixVectorMultiplierCore<T, M, N, I, J - 1>::compute(mat, vec);
+           Core<T, M, N, I, J - 1>::compute(mat, vec);
   }
 };
 
 // if J == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixVectorMultiplierCore<T, M, N, I, 0> {
+struct Core<T, M, N, I, 0> {
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
     return mat.template get<I, 0>() * vec[0];
   }
 };
 
 // column recursion
-template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixVectorMultiplierRow {
+template <typename T, std::size_t M, std::size_t N, std::size_t I> struct Row {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
-    result[I] =
-        MatrixVectorMultiplierCore<T, M, N, I, N - 1>::compute(mat, vec);
-    MatrixVectorMultiplierRow<T, M, N, I - 1>::compute(mat, vec, result);
+    result[I] = Core<T, M, N, I, N - 1>::compute(mat, vec);
+    Row<T, M, N, I - 1>::compute(mat, vec, result);
   }
 };
 
 // if I == 0
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixVectorMultiplierRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
-    result[0] =
-        MatrixVectorMultiplierCore<T, M, N, 0, N - 1>::compute(mat, vec);
+    result[0] = Core<T, M, N, 0, N - 1>::compute(mat, vec);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_MATRIX_MULTIPLY_VECTOR(
-    const Matrix<T, M, N> &mat, const Vector<T, N> &vec, Vector<T, M> &result) {
-  MatrixVectorMultiplierRow<T, M, N, M - 1>::compute(mat, vec, result);
+inline void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
+                    Vector<T, M> &result) {
+  Row<T, M, N, M - 1>::compute(mat, vec, result);
 }
+
+} // namespace MatrixMultiplyVector
 
 template <typename T, std::size_t M, std::size_t N>
 inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
@@ -837,29 +848,30 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::BASE_MATRIX_MATRIX_MULTIPLY_VECTOR<T, M, N>(mat, vec, result);
+  MatrixMultiplyVector::compute<T, M, N>(mat, vec, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return result;
 }
 
+namespace VectorMultiplyMatrix {
+
 // calculate if K_idx > 0
 template <typename T, std::size_t L, std::size_t N, std::size_t J,
           std::size_t K_idx>
-struct VectorMatrixMultiplierCore {
+struct Core {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
 
     result.template set<K_idx, J>(vec[K_idx] * mat.template get<0, J>());
-    VectorMatrixMultiplierCore<T, L, N, J, K_idx - 1>::compute(vec, mat,
-                                                               result);
+    Core<T, L, N, J, K_idx - 1>::compute(vec, mat, result);
   }
 };
 
 // if K_idx = 0
 template <typename T, std::size_t L, std::size_t N, std::size_t J>
-struct VectorMatrixMultiplierCore<T, L, N, J, 0> {
+struct Core<T, L, N, J, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
     result.template set<0, J>(vec[0] * mat.template get<0, J>());
@@ -868,29 +880,29 @@ struct VectorMatrixMultiplierCore<T, L, N, J, 0> {
 
 // row recursion
 template <typename T, std::size_t L, std::size_t N, std::size_t J>
-struct VectorMatrixMultiplierColumn {
+struct Column {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, J, L - 1>::compute(vec, mat, result);
-    VectorMatrixMultiplierColumn<T, L, N, J - 1>::compute(vec, mat, result);
+    Core<T, L, N, J, L - 1>::compute(vec, mat, result);
+    Column<T, L, N, J - 1>::compute(vec, mat, result);
   }
 };
 
 // if J = 0
-template <typename T, std::size_t L, std::size_t N>
-struct VectorMatrixMultiplierColumn<T, L, N, 0> {
+template <typename T, std::size_t L, std::size_t N> struct Column<T, L, N, 0> {
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
-    VectorMatrixMultiplierCore<T, L, N, 0, L - 1>::compute(vec, mat, result);
+    Core<T, L, N, 0, L - 1>::compute(vec, mat, result);
   }
 };
 
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
-static inline void COMPILED_VECTOR_MULTIPLY_MATRIX(const Vector<T, L> &vec,
-                                                   const Matrix<T, M, N> &mat,
-                                                   Matrix<T, L, N> &result) {
-  VectorMatrixMultiplierColumn<T, L, N, N - 1>::compute(vec, mat, result);
+inline void compute(const Vector<T, L> &vec, const Matrix<T, M, N> &mat,
+                    Matrix<T, L, N> &result) {
+  Column<T, L, N, N - 1>::compute(vec, mat, result);
 }
+
+} // namespace VectorMultiplyMatrix
 
 template <typename T, std::size_t L, std::size_t M, std::size_t N>
 inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
@@ -908,7 +920,7 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_VECTOR_MULTIPLY_MATRIX<T, L, M, N>(vec, mat, result);
+  VectorMultiplyMatrix::compute<T, L, M, N>(vec, mat, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -916,19 +928,21 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
 }
 
 /* (Column Vector) * (Matrix) */
+namespace ColumnVectorMultiplyMatrix {
+
 // calculation when I > 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t I>
-struct ColVectorMatrixMultiplierCore {
+struct Core {
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
     return vec[I] * mat.template get<I, J>() +
-           ColVectorMatrixMultiplierCore<T, M, N, J, I - 1>::compute(vec, mat);
+           Core<T, M, N, J, I - 1>::compute(vec, mat);
   }
 };
 
 // if I = 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct ColVectorMatrixMultiplierCore<T, M, N, J, 0> {
+struct Core<T, M, N, J, 0> {
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
     return vec[0] * mat.template get<0, J>();
   }
@@ -936,32 +950,29 @@ struct ColVectorMatrixMultiplierCore<T, M, N, J, 0> {
 
 // row recursion
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct ColVectorMatrixMultiplierColumn {
+struct Column {
   static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
                       ColVector<T, N> &result) {
-    result[J] =
-        ColVectorMatrixMultiplierCore<T, M, N, J, M - 1>::compute(vec, mat);
-    ColVectorMatrixMultiplierColumn<T, M, N, J - 1>::compute(vec, mat, result);
+    result[J] = Core<T, M, N, J, M - 1>::compute(vec, mat);
+    Column<T, M, N, J - 1>::compute(vec, mat, result);
   }
 };
 
 // if J = 0
-template <typename T, std::size_t M, std::size_t N>
-struct ColVectorMatrixMultiplierColumn<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
                       ColVector<T, N> &result) {
-    result[0] =
-        ColVectorMatrixMultiplierCore<T, M, N, 0, M - 1>::compute(vec, mat);
+    result[0] = Core<T, M, N, 0, M - 1>::compute(vec, mat);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX(const ColVector<T, M> &vec,
-                                       const Matrix<T, M, N> &mat,
-                                       ColVector<T, N> &result) {
-  ColVectorMatrixMultiplierColumn<T, M, N, N - 1>::compute(vec, mat, result);
+inline void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
+                    ColVector<T, N> &result) {
+  Column<T, M, N, N - 1>::compute(vec, mat, result);
 }
+
+} // namespace ColumnVectorMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t N>
 inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
@@ -980,8 +991,7 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_COLUMN_VECTOR_MULTIPLY_MATRIX<T, M, N>(vec, mat,
-                                                                result);
+  ColumnVectorMultiplyMatrix::compute<T, M, N>(vec, mat, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -989,21 +999,23 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
 }
 
 /* Matrix Multiply Matrix */
+namespace MatrixMultiplyMatrix {
+
 // when K_idx < K
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
-struct MatrixMultiplierCore {
+struct Core {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
     return A.template get<I, K_idx>() * B.template get<K_idx, J>() +
-           MatrixMultiplierCore<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
+           Core<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
   }
 };
 
 // when K_idx reached 0
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixMultiplierCore<T, M, K, N, I, J, 0> {
+struct Core<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
     return A.template get<I, 0>() * B.template get<0, J>();
@@ -1013,54 +1025,53 @@ struct MatrixMultiplierCore<T, M, K, N, I, J, 0> {
 // After completing the J column, go to the next row I
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixMultiplierColumn {
+struct Column {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, J>(
-        MatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(A, B));
-    MatrixMultiplierColumn<T, M, K, N, I, J - 1>::compute(A, B, result);
+    result.template set<I, J>(Core<T, M, K, N, I, J, K - 1>::compute(A, B));
+    Column<T, M, K, N, I, J - 1>::compute(A, B, result);
   }
 };
 
 // Row recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixMultiplierColumn<T, M, K, N, I, 0> {
+struct Column<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, 0>(
-        MatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(A, B));
+    result.template set<I, 0>(Core<T, M, K, N, I, 0, K - 1>::compute(A, B));
   }
 };
 
 // proceed to the next row after completing the I row
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixMultiplierRow {
+struct Row {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplierColumn<T, M, K, N, I, N - 1>::compute(A, B, result);
-    MatrixMultiplierRow<T, M, K, N, I - 1>::compute(A, B, result);
+    Column<T, M, K, N, I, N - 1>::compute(A, B, result);
+    Row<T, M, K, N, I - 1>::compute(A, B, result);
   }
 };
 
 // Column recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-struct MatrixMultiplierRow<T, M, K, N, 0> {
+struct Row<T, M, K, N, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplierColumn<T, M, K, N, 0, N - 1>::compute(A, B, result);
+    Column<T, M, K, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void COMPILED_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
-                                            const Matrix<T, K, N> &B,
-                                            Matrix<T, M, N> &result) {
-  MatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, K, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
@@ -1081,7 +1092,7 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_MULTIPLY<T, M, K, N>(A, B, result);
+  MatrixMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1089,20 +1100,22 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
 }
 
 /* Transpose */
+namespace MatrixTranspose {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixTransposeColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
 
     result.template set<J_idx, I>(A.template get<I, J_idx>());
-    MatrixTransposeColumn<T, M, N, I, J_idx - 1>::compute(A, result);
+    Column<T, M, N, I, J_idx - 1>::compute(A, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixTransposeColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
 
     result.template set<0, I>(A.template get<I, 0>());
@@ -1111,26 +1124,26 @@ struct MatrixTransposeColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixTransposeRow {
+struct Row {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
-    MatrixTransposeColumn<T, M, N, I_idx, N - 1>::compute(A, result);
-    MatrixTransposeRow<T, M, N, I_idx - 1>::compute(A, result);
+    Column<T, M, N, I_idx, N - 1>::compute(A, result);
+    Row<T, M, N, I_idx - 1>::compute(A, result);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixTransposeRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
-    MatrixTransposeColumn<T, M, N, 0, N - 1>::compute(A, result);
+    Column<T, M, N, 0, N - 1>::compute(A, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void COMPILED_MATRIX_TRANSPOSE(const Matrix<T, M, N> &A,
-                                             Matrix<T, N, M> &result) {
-  MatrixTransposeRow<T, M, N, M - 1>::compute(A, result);
+inline void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
+  Row<T, M, N, M - 1>::compute(A, result);
 }
+
+} // namespace MatrixTranspose
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
@@ -1146,7 +1159,7 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_TRANSPOSE<T, M, N>(mat, result);
+  MatrixTranspose::compute<T, M, N>(mat, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1154,16 +1167,17 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
 }
 
 /* Upper Triangular Matrix Multiply Matrix */
+namespace UpperTriangularMultiplyMatrix {
+
 // when K_idx >= I
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
-struct UpperTriangularMatrixMultiplierCore {
+struct Core {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
     return (K_idx >= I)
                ? (A.template get<I, K_idx>() * B.template get<K_idx, J>() +
-                  UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
-                                                      K_idx - 1>::compute(A, B))
+                  Core<T, M, K, N, I, J, K_idx - 1>::compute(A, B))
                : static_cast<T>(0);
   }
 };
@@ -1171,8 +1185,7 @@ struct UpperTriangularMatrixMultiplierCore {
 // recursion termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
-                                           static_cast<std::size_t>(-1)> {
+struct Core<T, M, K, N, I, J, static_cast<std::size_t>(-1)> {
   static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
 
     return static_cast<T>(0);
@@ -1182,7 +1195,7 @@ struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J,
 // when K_idx reaches I (base case)
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, I> {
+struct Core<T, M, K, N, I, J, I> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
 
     return A.template get<I, I>() * B.template get<I, J>();
@@ -1192,61 +1205,53 @@ struct UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, I> {
 // Column-wise computation
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct UpperTriangularMatrixMultiplierColumn {
+struct Column {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, J>(
-        UpperTriangularMatrixMultiplierCore<T, M, K, N, I, J, K - 1>::compute(
-            A, B));
-    UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, J - 1>::compute(
-        A, B, result);
+    result.template set<I, J>(Core<T, M, K, N, I, J, K - 1>::compute(A, B));
+    Column<T, M, K, N, I, J - 1>::compute(A, B, result);
   }
 };
 
 // row recursion termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, 0> {
+struct Column<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, 0>(
-        UpperTriangularMatrixMultiplierCore<T, M, K, N, I, 0, K - 1>::compute(
-            A, B));
+    result.template set<I, 0>(Core<T, M, K, N, I, 0, K - 1>::compute(A, B));
   }
 };
 
 // Row-wise computation
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct UpperTriangularMatrixMultiplierRow {
+struct Row {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    UpperTriangularMatrixMultiplierColumn<T, M, K, N, I, N - 1>::compute(
-        A, B, result);
-    UpperTriangularMatrixMultiplierRow<T, M, K, N, I - 1>::compute(A, B,
-                                                                   result);
+    Column<T, M, K, N, I, N - 1>::compute(A, B, result);
+    Row<T, M, K, N, I - 1>::compute(A, B, result);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-struct UpperTriangularMatrixMultiplierRow<T, M, K, N, 0> {
+struct Row<T, M, K, N, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    UpperTriangularMatrixMultiplierColumn<T, M, K, N, 0, N - 1>::compute(
-        A, B, result);
+    Column<T, M, K, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void
-COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY(const Matrix<T, M, K> &A,
-                                          const Matrix<T, K, N> &B,
-                                          Matrix<T, M, N> &result) {
-  UpperTriangularMatrixMultiplierRow<T, M, K, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, K, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace UpperTriangularMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline Matrix<T, M, N>
@@ -1268,8 +1273,7 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_UPPER_TRIANGULAR_MATRIX_MULTIPLY<T, M, K, N>(A, B,
-                                                                      result);
+  UpperTriangularMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1277,22 +1281,23 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
 }
 
 /* Matrix Transpose Multiply Matrix */
+namespace MatrixTransposeMultiplyMatrix {
+
 // when K_idx < K
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
-struct MatrixTransposeMultiplyMatrixCore {
+struct Core {
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
 
     return A.template get<K_idx, I>() * B.template get<K_idx, J>() +
-           MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J,
-                                             K_idx - 1>::compute(A, B);
+           Core<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
   }
 };
 
 // when K_idx reached 0
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J, 0> {
+struct Core<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
 
     return A.template get<0, I>() * B.template get<0, J>();
@@ -1302,59 +1307,53 @@ struct MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J, 0> {
 // After completing the J column, go to the next row I
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixTransposeMultiplyMatrixColumn {
+struct Column {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, J>(
-        MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
-                                                                            B));
-    MatrixTransposeMultiplyMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
-                                                                       result);
+    result.template set<I, J>(Core<T, M, K, N, I, J, K - 1>::compute(A, B));
+    Column<T, M, K, N, I, J - 1>::compute(A, B, result);
   }
 };
 
 // Row recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixTransposeMultiplyMatrixColumn<T, M, K, N, I, 0> {
+struct Column<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, 0>(
-        MatrixTransposeMultiplyMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
-                                                                            B));
+    result.template set<I, 0>(Core<T, M, K, N, I, 0, K - 1>::compute(A, B));
   }
 };
 
 // proceed to the next row after completing the I row
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixTransposeMultiplyMatrixRow {
+struct Row {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixTransposeMultiplyMatrixColumn<T, M, K, N, I, N - 1>::compute(A, B,
-                                                                       result);
-    MatrixTransposeMultiplyMatrixRow<T, M, K, N, I - 1>::compute(A, B, result);
+    Column<T, M, K, N, I, N - 1>::compute(A, B, result);
+    Row<T, M, K, N, I - 1>::compute(A, B, result);
   }
 };
 
 // Column recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-struct MatrixTransposeMultiplyMatrixRow<T, M, K, N, 0> {
+struct Row<T, M, K, N, 0> {
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    MatrixTransposeMultiplyMatrixColumn<T, M, K, N, 0, N - 1>::compute(A, B,
-                                                                       result);
+    Column<T, M, K, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void COMPILED_MATRIX_T_MULTIPLY_MATRIX(const Matrix<T, K, M> &A,
-                                                     const Matrix<T, K, N> &B,
-                                                     Matrix<T, M, N> &result) {
-  MatrixTransposeMultiplyMatrixRow<T, M, K, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, K, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixTransposeMultiplyMatrix
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
@@ -1375,7 +1374,7 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_T_MULTIPLY_MATRIX<T, M, K, N>(A, B, result);
+  MatrixTransposeMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1383,21 +1382,22 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
 }
 
 /* Transpose Matrix multiply Vector  */
+namespace MatrixTransposeMultiplyVector {
+
 // when M_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
           std::size_t M_idx>
-struct MatrixTransposeVectorMultiplierCore {
+struct Core {
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
 
     return mat.template get<M_idx, N_idx>() * vec[M_idx] +
-           MatrixTransposeVectorMultiplierCore<T, M, N, N_idx,
-                                               M_idx - 1>::compute(mat, vec);
+           Core<T, M, N, N_idx, M_idx - 1>::compute(mat, vec);
   }
 };
 
 // if M_idx == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
-struct MatrixTransposeVectorMultiplierCore<T, M, N, N_idx, 0> {
+struct Core<T, M, N, N_idx, 0> {
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
     return mat.template get<0, N_idx>() * vec[0];
   }
@@ -1405,33 +1405,29 @@ struct MatrixTransposeVectorMultiplierCore<T, M, N, N_idx, 0> {
 
 // column recursion
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
-struct MatrixTransposeVectorMultiplierColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
-    result[N_idx] =
-        MatrixTransposeVectorMultiplierCore<T, M, N, N_idx, M - 1>::compute(
-            mat, vec);
-    MatrixTransposeVectorMultiplierColumn<T, M, N, N_idx - 1>::compute(mat, vec,
-                                                                       result);
+    result[N_idx] = Core<T, M, N, N_idx, M - 1>::compute(mat, vec);
+    Column<T, M, N, N_idx - 1>::compute(mat, vec, result);
   }
 };
 
 // if N_idx == 0
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixTransposeVectorMultiplierColumn<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
-    result[0] = MatrixTransposeVectorMultiplierCore<T, M, N, 0, M - 1>::compute(
-        mat, vec);
+    result[0] = Core<T, M, N, 0, M - 1>::compute(mat, vec);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void BASE_MATRIX_MATRIX_TRANSPOSE_MULTIPLY_VECTOR(
-    const Matrix<T, M, N> &mat, const Vector<T, M> &vec, Vector<T, N> &result) {
-  MatrixTransposeVectorMultiplierColumn<T, M, N, N - 1>::compute(mat, vec,
-                                                                 result);
+inline void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
+                    Vector<T, N> &result) {
+  Column<T, M, N, N - 1>::compute(mat, vec, result);
 }
+
+} // namespace MatrixTransposeMultiplyVector
 
 template <typename T, std::size_t M, std::size_t N>
 inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
@@ -1450,8 +1446,7 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::BASE_MATRIX_MATRIX_TRANSPOSE_MULTIPLY_VECTOR<T, M, N>(A, b,
-                                                                      result);
+  MatrixTransposeMultiplyVector::compute<T, M, N>(A, b, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1459,22 +1454,23 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
 }
 
 /* Matrix multiply Transpose Matrix */
+namespace MatrixMultiplyTransposeMatrix {
+
 // when K_idx < K
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t K_idx>
-struct MatrixMultiplyTransposeMatrixCore {
+struct Core {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
 
     return A.template get<I, K_idx>() * B.template get<J, K_idx>() +
-           MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J,
-                                             K_idx - 1>::compute(A, B);
+           Core<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
   }
 };
 
 // when K_idx reached 0
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, 0> {
+struct Core<T, M, K, N, I, J, 0> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
 
     return A.template get<I, 0>() * B.template get<J, 0>();
@@ -1484,60 +1480,53 @@ struct MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, 0> {
 // After completing the J column, go to the next row I
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J>
-struct MatrixMultiplyTransposeMatrixColumn {
+struct Column {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, J>(
-        MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, J, K - 1>::compute(A,
-                                                                            B));
-    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, J - 1>::compute(A, B,
-                                                                       result);
+    result.template set<I, J>(Core<T, M, K, N, I, J, K - 1>::compute(A, B));
+    Column<T, M, K, N, I, J - 1>::compute(A, B, result);
   }
 };
 
 // Row recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, 0> {
+struct Column<T, M, K, N, I, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
 
-    result.template set<I, 0>(
-        MatrixMultiplyTransposeMatrixCore<T, M, K, N, I, 0, K - 1>::compute(A,
-                                                                            B));
+    result.template set<I, 0>(Core<T, M, K, N, I, 0, K - 1>::compute(A, B));
   }
 };
 
 // proceed to the next row after completing the I row
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I>
-struct MatrixMultiplyTransposeMatrixRow {
+struct Row {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, I, N - 1>::compute(A, B,
-                                                                       result);
-    MatrixMultiplyTransposeMatrixRow<T, M, K, N, I - 1>::compute(A, B, result);
+    Column<T, M, K, N, I, N - 1>::compute(A, B, result);
+    Row<T, M, K, N, I - 1>::compute(A, B, result);
   }
 };
 
 // Column recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-struct MatrixMultiplyTransposeMatrixRow<T, M, K, N, 0> {
+struct Row<T, M, K, N, 0> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
-    MatrixMultiplyTransposeMatrixColumn<T, M, K, N, 0, N - 1>::compute(A, B,
-                                                                       result);
+    Column<T, M, K, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
-static inline void
-COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX(const Matrix<T, M, K> &A,
-                                          const Matrix<T, N, K> &B,
-                                          Matrix<T, M, N> &result) {
-  MatrixMultiplyTransposeMatrixRow<T, M, K, N, M - 1>::compute(A, B, result);
+inline void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
+                    Matrix<T, M, N> &result) {
+  Row<T, M, K, N, M - 1>::compute(A, B, result);
 }
+
+} // namespace MatrixMultiplyTransposeMatrix
 
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline Matrix<T, M, N>
@@ -1559,8 +1548,7 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_MULTIPLY_TRANSPOSE_MATRIX<T, M, K, N>(A, B,
-                                                                      result);
+  MatrixMultiplyTransposeMatrix::compute<T, M, K, N>(A, B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1568,22 +1556,23 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
 }
 
 /* Matrix real from complex */
+namespace MatrixRealToComplex {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixRealToComplexColumn {
+struct Column {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
 
     To_matrix(I, J_idx).real = From_matrix.template get<I, J_idx>();
-    MatrixRealToComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
-                                                              To_matrix);
+    Column<T, M, N, I, J_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixRealToComplexColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
 
@@ -1593,31 +1582,29 @@ struct MatrixRealToComplexColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixRealToComplexRow {
+struct Row {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    MatrixRealToComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
-                                                              To_matrix);
-    MatrixRealToComplexRow<T, M, N, I_idx - 1>::compute(From_matrix, To_matrix);
+    Column<T, M, N, I_idx, N - 1>::compute(From_matrix, To_matrix);
+    Row<T, M, N, I_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixRealToComplexRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
-    MatrixRealToComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
-                                                          To_matrix);
+    Column<T, M, N, 0, N - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-COMPILED_MATRIX_REAL_TO_COMPLEX(const Matrix<T, M, N> &From_matrix,
-                                Matrix<Complex<T>, M, N> &To_matrix) {
-  MatrixRealToComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
+inline void compute(const Matrix<T, M, N> &From_matrix,
+                    Matrix<Complex<T>, M, N> &To_matrix) {
+  Row<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
+
+} // namespace MatrixRealToComplex
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<Complex<T>, M, N>
@@ -1635,8 +1622,7 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_REAL_TO_COMPLEX<T, M, N>(From_matrix,
-                                                         To_matrix);
+  MatrixRealToComplex::compute<T, M, N>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1644,22 +1630,23 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 }
 
 /* Matrix real from complex */
+namespace MatrixRealFromComplex {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixRealFromComplexColumn {
+struct Column {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
 
     To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).real);
-    MatrixRealFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
-                                                                To_matrix);
+    Column<T, M, N, I, J_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixRealFromComplexColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
 
@@ -1669,32 +1656,29 @@ struct MatrixRealFromComplexColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixRealFromComplexRow {
+struct Row {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    MatrixRealFromComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
-                                                                To_matrix);
-    MatrixRealFromComplexRow<T, M, N, I_idx - 1>::compute(From_matrix,
-                                                          To_matrix);
+    Column<T, M, N, I_idx, N - 1>::compute(From_matrix, To_matrix);
+    Row<T, M, N, I_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixRealFromComplexRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    MatrixRealFromComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
-                                                            To_matrix);
+    Column<T, M, N, 0, N - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-COMPILED_MATRIX_REAL_FROM_COMPLEX(const Matrix<Complex<T>, M, N> &From_matrix,
-                                  Matrix<T, M, N> &To_matrix) {
-  MatrixRealFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
+inline void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                    Matrix<T, M, N> &To_matrix) {
+  Row<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
+
+} // namespace MatrixRealFromComplex
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
@@ -1712,8 +1696,7 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_REAL_FROM_COMPLEX<T, M, N>(From_matrix,
-                                                           To_matrix);
+  MatrixRealFromComplex::compute<T, M, N>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1721,22 +1704,23 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
 }
 
 /* Matrix imag from complex */
+namespace MatrixImagFromComplex {
+
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
-struct MatrixImagFromComplexColumn {
+struct Column {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
 
     To_matrix.template set<I, J_idx>(From_matrix(I, J_idx).imag);
-    MatrixImagFromComplexColumn<T, M, N, I, J_idx - 1>::compute(From_matrix,
-                                                                To_matrix);
+    Column<T, M, N, I, J_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t I>
-struct MatrixImagFromComplexColumn<T, M, N, I, 0> {
+struct Column<T, M, N, I, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
 
@@ -1746,32 +1730,29 @@ struct MatrixImagFromComplexColumn<T, M, N, I, 0> {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
-struct MatrixImagFromComplexRow {
+struct Row {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    MatrixImagFromComplexColumn<T, M, N, I_idx, N - 1>::compute(From_matrix,
-                                                                To_matrix);
-    MatrixImagFromComplexRow<T, M, N, I_idx - 1>::compute(From_matrix,
-                                                          To_matrix);
+    Column<T, M, N, I_idx, N - 1>::compute(From_matrix, To_matrix);
+    Row<T, M, N, I_idx - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N>
-struct MatrixImagFromComplexRow<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
-    MatrixImagFromComplexColumn<T, M, N, 0, N - 1>::compute(From_matrix,
-                                                            To_matrix);
+    Column<T, M, N, 0, N - 1>::compute(From_matrix, To_matrix);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-COMPILED_MATRIX_IMAG_FROM_COMPLEX(const Matrix<Complex<T>, M, N> &From_matrix,
-                                  Matrix<T, M, N> &To_matrix) {
-  MatrixImagFromComplexRow<T, M, N, M - 1>::compute(From_matrix, To_matrix);
+inline void compute(const Matrix<Complex<T>, M, N> &From_matrix,
+                    Matrix<T, M, N> &To_matrix) {
+  Row<T, M, N, M - 1>::compute(From_matrix, To_matrix);
 }
+
+} // namespace MatrixImagFromComplex
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
@@ -1789,8 +1770,7 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  Base::Matrix::COMPILED_MATRIX_IMAG_FROM_COMPLEX<T, M, N>(From_matrix,
-                                                           To_matrix);
+  MatrixImagFromComplex::compute<T, M, N>(From_matrix, To_matrix);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
