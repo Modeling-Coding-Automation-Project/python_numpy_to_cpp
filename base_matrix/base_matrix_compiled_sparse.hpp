@@ -81,6 +81,11 @@ public:
     return *this;
   }
 
+  /* Function */
+  T &operator[](std::size_t index) { return this->values[index]; }
+
+  const T &operator[](std::size_t index) const { return this->values[index]; }
+
   /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;

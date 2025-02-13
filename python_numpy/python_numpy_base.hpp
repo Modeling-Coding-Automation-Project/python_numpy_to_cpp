@@ -96,7 +96,7 @@ public:
       row = N - 1;
     }
 
-    return this->matrix.data[row][col];
+    return this->matrix(col, row);
   }
 
   const T &operator()(std::size_t col, std::size_t row) const {
@@ -107,7 +107,7 @@ public:
       row = N - 1;
     }
 
-    return this->matrix.data[row][col];
+    return this->matrix(col, row);
   }
 
   static inline auto zeros(void) -> Matrix<DefDense, T, M, N> {
@@ -251,14 +251,14 @@ public:
     if (col >= M) {
       col = M - 1;
     }
-    return this->matrix.data[col];
+    return this->matrix[col];
   }
 
   const T &operator()(std::size_t col, std::size_t row) const {
     if (col >= M) {
       col = M - 1;
     }
-    return this->matrix.data[col];
+    return this->matrix[col];
   }
 
   static inline auto identity(void) -> Matrix<DefDiag, T, M> {
@@ -400,7 +400,7 @@ public:
       value_index = this->matrix.values.size() - 1;
     }
 
-    return this->matrix.values[value_index];
+    return this->matrix[value_index];
   }
 
   const T &operator()(std::size_t value_index) const {
@@ -408,7 +408,7 @@ public:
       value_index = this->matrix.values.size() - 1;
     }
 
-    return this->matrix.values[value_index];
+    return this->matrix[value_index];
   }
 
   inline auto transpose(void) const
