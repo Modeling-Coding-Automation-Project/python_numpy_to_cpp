@@ -231,23 +231,11 @@ public:
   }
 
   T &operator()(std::size_t col, std::size_t row) {
-    if (col >= M) {
-      col = M - 1;
-    }
-    if (row >= N) {
-      row = N - 1;
-    }
 
     return this->data[row][col];
   }
 
   const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
-    }
-    if (row >= N) {
-      row = N - 1;
-    }
 
     return this->data[row][col];
   }
