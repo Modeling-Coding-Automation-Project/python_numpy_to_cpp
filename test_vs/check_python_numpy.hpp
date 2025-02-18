@@ -617,6 +617,13 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Diag.matrix.data, Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_DiagMatrix.");
 
+    DiagMatrix_Type<T, 3> Diag_zeros = make_DiagMatrixZeros<T, 3>();
+
+    Matrix<DefDiag, T, 3> Diag_zeros_answer({ 0, 0, 0 });
+
+    tester.expect_near(Diag_zeros.matrix.data, Diag_zeros_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DiagMatrixZeros.");
+
     auto Dense = make_DenseMatrix<3, 3>(
         static_cast<T>(1), static_cast<T>(2), static_cast<T>(3),
         static_cast<T>(5), static_cast<T>(4), static_cast<T>(6),

@@ -23,6 +23,13 @@ inline auto make_DenseMatrixOnes(void) -> Matrix<DefDense, T, M, N> {
 }
 
 template <typename T, std::size_t M>
+inline auto make_DiagMatrixZeros(void) -> Matrix<DefDiag, T, M> {
+
+  Matrix<DefDiag, T, M> result;
+  return result;
+}
+
+template <typename T, std::size_t M>
 inline auto make_DiagMatrixIdentity(void) -> Matrix<DefDiag, T, M> {
 
   return Matrix<DefDiag, T, M>::identity();
