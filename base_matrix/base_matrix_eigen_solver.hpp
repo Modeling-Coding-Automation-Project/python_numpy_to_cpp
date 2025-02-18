@@ -151,6 +151,15 @@ public:
     this->gmres_k_decay_rate = gmres_k_decay_rate_in;
   }
 
+  inline Matrix<T, M, M> check_validity(const Matrix<T, M, M> &matrix) {
+    Matrix<T, M, M> result =
+        matrix * this->_eigen_vectors -
+        this->_eigen_vectors *
+            Base::Matrix::DiagMatrix<T, M>(this->_eigen_values);
+
+    return result;
+  }
+
 public:
   /* Variable */
   std::size_t iteration_max;
@@ -551,6 +560,17 @@ public:
 
   inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
     this->gmres_k_decay_rate = gmres_k_decay_rate_in;
+  }
+
+  inline Matrix<Complex<T>, M, M>
+  check_validity(const Matrix<T, M, M> &matrix) {
+    Matrix<Complex<T>, M, M> result =
+        Base::Matrix::convert_matrix_real_to_complex(matrix) *
+            this->_eigen_vectors -
+        this->_eigen_vectors *
+            Base::Matrix::DiagMatrix<Complex<T>, M>(this->_eigen_values);
+
+    return result;
   }
 
 public:

@@ -1948,6 +1948,17 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     tester.expect_near(A_mul_V.data, V_mul_D.data, NEAR_LIMIT_STRICT,
         "check EigenSolverReal eigen vectors, strict.");
 
+    Matrix<T, 3, 3> result_A0 = eigen_solver.check_validity(A0);
+
+    Matrix<T, 3, 3> result_A0_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_A0.data, result_A0_answer.data, NEAR_LIMIT_STRICT,
+        "check EigenSolverReal check validity.");
+
 
     /* 複素数 固有値 */
     Matrix<Complex<T>, 3, 3> A1_comp({ {1, 2, 3}, {3, 1, 2}, {2, 3, 1} });
@@ -2057,6 +2068,31 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     V_mul_D_imag = get_imag_matrix_from_complex_matrix(V_mul_D_comp);
     tester.expect_near(A_mul_V_imag.data, V_mul_D_imag.data, NEAR_LIMIT_STRICT,
         "check EigenSolverComplex imag eigen vectors, strict.");
+
+
+    Matrix<Complex<T>, 3, 3> result_A1 = eigen_solver_comp.check_validity(A1);
+
+    Matrix<T, 3, 3> result_A1_answer_real({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    Matrix<T, 3, 3> result_A1_real = get_real_matrix_from_complex_matrix(result_A1);
+
+    tester.expect_near(result_A1_real.data, result_A1_answer_real.data, NEAR_LIMIT_STRICT,
+        "check EigenSolverComplex check validity real.");
+
+    Matrix<T, 3, 3> result_answer_A1_imag({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    Matrix<T, 3, 3> result_A1_imag = get_imag_matrix_from_complex_matrix(result_A1);
+
+    tester.expect_near(result_A1_imag.data, result_answer_A1_imag.data, NEAR_LIMIT_STRICT,
+        "check EigenSolverComplex check validity imag.");
 
 
     tester.throw_error_if_test_failed();
