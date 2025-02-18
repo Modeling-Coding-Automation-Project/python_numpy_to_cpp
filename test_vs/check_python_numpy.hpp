@@ -2477,6 +2477,18 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(A_mul_V_sparse.matrix.data, V_mul_D_sparse.matrix.data, NEAR_LIMIT_SOFT * static_cast<T>(10),
         "check LinalgSolverEigReal eigen vectors Sparse.");
 
+    auto result_C = eig_solver_sparse.check_validity(C);
+
+    Matrix<DefDense, T, 3, 3> result_C_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_C.matrix.data, result_C_answer.matrix.data, NEAR_LIMIT_SOFT * static_cast<T>(10),
+        "check LinalgSolverEigReal check_validity Sparse.");
+
+
     /* 実数値のみの固有値 */
     Matrix<DefDense, T, 3, 3> A0({ {6, -3, 5}, {-1, 4, -5}, {-3, 3, -4} });
     //Matrix<DefDense, T, 4, 4> A2({ {11, 8, 5, 10}, {14, 1, 4, 15}, {2, 13, 16, 3}, {7, 12, 9, 6} });
@@ -2528,6 +2540,17 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
     tester.expect_near(A_mul_V.matrix.data, V_mul_D.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEigReal eigen vectors.");
+
+    auto result_A0 = eig_solver.check_validity(A0);
+
+    Matrix<DefDense, T, 3, 3> result_A0_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_A0.matrix.data, result_A0_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEigReal check_validity.");
 
 
     /* 対角行列の固有値 複素数 */
@@ -2610,6 +2633,30 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     Matrix<DefDense, T, 3, 3> V_mul_D_imag_sparse(Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp_sparse.matrix));
     tester.expect_near(A_mul_V_imag_sparse.matrix.data, V_mul_D_imag_sparse.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen vectors imag sparse.");
+
+    auto result_C_comp = eig_solver_comp_sparse.check_validity(C);
+
+    Matrix<DefDense, T, 3, 3> result_C_real(Base::Matrix::get_real_matrix_from_complex_matrix(result_C_comp.matrix));
+
+    Matrix<DefDense, T, 3, 3> result_C_real_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_C_real.matrix.data, result_C_real_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig check_validity Sparse.");
+
+    Matrix<DefDense, T, 3, 3> result_C_imag(Base::Matrix::get_imag_matrix_from_complex_matrix(result_C_comp.matrix));
+
+    Matrix<DefDense, T, 3, 3> result_C_imag_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_C_imag.matrix.data, result_C_imag_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolverEig check_validity Sparse.");
 
 
     /* 複素数固有値 */
@@ -2695,6 +2742,30 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     V_mul_D_imag.matrix = Base::Matrix::get_imag_matrix_from_complex_matrix(V_mul_D_comp.matrix);
     tester.expect_near(A_mul_V_imag.matrix.data, V_mul_D_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen vectors imag, strict.");
+
+    auto result_A1_comp = eig_solver_comp.check_validity(A1);
+
+    Matrix<DefDense, T, 3, 3> result_A1_real(Base::Matrix::get_real_matrix_from_complex_matrix(result_A1_comp.matrix));
+
+    Matrix<DefDense, T, 3, 3> result_A1_real_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_A1_real.matrix.data, result_A1_real_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverEig check_validity real.");
+
+    Matrix<DefDense, T, 3, 3> result_A1_imag(Base::Matrix::get_imag_matrix_from_complex_matrix(result_A1_comp.matrix));
+
+    Matrix<DefDense, T, 3, 3> result_A1_imag_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(result_A1_imag.matrix.data, result_A1_imag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverEig check_validity imag.");
 
 
     tester.throw_error_if_test_failed();

@@ -101,6 +101,14 @@ public:
     this->_Eigen_solver.small_value = small_value_in;
   }
 
+  /* Check */
+  inline auto check_validity(const A_Type &A)
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.check_validity(A.matrix));
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = M;
@@ -269,6 +277,15 @@ public:
     this->_Eigen_solver.small_value = small_value_in;
   }
 
+  /* Check */
+  inline auto check_validity(const A_Type &A)
+      -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
+
+    return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.check_validity(
+            Base::Matrix::output_dense_matrix(A.matrix)));
+  }
+
 public:
   /* Constant */
   static constexpr std::size_t COLS = M;
@@ -423,6 +440,14 @@ public:
 
   inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
     this->_Eigen_solver.gmres_k_decay_rate = gmres_k_decay_rate_in;
+  }
+
+  /* Check */
+  inline auto check_validity(const A_Type &A)
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.check_validity(A.matrix));
   }
 
 public:
@@ -601,6 +626,15 @@ public:
 
   inline void set_small_value(const T &small_value_in) {
     this->_Eigen_solver.small_value = small_value_in;
+  }
+
+  /* Check */
+  inline auto check_validity(const A_Type &A)
+      -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
+
+    return ForLinalgSolverEig::EigenVectors_Type<T, M>(
+        this->_Eigen_solver.check_validity(
+            Base::Matrix::output_dense_matrix(A.matrix)));
   }
 
 public:
