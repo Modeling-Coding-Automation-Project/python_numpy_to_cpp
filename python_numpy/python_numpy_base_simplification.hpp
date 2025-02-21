@@ -41,6 +41,12 @@ inline auto make_DiagMatrixIdentity(void) -> Matrix<DefDiag, T, M> {
   return Matrix<DefDiag, T, M>::identity();
 }
 
+template <std::size_t M, typename T>
+inline auto make_DiagMatrixFull(const T &value) -> Matrix<DefDiag, T, M> {
+
+  return Matrix<DefDiag, T, M>::full(value);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto make_SparseMatrixEmpty(void)
     -> Matrix<DefSparse, T, M, N, SparseAvailableEmpty<M, N>> {

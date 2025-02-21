@@ -284,6 +284,10 @@ public:
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
   }
 
+  static inline auto full(const T &value) -> Matrix<DefDiag, T, M> {
+    return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::full(value));
+  }
+
   inline auto create_dense(void) const -> Matrix<DefDense, T, M, M> {
     return Matrix<DefDense, T, M, M>(
         Base::Matrix::output_dense_matrix(this->matrix));
