@@ -110,6 +110,12 @@ public:
     return this->matrix(col, row);
   }
 
+  inline T &access(const std::size_t &col, const std::size_t &row) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix(row)[col];
+  }
+
   static inline auto zeros(void) -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>();
   }
@@ -247,18 +253,26 @@ public:
 
   constexpr std::size_t cols() const { return COLS; }
 
-  T &operator()(std::size_t col) {
-    if (col >= M) {
-      col = M - 1;
+  T &operator()(std::size_t index) {
+    if (index >= M) {
+      index = M - 1;
     }
-    return this->matrix[col];
+
+    return this->matrix[index];
   }
 
-  const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
+  const T &operator()(std::size_t index) const {
+    if (index >= M) {
+      index = M - 1;
     }
-    return this->matrix[col];
+
+    return this->matrix[index];
+  }
+
+  inline T &access(const std::size_t &index) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[index];
   }
 
   static inline auto identity(void) -> Matrix<DefDiag, T, M> {

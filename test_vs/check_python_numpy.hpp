@@ -88,7 +88,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDense, T, 4, 3> AA({ { 1, 3, 0 }, {0, 0, 2}, {0, 8, 4}, {0, 1, 0} });
 
-    T a_value = A(1, 2);
+    T a_value = A.access(1, 2);
 
     tester.expect_near(a_value, 6, NEAR_LIMIT_STRICT,
         "check Matrix get value.");
@@ -98,7 +98,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(a_value_outlier, 7, NEAR_LIMIT_STRICT,
         "check Matrix get value outlier.");
 
-    A(1, 2) = 100;
+    A.access(1, 2) = 100;
 
     Matrix<DefDense, T, 3, 3> A_set_answer({
         {1, 2, 3},
