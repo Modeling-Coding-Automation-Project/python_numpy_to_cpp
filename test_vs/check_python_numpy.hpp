@@ -586,6 +586,17 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Ones.matrix.data, Ones_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_DenseMatrixOnes.");
 
+    auto Full = make_DenseMatrixFull<3, 3>(static_cast<T>(2));
+
+    Matrix<DefDense, T, 3, 3> Full_answer({
+        {2, 2, 2},
+        {2, 2, 2},
+        {2, 2, 2}
+        });
+
+    tester.expect_near(Full.matrix.data, Full_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DenseMatrixFull.");
+
 
     auto Identity = make_DiagMatrixIdentity<T, 3>();
     auto Identity_dense = Identity.create_dense();

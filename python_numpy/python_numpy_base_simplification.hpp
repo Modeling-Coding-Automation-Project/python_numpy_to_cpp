@@ -22,6 +22,12 @@ inline auto make_DenseMatrixOnes(void) -> Matrix<DefDense, T, M, N> {
   return Matrix<DefDense, T, M, N>::ones();
 }
 
+template <std::size_t M, std::size_t N, typename T>
+inline auto make_DenseMatrixFull(const T &value) -> Matrix<DefDense, T, M, N> {
+
+  return Matrix<DefDense, T, M, N>::full(value);
+}
+
 template <typename T, std::size_t M>
 inline auto make_DiagMatrixZeros(void) -> Matrix<DefDiag, T, M> {
 

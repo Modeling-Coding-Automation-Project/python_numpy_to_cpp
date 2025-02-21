@@ -124,6 +124,11 @@ public:
     return Matrix<DefDense, T, M, N>(Base::Matrix::Matrix<T, M, N>::ones());
   }
 
+  static inline auto full(const T &value) -> Matrix<DefDense, T, M, N> {
+    return Matrix<DefDense, T, M, N>(
+        Base::Matrix::Matrix<T, M, N>::full(value));
+  }
+
   inline auto transpose(void) const -> Matrix<DefDense, T, N, M> {
     return Matrix<DefDense, T, N, M>(
         Base::Matrix::output_matrix_transpose(this->matrix));
