@@ -86,6 +86,14 @@ public:
 
   const T &operator[](std::size_t index) const { return this->values[index]; }
 
+  static inline CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
+  full(const T &value) {
+    CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> full(
+        std::vector<T>(RowPointers::list[M], value));
+
+    return full;
+  }
+
   /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;

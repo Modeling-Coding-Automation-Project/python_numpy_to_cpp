@@ -152,6 +152,25 @@ inline auto make_SparseMatrixZeros(void)
   return result;
 }
 
+template <typename T, typename SparseAvailable>
+inline auto make_SparseMatrixOnes(void)
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+              SparseAvailable::column_size, SparseAvailable> {
+
+  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+                SparseAvailable::column_size,
+                SparseAvailable>::full(static_cast<T>(1));
+}
+
+template <typename SparseAvailable, typename T>
+inline auto make_SparseMatrixFull(const T &value)
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+              SparseAvailable::column_size, SparseAvailable> {
+
+  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+                SparseAvailable::column_size, SparseAvailable>::full(value);
+}
+
 namespace MakeSparseMatrixOperation {
 
 template <std::size_t IndexCount, typename SparseMatrix_Type, typename T>

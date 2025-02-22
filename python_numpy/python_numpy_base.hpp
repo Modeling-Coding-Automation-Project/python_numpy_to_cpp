@@ -434,6 +434,18 @@ public:
     return this->matrix[value_index];
   }
 
+  inline T &access(const std::size_t &value_index) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[value_index];
+  }
+
+  static inline auto full(const T &value)
+      -> Matrix<DefSparse, T, N, M, SparseAvailable> {
+    return Matrix<DefSparse, T, N, M, SparseAvailable>(
+        _BaseMatrix_Type::full(value));
+  }
+
   inline auto transpose(void) const
       -> Matrix<DefSparse, T, N, M, SparseAvailableTranspose<SparseAvailable>> {
 
