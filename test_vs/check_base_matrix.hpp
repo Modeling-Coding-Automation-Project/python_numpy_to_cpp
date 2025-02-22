@@ -932,6 +932,25 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(Dense_mul_SparseT.data, Dense_mul_SparseT_answer.data, NEAR_LIMIT_STRICT,
         "check Matrix multiply SparseMatrix transpose.");
 
+    Matrix<T, 4, 4> Dense_44({ {1, 2, 3, 4}, {5, 4, 6, 7}, {9, 8, 7, 3}, {1, 2, 3, 4} });
+
+    CompiledSparseMatrix<T, 2, 4,
+        RowIndices<0, 0, 2>,
+        RowPointers<0, 1, 3>> Sparse_24({ 1, 3, 8 });
+
+    Matrix<T, 4, 2> Dense_44_mul_SparseT_answer = matrix_multiply_A_mul_SparseBTranspose(Dense_44, Sparse_24);
+
+    Matrix<T, 4, 2> Dense_44_mul_SparseT({
+        {1, 27},
+        {5, 63},
+        {9, 83},
+        {1, 27}
+        });
+
+    tester.expect_near(Dense_44_mul_SparseT.data, Dense_44_mul_SparseT_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix multiply SparseMatrix transpose 2.");
+
+
     Matrix<T, 3, 3> DenseT_mul_Sparse = matrix_multiply_ATranspose_mul_SparseB(DenseG, SparseCc);
 
     //std::cout << "DenseM = " << std::endl;
