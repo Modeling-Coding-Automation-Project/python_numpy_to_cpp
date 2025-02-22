@@ -238,7 +238,7 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixAddMatrix::compute<T, M>(A, result);
+  DiagMatrixAddMatrix::compute<T, M>(B, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -377,7 +377,7 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixSubMatrix::compute<T, M>(A, result);
+  DiagMatrixAddMatrix::compute<T, M>(A, result);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 

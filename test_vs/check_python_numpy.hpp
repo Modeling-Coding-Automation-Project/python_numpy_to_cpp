@@ -268,6 +268,70 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
 
     Matrix<DefDiag, T, 3> DiagJ({ 10, 20, 30 });
 
+    auto Dense_add_Diag = A + DiagJ;
+
+    Matrix<DefDense, T, 3, 3> Dense_add_Diag_answer({
+        {11, 2, 3},
+        {5, 24, 6},
+        {9, 8, 37}
+        });
+
+    tester.expect_near(Dense_add_Diag.matrix.data, Dense_add_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DenseMatrix add DiagMatrix.");
+
+    auto Diag_add_Dense = DiagJ + A;
+
+    tester.expect_near(Diag_add_Dense.matrix.data, Dense_add_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix add DenseMatrix.");
+
+    auto Dense_minus_Diag = A - DiagJ;
+
+    Matrix<DefDense, T, 3, 3> Dense_minus_Diag_answer({
+        { -9, 2, 3 },
+        { 5, -16, 6 },
+        { 9, 8, -23 }
+        });
+
+    tester.expect_near(Dense_minus_Diag.matrix.data, Dense_minus_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DenseMatrix minus DiagMatrix.");
+
+    auto Diag_minus_Dense = DiagJ - A;
+
+    Matrix<DefDense, T, 3, 3> Diag_minus_Dense_answer({
+        { 9, -2, -3 },
+        { -5, 16, -6 },
+        { -9, -8, 23 }
+        });
+
+    tester.expect_near(Diag_minus_Dense.matrix.data, Diag_minus_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix minus DenseMatrix.");
+
+
+    auto Diag_add_Diag = B + DiagJ;
+    auto Diag_add_Diag_dense = Diag_add_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Diag_add_Diag_answer({
+        {11, 0, 0},
+        {0, 22, 0},
+        {0, 0, 33}
+        });
+
+    tester.expect_near(Diag_add_Diag_dense.matrix.data, Diag_add_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix add DiagMatrix.");
+
+    auto Diag_minus_Diag = B - DiagJ;
+    auto Diag_minus_Diag_dense = Diag_minus_Diag.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Diag_minus_Diag_answer({
+        { -9, 0, 0 },
+        { 0, -18, 0 },
+        { 0, 0, -27 }
+        });
+
+    tester.expect_near(Diag_minus_Diag_dense.matrix.data, Diag_minus_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix minus DiagMatrix.");
+
+
     auto Sparse_add_Diag = C + DiagJ;
     auto Sparse_add_Diag_dense = Sparse_add_Diag.create_dense();
 
