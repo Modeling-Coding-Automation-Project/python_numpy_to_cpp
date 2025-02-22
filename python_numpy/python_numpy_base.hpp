@@ -110,12 +110,23 @@ public:
     return this->matrix(col, row);
   }
 
+  inline T &access(const std::size_t &col, const std::size_t &row) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix(row)[col];
+  }
+
   static inline auto zeros(void) -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>();
   }
 
   static inline auto ones(void) -> Matrix<DefDense, T, M, N> {
     return Matrix<DefDense, T, M, N>(Base::Matrix::Matrix<T, M, N>::ones());
+  }
+
+  static inline auto full(const T &value) -> Matrix<DefDense, T, M, N> {
+    return Matrix<DefDense, T, M, N>(
+        Base::Matrix::Matrix<T, M, N>::full(value));
   }
 
   inline auto transpose(void) const -> Matrix<DefDense, T, N, M> {
@@ -247,22 +258,34 @@ public:
 
   constexpr std::size_t cols() const { return COLS; }
 
-  T &operator()(std::size_t col) {
-    if (col >= M) {
-      col = M - 1;
+  T &operator()(std::size_t index) {
+    if (index >= M) {
+      index = M - 1;
     }
-    return this->matrix[col];
+
+    return this->matrix[index];
   }
 
-  const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
+  const T &operator()(std::size_t index) const {
+    if (index >= M) {
+      index = M - 1;
     }
-    return this->matrix[col];
+
+    return this->matrix[index];
+  }
+
+  inline T &access(const std::size_t &index) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[index];
   }
 
   static inline auto identity(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::identity());
+  }
+
+  static inline auto full(const T &value) -> Matrix<DefDiag, T, M> {
+    return Matrix<DefDiag, T, M>(Base::Matrix::DiagMatrix<T, M>::full(value));
   }
 
   inline auto create_dense(void) const -> Matrix<DefDense, T, M, M> {
@@ -409,6 +432,18 @@ public:
     }
 
     return this->matrix[value_index];
+  }
+
+  inline T &access(const std::size_t &value_index) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[value_index];
+  }
+
+  static inline auto full(const T &value)
+      -> Matrix<DefSparse, T, N, M, SparseAvailable> {
+    return Matrix<DefSparse, T, N, M, SparseAvailable>(
+        _BaseMatrix_Type::full(value));
   }
 
   inline auto transpose(void) const

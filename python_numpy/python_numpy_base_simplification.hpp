@@ -22,6 +22,12 @@ inline auto make_DenseMatrixOnes(void) -> Matrix<DefDense, T, M, N> {
   return Matrix<DefDense, T, M, N>::ones();
 }
 
+template <std::size_t M, std::size_t N, typename T>
+inline auto make_DenseMatrixFull(const T &value) -> Matrix<DefDense, T, M, N> {
+
+  return Matrix<DefDense, T, M, N>::full(value);
+}
+
 template <typename T, std::size_t M>
 inline auto make_DiagMatrixZeros(void) -> Matrix<DefDiag, T, M> {
 
@@ -33,6 +39,12 @@ template <typename T, std::size_t M>
 inline auto make_DiagMatrixIdentity(void) -> Matrix<DefDiag, T, M> {
 
   return Matrix<DefDiag, T, M>::identity();
+}
+
+template <std::size_t M, typename T>
+inline auto make_DiagMatrixFull(const T &value) -> Matrix<DefDiag, T, M> {
+
+  return Matrix<DefDiag, T, M>::full(value);
 }
 
 template <typename T, std::size_t M, std::size_t N>
@@ -138,6 +150,25 @@ inline auto make_SparseMatrixZeros(void)
       result;
 
   return result;
+}
+
+template <typename T, typename SparseAvailable>
+inline auto make_SparseMatrixOnes(void)
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+              SparseAvailable::column_size, SparseAvailable> {
+
+  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+                SparseAvailable::column_size,
+                SparseAvailable>::full(static_cast<T>(1));
+}
+
+template <typename SparseAvailable, typename T>
+inline auto make_SparseMatrixFull(const T &value)
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+              SparseAvailable::column_size, SparseAvailable> {
+
+  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
+                SparseAvailable::column_size, SparseAvailable>::full(value);
 }
 
 namespace MakeSparseMatrixOperation {

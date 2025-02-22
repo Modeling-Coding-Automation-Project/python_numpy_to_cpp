@@ -86,6 +86,12 @@ public:
     return identity;
   }
 
+  static inline DiagMatrix<T, M> full(const T &value) {
+    DiagMatrix<T, M> full(std::vector<T>(M, value));
+
+    return full;
+  }
+
   T &operator[](std::size_t index) { return this->data[index]; }
 
   const T &operator[](std::size_t index) const { return this->data[index]; }

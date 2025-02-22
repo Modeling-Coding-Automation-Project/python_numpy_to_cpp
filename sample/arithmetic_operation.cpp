@@ -85,5 +85,113 @@ int main() {
   }
   std::cout << std::endl;
 
+  /* Zeros */
+  auto Dense_zeros = make_DenseMatrixZeros<double, 3, 3>();
+
+  std::cout << "Dense_zeros = " << std::endl;
+  for (size_t i = 0; i < Dense_zeros.cols(); ++i) {
+    for (size_t j = 0; j < Dense_zeros.rows(); ++j) {
+      std::cout << Dense_zeros(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Diag_zeros = make_DiagMatrixZeros<double, 3>();
+
+  auto Diag_zeros_dense = Diag_zeros.create_dense();
+  std::cout << "Diag_zeros = " << std::endl;
+  for (size_t i = 0; i < Diag_zeros.cols(); ++i) {
+    for (size_t j = 0; j < Diag_zeros.rows(); ++j) {
+      std::cout << Diag_zeros_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Sparse_zeros = make_SparseMatrixZeros<double, SparseAvailable_C>();
+
+  auto Sparse_zeros_dense = Sparse_zeros.create_dense();
+  std::cout << "Sparse_zeros = " << std::endl;
+  for (size_t i = 0; i < Sparse_zeros_dense.cols(); ++i) {
+    for (size_t j = 0; j < Sparse_zeros_dense.rows(); ++j) {
+      std::cout << Sparse_zeros_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  /* Ones */
+  auto Dense_ones = make_DenseMatrixOnes<double, 3, 3>();
+
+  std::cout << "Dense_ones = " << std::endl;
+  for (size_t i = 0; i < Dense_ones.cols(); ++i) {
+    for (size_t j = 0; j < Dense_ones.rows(); ++j) {
+      std::cout << Dense_ones(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Diag_ones = make_DiagMatrixIdentity<double, 3>();
+
+  auto Diag_ones_dense = Diag_ones.create_dense();
+  std::cout << "Diag_ones = " << std::endl;
+  for (size_t i = 0; i < Diag_ones.cols(); ++i) {
+    for (size_t j = 0; j < Diag_ones.rows(); ++j) {
+      std::cout << Diag_ones_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Sparse_ones = make_SparseMatrixOnes<double, SparseAvailable_C>();
+
+  auto Sparse_ones_dense = Sparse_ones.create_dense();
+  std::cout << "Sparse_ones = " << std::endl;
+  for (size_t i = 0; i < Sparse_ones_dense.cols(); ++i) {
+    for (size_t j = 0; j < Sparse_ones_dense.rows(); ++j) {
+      std::cout << Sparse_ones_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  /* Full */
+  auto Dense_full = make_DenseMatrixFull<3, 3>(2.0);
+
+  std::cout << "Dense_full = " << std::endl;
+  for (size_t i = 0; i < Dense_full.cols(); ++i) {
+    for (size_t j = 0; j < Dense_full.rows(); ++j) {
+      std::cout << Dense_full(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Diag_full = make_DiagMatrixFull<3>(2.0);
+  auto Diag_full_dense = Diag_full.create_dense();
+
+  std::cout << "Diag_full = " << std::endl;
+  for (size_t i = 0; i < Diag_full.cols(); ++i) {
+    for (size_t j = 0; j < Diag_full.rows(); ++j) {
+      std::cout << Diag_full_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Sparse_full = make_SparseMatrixFull<SparseAvailable_C>(2.0);
+  auto Sparse_full_dense = Sparse_full.create_dense();
+
+  std::cout << "Sparse_full = " << std::endl;
+  for (size_t i = 0; i < Sparse_full_dense.cols(); ++i) {
+    for (size_t j = 0; j < Sparse_full_dense.rows(); ++j) {
+      std::cout << Sparse_full_dense(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }

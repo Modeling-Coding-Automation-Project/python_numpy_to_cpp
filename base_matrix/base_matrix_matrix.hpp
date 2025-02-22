@@ -155,47 +155,48 @@ public:
     return identity;
   }
 
-  /* Ones */
+  /* Full */
   // when J_idx < P
   template <typename U, std::size_t O, std::size_t P, std::size_t I,
             std::size_t J_idx>
-  struct MatrixOnesColumn {
-    static void compute(Matrix<U, O, P> &Ones) {
+  struct MatrixFullColumn {
+    static void compute(Matrix<U, O, P> &Full, const U &value) {
 
-      Ones.template set<I, J_idx>(static_cast<U>(1));
-      MatrixOnesColumn<U, O, P, I, J_idx - 1>::compute(Ones);
+      Full.template set<I, J_idx>(value);
+      MatrixFullColumn<U, O, P, I, J_idx - 1>::compute(Full, value);
     }
   };
 
   // column recursion termination
   template <typename U, std::size_t O, std::size_t P, std::size_t I>
-  struct MatrixOnesColumn<U, O, P, I, 0> {
-    static void compute(Matrix<U, O, P> &Ones) {
+  struct MatrixFullColumn<U, O, P, I, 0> {
+    static void compute(Matrix<U, O, P> &Full, const U &value) {
 
-      Ones.template set<I, 0>(static_cast<U>(1));
+      Full.template set<I, 0>(value);
     }
   };
 
   // when I_idx < M
   template <typename U, std::size_t O, std::size_t P, std::size_t I_idx>
-  struct MatrixOnesRow {
-    static void compute(Matrix<U, O, P> &Ones) {
-      MatrixOnesColumn<U, O, P, I_idx, P - 1>::compute(Ones);
-      MatrixOnesRow<U, O, P, I_idx - 1>::compute(Ones);
+  struct MatrixFullRow {
+    static void compute(Matrix<U, O, P> &Full, const U &value) {
+      MatrixFullColumn<U, O, P, I_idx, P - 1>::compute(Full, value);
+      MatrixFullRow<U, O, P, I_idx - 1>::compute(Full, value);
     }
   };
 
   // row recursion termination
   template <typename U, std::size_t O, std::size_t P>
-  struct MatrixOnesRow<U, O, P, 0> {
-    static void compute(Matrix<U, O, P> &Ones) {
-      MatrixOnesColumn<U, O, P, 0, P - 1>::compute(Ones);
+  struct MatrixFullRow<U, O, P, 0> {
+    static void compute(Matrix<U, O, P> &Full, const U &value) {
+      MatrixFullColumn<U, O, P, 0, P - 1>::compute(Full, value);
     }
   };
 
   template <typename U, std::size_t O, std::size_t P>
-  static inline void COMPILED_MATRIX_ONES(Matrix<U, O, P> &Ones) {
-    MatrixOnesRow<U, O, P, O - 1>::compute(Ones);
+  static inline void COMPILED_MATRIX_FULL(Matrix<U, O, P> &Full,
+                                          const U &value) {
+    MatrixFullRow<U, O, P, O - 1>::compute(Full, value);
   }
 
   static inline Matrix<T, M, N> ones() {
@@ -211,11 +212,31 @@ public:
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    COMPILED_MATRIX_ONES<T, M, N>(Ones);
+    COMPILED_MATRIX_FULL<T, M, N>(Ones, static_cast<T>(1));
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
     return Ones;
+  }
+
+  static inline Matrix<T, M, N> full(const T &value) {
+    Matrix<T, M, N> Full;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+    for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t j = 0; j < N; j++) {
+        Full(i, j) = value;
+      }
+    }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+    COMPILED_MATRIX_FULL<T, M, N>(Full, value);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+    return Full;
   }
 
   inline Vector<T, M> create_row_vector(std::size_t row) const {
