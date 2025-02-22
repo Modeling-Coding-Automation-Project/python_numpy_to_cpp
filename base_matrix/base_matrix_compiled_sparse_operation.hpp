@@ -2950,15 +2950,17 @@ compute(const Matrix<T, M, N> &A,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
-inline Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
-    const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) {
-  Matrix<T, N, K> Y;
+inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
+    const Matrix<T, M, K> &A,
+    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+  Matrix<T, M, N> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  for (std::size_t i = 0; i < N; ++i) {
-    for (std::size_t j = 0; j < K; ++j) {
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
       T sum = static_cast<T>(0);
       for (std::size_t k = RowPointers_B::list[j];
            k < RowPointers_B::list[j + 1]; ++k) {
@@ -2968,10 +2970,8 @@ inline Matrix<T, N, K> matrix_multiply_A_mul_SparseBTranspose(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-  DenseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_B,
-                                              RowPointers_B, K>(A, B, Y);
+  // DenseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_B,
+  //                                             RowPointers_B, K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
