@@ -17,19 +17,5 @@ int main() {
     check_python_numpy_float.calc();
 
 
-    //using namespace PythonNumpy;
-
-    //using SparseAvailable_C = SparseAvailable<
-    //    ColumnAvailable<true, false, false, false>,
-    //    ColumnAvailable<false, false, true, false>>;
-
-    //auto A = make_DenseMatrixZeros<double, 4, 4>();
-    //auto C = make_SparseMatrixZeros<double, SparseAvailable_C>();
-
-    //auto A_mul_CT = A * C.transpose();
-
-    //A_mul_CT = A_mul_BTranspose(A, C);
-
-
     return 0;
 }

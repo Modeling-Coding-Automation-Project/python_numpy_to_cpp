@@ -2838,8 +2838,8 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t J, std::size_t Start, std::size_t End>
 struct Loop {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
           T &sum) {
 
     sum += B.values[Start] * A(I, RowIndices_B::list[Start]);
@@ -2854,13 +2854,13 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t J, std::size_t End>
 struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, End, End> {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
           T &sum) {
+    // End of loop, do nothing
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(sum);
-    // End of loop, do nothing
   }
 };
 
@@ -2870,9 +2870,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t J>
 struct Core {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, N, K> &Y) {
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, N> &Y) {
 
     T sum = static_cast<T>(0);
     Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, RowPointers_B::list[J],
@@ -2887,9 +2887,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t J>
 struct List {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, N, K> &Y) {
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, N> &Y) {
 
     Core<T, M, N, K, RowIndices_B, RowPointers_B, I, J>::compute(A, B, Y);
     List<T, M, N, K, RowIndices_B, RowPointers_B, I - 1, J>::compute(A, B, Y);
@@ -2901,9 +2901,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B, std::size_t J>
 struct List<T, M, N, K, RowIndices_B, RowPointers_B, 0, J> {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, N, K> &Y) {
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, N> &Y) {
 
     Core<T, M, N, K, RowIndices_B, RowPointers_B, 0, J>::compute(A, B, Y);
   }
@@ -2914,11 +2914,11 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B, std::size_t J>
 struct Column {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, N, K> &Y) {
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, N> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, N - 1, J>::compute(A, B, Y);
+    List<T, M, N, K, RowIndices_B, RowPointers_B, M - 1, J>::compute(A, B, Y);
     Column<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
   }
 };
@@ -2928,22 +2928,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
 struct Column<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
   static void
-  compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-          Matrix<T, N, K> &Y) {
+  compute(const Matrix<T, M, K> &A,
+          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          Matrix<T, M, N> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, N - 1, 0>::compute(A, B, Y);
+    List<T, M, N, K, RowIndices_B, RowPointers_B, M - 1, 0>::compute(A, B, Y);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B, std::size_t K>
 inline void
-compute(const Matrix<T, M, N> &A,
-        const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
-        Matrix<T, N, K> &Y) {
+compute(const Matrix<T, M, K> &A,
+        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+        Matrix<T, M, N> &Y) {
 
-  Column<T, M, N, K, RowIndices_B, RowPointers_B, K - 1>::compute(A, B, Y);
+  Column<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
 }
 
 } // namespace DenseMatrixMultiplySparseTranspose
@@ -2957,8 +2957,6 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       T sum = static_cast<T>(0);
@@ -2970,8 +2968,10 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
     }
   }
 
-  // DenseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_B,
-  //                                             RowPointers_B, K>(A, B, Y);
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  DenseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_B,
+                                              RowPointers_B, K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
