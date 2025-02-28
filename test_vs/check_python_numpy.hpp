@@ -2779,7 +2779,7 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         = make_LinalgSolverEig<decltype(A1)>();
     eig_solver_comp.set_iteration_max(5);
     eig_solver_comp.set_iteration_max_for_eigen_vector(15);
-    eig_solver_comp.set_division_min(static_cast<T>(1.0e-20));
+    eig_solver_comp.set_division_min(static_cast<T>(1.0e-20F));
 
     LinalgSolverEig_Type<decltype(A1)> eig_solver_comp_copy = eig_solver_comp;
     LinalgSolverEig_Type<decltype(A1)> eig_solver_comp_move = std::move(eig_solver_comp_copy);
@@ -2805,6 +2805,12 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
         Base::Matrix::get_imag_matrix_from_complex_matrix(eigen_values_comp_sorted.matrix));
     tester.expect_near(eigen_values_comp_imag.matrix.data, eigen_values_comp_answer_imag.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolverEig eigen values imag.");
+
+    eig_solver_comp.continue_solving_eigen_values();
+    eigen_values_comp = eig_solver_comp.get_eigen_values();
+
+    eigen_values_comp_sorted = eigen_values_comp;
+    Base::Utility::sort(eigen_values_comp_sorted.matrix.data[0]);
 
     tester.expect_near(eigen_values_comp_real.matrix.data, eigen_values_comp_answer_real.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig eigen values real, strict.");
