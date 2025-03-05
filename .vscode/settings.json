@@ -53,5 +53,11 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp"
-    }
+    },
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true,
+        "autopep8.args": [
+        "--ignore",
+        "E402"
+    ]
 }

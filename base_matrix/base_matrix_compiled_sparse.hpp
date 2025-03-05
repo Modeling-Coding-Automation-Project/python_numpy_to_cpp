@@ -293,11 +293,12 @@ inline auto create_compiled_sparse(const Matrix<T, M, N> &A)
 
 /* Create Sparse Matrix from Diag Matrix */
 template <std::size_t M>
-using DiagMatrixRowIndices = typename ToRowIndices<MatrixRowNumbers<M>>::type;
+using DiagMatrixRowIndices = typename TemplatesOperation::ToRowIndices<
+    TemplatesOperation::MatrixRowNumbers<M>>::type;
 
 template <std::size_t M>
-using DiagMatrixRowPointers =
-    typename ToRowIndices<MatrixRowNumbers<(M + 1)>>::type;
+using DiagMatrixRowPointers = typename TemplatesOperation::ToRowIndices<
+    TemplatesOperation::MatrixRowNumbers<(M + 1)>>::type;
 
 template <typename T, std::size_t M>
 inline auto create_compiled_sparse(const DiagMatrix<T, M> &A)
