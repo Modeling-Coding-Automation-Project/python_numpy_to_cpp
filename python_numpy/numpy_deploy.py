@@ -211,7 +211,7 @@ class NumpyDeploy:
         with open(code_file_name_ext, "w") as f:
             f.write(code_text)
 
-        return matrix_type
+        return code_file_name_ext
 
 
 a = np.array([1., 2., 3.])
