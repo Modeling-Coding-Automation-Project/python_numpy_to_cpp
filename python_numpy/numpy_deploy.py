@@ -212,12 +212,3 @@ class NumpyDeploy:
             f.write(code_text)
 
         return code_file_name_ext
-
-
-a = np.array([1., 2., 3.])
-A = np.array([[1., 2., 3.], [5., 4., 6.], [9., 8., 7.]], dtype=np.float32)
-B = np.diag([1., 2., 3.])
-C = np.array([[1., 0., 0.], [3., 0., 8.], [0., 2., 4.]])
-
-
-print(NumpyDeploy.generate_matrix_cpp_code(A))
