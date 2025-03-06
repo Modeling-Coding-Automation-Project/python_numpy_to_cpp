@@ -22,6 +22,7 @@ class MatrixType(Enum):
     DENSE = 1
     DIAG = 2
     SPARSE = 3
+    SPARSE_EMPTY = 4
 
 
 class NumpyDeploy:
@@ -40,6 +41,7 @@ class NumpyDeploy:
     def judge_matrix_type(matrix):
         diag_flag = True
         sparse_flag = False
+        sparse_empty_flag = True
         dense_flag = True
 
         for i in range(matrix.shape[0]):
@@ -51,6 +53,7 @@ class NumpyDeploy:
                     sparse_flag = True
                     dense_flag = False
                 else:
+                    sparse_empty_flag = False
                     if i != j:
                         diag_flag = False
 
@@ -61,7 +64,9 @@ class NumpyDeploy:
         if matrix.shape[0] != matrix.shape[1]:
             diag_flag = False
 
-        if dense_flag:
+        if sparse_empty_flag:
+            return MatrixType.SPARSE_EMPTY
+        elif dense_flag:
             return MatrixType.DENSE
         elif diag_flag:
             return MatrixType.DIAG
@@ -124,7 +129,7 @@ class NumpyDeploy:
                 type_name + ", " + \
                 str(matrix.shape[0]) + ">;\n\n"
 
-        elif matrix_type == MatrixType.SPARSE:
+        elif matrix_type == MatrixType.SPARSE or matrix_type == MatrixType.SPARSE_EMPTY:
             code_text += "using " + sparse_available_name + " = SparseAvailable<\n"
 
             for i in range(matrix.shape[0]):
@@ -170,6 +175,8 @@ class NumpyDeploy:
 
                 code_text += "\n"
 
+            code_text += "  );\n\n"
+
         elif matrix_type == MatrixType.DIAG:
             code_text += "  return make_DiagMatrix<" + \
                 str(matrix.shape[0]) + ">(\n"
@@ -183,22 +190,30 @@ class NumpyDeploy:
                     code_text += NumpyDeploy.value_to_string_with_type(
                         matrix[i][i], type_name) + ",\n"
 
+            code_text += "  );\n\n"
+
         elif matrix_type == MatrixType.SPARSE:
             code_text += "  return make_SparseMatrix<" + \
                 sparse_available_name + ">(\n"
 
+            sparse_count = 0
             for i in range(matrix.shape[0]):
                 for j in range(matrix.shape[1]):
                     if matrix[i][j] != 0:
-                        code_text += "    "
-                        if i == matrix.shape[0] - 1 and j == matrix.shape[1] - 1:
-                            code_text += NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name) + "\n"
+                        if sparse_count == 0:
+                            code_text += "    " + NumpyDeploy.value_to_string_with_type(
+                                matrix[i][j], type_name)
+                            sparse_count += 1
                         else:
-                            code_text += NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name) + ",\n"
+                            code_text += ",\n    " + NumpyDeploy.value_to_string_with_type(
+                                matrix[i][j], type_name)
 
-        code_text += "  );\n\n"
+            code_text += "\n  );\n\n"
+
+        elif matrix_type == MatrixType.SPARSE_EMPTY:
+            code_text += "  return make_SparseMatrixEmpty<" + \
+                type_name + ", " + \
+                str(matrix.shape[0]) + ", " + str(matrix.shape[1]) + ">();\n\n"
 
         code_text += "}\n\n"
 
