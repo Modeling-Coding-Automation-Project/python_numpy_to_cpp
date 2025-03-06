@@ -170,6 +170,8 @@ class NumpyDeploy:
 
                 code_text += "\n"
 
+            code_text += "  );\n\n"
+
         elif matrix_type == MatrixType.DIAG:
             code_text += "  return make_DiagMatrix<" + \
                 str(matrix.shape[0]) + ">(\n"
@@ -183,22 +185,25 @@ class NumpyDeploy:
                     code_text += NumpyDeploy.value_to_string_with_type(
                         matrix[i][i], type_name) + ",\n"
 
+            code_text += "  );\n\n"
+
         elif matrix_type == MatrixType.SPARSE:
             code_text += "  return make_SparseMatrix<" + \
                 sparse_available_name + ">(\n"
 
+            sparse_count = 0
             for i in range(matrix.shape[0]):
                 for j in range(matrix.shape[1]):
                     if matrix[i][j] != 0:
-                        code_text += "    "
-                        if i == matrix.shape[0] - 1 and j == matrix.shape[1] - 1:
-                            code_text += NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name) + "\n"
+                        if sparse_count == 0:
+                            code_text += "    " + NumpyDeploy.value_to_string_with_type(
+                                matrix[i][j], type_name)
+                            sparse_count += 1
                         else:
-                            code_text += NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name) + ",\n"
+                            code_text += ",\n    " + NumpyDeploy.value_to_string_with_type(
+                                matrix[i][j], type_name)
 
-        code_text += "  );\n\n"
+            code_text += "\n  );\n\n"
 
         code_text += "}\n\n"
 
