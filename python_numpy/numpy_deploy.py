@@ -22,6 +22,7 @@ class MatrixType(Enum):
     DENSE = 1
     DIAG = 2
     SPARSE = 3
+    SPARSE_EMPTY = 4
 
 
 class NumpyDeploy:
@@ -40,6 +41,7 @@ class NumpyDeploy:
     def judge_matrix_type(matrix):
         diag_flag = True
         sparse_flag = False
+        sparse_empty_flag = True
         dense_flag = True
 
         for i in range(matrix.shape[0]):
@@ -51,6 +53,7 @@ class NumpyDeploy:
                     sparse_flag = True
                     dense_flag = False
                 else:
+                    sparse_empty_flag = False
                     if i != j:
                         diag_flag = False
 
@@ -61,7 +64,9 @@ class NumpyDeploy:
         if matrix.shape[0] != matrix.shape[1]:
             diag_flag = False
 
-        if dense_flag:
+        if sparse_empty_flag:
+            return MatrixType.SPARSE_EMPTY
+        elif dense_flag:
             return MatrixType.DENSE
         elif diag_flag:
             return MatrixType.DIAG
@@ -124,7 +129,7 @@ class NumpyDeploy:
                 type_name + ", " + \
                 str(matrix.shape[0]) + ">;\n\n"
 
-        elif matrix_type == MatrixType.SPARSE:
+        elif matrix_type == MatrixType.SPARSE or matrix_type == MatrixType.SPARSE_EMPTY:
             code_text += "using " + sparse_available_name + " = SparseAvailable<\n"
 
             for i in range(matrix.shape[0]):
@@ -204,6 +209,11 @@ class NumpyDeploy:
                                 matrix[i][j], type_name)
 
             code_text += "\n  );\n\n"
+
+        elif matrix_type == MatrixType.SPARSE_EMPTY:
+            code_text += "  return make_SparseMatrixEmpty<" + \
+                type_name + ", " + \
+                str(matrix.shape[0]) + ", " + str(matrix.shape[1]) + ">();\n\n"
 
         code_text += "}\n\n"
 
