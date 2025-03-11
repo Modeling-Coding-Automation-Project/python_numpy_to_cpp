@@ -48,7 +48,7 @@ class NumpyDeploy:
             for j in range(matrix.shape[1]):
                 zero_flag = False
 
-                if matrix[i][j] == 0.0:
+                if matrix[i, j] == 0.0:
                     zero_flag = True
                     sparse_flag = True
                     dense_flag = False
@@ -137,7 +137,7 @@ class NumpyDeploy:
             for i in range(matrix.shape[0]):
                 code_text += "    ColumnAvailable<"
                 for j in range(matrix.shape[1]):
-                    if matrix[i][j] != 0:
+                    if matrix[i, j] != 0:
                         code_text += "true"
                     else:
                         code_text += "false"
@@ -165,10 +165,10 @@ class NumpyDeploy:
                 for j in range(matrix.shape[1]):
                     if i == matrix.shape[0] - 1 and j == matrix.shape[1] - 1:
                         code_text += NumpyDeploy.value_to_string_with_type(
-                            matrix[i][j], type_name)
+                            matrix[i, j], type_name)
                     else:
                         code_text += NumpyDeploy.value_to_string_with_type(
-                            matrix[i][j], type_name)
+                            matrix[i, j], type_name)
 
                     if j != matrix.shape[1] - 1:
                         code_text += ", "
@@ -187,10 +187,10 @@ class NumpyDeploy:
                 code_text += "    "
                 if i == matrix.shape[0] - 1:
                     code_text += NumpyDeploy.value_to_string_with_type(
-                        matrix[i][i], type_name) + "\n"
+                        matrix[i, i], type_name) + "\n"
                 else:
                     code_text += NumpyDeploy.value_to_string_with_type(
-                        matrix[i][i], type_name) + ",\n"
+                        matrix[i, i], type_name) + ",\n"
 
             code_text += "  );\n\n"
 
@@ -201,14 +201,14 @@ class NumpyDeploy:
             sparse_count = 0
             for i in range(matrix.shape[0]):
                 for j in range(matrix.shape[1]):
-                    if matrix[i][j] != 0:
+                    if matrix[i, j] != 0:
                         if sparse_count == 0:
                             code_text += "    " + NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name)
+                                matrix[i, j], type_name)
                             sparse_count += 1
                         else:
                             code_text += ",\n    " + NumpyDeploy.value_to_string_with_type(
-                                matrix[i][j], type_name)
+                                matrix[i, j], type_name)
 
             code_text += "\n  );\n\n"
 

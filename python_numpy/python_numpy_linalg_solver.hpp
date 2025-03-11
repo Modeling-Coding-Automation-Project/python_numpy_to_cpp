@@ -135,7 +135,7 @@ public:
       : X_1(), decay_rate(static_cast<Value_Type>(0)),
         division_min(
             static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER)),
-        rho(), rep_num() {}
+        rho({}), rep_num({}) {}
 
   /* Copy Constructor */
   LinalgSolver(
