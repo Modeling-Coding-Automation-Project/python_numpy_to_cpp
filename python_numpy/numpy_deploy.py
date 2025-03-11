@@ -115,7 +115,9 @@ class NumpyDeploy:
 
         code_text += "#include \"python_numpy.hpp\"\n\n"
 
-        code_text += "namespace python_numpy_gen_" + variable_name + " {\n\n"
+        namespace_name = "python_numpy_gen_" + variable_name
+
+        code_text += "namespace " + namespace_name + " {\n\n"
 
         code_text += "using namespace PythonNumpy;\n\n"
 
@@ -217,7 +219,7 @@ class NumpyDeploy:
 
         code_text += "}\n\n"
 
-        code_text += "} // namespace python_numpy_gen_" + variable_name + "\n\n"
+        code_text += "} // namespace " + namespace_name + "\n\n"
 
         code_text += "#endif // __PYTHON_NUMPY_GEN_" + variable_name.upper() + \
             "_HPP__\n"
