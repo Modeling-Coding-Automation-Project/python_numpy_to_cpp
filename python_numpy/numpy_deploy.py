@@ -90,6 +90,7 @@ class NumpyDeploy:
 
         matrix_type = NumpyDeploy.judge_matrix_type(matrix)
 
+        # %% inspect arguments
         # Get the caller's frame
         frame = inspect.currentframe().f_back
         # Get the caller's local variables
@@ -100,8 +101,13 @@ class NumpyDeploy:
             if value is matrix_in:
                 variable_name = name
                 break
+        # Get the caller's file name
+        caller_file_full_path = frame.f_code.co_filename
+        caller_file_name = os.path.basename(caller_file_full_path)
+        caller_file_name_without_ext = os.path.splitext(caller_file_name)[0]
 
-        code_file_name = "python_numpy_gen_" + variable_name
+        # %% code generation
+        code_file_name = caller_file_name_without_ext + "_" + variable_name
         code_file_name_ext = code_file_name + ".hpp"
 
         type_name = NumpyDeploy.check_dtype(matrix)
@@ -109,13 +115,15 @@ class NumpyDeploy:
 
         # Write cpp code
         code_text = ""
-        code_text += "#ifndef __PYTHON_NUMPY_GEN_" + variable_name.upper() + "_HPP__\n"
-        code_text += "#define __PYTHON_NUMPY_GEN_" + \
-            variable_name.upper() + "_HPP__\n\n"
+
+        file_header_macro_name = "__" + code_file_name.upper() + "_HPP__"
+
+        code_text += "#ifndef " + file_header_macro_name + "\n"
+        code_text += "#define " + file_header_macro_name + "\n\n"
 
         code_text += "#include \"python_numpy.hpp\"\n\n"
 
-        namespace_name = "python_numpy_gen_" + variable_name
+        namespace_name = code_file_name
 
         code_text += "namespace " + namespace_name + " {\n\n"
 
@@ -221,8 +229,7 @@ class NumpyDeploy:
 
         code_text += "} // namespace " + namespace_name + "\n\n"
 
-        code_text += "#endif // __PYTHON_NUMPY_GEN_" + variable_name.upper() + \
-            "_HPP__\n"
+        code_text += "#endif // " + file_header_macro_name + "\n"
 
         # write to file
         with open(code_file_name_ext, "w") as f:
