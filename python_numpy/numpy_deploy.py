@@ -80,7 +80,7 @@ class NumpyDeploy:
         return "static_cast<" + type_name + ">(" + str(value) + ")"
 
     @staticmethod
-    def generate_matrix_cpp_code(matrix_in):
+    def generate_matrix_cpp_code(matrix_in, file_name=None):
         matrix = matrix_in
 
         if len(matrix_in.shape) >= 3:
@@ -102,9 +102,13 @@ class NumpyDeploy:
                 variable_name = name
                 break
         # Get the caller's file name
-        caller_file_full_path = frame.f_code.co_filename
-        caller_file_name = os.path.basename(caller_file_full_path)
-        caller_file_name_without_ext = os.path.splitext(caller_file_name)[0]
+        if file_name is None:
+            caller_file_full_path = frame.f_code.co_filename
+            caller_file_name = os.path.basename(caller_file_full_path)
+            caller_file_name_without_ext = os.path.splitext(caller_file_name)[
+                0]
+        else:
+            caller_file_name_without_ext = file_name
 
         # %% code generation
         code_file_name = caller_file_name_without_ext + "_" + variable_name
