@@ -810,6 +810,17 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(CD_dense.matrix.data, Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixFromDenseMatrix.");
 
+    auto Dense_row = get_row<1>(Dense);
+
+    Matrix<DefDense, T, 3, 1> Dense_row_answer({
+        {2},
+        {4},
+        {8}
+    });
+
+    tester.expect_near(Dense_row.matrix.data, Dense_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check get_row.");
+
 
     tester.throw_error_if_test_failed();
 }
