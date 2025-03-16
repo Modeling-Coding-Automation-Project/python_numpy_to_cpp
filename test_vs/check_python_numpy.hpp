@@ -875,6 +875,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Diag_set_row_dense.matrix.data, Diag_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check set_row DiagMatrix.");
 
+    auto Sparse_set_row = Sparse;
+
+    set_row<1>(Sparse_set_row, row_vector);
+    auto Sparse_set_row_dense = Sparse_set_row.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_set_row_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 3, 4}
+    });
+
+    tester.expect_near(Sparse_set_row_dense.matrix.data, Sparse_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check set_row SparseMatrix.");
+
 
     tester.throw_error_if_test_failed();
 }
