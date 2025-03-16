@@ -393,6 +393,40 @@ inline void set_row(DenseMatrix_Type<T, M, N> &matrix,
   SetDenseMatrixOperation::SetRow<T, M, N, ROW>::compute(matrix, row_vector);
 }
 
+namespace SetDiagMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t ROW, std::size_t COL_Index>
+struct SetRow_Loop {
+  static void compute(DiagMatrix_Type<T, M> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<COL_Index, ROW>(
+        row_vector.template get<COL_Index, 0>());
+    SetRow_Loop<T, M, ROW, COL_Index - 1>::compute(matrix, row_vector);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+struct SetRow_Loop<T, M, ROW, 0> {
+  static void compute(DiagMatrix_Type<T, M> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<0, ROW>(row_vector.template get<0, 0>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+using SetRow = SetRow_Loop<T, M, ROW, M - 1>;
+
+} // namespace SetDiagMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M>
+inline void set_row(DiagMatrix_Type<T, M> &matrix,
+                    const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+  SetDiagMatrixOperation::SetRow<T, M, ROW>::compute(matrix, row_vector);
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
