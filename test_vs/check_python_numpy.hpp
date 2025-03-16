@@ -715,7 +715,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     auto Dense = make_DenseMatrix<3, 3>(
         static_cast<T>(1), static_cast<T>(2), static_cast<T>(3),
         static_cast<T>(5), static_cast<T>(4), static_cast<T>(6),
-        static_cast<T>(9), static_cast<T>(8), static_cast<T>(7) );
+        static_cast<T>(9), static_cast<T>(8), static_cast<T>(7));
 
     Matrix<DefDense, T, 3, 3> Dense_answer({
         {1, 2, 3},
@@ -729,7 +729,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     auto Dense_2 = make_DenseMatrix<2, 4>(
         static_cast<T>(1), static_cast<T>(2), static_cast<T>(3), static_cast<T>(5),
         static_cast<T>(4), static_cast<T>(6), static_cast<T>(9), static_cast<T>(8)
-        );
+    );
 
     Matrix<DefDense, T, 2, 4> Dense_2_answer({
         {1, 2, 3, 5},
@@ -783,11 +783,11 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
 
     SparseMatrix_Type<T, SparseAvailable_C> Sparse
         = make_SparseMatrix<SparseAvailable_C>(
-        static_cast<T>(1),
-        static_cast<T>(3),
-        static_cast<T>(8),
-        static_cast<T>(2),
-        static_cast<T>(4));
+            static_cast<T>(1),
+            static_cast<T>(3),
+            static_cast<T>(8),
+            static_cast<T>(2),
+            static_cast<T>(4));
     auto Sparse_dense = Sparse.create_dense();
 
     Matrix<DefDense, T, 3, 3> Sparse_answer({
@@ -809,6 +809,85 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
 
     tester.expect_near(CD_dense.matrix.data, Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_SparseMatrixFromDenseMatrix.");
+
+    /* Get */
+    auto Dense_row = get_row<1>(Dense);
+
+    Matrix<DefDense, T, 3, 1> Dense_row_answer({
+        {2},
+        {4},
+        {8}
+        });
+
+    tester.expect_near(Dense_row.matrix.data, Dense_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check get_row.");
+
+    auto Diag_Full_row = get_row<1>(Diag_Full);
+
+    Matrix<DefDense, T, 3, 1> Diag_Full_row_answer({
+        { 0 },
+        { 2 },
+        { 0 }
+    });
+
+    tester.expect_near(Diag_Full_row.matrix.data, Diag_Full_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check get_row DiagMatrix.");
+
+    auto Sparse_row = get_row<1>(Sparse);
+
+    Matrix<DefDense, T, 3, 1> Sparse_row_answer({
+        { 0 },
+        { 0 },
+        { 2 }
+    });
+
+    tester.expect_near(Sparse_row.matrix.data, Sparse_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check get_row SparseMatrix.");
+
+
+    /* Set */
+    auto row_vector = make_DenseMatrix<3, 1>(
+        static_cast<T>(1), static_cast<T>(2), static_cast<T>(3));
+
+    auto Dense_set_row = Dense;
+    set_row<1>(Dense_set_row, row_vector);
+
+    Matrix<DefDense, T, 3, 3> Dense_set_row_answer({
+        {1, 1, 3},
+        {5, 2, 6},
+        {9, 3, 7}
+    });
+
+    tester.expect_near(Dense_set_row.matrix.data, Dense_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check set_row.");
+
+    auto Diag_set_row = Diag_Full;
+
+    set_row<2>(Diag_set_row, row_vector);
+    auto Diag_set_row_dense = Diag_set_row.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Diag_set_row_answer({
+        {2, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+    });
+
+    tester.expect_near(Diag_set_row_dense.matrix.data, Diag_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check set_row DiagMatrix.");
+
+    auto Sparse_set_row = Sparse;
+
+    set_row<1>(Sparse_set_row, row_vector);
+    auto Sparse_set_row_dense = Sparse_set_row.create_dense();
+
+    Matrix<DefDense, T, 3, 3> Sparse_set_row_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 3, 4}
+    });
+
+    tester.expect_near(Sparse_set_row_dense.matrix.data, Sparse_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check set_row SparseMatrix.");
 
 
     tester.throw_error_if_test_failed();

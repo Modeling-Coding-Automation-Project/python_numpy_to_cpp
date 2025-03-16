@@ -73,7 +73,7 @@ public:
     static_assert(COL < M, "Column Index is out of range.");
     static_assert(ROW < N, "Row Index is out of range.");
 
-    return matrix.data[ROW][COL];
+    return matrix.template get<COL, ROW>();
   }
 
   /* Set Dense Matrix value */
@@ -81,7 +81,7 @@ public:
     static_assert(COL < M, "Column Index is out of range.");
     static_assert(ROW < N, "Row Index is out of range.");
 
-    matrix.data[ROW][COL] = value;
+    matrix.template set<COL, ROW>(value);
   }
 
   constexpr std::size_t rows() const { return ROWS; }

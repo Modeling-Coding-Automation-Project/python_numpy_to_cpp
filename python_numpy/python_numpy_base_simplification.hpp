@@ -238,6 +238,235 @@ using SparseMatrix_Type =
 template <typename T, std::size_t M, std::size_t N>
 using SparseMatrixEmpty_Type = decltype(make_SparseMatrixEmpty<T, M, N>());
 
+/* Get */
+namespace GetDenseMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW,
+          std::size_t COL_Index>
+struct GetRow_Loop {
+  static void compute(const DenseMatrix_Type<T, M, N> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<COL_Index, 0>(matrix.template get<COL_Index, ROW>());
+    GetRow_Loop<T, M, N, ROW, COL_Index - 1>::compute(matrix, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+struct GetRow_Loop<T, M, N, ROW, 0> {
+  static void compute(const DenseMatrix_Type<T, M, N> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<0, 0>(matrix.template get<0, ROW>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+using GetRow = GetRow_Loop<T, M, N, ROW, M - 1>;
+
+} // namespace GetDenseMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M, std::size_t N>
+inline auto get_row(const DenseMatrix_Type<T, M, N> &matrix)
+    -> DenseMatrix_Type<T, M, 1> {
+
+  DenseMatrix_Type<T, M, 1> result;
+
+  GetDenseMatrixOperation::GetRow<T, M, N, ROW>::compute(matrix, result);
+
+  return result;
+}
+
+namespace GetDiagMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t ROW, std::size_t COL_Index>
+struct GetRow_Loop {
+  static void compute(const DiagMatrix_Type<T, M> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<COL_Index, 0>(matrix.template get<COL_Index, ROW>());
+    GetRow_Loop<T, M, ROW, COL_Index - 1>::compute(matrix, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+struct GetRow_Loop<T, M, ROW, 0> {
+  static void compute(const DiagMatrix_Type<T, M> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<0, 0>(matrix.template get<0, ROW>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+using GetRow = GetRow_Loop<T, M, ROW, M - 1>;
+
+} // namespace GetDiagMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M>
+inline auto get_row(const DiagMatrix_Type<T, M> &matrix)
+    -> DenseMatrix_Type<T, M, 1> {
+
+  DenseMatrix_Type<T, M, 1> result;
+
+  GetDiagMatrixOperation::GetRow<T, M, ROW>::compute(matrix, result);
+
+  return result;
+}
+
+namespace GetSparseMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW, std::size_t COL_Index>
+struct GetRow_Loop {
+  static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<COL_Index, 0>(matrix.template get<COL_Index, ROW>());
+    GetRow_Loop<T, M, N, SparseAvailable, ROW, COL_Index - 1>::compute(matrix,
+                                                                       result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW>
+struct GetRow_Loop<T, M, N, SparseAvailable, ROW, 0> {
+  static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
+
+    result.template set<0, 0>(matrix.template get<0, ROW>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW>
+using GetRow = GetRow_Loop<T, M, N, SparseAvailable, ROW, M - 1>;
+
+} // namespace GetSparseMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+inline auto get_row(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> DenseMatrix_Type<T, M, 1> {
+
+  DenseMatrix_Type<T, M, 1> result;
+
+  GetSparseMatrixOperation::GetRow<T, M, N, SparseAvailable, ROW>::compute(
+      matrix, result);
+
+  return result;
+}
+
+/* Set */
+namespace SetDenseMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW,
+          std::size_t COL_Index>
+struct SetRow_Loop {
+  static void compute(DenseMatrix_Type<T, M, N> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<COL_Index, ROW>(
+        row_vector.template get<COL_Index, 0>());
+    SetRow_Loop<T, M, N, ROW, COL_Index - 1>::compute(matrix, row_vector);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+struct SetRow_Loop<T, M, N, ROW, 0> {
+  static void compute(DenseMatrix_Type<T, M, N> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<0, ROW>(row_vector.template get<0, 0>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+using SetRow = SetRow_Loop<T, M, N, ROW, M - 1>;
+
+} // namespace SetDenseMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M, std::size_t N>
+inline void set_row(DenseMatrix_Type<T, M, N> &matrix,
+                    const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+  SetDenseMatrixOperation::SetRow<T, M, N, ROW>::compute(matrix, row_vector);
+}
+
+namespace SetDiagMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t ROW, std::size_t COL_Index>
+struct SetRow_Loop {
+  static void compute(DiagMatrix_Type<T, M> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<COL_Index, ROW>(
+        row_vector.template get<COL_Index, 0>());
+    SetRow_Loop<T, M, ROW, COL_Index - 1>::compute(matrix, row_vector);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+struct SetRow_Loop<T, M, ROW, 0> {
+  static void compute(DiagMatrix_Type<T, M> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<0, ROW>(row_vector.template get<0, 0>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t ROW>
+using SetRow = SetRow_Loop<T, M, ROW, M - 1>;
+
+} // namespace SetDiagMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M>
+inline void set_row(DiagMatrix_Type<T, M> &matrix,
+                    const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+  SetDiagMatrixOperation::SetRow<T, M, ROW>::compute(matrix, row_vector);
+}
+
+namespace SetSparseMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW, std::size_t COL_Index>
+struct SetRow_Loop {
+  static void compute(Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<COL_Index, ROW>(
+        row_vector.template get<COL_Index, 0>());
+    SetRow_Loop<T, M, N, SparseAvailable, ROW, COL_Index - 1>::compute(
+        matrix, row_vector);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW>
+struct SetRow_Loop<T, M, N, SparseAvailable, ROW, 0> {
+  static void compute(Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<0, ROW>(row_vector.template get<0, 0>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
+          std::size_t ROW>
+using SetRow = SetRow_Loop<T, M, N, SparseAvailable, ROW, M - 1>;
+
+} // namespace SetSparseMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M, std::size_t N,
+          typename SparseAvailable>
+inline void set_row(Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                    const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+  SetSparseMatrixOperation::SetRow<T, M, N, SparseAvailable, ROW>::compute(
+      matrix, row_vector);
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
