@@ -357,6 +357,42 @@ inline auto get_row(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
   return result;
 }
 
+/* Set */
+namespace SetDenseMatrixOperation {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW,
+          std::size_t COL_Index>
+struct SetRow_Loop {
+  static void compute(DenseMatrix_Type<T, M, N> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<COL_Index, ROW>(
+        row_vector.template get<COL_Index, 0>());
+    SetRow_Loop<T, M, N, ROW, COL_Index - 1>::compute(matrix, row_vector);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+struct SetRow_Loop<T, M, N, ROW, 0> {
+  static void compute(DenseMatrix_Type<T, M, N> &matrix,
+                      const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+    matrix.template set<0, ROW>(row_vector.template get<0, 0>());
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
+using SetRow = SetRow_Loop<T, M, N, ROW, M - 1>;
+
+} // namespace SetDenseMatrixOperation
+
+template <std::size_t ROW, typename T, std::size_t M, std::size_t N>
+inline void set_row(DenseMatrix_Type<T, M, N> &matrix,
+                    const DenseMatrix_Type<T, M, 1> &row_vector) {
+
+  SetDenseMatrixOperation::SetRow<T, M, N, ROW>::compute(matrix, row_vector);
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__

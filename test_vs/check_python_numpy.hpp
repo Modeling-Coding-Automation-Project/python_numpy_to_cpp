@@ -846,6 +846,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
 
 
     /* Set */
+    auto row_vector = make_DenseMatrix<3, 1>(
+        static_cast<T>(1), static_cast<T>(2), static_cast<T>(3));
+
+    auto Dense_set_row = Dense;
+    set_row<1>(Dense_set_row, row_vector);
+
+    Matrix<DefDense, T, 3, 3> Dense_set_row_answer({
+        {1, 1, 3},
+        {5, 2, 6},
+        {9, 3, 7}
+    });
+
+    tester.expect_near(Dense_set_row.matrix.data, Dense_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check set_row.");
 
 
     tester.throw_error_if_test_failed();
