@@ -319,9 +319,8 @@ namespace GetSparseMatrixOperation {
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t ROW, std::size_t COL_Index>
 struct GetRow_Loop {
-  static void
-  compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
-          DenseMatrix_Type<T, SparseAvailable::number_of_columns, 1> &result) {
+  static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
 
     result.template set<COL_Index, 0>(matrix.template get<COL_Index, ROW>());
     GetRow_Loop<T, M, N, SparseAvailable, ROW, COL_Index - 1>::compute(matrix,
@@ -332,9 +331,8 @@ struct GetRow_Loop {
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t ROW>
 struct GetRow_Loop<T, M, N, SparseAvailable, ROW, 0> {
-  static void
-  compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
-          DenseMatrix_Type<T, SparseAvailable::number_of_columns, 1> &result) {
+  static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                      DenseMatrix_Type<T, M, 1> &result) {
 
     result.template set<0, 0>(matrix.template get<0, ROW>());
   }
@@ -349,9 +347,9 @@ using GetRow = GetRow_Loop<T, M, N, SparseAvailable, ROW, M - 1>;
 template <std::size_t ROW, typename T, std::size_t M, std::size_t N,
           typename SparseAvailable>
 inline auto get_row(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
-    -> DenseMatrix_Type<T, SparseAvailable::number_of_columns, 1> {
+    -> DenseMatrix_Type<T, M, 1> {
 
-  DenseMatrix_Type<T, SparseAvailable::number_of_columns, 1> result;
+  DenseMatrix_Type<T, M, 1> result;
 
   GetSparseMatrixOperation::GetRow<T, M, N, SparseAvailable, ROW>::compute(
       matrix, result);
