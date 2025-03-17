@@ -279,10 +279,16 @@ inline auto get_row(const DenseMatrix_Type<T, M, N> &matrix)
 
 namespace GetDiagMatrixOperation {
 
+template <std::size_t M, std::size_t Index>
+using DiagAvailableRow = SparseAvailableGetRow<M, DiagAvailable<M>, Index>;
+
+template <typename T, std::size_t M, std::size_t Index>
+using DiagAvailableRow_Type = SparseMatrix_Type<T, DiagAvailableRow<M, Index>>;
+
 template <typename T, std::size_t M, std::size_t ROW, std::size_t COL_Index>
 struct GetRow_Loop {
   static void compute(const DiagMatrix_Type<T, M> &matrix,
-                      DenseMatrix_Type<T, M, 1> &result) {
+                      DiagAvailableRow_Type<T, M, ROW> &result) {
 
     result.template set<COL_Index, 0>(matrix.template get<COL_Index, ROW>());
     GetRow_Loop<T, M, ROW, COL_Index - 1>::compute(matrix, result);
@@ -292,7 +298,7 @@ struct GetRow_Loop {
 template <typename T, std::size_t M, std::size_t ROW>
 struct GetRow_Loop<T, M, ROW, 0> {
   static void compute(const DiagMatrix_Type<T, M> &matrix,
-                      DenseMatrix_Type<T, M, 1> &result) {
+                      DiagAvailableRow_Type<T, M, ROW> &result) {
 
     result.template set<0, 0>(matrix.template get<0, ROW>());
   }
@@ -305,9 +311,9 @@ using GetRow = GetRow_Loop<T, M, ROW, M - 1>;
 
 template <std::size_t ROW, typename T, std::size_t M>
 inline auto get_row(const DiagMatrix_Type<T, M> &matrix)
-    -> DenseMatrix_Type<T, M, 1> {
+    -> GetDiagMatrixOperation::DiagAvailableRow_Type<T, M, ROW> {
 
-  DenseMatrix_Type<T, M, 1> result;
+  GetDiagMatrixOperation::DiagAvailableRow_Type<T, M, ROW> result;
 
   GetDiagMatrixOperation::GetRow<T, M, ROW>::compute(matrix, result);
 

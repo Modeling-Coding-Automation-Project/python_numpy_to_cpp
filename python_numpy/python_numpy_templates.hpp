@@ -87,6 +87,10 @@ template <typename SparseAvailable>
 using ValidateSparseAvailable =
     Base::Matrix::ValidateSparseAvailable<SparseAvailable>;
 
+template <std::size_t M, typename SparseAvailable, std::size_t Index>
+using SparseAvailableGetRow =
+    Base::Matrix::SparseAvailableGetRow<M, SparseAvailable, Index>;
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_TEMPLATES_HPP__
