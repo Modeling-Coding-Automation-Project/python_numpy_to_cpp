@@ -1180,6 +1180,43 @@ using ValidateSparseAvailable =
         SparseAvailable, SparseAvailable::column_size,
         (SparseAvailable::number_of_columns - 1)>::type;
 
+/* SparseAvailable get row */
+namespace TemplatesOperation {
+
+template <std::size_t M, std::size_t Index>
+using GenerateIndexedRowTrueColumnAvailable =
+    ColumnAvailable<(M == Index ? true : false)>;
+
+// concatenate indexed true flags vertically
+// base case: N = 0
+template <std::size_t M, std::size_t Index, typename ColumnAvailable,
+          typename... Columns>
+struct IndexedRowRepeatColumnAvailable {
+  using type = typename IndexedRowRepeatColumnAvailable<
+      (M - 1), Index, GenerateIndexedRowTrueColumnAvailable<(M - 1), Index>,
+      ColumnAvailable, Columns...>::type;
+};
+
+// recursive termination case: N = 0
+template <std::size_t Index, typename ColumnAvailable, typename... Columns>
+struct IndexedRowRepeatColumnAvailable<0, Index, ColumnAvailable, Columns...> {
+  using type = TemplatesOperation::SparseAvailableColumns<
+      GenerateIndexedRowTrueColumnAvailable<0, Index>, Columns...>;
+};
+
+} // namespace TemplatesOperation
+
+template <std::size_t M, std::size_t Index>
+using RowAvailable =
+    typename TemplatesOperation::IndexedRowRepeatColumnAvailable<
+        (M - 1), Index,
+        TemplatesOperation::GenerateIndexedRowTrueColumnAvailable<(M - 1),
+                                                                  Index>>::type;
+
+template <std::size_t M, typename SparseAvailable, std::size_t Index>
+using SparseAvailableGetRow =
+    SparseAvailableMatrixMultiply<SparseAvailable, RowAvailable<M, Index>>;
+
 } // namespace Matrix
 } // namespace Base
 
