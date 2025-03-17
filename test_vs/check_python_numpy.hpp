@@ -835,6 +835,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         "check get_row DiagMatrix.");
 
     auto Sparse_row = get_row<1>(Sparse);
+    auto Sparse_row_dense = Sparse_row.create_dense();
 
     Matrix<DefDense, T, 3, 1> Sparse_row_answer({
         { 0 },
@@ -842,7 +843,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         { 2 }
     });
 
-    tester.expect_near(Sparse_row.matrix.data, Sparse_row_answer.matrix.data, NEAR_LIMIT_STRICT,
+    tester.expect_near(Sparse_row_dense.matrix.data, Sparse_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check get_row SparseMatrix.");
 
 
