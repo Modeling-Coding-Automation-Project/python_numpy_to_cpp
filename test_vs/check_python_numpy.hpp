@@ -1303,6 +1303,44 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
 
     /* 結合 */
+    Matrix<DefDense, T, 1, 1> a({ {1} });
+    Matrix<DefDense, T, 1, 1> b({ {2} });
+    Matrix<DefDense, T, 2, 1> aa({ {1}, {2} });
+    Matrix<DefDense, T, 2, 1> bb({ {3}, {4} });
+
+    auto a_v_b = concatenate_vertically(a, b);
+
+    Matrix<DefDense, T, 2, 1> a_v_b_answer({
+        {1},
+        {2}
+        });
+
+    tester.expect_near(a_v_b.matrix.data, a_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Dense small, 1 1.");
+
+    auto aa_v_b = concatenate_vertically(aa, b);
+
+    Matrix<DefDense, T, 3, 1> aa_v_b_answer({
+        {1},
+        {2},
+        {2}
+        });
+
+    tester.expect_near(aa_v_b.matrix.data, aa_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Dense small, 2 1.");
+
+    auto a_v_bb = concatenate_vertically(a, bb);
+
+    Matrix<DefDense, T, 3, 1> a_v_bb_answer({
+        {1},
+        {3},
+        {4}
+        });
+
+    tester.expect_near(a_v_bb.matrix.data, a_v_bb_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate vertically Dense and Dense small, 1 2.");
+
+
     auto A_v_A = concatenate_vertically(A, A);
     ConcatenateVertically_Type<decltype(A), decltype(A)> A_v_A_t;
     A_v_A_t = A_v_A;

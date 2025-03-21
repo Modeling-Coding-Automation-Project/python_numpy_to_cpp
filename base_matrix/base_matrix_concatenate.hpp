@@ -24,7 +24,7 @@ struct VerticalConcatenateLoop {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Row], Y.data[Row]);
-    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[Row], Y.data[Row]);
+    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[Row], Y.data[Row]);
     VerticalConcatenateLoop<T, M, P, N, Row - 1>::compute(A, B, Y);
   }
 };
@@ -35,7 +35,7 @@ struct VerticalConcatenateLoop<T, M, P, N, 0> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[0], Y.data[0]);
-    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[0], Y.data[0]);
+    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[0], Y.data[0]);
   }
 };
 
