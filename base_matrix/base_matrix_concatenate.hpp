@@ -56,7 +56,7 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
 
   for (std::size_t row = 0; row < N; row++) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
-    Base::Utility::copy<T, 0, P, M, M, (M + P)>(B.data[row], Y.data[row]);
+    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[row], Y.data[row]);
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
