@@ -432,12 +432,30 @@ struct ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type, 0> {
   using type = typename std::tuple_element<(Col_Offset), ArgsTuple_Type>::type;
 };
 
-template <std::size_t M, std::size_t N, std::size_t Col_Index,
-          std::size_t Row_Index, typename ArgsTuple_Type>
-struct ConcatenateBlock {
+template <std::size_t N, typename ArgsTuple_Type, std::size_t Col_Index>
+struct ConcatenateBlockColumns {
+
+  using Arg_Type = typename ConcatenateBlockRows<(Col_Index * N), N,
+                                                 ArgsTuple_Type, (N - 1)>::type;
+
+  using type = typename ConcatenateVertically_Type<
+      typename ConcatenateBlockColumns<N, ArgsTuple_Type,
+                                       (Col_Index - 1)>::type,
+      Arg_Type>;
+};
+
+template <std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlockColumns<N, ArgsTuple_Type, 0> {
 
   using type =
       typename ConcatenateBlockRows<0, N, ArgsTuple_Type, (N - 1)>::type;
+};
+
+template <std::size_t M, std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlock {
+
+  using type =
+      typename ConcatenateBlockColumns<M, ArgsTuple_Type, (M - 1)>::type;
 };
 
 template <std::size_t M, std::size_t N, typename Tuple, typename Last>
@@ -447,7 +465,7 @@ void concatenate_args(const Tuple &previousArgs, Last last) {
 
   using UpdatedArgsType = decltype(updatedArgs);
 
-  typename ConcatenateBlock<M, N, 0, 0, UpdatedArgsType>::type result;
+  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
   std::cout << "COLS: " << decltype(result)::COLS << std::endl;
   std::cout << "ROWS: " << decltype(result)::ROWS << std::endl;
