@@ -507,8 +507,6 @@ auto calculate(Args... args)
   static_assert(M > 1, "M must be greater than 1.");
   static_assert(N > 1, "N must be greater than 1.");
 
-  using Concat_Type = ConcatenateArgsType_t<M, N, std::tuple<>, Args...>;
-
   return concatenate_args<M, N>(std::make_tuple(), args...);
 }
 
