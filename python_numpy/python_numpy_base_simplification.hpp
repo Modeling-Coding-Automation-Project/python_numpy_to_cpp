@@ -482,16 +482,23 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  return result;
+  using SparseAvailable = typename decltype(result)::SparseAvailable_Type;
+
+  auto Ones = make_SparseMatrixOnes<double, SparseAvailable>();
+
+  return Ones;
 }
 
 template <std::size_t M, std::size_t N, typename Tuple, typename First,
           typename... Rest>
-void concatenate_args(const Tuple &previousArgs, First first, Rest... rest) {
+auto concatenate_args(const Tuple &previousArgs, First first, Rest... rest)
+    -> ConcatenateArgsType_t<
+        M, N, decltype(std::tuple_cat(previousArgs, std::make_tuple(first))),
+        Rest...> {
 
   auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(first));
 
-  concatenate_args<M, N>(updatedArgs, rest...);
+  return concatenate_args<M, N>(updatedArgs, rest...);
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
@@ -500,13 +507,9 @@ auto calculate(Args... args)
   static_assert(M > 1, "M must be greater than 1.");
   static_assert(N > 1, "N must be greater than 1.");
 
-  concatenate_args<M, N>(std::make_tuple(), args...);
-
   using Concat_Type = ConcatenateArgsType_t<M, N, std::tuple<>, Args...>;
 
-  Concat_Type result;
-
-  return result;
+  return concatenate_args<M, N>(std::make_tuple(), args...);
 }
 
 } // namespace ConcatenateBlockOperation
