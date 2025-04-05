@@ -3,8 +3,9 @@
 
 #include "python_numpy_base.hpp"
 #include "python_numpy_complex.hpp"
-#include "python_numpy_concatenate.hpp"
 #include "python_numpy_templates.hpp"
+
+#include "python_numpy_concatenate.hpp"
 
 #include <initializer_list>
 #include <tuple>
@@ -420,7 +421,7 @@ struct ConcatenateBlockRows {
   using Arg_Type = typename std::tuple_element<(Col_Offset + Row_Index),
                                                ArgsTuple_Type>::type;
 
-  using type = typename ConcatenateHorizontally_Type<
+  using type = ConcatenateHorizontally_Type<
       typename ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type,
                                     (Row_Index - 1)>::type,
       Arg_Type>;
@@ -438,10 +439,10 @@ struct ConcatenateBlockColumns {
   using Arg_Type = typename ConcatenateBlockRows<(Col_Index * N), N,
                                                  ArgsTuple_Type, (N - 1)>::type;
 
-  using type = typename ConcatenateVertically_Type<
-      typename ConcatenateBlockColumns<N, ArgsTuple_Type,
-                                       (Col_Index - 1)>::type,
-      Arg_Type>;
+  using type =
+      ConcatenateVertically_Type<typename ConcatenateBlockColumns<
+                                     N, ArgsTuple_Type, (Col_Index - 1)>::type,
+                                 Arg_Type>;
 };
 
 template <std::size_t N, typename ArgsTuple_Type>
@@ -467,8 +468,18 @@ void concatenate_args(const Tuple &previousArgs, Last last) {
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  std::cout << "COLS: " << decltype(result)::COLS << std::endl;
-  std::cout << "ROWS: " << decltype(result)::ROWS << std::endl;
+  using SparseAvailable = typename decltype(result)::SparseAvailable_Type;
+
+  auto Ones = make_SparseMatrixOnes<double, SparseAvailable>();
+  auto Ones_dense = Ones.create_dense();
+
+  for (std::size_t i = 0; i < decltype(Ones_dense)::COLS; ++i) {
+    for (std::size_t j = 0; j < decltype(Ones_dense)::ROWS; ++j) {
+
+      std::cout << Ones_dense(i, j) << ", ";
+    }
+    std::cout << std::endl;
+  }
 }
 
 template <std::size_t M, std::size_t N, typename Tuple, typename First,
