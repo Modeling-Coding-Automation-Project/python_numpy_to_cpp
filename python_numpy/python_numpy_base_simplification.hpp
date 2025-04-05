@@ -6,6 +6,7 @@
 #include "python_numpy_templates.hpp"
 
 #include <initializer_list>
+#include <type_traits>
 
 namespace PythonNumpy {
 
@@ -406,6 +407,45 @@ inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
   SetMatrixOperation::SetRow<Matrix_Type, RowVector_Type, ROW>::compute(
       matrix, row_vector);
 }
+
+/* Concatenate block, any size */
+namespace ConcatenateBlockOperation {
+
+template <std::size_t M, std::size_t N, std::size_t Col_Index,
+          std::size_t Row_Index, typename ArgsTuple_Type>
+struct ConcatenateBlock {
+  using type = ArgsTuple_Type;
+};
+
+template <std::size_t M, std::size_t N, typename Tuple, typename Last>
+void concatenate_args(const Tuple &previousArgs, Last last) {
+
+  auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(last));
+
+  using UpdatedArgsType = decltype(updatedArgs);
+
+  typename ConcatenateBlock<M, N, (M - 1), (N - 1), UpdatedArgsType>::type
+      result;
+}
+
+template <std::size_t M, std::size_t N, typename Tuple, typename First,
+          typename... Rest>
+void concatenate_args(const Tuple &previousArgs, First first, Rest... rest) {
+
+  auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(first));
+
+  concatenate_args<M, N>(updatedArgs, rest...);
+}
+
+template <std::size_t M, std::size_t N, typename... Args>
+void calculate(Args... args) {
+  static_assert(M > 1, "M must be greater than 1.");
+  static_assert(N > 1, "N must be greater than 1.");
+
+  concatenate_args<M, N>(std::make_tuple(), args...);
+}
+
+} // namespace ConcatenateBlockOperation
 
 } // namespace PythonNumpy
 
