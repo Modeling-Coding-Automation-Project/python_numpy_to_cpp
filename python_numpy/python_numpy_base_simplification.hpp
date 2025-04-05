@@ -459,27 +459,30 @@ struct ConcatenateBlock {
       typename ConcatenateBlockColumns<M, ArgsTuple_Type, (M - 1)>::type;
 };
 
+template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
+struct ConcatenateArgsType {
+  using type = typename ConcatenateBlock<
+      M, N,
+      decltype(std::tuple_cat(std::declval<Tuple>(),
+                              std::make_tuple(std::declval<Args>()...)))>::type;
+};
+
+template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
+using ConcatenateArgsType_t =
+    typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
+
 template <std::size_t M, std::size_t N, typename Tuple, typename Last>
-void concatenate_args(const Tuple &previousArgs, Last last) {
+auto concatenate_args(const Tuple &previousArgs, Last last) ->
+    typename ConcatenateBlock<
+        M, N,
+        decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
 
-  auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(last));
-
-  using UpdatedArgsType = decltype(updatedArgs);
+  using UpdatedArgsType =
+      decltype(std::tuple_cat(previousArgs, std::make_tuple(last)));
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  using SparseAvailable = typename decltype(result)::SparseAvailable_Type;
-
-  auto Ones = make_SparseMatrixOnes<double, SparseAvailable>();
-  auto Ones_dense = Ones.create_dense();
-
-  for (std::size_t i = 0; i < decltype(Ones_dense)::COLS; ++i) {
-    for (std::size_t j = 0; j < decltype(Ones_dense)::ROWS; ++j) {
-
-      std::cout << Ones_dense(i, j) << ", ";
-    }
-    std::cout << std::endl;
-  }
+  return result;
 }
 
 template <std::size_t M, std::size_t N, typename Tuple, typename First,
@@ -492,11 +495,18 @@ void concatenate_args(const Tuple &previousArgs, First first, Rest... rest) {
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
-void calculate(Args... args) {
+auto calculate(Args... args)
+    -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
   static_assert(M > 1, "M must be greater than 1.");
   static_assert(N > 1, "N must be greater than 1.");
 
   concatenate_args<M, N>(std::make_tuple(), args...);
+
+  using Concat_Type = ConcatenateArgsType_t<M, N, std::tuple<>, Args...>;
+
+  Concat_Type result;
+
+  return result;
 }
 
 } // namespace ConcatenateBlockOperation
