@@ -411,10 +411,78 @@ inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
       matrix, row_vector);
 }
 
+/* Part matrix substitute */
+namespace PartMatrixOperation {
+
+// when J_idx < N
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct SubstituteColumn {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    All.template set<(Col_Offset + I), (Row_Offset + J_idx)>(
+        Part.template get<I, J_idx>());
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+                     (J_idx - 1)>::compute(All, Part);
+  }
+};
+
+// column recursion termination
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I>
+struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+                        0> {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    All.template set<(Col_Offset + I), Row_Offset>(Part.template get<I, 0>());
+  }
+};
+
+// when I_idx < M
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I_idx>
+struct SubstituteRow {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I_idx,
+                     (N - 1)>::compute(All, Part);
+    SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N,
+                  (I_idx - 1)>::compute(All, Part);
+  }
+};
+
+// row recursion termination
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N>
+struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0,
+                     (N - 1)>::compute(All, Part);
+  }
+};
+
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type>
+inline void substitute(All_Type &All, const Part_Type &Part) {
+
+  static_assert(
+      All_Type::COLS >= (Part_Type::COLS + Col_Offset),
+      "All matrix must have enough columns to substitute the part matrix.");
+  static_assert(
+      All_Type::ROWS >= (Part_Type::ROWS + Row_Offset),
+      "All matrix must have enough rows to substitute the part matrix.");
+
+  SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, Part_Type::COLS,
+                Part_Type::ROWS, (Part_Type::COLS - 1)>::compute(All, Part);
+}
+
+} // namespace PartMatrixOperation
+
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
-
-#include <iostream>
 
 template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Row_Index>
@@ -479,16 +547,19 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
         M, N,
         decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
 
-  using UpdatedArgsType =
-      decltype(std::tuple_cat(previousArgs, std::make_tuple(last)));
+  auto all_args = std::tuple_cat(previousArgs, std::make_tuple(last));
+
+  using UpdatedArgsType = decltype(all_args);
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  using SparseAvailable_Con = typename decltype(result)::SparseAvailable_Type;
+  auto first_element = std::get<0>(all_args);
 
-  auto Ones = make_SparseMatrixOnes<double, SparseAvailable_Con>();
+  // std::cout << "COLS: " << decltype(result)::COLS << std::endl;
 
-  return Ones;
+  PartMatrixOperation::substitute<0, 0>(result, first_element);
+
+  return result;
 }
 
 template <std::size_t M, std::size_t N, typename Tuple, typename First,
