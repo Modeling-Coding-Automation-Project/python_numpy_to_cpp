@@ -480,22 +480,66 @@ inline void substitute_each(All_Type &All, const Part_Type &Part) {
 }
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t Tuple_Size,
-          std::size_t Tuple_Index>
-struct Tuples {
+          typename ArgsTuple_Type, std::size_t TupleCol_Count,
+          std::size_t TupleCol_Offset, std::size_t TupleRow_Index>
+struct TupleColumn {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
-    constexpr std::size_t This_Tuple_Index = Tuple_Size - Tuple_Index;
+    using ArgType = std::remove_reference_t<decltype(std::get<0>(args))>;
 
-    substitute_each<0, 0>(All, std::get<This_Tuple_Index>(args));
-    Tuples<M, N, All_Type, ArgsTuple_Type, Tuple_Size,
-           (Tuple_Index - 1)>::substitute(All, args);
+    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
+    constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
+
+    constexpr std::size_t This_Tuple_Index =
+        N - TupleRow_Index + (TupleCol_Count * N);
+
+    constexpr std::size_t Column_point = TupleCol_Count * EACH_COLUMN_SIZE;
+    constexpr std::size_t Row_point = (N - TupleRow_Index) * EACH_ROW_SIZE;
+
+    std::cout << "This_Tuple_Index: " << This_Tuple_Index << std::endl;
+    std::cout << "Column_point: " << Column_point << std::endl;
+    std::cout << "Row_point: " << Row_point << std::endl;
+
+    substitute_each<Column_point, Row_point>(All,
+                                             std::get<This_Tuple_Index>(args));
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count, TupleCol_Offset,
+                (TupleRow_Index - 1)>::substitute(All, args);
   }
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t Tuple_Size>
-struct Tuples<M, N, All_Type, ArgsTuple_Type, Tuple_Size, 0> {
+          typename ArgsTuple_Type, std::size_t TupleCol_Count,
+          std::size_t TupleCol_Offset>
+struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
+                   TupleCol_Offset, 0> {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+    // Do Nothing
+    static_cast<void>(All);
+    static_cast<void>(args);
+  }
+};
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t TupleCol_Index>
+struct TupleRow {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+
+    constexpr std::size_t TupleCol_Count = M - TupleCol_Index;
+    constexpr std::size_t This_TupleCol_Offset = TupleCol_Count * M;
+
+    std::cout << "This_TupleCol_Offset: " << This_TupleCol_Offset << std::endl;
+
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
+                This_TupleCol_Offset, N>::substitute(All, args);
+
+    TupleRow<M, N, All_Type, ArgsTuple_Type, (TupleCol_Index - 1)>::substitute(
+        All, args);
+  }
+};
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type>
+struct TupleRow<M, N, All_Type, ArgsTuple_Type, 0> {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -575,13 +619,20 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   using UpdatedArgsType = decltype(all_args);
 
-  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
-
   constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
 
-  PartMatrixOperation::Tuples<M, N, decltype(result), decltype(all_args),
-                              TUPLE_SIZE, TUPLE_SIZE>::substitute(result,
-                                                                  all_args);
+  static_assert(TUPLE_SIZE == (M * N),
+                "Number of arguments must be equal to M * N.");
+
+  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
+
+  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args),
+                                M>::substitute(result, all_args);
+
+  // using SparseAvailable_Con = typename
+  // decltype(result)::SparseAvailable_Type;
+
+  // result = make_SparseMatrixOnes<double, SparseAvailable_Con>();
 
   return result;
 }
