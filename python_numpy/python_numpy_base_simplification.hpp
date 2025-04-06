@@ -573,8 +573,6 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  auto first_element = std::get<0>(all_args);
-
   constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
 
   PartMatrixOperation::Tuples<decltype(result), decltype(all_args), TUPLE_SIZE,
