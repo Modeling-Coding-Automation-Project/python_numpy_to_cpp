@@ -504,8 +504,8 @@ auto concatenate_args(const Tuple &previousArgs, First first, Rest... rest)
 template <std::size_t M, std::size_t N, typename... Args>
 auto calculate(Args... args)
     -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
-  static_assert(M > 1, "M must be greater than 1.");
-  static_assert(N > 1, "N must be greater than 1.");
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
 
   return concatenate_args<M, N>(std::make_tuple(), args...);
 }
