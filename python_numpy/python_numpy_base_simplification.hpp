@@ -479,19 +479,23 @@ inline void substitute_each(All_Type &All, const Part_Type &Part) {
                 Part_Type::ROWS, (Part_Type::COLS - 1)>::compute(All, Part);
 }
 
-template <typename All_Type, typename ArgsTuple_Type, std::size_t Tuple_Size,
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t Tuple_Size,
           std::size_t Tuple_Index>
 struct Tuples {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
-    substitute_each<0, 0>(All, std::get<(Tuple_Size - Tuple_Index)>(args));
-    Tuples<All_Type, ArgsTuple_Type, Tuple_Size, (Tuple_Index - 1)>::substitute(
-        All, args);
+    constexpr std::size_t This_Tuple_Index = Tuple_Size - Tuple_Index;
+
+    substitute_each<0, 0>(All, std::get<This_Tuple_Index>(args));
+    Tuples<M, N, All_Type, ArgsTuple_Type, Tuple_Size,
+           (Tuple_Index - 1)>::substitute(All, args);
   }
 };
 
-template <typename All_Type, typename ArgsTuple_Type, std::size_t Tuple_Size>
-struct Tuples<All_Type, ArgsTuple_Type, Tuple_Size, 0> {
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t Tuple_Size>
+struct Tuples<M, N, All_Type, ArgsTuple_Type, Tuple_Size, 0> {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -575,8 +579,9 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
 
-  PartMatrixOperation::Tuples<decltype(result), decltype(all_args), TUPLE_SIZE,
-                              TUPLE_SIZE>::substitute(result, all_args);
+  PartMatrixOperation::Tuples<M, N, decltype(result), decltype(all_args),
+                              TUPLE_SIZE, TUPLE_SIZE>::substitute(result,
+                                                                  all_args);
 
   return result;
 }
