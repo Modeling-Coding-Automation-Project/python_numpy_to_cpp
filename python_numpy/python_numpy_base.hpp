@@ -441,8 +441,8 @@ public:
   }
 
   static inline auto full(const T &value)
-      -> Matrix<DefSparse, T, N, M, SparseAvailable> {
-    return Matrix<DefSparse, T, N, M, SparseAvailable>(
+      -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+    return Matrix<DefSparse, T, M, N, SparseAvailable>(
         _BaseMatrix_Type::full(value));
   }
 

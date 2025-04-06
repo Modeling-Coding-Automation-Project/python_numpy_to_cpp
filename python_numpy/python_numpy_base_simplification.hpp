@@ -414,6 +414,8 @@ inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 
+#include <iostream>
+
 template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Row_Index>
 struct ConcatenateBlockRows {
@@ -430,7 +432,7 @@ struct ConcatenateBlockRows {
 template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type, 0> {
 
-  using type = typename std::tuple_element<(Col_Offset), ArgsTuple_Type>::type;
+  using type = typename std::tuple_element<Col_Offset, ArgsTuple_Type>::type;
 };
 
 template <std::size_t N, typename ArgsTuple_Type, std::size_t Col_Index>
@@ -456,7 +458,7 @@ template <std::size_t M, std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlock {
 
   using type =
-      typename ConcatenateBlockColumns<M, ArgsTuple_Type, (M - 1)>::type;
+      typename ConcatenateBlockColumns<N, ArgsTuple_Type, (M - 1)>::type;
 };
 
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
@@ -482,9 +484,9 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  using SparseAvailable = typename decltype(result)::SparseAvailable_Type;
+  using SparseAvailable_Con = typename decltype(result)::SparseAvailable_Type;
 
-  auto Ones = make_SparseMatrixOnes<double, SparseAvailable>();
+  auto Ones = make_SparseMatrixOnes<double, SparseAvailable_Con>();
 
   return Ones;
 }
