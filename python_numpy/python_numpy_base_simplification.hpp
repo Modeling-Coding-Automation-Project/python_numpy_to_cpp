@@ -611,59 +611,72 @@ template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
 using ConcatenateArgsType_t =
     typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
 
-template <std::size_t M, std::size_t N, typename Tuple, typename Last>
-inline auto concatenate_args(const Tuple &previousArgs, Last last) ->
-    typename ConcatenateBlock<
-        M, N,
-        decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename Tuple, typename Last>
+inline void concatenate_args(Concatenate_Type &Concatenated,
+                             const Tuple &previousArgs, Last last) {
 
   auto all_args = std::tuple_cat(previousArgs, std::make_tuple(last));
 
   using UpdatedArgsType = decltype(all_args);
 
-  constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
+  constexpr std::size_t TUPLE_SIZE = std::tuple_size<UpdatedArgsType>::value;
 
   static_assert(TUPLE_SIZE == (M * N),
                 "Number of arguments must be equal to M * N.");
 
-  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
+  using ConcatenateMatrix_Type =
+      typename ConcatenateBlock<M, N, UpdatedArgsType>::type;
 
-  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args), 0,
-                                M>::substitute(result, all_args);
-
-  return result;
+  PartMatrixOperation::TupleRow<M, N, ConcatenateMatrix_Type, UpdatedArgsType,
+                                0, M>::substitute(Concatenated, all_args);
 }
 
-template <std::size_t M, std::size_t N, typename Tuple, typename First,
-          typename... Rest>
-inline auto concatenate_args(const Tuple &previousArgs, First first,
-                             Rest... rest)
-    -> ConcatenateArgsType_t<
-        M, N, decltype(std::tuple_cat(previousArgs, std::make_tuple(first))),
-        Rest...> {
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename Tuple, typename First, typename... Rest>
+inline void concatenate_args(Concatenate_Type &Concatenated,
+                             const Tuple &previousArgs, First first,
+                             Rest... rest) {
 
   auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(first));
 
-  return concatenate_args<M, N>(updatedArgs, rest...);
+  return concatenate_args<M, N>(Concatenated, updatedArgs, rest...);
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
-inline auto calculate(Args... args)
-    -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
+inline void
+calculate(ConcatenateArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
+          Args... args) {
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
 
-  return concatenate_args<M, N>(std::make_tuple(), args...);
+  return concatenate_args<M, N>(Concatenated, std::make_tuple(), args...);
 }
 
 } // namespace ConcatenateBlockOperation
+
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename... Args>
+inline void update_block_concatenated_matrix(Concatenate_Type &Concatenated,
+                                             Args... args) {
+
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
+
+  ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
+}
 
 template <std::size_t M, std::size_t N, typename... Args>
 inline auto concatenate_block(Args... args)
     -> ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>,
                                                         Args...> {
 
-  return ConcatenateBlockOperation::calculate<M, N>(args...);
+  ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>, Args...>
+      Concatenated;
+
+  ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
+
+  return Concatenated;
 }
 
 /* Concatenate block Type */
