@@ -2077,8 +2077,8 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate block Dense, Diag, Sparse and Empty.");
 
-    /* repmat */
-    Repmat_Type<2, 3, decltype(C)> R = repmat<2, 3>(C);
+    /* tile */
+    Tile_Type<2, 3, decltype(C)> R = tile<2, 3>(C);
     auto R_dense = R.create_dense();
 
     Matrix<DefDense, T, 6, 9> R_answer({
