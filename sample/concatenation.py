@@ -9,13 +9,23 @@ vertical = np.concatenate([A, C], 0)
 
 print("vertical =")
 print(vertical)
+print("\n")
 
 horizontal = np.concatenate([A, B], 1)
 
 print("horizontal =")
 print(horizontal)
+print("\n")
+
 
 block = np.block([[A, B], [C, E]])
 
 print("block =")
 print(block)
+print("\n")
+
+
+tiled_matrix = np.tile(C, (2, 3))
+print("tiled_matrix =")
+print(tiled_matrix)
+print("\n")

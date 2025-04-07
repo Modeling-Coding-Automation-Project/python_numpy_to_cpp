@@ -608,108 +608,116 @@ struct ConcatenateArgsType {
 };
 
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
-using ConcatenateArgsType_t =
-    typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
+using ArgsType_t = typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
 
-template <std::size_t M, std::size_t N, typename Tuple, typename Last>
-inline auto concatenate_args(const Tuple &previousArgs, Last last) ->
-    typename ConcatenateBlock<
-        M, N,
-        decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename Tuple, typename Last>
+inline void concatenate_args(Concatenate_Type &Concatenated,
+                             const Tuple &previousArgs, Last last) {
 
   auto all_args = std::tuple_cat(previousArgs, std::make_tuple(last));
 
   using UpdatedArgsType = decltype(all_args);
 
-  constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
+  constexpr std::size_t TUPLE_SIZE = std::tuple_size<UpdatedArgsType>::value;
 
   static_assert(TUPLE_SIZE == (M * N),
                 "Number of arguments must be equal to M * N.");
 
-  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
+  using ConcatenateMatrix_Type =
+      typename ConcatenateBlock<M, N, UpdatedArgsType>::type;
 
-  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args), 0,
-                                M>::substitute(result, all_args);
-
-  return result;
+  PartMatrixOperation::TupleRow<M, N, ConcatenateMatrix_Type, UpdatedArgsType,
+                                0, M>::substitute(Concatenated, all_args);
 }
 
-template <std::size_t M, std::size_t N, typename Tuple, typename First,
-          typename... Rest>
-inline auto concatenate_args(const Tuple &previousArgs, First first,
-                             Rest... rest)
-    -> ConcatenateArgsType_t<
-        M, N, decltype(std::tuple_cat(previousArgs, std::make_tuple(first))),
-        Rest...> {
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename Tuple, typename First, typename... Rest>
+inline void concatenate_args(Concatenate_Type &Concatenated,
+                             const Tuple &previousArgs, First first,
+                             Rest... rest) {
 
   auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(first));
 
-  return concatenate_args<M, N>(updatedArgs, rest...);
+  return concatenate_args<M, N>(Concatenated, updatedArgs, rest...);
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
-inline auto calculate(Args... args)
-    -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
+inline void calculate(ArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
+                      Args... args) {
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
 
-  return concatenate_args<M, N>(std::make_tuple(), args...);
+  return concatenate_args<M, N>(Concatenated, std::make_tuple(), args...);
 }
 
 } // namespace ConcatenateBlockOperation
 
+template <std::size_t M, std::size_t N, typename Concatenate_Type,
+          typename... Args>
+inline void update_block_concatenated_matrix(Concatenate_Type &Concatenated,
+                                             Args... args) {
+
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
+
+  ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
+}
+
 template <std::size_t M, std::size_t N, typename... Args>
 inline auto concatenate_block(Args... args)
-    -> ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>,
-                                                        Args...> {
+    -> ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...> {
 
-  return ConcatenateBlockOperation::calculate<M, N>(args...);
+  ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...>
+      Concatenated;
+
+  ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
+
+  return Concatenated;
 }
 
 /* Concatenate block Type */
 template <std::size_t M, std::size_t N, typename... Args>
 using ConcatenateBlock_Type =
-    typename ConcatenateBlockOperation::ConcatenateArgsType_t<
-        M, N, std::tuple<>, Args...>;
+    typename ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...>;
 
-/* repmat */
-namespace ReatmatOperation {
+/* tile */
+namespace TileOperation {
 
 template <std::size_t M, std::size_t N, std::size_t Count, typename MATRIX_Type,
           typename... Args>
-struct GenerateRepmatTypes {
-  using type = typename GenerateRepmatTypes<M, N, (Count - 1), MATRIX_Type,
-                                            MATRIX_Type, Args...>::type;
+struct GenerateTileTypes {
+  using type = typename GenerateTileTypes<M, N, (Count - 1), MATRIX_Type,
+                                          MATRIX_Type, Args...>::type;
 };
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type, typename... Args>
-struct GenerateRepmatTypes<M, N, 0, MATRIX_Type, Args...> {
+struct GenerateTileTypes<M, N, 0, MATRIX_Type, Args...> {
   using type = ConcatenateBlock_Type<M, N, Args...>;
 };
 
-} // namespace ReatmatOperation
+} // namespace TileOperation
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
-using Repmat_Type =
-    typename ReatmatOperation::GenerateRepmatTypes<M, N, M * N,
-                                                   MATRIX_Type>::type;
+using Tile_Type =
+    typename TileOperation::GenerateTileTypes<M, N, M * N, MATRIX_Type>::type;
 
-namespace ReatmatOperation {
+namespace TileOperation {
 
-template <std::size_t... Indices> struct index_sequence_for_repmat {};
+template <std::size_t... Indices> struct index_sequence_for_tile {};
 
 template <std::size_t N, std::size_t... Indices>
-struct make_index_sequence_for_repmat_impl
-    : make_index_sequence_for_repmat_impl<N - 1, N - 1, Indices...> {};
+struct make_index_sequence_for_tile_impl
+    : make_index_sequence_for_tile_impl<N - 1, N - 1, Indices...> {};
 
 template <std::size_t... Indices>
-struct make_index_sequence_for_repmat_impl<0, Indices...> {
-  using type = index_sequence_for_repmat<Indices...>;
+struct make_index_sequence_for_tile_impl<0, Indices...> {
+  using type = index_sequence_for_tile<Indices...>;
 };
 
 template <std::size_t N>
-using make_index_sequence_for_repmat =
-    typename make_index_sequence_for_repmat_impl<N>::type;
+using make_index_sequence_for_tile =
+    typename make_index_sequence_for_tile_impl<N>::type;
 
 template <std::size_t Count, typename MATRIX_Type, typename... Args>
 struct RepeatMatrix {
@@ -725,25 +733,25 @@ struct RepeatMatrix<0, MATRIX_Type, Args...> {
 template <std::size_t M, std::size_t N, typename MATRIX_Type,
           std::size_t... Indices>
 inline auto implement(const MATRIX_Type &matrix,
-                      index_sequence_for_repmat<Indices...>)
-    -> Repmat_Type<M, N, MATRIX_Type> {
+                      index_sequence_for_tile<Indices...>)
+    -> Tile_Type<M, N, MATRIX_Type> {
 
   return concatenate_block<M, N>((static_cast<void>(Indices), matrix)...);
 }
 
-} // namespace ReatmatOperation
+} // namespace TileOperation
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
-inline auto repmat(const MATRIX_Type &matrix)
-    -> Repmat_Type<M, N, MATRIX_Type> {
+inline auto concatenate_tile(const MATRIX_Type &matrix)
+    -> Tile_Type<M, N, MATRIX_Type> {
 
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
 
   constexpr std::size_t TotalCount = M * N;
 
-  return ReatmatOperation::implement<M, N>(
-      matrix, ReatmatOperation::make_index_sequence_for_repmat<TotalCount>{});
+  return TileOperation::implement<M, N>(
+      matrix, TileOperation::make_index_sequence_for_tile<TotalCount>{});
 }
 
 } // namespace PythonNumpy
