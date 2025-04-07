@@ -481,37 +481,32 @@ inline void substitute_each(All_Type &All, const Part_Type &Part) {
 
 template <std::size_t M, std::size_t N, typename All_Type,
           typename ArgsTuple_Type, std::size_t TupleCol_Count,
-          std::size_t TupleCol_Offset, std::size_t TupleRow_Index>
+          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset,
+          std::size_t TupleRow_Index>
 struct TupleColumn {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
-
-    using ArgType = std::remove_reference_t<decltype(std::get<0>(args))>;
-
-    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
-    constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
 
     constexpr std::size_t THIS_TUPLE_INDEX =
         N - TupleRow_Index + (TupleCol_Count * N);
 
-    constexpr std::size_t COLUMN_POINT = TupleCol_Count * EACH_COLUMN_SIZE;
-    constexpr std::size_t ROW_POINT = (N - TupleRow_Index) * EACH_ROW_SIZE;
+    using ArgType =
+        std::remove_reference_t<decltype(std::get<THIS_TUPLE_INDEX>(args))>;
 
-    std::cout << "THIS_TUPLE_INDEX: " << THIS_TUPLE_INDEX << std::endl;
-    std::cout << "COLUMN_POINT: " << COLUMN_POINT << std::endl;
-    std::cout << "ROW_POINT: " << ROW_POINT << std::endl;
+    constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
 
-    substitute_each<COLUMN_POINT, ROW_POINT>(All,
-                                             std::get<THIS_TUPLE_INDEX>(args));
+    substitute_each<TupleCol_Offset, TupleRow_Offset>(
+        All, std::get<THIS_TUPLE_INDEX>(args));
     TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count, TupleCol_Offset,
+                (TupleRow_Offset + EACH_ROW_SIZE),
                 (TupleRow_Index - 1)>::substitute(All, args);
   }
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
           typename ArgsTuple_Type, std::size_t TupleCol_Count,
-          std::size_t TupleCol_Offset>
+          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset>
 struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
-                   TupleCol_Offset, 0> {
+                   TupleCol_Offset, TupleRow_Offset, 0> {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -534,10 +529,8 @@ struct TupleRow {
 
     constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
 
-    std::cout << "THIS_TUPLECOL_OFFSET: " << TupleCol_Offset << std::endl;
-
     TupleColumn<M, N, All_Type, ArgsTuple_Type, TUPLECOL_COUNT, TupleCol_Offset,
-                N>::substitute(All, args);
+                0, N>::substitute(All, args);
 
     TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset + EACH_COLUMN_SIZE,
              (TupleCol_Index - 1)>::substitute(All, args);
