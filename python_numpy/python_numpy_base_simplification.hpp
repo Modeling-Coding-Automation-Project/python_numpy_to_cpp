@@ -490,7 +490,8 @@ struct TupleColumn {
         N - TupleRow_Index + (TupleCol_Count * N);
 
     using ArgType =
-        std::remove_reference_t<decltype(std::get<THIS_TUPLE_INDEX>(args))>;
+        typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
+            args))>::type;
 
     constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
 
@@ -525,7 +526,8 @@ struct TupleRow {
     constexpr std::size_t THIS_TUPLE_INDEX = TUPLECOL_COUNT * N;
 
     using ArgType =
-        std::remove_reference_t<decltype(std::get<THIS_TUPLE_INDEX>(args))>;
+        typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
+            args))>::type;
 
     constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
 
@@ -663,6 +665,12 @@ inline auto concatenate_block(Args... args)
 
   return ConcatenateBlockOperation::calculate<M, N>(args...);
 }
+
+/* Concatenate block Type */
+template <std::size_t M, std::size_t N, typename... Args>
+using ConcatenateBlock_Type =
+    typename ConcatenateBlockOperation::ConcatenateArgsType_t<
+        M, N, std::tuple<>, Args...>;
 
 } // namespace PythonNumpy
 

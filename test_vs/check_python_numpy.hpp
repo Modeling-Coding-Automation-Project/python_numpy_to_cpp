@@ -2036,8 +2036,8 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate horizontally Empty and Sparse.");
 
     /* Block結合 */
-    auto ABCE_block = concatenate_block(A, B, C, Empty);
-    ConcatenateBlock_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
+    auto ABCE_block = concatenate_block_2x2(A, B, C, Empty);
+    ConcatenateBlock2X2_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
     ABCE_block_t = ABCE_block;
     auto ABCE_block_t_dense = ABCE_block_t.create_dense();
 
@@ -2053,7 +2053,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate block Dense, Diag, Sparse and Empty.");
 
-    update_block_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
+    update_block_2x2_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
     auto ABCE_block_dense = ABCE_block.create_dense();
 
     Matrix<DefDense, T, 6, 6> ABCE_block_answer_2({
