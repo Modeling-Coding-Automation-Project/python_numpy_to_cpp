@@ -490,18 +490,18 @@ struct TupleColumn {
     constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
     constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
 
-    constexpr std::size_t This_Tuple_Index =
+    constexpr std::size_t THIS_TUPLE_INDEX =
         N - TupleRow_Index + (TupleCol_Count * N);
 
-    constexpr std::size_t Column_point = TupleCol_Count * EACH_COLUMN_SIZE;
-    constexpr std::size_t Row_point = (N - TupleRow_Index) * EACH_ROW_SIZE;
+    constexpr std::size_t COLUMN_POINT = TupleCol_Count * EACH_COLUMN_SIZE;
+    constexpr std::size_t ROW_POINT = (N - TupleRow_Index) * EACH_ROW_SIZE;
 
-    std::cout << "This_Tuple_Index: " << This_Tuple_Index << std::endl;
-    std::cout << "Column_point: " << Column_point << std::endl;
-    std::cout << "Row_point: " << Row_point << std::endl;
+    std::cout << "THIS_TUPLE_INDEX: " << THIS_TUPLE_INDEX << std::endl;
+    std::cout << "COLUMN_POINT: " << COLUMN_POINT << std::endl;
+    std::cout << "ROW_POINT: " << ROW_POINT << std::endl;
 
-    substitute_each<Column_point, Row_point>(All,
-                                             std::get<This_Tuple_Index>(args));
+    substitute_each<COLUMN_POINT, ROW_POINT>(All,
+                                             std::get<THIS_TUPLE_INDEX>(args));
     TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count, TupleCol_Offset,
                 (TupleRow_Index - 1)>::substitute(All, args);
   }
@@ -520,26 +520,33 @@ struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t TupleCol_Index>
+          typename ArgsTuple_Type, std::size_t TupleCol_Offset,
+          std::size_t TupleCol_Index>
 struct TupleRow {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
-    constexpr std::size_t TupleCol_Count = M - TupleCol_Index;
-    constexpr std::size_t This_TupleCol_Offset = TupleCol_Count * M;
+    constexpr std::size_t TUPLECOL_COUNT = M - TupleCol_Index;
 
-    std::cout << "This_TupleCol_Offset: " << This_TupleCol_Offset << std::endl;
+    constexpr std::size_t THIS_TUPLE_INDEX = TUPLECOL_COUNT * N;
 
-    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
-                This_TupleCol_Offset, N>::substitute(All, args);
+    using ArgType =
+        std::remove_reference_t<decltype(std::get<THIS_TUPLE_INDEX>(args))>;
 
-    TupleRow<M, N, All_Type, ArgsTuple_Type, (TupleCol_Index - 1)>::substitute(
-        All, args);
+    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
+
+    std::cout << "THIS_TUPLECOL_OFFSET: " << TupleCol_Offset << std::endl;
+
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TUPLECOL_COUNT, TupleCol_Offset,
+                N>::substitute(All, args);
+
+    TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset + EACH_COLUMN_SIZE,
+             (TupleCol_Index - 1)>::substitute(All, args);
   }
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type>
-struct TupleRow<M, N, All_Type, ArgsTuple_Type, 0> {
+          typename ArgsTuple_Type, std::size_t TupleCol_Offset>
+struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -626,13 +633,8 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
   typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
 
-  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args),
+  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args), 0,
                                 M>::substitute(result, all_args);
-
-  // using SparseAvailable_Con = typename
-  // decltype(result)::SparseAvailable_Type;
-
-  // result = make_SparseMatrixOnes<double, SparseAvailable_Con>();
 
   return result;
 }
