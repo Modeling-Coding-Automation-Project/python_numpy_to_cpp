@@ -610,7 +610,7 @@ using ConcatenateArgsType_t =
     typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
 
 template <std::size_t M, std::size_t N, typename Tuple, typename Last>
-auto concatenate_args(const Tuple &previousArgs, Last last) ->
+inline auto concatenate_args(const Tuple &previousArgs, Last last) ->
     typename ConcatenateBlock<
         M, N,
         decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
@@ -634,7 +634,8 @@ auto concatenate_args(const Tuple &previousArgs, Last last) ->
 
 template <std::size_t M, std::size_t N, typename Tuple, typename First,
           typename... Rest>
-auto concatenate_args(const Tuple &previousArgs, First first, Rest... rest)
+inline auto concatenate_args(const Tuple &previousArgs, First first,
+                             Rest... rest)
     -> ConcatenateArgsType_t<
         M, N, decltype(std::tuple_cat(previousArgs, std::make_tuple(first))),
         Rest...> {
@@ -645,7 +646,7 @@ auto concatenate_args(const Tuple &previousArgs, First first, Rest... rest)
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
-auto calculate(Args... args)
+inline auto calculate(Args... args)
     -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
@@ -654,6 +655,14 @@ auto calculate(Args... args)
 }
 
 } // namespace ConcatenateBlockOperation
+
+template <std::size_t M, std::size_t N, typename... Args>
+inline auto concatenate_block(Args... args)
+    -> ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>,
+                                                        Args...> {
+
+  return ConcatenateBlockOperation::calculate<M, N>(args...);
+}
 
 } // namespace PythonNumpy
 
