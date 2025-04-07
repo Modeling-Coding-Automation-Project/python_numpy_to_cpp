@@ -742,7 +742,8 @@ inline auto implement(const MATRIX_Type &matrix,
 } // namespace TileOperation
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
-inline auto tile(const MATRIX_Type &matrix) -> Tile_Type<M, N, MATRIX_Type> {
+inline auto concatenate_tile(const MATRIX_Type &matrix)
+    -> Tile_Type<M, N, MATRIX_Type> {
 
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");

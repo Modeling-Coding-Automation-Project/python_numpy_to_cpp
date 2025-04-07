@@ -119,5 +119,23 @@ int main() {
   }
   std::cout << std::endl;
 
+  /* Concatenate Tile */
+  constexpr std::size_t TILE_COLUMN_SIZE = 2;
+  constexpr std::size_t TILE_ROW_SIZE = 3;
+
+  using C_Tile_Type = Tile_Type<TILE_COLUMN_SIZE, TILE_ROW_SIZE, decltype(C)>;
+
+  C_Tile_Type C_Tile = concatenate_tile<TILE_COLUMN_SIZE, TILE_ROW_SIZE>(C);
+  auto C_Tile_dense = C_Tile.create_dense();
+
+  std::cout << "C_Tile = " << std::endl;
+  for (size_t j = 0; j < C_Tile_dense.cols(); ++j) {
+    for (size_t i = 0; i < C_Tile_dense.rows(); ++i) {
+      std::cout << C_Tile_dense(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }

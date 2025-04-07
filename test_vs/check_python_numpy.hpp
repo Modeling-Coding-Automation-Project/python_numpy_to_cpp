@@ -2077,8 +2077,25 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate block Dense, Diag, Sparse and Empty.");
 
+    update_block_concatenated_matrix<2, 2>(ABCE_block_2, A, static_cast<T>(2)* B, C, Empty);
+
+    auto ABCE_block_dense_2 = ABCE_block_2.create_dense();
+
+    Matrix<DefDense, T, 6, 6> ABCE_block_answer_2_2({
+        {1, 2, 3, 2, 0, 0},
+        {5, 4, 6, 0, 4, 0},
+        {9, 8, 7, 0, 0, 6},
+        {1, 0, 0, 0, 0, 0},
+        {3, 0, 8, 0, 0, 0},
+        {0, 2, 4, 0, 0, 0}
+        });
+
+    tester.expect_near(ABCE_block_dense_2.matrix.data, ABCE_block_answer_2_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
+
+
     /* tile */
-    Tile_Type<2, 3, decltype(C)> R = tile<2, 3>(C);
+    Tile_Type<2, 3, decltype(C)> R = concatenate_tile<2, 3>(C);
     auto R_dense = R.create_dense();
 
     Matrix<DefDense, T, 6, 9> R_answer({
