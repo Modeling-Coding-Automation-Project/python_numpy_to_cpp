@@ -5,7 +5,11 @@
 #include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"
 
+#include "python_numpy_concatenate.hpp"
+
 #include <initializer_list>
+#include <tuple>
+#include <type_traits>
 
 namespace PythonNumpy {
 
@@ -405,6 +409,341 @@ inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 
   SetMatrixOperation::SetRow<Matrix_Type, RowVector_Type, ROW>::compute(
       matrix, row_vector);
+}
+
+/* Part matrix substitute */
+namespace PartMatrixOperation {
+
+// when J_idx < N
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct SubstituteColumn {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    All.template set<(Col_Offset + I), (Row_Offset + J_idx)>(
+        Part.template get<I, J_idx>());
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+                     (J_idx - 1)>::compute(All, Part);
+  }
+};
+
+// column recursion termination
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I>
+struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+                        0> {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    All.template set<(Col_Offset + I), Row_Offset>(Part.template get<I, 0>());
+  }
+};
+
+// when I_idx < M
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N, std::size_t I_idx>
+struct SubstituteRow {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I_idx,
+                     (N - 1)>::compute(All, Part);
+    SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N,
+                  (I_idx - 1)>::compute(All, Part);
+  }
+};
+
+// row recursion termination
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type, std::size_t M, std::size_t N>
+struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
+  static void compute(All_Type &All, const Part_Type &Part) {
+
+    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0,
+                     (N - 1)>::compute(All, Part);
+  }
+};
+
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+          typename Part_Type>
+inline void substitute_each(All_Type &All, const Part_Type &Part) {
+
+  static_assert(
+      All_Type::COLS >= (Part_Type::COLS + Col_Offset),
+      "All matrix must have enough columns to substitute the part matrix.");
+  static_assert(
+      All_Type::ROWS >= (Part_Type::ROWS + Row_Offset),
+      "All matrix must have enough rows to substitute the part matrix.");
+
+  SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, Part_Type::COLS,
+                Part_Type::ROWS, (Part_Type::COLS - 1)>::compute(All, Part);
+}
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t TupleCol_Count,
+          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset,
+          std::size_t TupleRow_Index>
+struct TupleColumn {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+
+    constexpr std::size_t THIS_TUPLE_INDEX =
+        N - TupleRow_Index + (TupleCol_Count * N);
+
+    using ArgType =
+        typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
+            args))>::type;
+
+    constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
+
+    substitute_each<TupleCol_Offset, TupleRow_Offset>(
+        All, std::get<THIS_TUPLE_INDEX>(args));
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count, TupleCol_Offset,
+                (TupleRow_Offset + EACH_ROW_SIZE),
+                (TupleRow_Index - 1)>::substitute(All, args);
+  }
+};
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t TupleCol_Count,
+          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset>
+struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
+                   TupleCol_Offset, TupleRow_Offset, 0> {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+    // Do Nothing
+    static_cast<void>(All);
+    static_cast<void>(args);
+  }
+};
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t TupleCol_Offset,
+          std::size_t TupleCol_Index>
+struct TupleRow {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+
+    constexpr std::size_t TUPLECOL_COUNT = M - TupleCol_Index;
+
+    constexpr std::size_t THIS_TUPLE_INDEX = TUPLECOL_COUNT * N;
+
+    using ArgType =
+        typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
+            args))>::type;
+
+    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
+
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TUPLECOL_COUNT, TupleCol_Offset,
+                0, N>::substitute(All, args);
+
+    TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset + EACH_COLUMN_SIZE,
+             (TupleCol_Index - 1)>::substitute(All, args);
+  }
+};
+
+template <std::size_t M, std::size_t N, typename All_Type,
+          typename ArgsTuple_Type, std::size_t TupleCol_Offset>
+struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
+  static void substitute(All_Type &All, const ArgsTuple_Type &args) {
+    // Do Nothing
+    static_cast<void>(All);
+    static_cast<void>(args);
+  }
+};
+
+} // namespace PartMatrixOperation
+
+/* Concatenate block, any size */
+namespace ConcatenateBlockOperation {
+
+template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type,
+          std::size_t Row_Index>
+struct ConcatenateBlockRows {
+
+  using Arg_Type = typename std::tuple_element<(Col_Offset + Row_Index),
+                                               ArgsTuple_Type>::type;
+
+  using type = ConcatenateHorizontally_Type<
+      typename ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type,
+                                    (Row_Index - 1)>::type,
+      Arg_Type>;
+};
+
+template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type, 0> {
+
+  using type = typename std::tuple_element<Col_Offset, ArgsTuple_Type>::type;
+};
+
+template <std::size_t N, typename ArgsTuple_Type, std::size_t Col_Index>
+struct ConcatenateBlockColumns {
+
+  using Arg_Type = typename ConcatenateBlockRows<(Col_Index * N), N,
+                                                 ArgsTuple_Type, (N - 1)>::type;
+
+  using type =
+      ConcatenateVertically_Type<typename ConcatenateBlockColumns<
+                                     N, ArgsTuple_Type, (Col_Index - 1)>::type,
+                                 Arg_Type>;
+};
+
+template <std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlockColumns<N, ArgsTuple_Type, 0> {
+
+  using type =
+      typename ConcatenateBlockRows<0, N, ArgsTuple_Type, (N - 1)>::type;
+};
+
+template <std::size_t M, std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlock {
+
+  using type =
+      typename ConcatenateBlockColumns<N, ArgsTuple_Type, (M - 1)>::type;
+};
+
+template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
+struct ConcatenateArgsType {
+  using type = typename ConcatenateBlock<
+      M, N,
+      decltype(std::tuple_cat(std::declval<Tuple>(),
+                              std::make_tuple(std::declval<Args>()...)))>::type;
+};
+
+template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
+using ConcatenateArgsType_t =
+    typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
+
+template <std::size_t M, std::size_t N, typename Tuple, typename Last>
+inline auto concatenate_args(const Tuple &previousArgs, Last last) ->
+    typename ConcatenateBlock<
+        M, N,
+        decltype(std::tuple_cat(previousArgs, std::make_tuple(last)))>::type {
+
+  auto all_args = std::tuple_cat(previousArgs, std::make_tuple(last));
+
+  using UpdatedArgsType = decltype(all_args);
+
+  constexpr std::size_t TUPLE_SIZE = std::tuple_size<decltype(all_args)>::value;
+
+  static_assert(TUPLE_SIZE == (M * N),
+                "Number of arguments must be equal to M * N.");
+
+  typename ConcatenateBlock<M, N, UpdatedArgsType>::type result;
+
+  PartMatrixOperation::TupleRow<M, N, decltype(result), decltype(all_args), 0,
+                                M>::substitute(result, all_args);
+
+  return result;
+}
+
+template <std::size_t M, std::size_t N, typename Tuple, typename First,
+          typename... Rest>
+inline auto concatenate_args(const Tuple &previousArgs, First first,
+                             Rest... rest)
+    -> ConcatenateArgsType_t<
+        M, N, decltype(std::tuple_cat(previousArgs, std::make_tuple(first))),
+        Rest...> {
+
+  auto updatedArgs = std::tuple_cat(previousArgs, std::make_tuple(first));
+
+  return concatenate_args<M, N>(updatedArgs, rest...);
+}
+
+template <std::size_t M, std::size_t N, typename... Args>
+inline auto calculate(Args... args)
+    -> ConcatenateArgsType_t<M, N, std::tuple<>, Args...> {
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
+
+  return concatenate_args<M, N>(std::make_tuple(), args...);
+}
+
+} // namespace ConcatenateBlockOperation
+
+template <std::size_t M, std::size_t N, typename... Args>
+inline auto concatenate_block(Args... args)
+    -> ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>,
+                                                        Args...> {
+
+  return ConcatenateBlockOperation::calculate<M, N>(args...);
+}
+
+/* Concatenate block Type */
+template <std::size_t M, std::size_t N, typename... Args>
+using ConcatenateBlock_Type =
+    typename ConcatenateBlockOperation::ConcatenateArgsType_t<
+        M, N, std::tuple<>, Args...>;
+
+/* repmat */
+namespace ReatmatOperation {
+
+template <std::size_t M, std::size_t N, std::size_t Count, typename MATRIX_Type,
+          typename... Args>
+struct GenerateRepmatTypes {
+  using type = typename GenerateRepmatTypes<M, N, (Count - 1), MATRIX_Type,
+                                            MATRIX_Type, Args...>::type;
+};
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type, typename... Args>
+struct GenerateRepmatTypes<M, N, 0, MATRIX_Type, Args...> {
+  using type = ConcatenateBlock_Type<M, N, Args...>;
+};
+
+} // namespace ReatmatOperation
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type>
+using Repmat_Type =
+    typename ReatmatOperation::GenerateRepmatTypes<M, N, M * N,
+                                                   MATRIX_Type>::type;
+
+namespace ReatmatOperation {
+
+template <std::size_t... Indices> struct index_sequence_for_repmat {};
+
+template <std::size_t N, std::size_t... Indices>
+struct make_index_sequence_for_repmat_impl
+    : make_index_sequence_for_repmat_impl<N - 1, N - 1, Indices...> {};
+
+template <std::size_t... Indices>
+struct make_index_sequence_for_repmat_impl<0, Indices...> {
+  using type = index_sequence_for_repmat<Indices...>;
+};
+
+template <std::size_t N>
+using make_index_sequence_for_repmat =
+    typename make_index_sequence_for_repmat_impl<N>::type;
+
+template <std::size_t Count, typename MATRIX_Type, typename... Args>
+struct RepeatMatrix {
+  using type =
+      typename RepeatMatrix<Count - 1, MATRIX_Type, MATRIX_Type, Args...>::type;
+};
+
+template <typename MATRIX_Type, typename... Args>
+struct RepeatMatrix<0, MATRIX_Type, Args...> {
+  using type = std::tuple<Args...>;
+};
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type,
+          std::size_t... Indices>
+inline auto implement(const MATRIX_Type &matrix,
+                      index_sequence_for_repmat<Indices...>)
+    -> Repmat_Type<M, N, MATRIX_Type> {
+
+  return concatenate_block<M, N>((static_cast<void>(Indices), matrix)...);
+}
+
+} // namespace ReatmatOperation
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type>
+inline auto repmat(const MATRIX_Type &matrix)
+    -> Repmat_Type<M, N, MATRIX_Type> {
+
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
+
+  constexpr std::size_t TotalCount = M * N;
+
+  return ReatmatOperation::implement<M, N>(
+      matrix, ReatmatOperation::make_index_sequence_for_repmat<TotalCount>{});
 }
 
 } // namespace PythonNumpy
