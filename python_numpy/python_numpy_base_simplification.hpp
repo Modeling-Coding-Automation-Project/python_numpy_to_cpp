@@ -608,8 +608,7 @@ struct ConcatenateArgsType {
 };
 
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
-using ConcatenateArgsType_t =
-    typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
+using ArgsType_t = typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
 
 template <std::size_t M, std::size_t N, typename Concatenate_Type,
           typename Tuple, typename Last>
@@ -644,9 +643,8 @@ inline void concatenate_args(Concatenate_Type &Concatenated,
 }
 
 template <std::size_t M, std::size_t N, typename... Args>
-inline void
-calculate(ConcatenateArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
-          Args... args) {
+inline void calculate(ArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
+                      Args... args) {
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
 
@@ -668,10 +666,9 @@ inline void update_block_concatenated_matrix(Concatenate_Type &Concatenated,
 
 template <std::size_t M, std::size_t N, typename... Args>
 inline auto concatenate_block(Args... args)
-    -> ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>,
-                                                        Args...> {
+    -> ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...> {
 
-  ConcatenateBlockOperation::ConcatenateArgsType_t<M, N, std::tuple<>, Args...>
+  ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...>
       Concatenated;
 
   ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
@@ -682,8 +679,7 @@ inline auto concatenate_block(Args... args)
 /* Concatenate block Type */
 template <std::size_t M, std::size_t N, typename... Args>
 using ConcatenateBlock_Type =
-    typename ConcatenateBlockOperation::ConcatenateArgsType_t<
-        M, N, std::tuple<>, Args...>;
+    typename ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...>;
 
 /* tile */
 namespace TileOperation {
