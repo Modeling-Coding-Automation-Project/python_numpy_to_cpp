@@ -2078,7 +2078,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         "check concatenate block Dense, Diag, Sparse and Empty.");
 
     /* repmat */
-    auto R = repmat<2, 3>(C);
+    Repmat_Type<2, 3, decltype(C)> R = repmat<2, 3>(C);
     auto R_dense = R.create_dense();
 
     Matrix<DefDense, T, 6, 9> R_answer({
