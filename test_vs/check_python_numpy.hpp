@@ -2051,7 +2051,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
         });
 
     tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate block Dense, Diag, Sparse and Empty.");
+        "check concatenate block Dense, Diag, Sparse and Empty, 2 x 2.");
 
     update_block_2x2_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
     auto ABCE_block_dense = ABCE_block.create_dense();
@@ -2067,6 +2067,31 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
     tester.expect_near(ABCE_block_dense.matrix.data, ABCE_block_answer_2.matrix.data, NEAR_LIMIT_STRICT,
         "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
+
+
+    auto ABCE_block_2 = concatenate_block<2, 2>(A, B, C, Empty);
+    ConcatenateBlock_Type<2, 2, decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t_2;
+    ABCE_block_t_2 = ABCE_block_2;
+    auto ABCE_block_t_dense_2 = ABCE_block_t_2.create_dense();
+
+    tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check concatenate block Dense, Diag, Sparse and Empty.");
+
+    /* repmat */
+    auto R = repmat<2, 3>(C);
+    auto R_dense = R.create_dense();
+
+    Matrix<DefDense, T, 6, 9> R_answer({
+        {1, 0, 0, 1, 0, 0, 1, 0, 0},
+        {3, 0, 8, 3, 0, 8, 3, 0, 8},
+        {0, 2, 4, 0, 2, 4, 0, 2, 4},
+        {1, 0, 0, 1, 0, 0, 1, 0, 0},
+        {3, 0, 8, 3, 0, 8, 3, 0, 8},
+        {0, 2, 4, 0, 2, 4, 0, 2, 4}
+        });
+
+    tester.expect_near(R_dense.matrix.data, R_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check repmat Sparse.");
 
 
     tester.throw_error_if_test_failed();

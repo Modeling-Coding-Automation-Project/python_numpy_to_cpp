@@ -672,6 +672,80 @@ using ConcatenateBlock_Type =
     typename ConcatenateBlockOperation::ConcatenateArgsType_t<
         M, N, std::tuple<>, Args...>;
 
+/* repmat */
+namespace ReatmatOperation {
+
+template <std::size_t M, std::size_t N, std::size_t Count, typename MATRIX_Type,
+          typename... Args>
+struct GenerateRepmatTypes {
+  using type = typename GenerateRepmatTypes<M, N, (Count - 1), MATRIX_Type,
+                                            MATRIX_Type, Args...>::type;
+};
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type, typename... Args>
+struct GenerateRepmatTypes<M, N, 0, MATRIX_Type, Args...> {
+  using type = ConcatenateBlock_Type<M, N, Args...>;
+};
+
+} // namespace ReatmatOperation
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type>
+using Repmat_Type =
+    typename ReatmatOperation::GenerateRepmatTypes<M, N, M * N,
+                                                   MATRIX_Type>::type;
+
+namespace ReatmatOperation {
+
+template <std::size_t... Indices> struct index_sequence_for_repmat {};
+
+template <std::size_t N, std::size_t... Indices>
+struct make_index_sequence_for_repmat_impl
+    : make_index_sequence_for_repmat_impl<N - 1, N - 1, Indices...> {};
+
+template <std::size_t... Indices>
+struct make_index_sequence_for_repmat_impl<0, Indices...> {
+  using type = index_sequence_for_repmat<Indices...>;
+};
+
+template <std::size_t N>
+using make_index_sequence_for_repmat =
+    typename make_index_sequence_for_repmat_impl<N>::type;
+
+template <std::size_t Count, typename MATRIX_Type, typename... Args>
+struct RepeatMatrix {
+  using type =
+      typename RepeatMatrix<Count - 1, MATRIX_Type, MATRIX_Type, Args...>::type;
+};
+
+template <typename MATRIX_Type, typename... Args>
+struct RepeatMatrix<0, MATRIX_Type, Args...> {
+  using type = std::tuple<Args...>;
+};
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type,
+          std::size_t... Indices>
+inline auto implement(const MATRIX_Type &matrix,
+                      index_sequence_for_repmat<Indices...>)
+    -> Repmat_Type<M, N, MATRIX_Type> {
+
+  return concatenate_block<M, N>((static_cast<void>(Indices), matrix)...);
+}
+
+} // namespace ReatmatOperation
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type>
+inline auto repmat(const MATRIX_Type &matrix)
+    -> Repmat_Type<M, N, MATRIX_Type> {
+
+  static_assert(M > 0, "M must be greater than 0.");
+  static_assert(N > 0, "N must be greater than 0.");
+
+  constexpr std::size_t TotalCount = M * N;
+
+  return ReatmatOperation::implement<M, N>(
+      matrix, ReatmatOperation::make_index_sequence_for_repmat<TotalCount>{});
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
