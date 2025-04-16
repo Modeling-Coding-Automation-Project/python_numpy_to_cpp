@@ -327,9 +327,8 @@ public:
   /* Variable */
   Base::Matrix::Matrix<T, M, K> X_1;
 
-  Value_Type decay_rate = static_cast<Value_Type>(0);
-  Value_Type division_min =
-      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  Value_Type decay_rate;
+  Value_Type division_min;
   std::array<Value_Type, K> rho;
   std::array<std::size_t, K> rep_num;
 };
@@ -344,7 +343,9 @@ public:
 
 public:
   /* Constructor */
-  LinalgInvDiag() {}
+  LinalgInvDiag()
+      : X_1(), division_min(static_cast<Value_Type>(
+                   DEFAULT_DIVISION_MIN_LINALG_SOLVER)) {}
 
   /* Copy Constructor */
   LinalgInvDiag(const LinalgInvDiag<T, M> &other)
@@ -398,8 +399,7 @@ public:
   /* Variable */
   Base::Matrix::DiagMatrix<T, M> X_1;
 
-  Value_Type division_min =
-      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  Value_Type division_min;
 };
 
 /* make LinalgSolver for inv */
@@ -624,7 +624,11 @@ public:
 
 public:
   /* Constructor */
-  LinalgLstsqSolver() {}
+  LinalgLstsqSolver()
+      : X_1(), decay_rate(static_cast<Value_Type>(0)),
+        division_min(
+            static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER)),
+        rho({}), rep_num({}) {}
 
   /* Copy Constructor */
   LinalgLstsqSolver(const LinalgLstsqSolver<T, M, N, K, SparseAvailable_A,
@@ -775,9 +779,8 @@ public:
   /* Properties */
   Base::Matrix::Matrix<T, N, K> X_1;
 
-  Value_Type decay_rate = static_cast<Value_Type>(0);
-  Value_Type division_min =
-      static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER);
+  Value_Type decay_rate;
+  Value_Type division_min;
   std::array<Value_Type, K> rho;
   std::array<std::size_t, K> rep_num;
 };

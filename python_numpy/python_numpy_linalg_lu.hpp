@@ -37,23 +37,54 @@ private:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
+  using _L_RowIndices =
+      Base::Matrix::LowerTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+  using _L_RowPointers =
+      Base::Matrix::LowerTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+
+  using _U_RowIndices =
+      Base::Matrix::UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+  using _U_RowPointers =
+      Base::Matrix::UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+
 public:
   /* Constructor */
   template <
       typename U = A_Type,
       typename std::enable_if<Is_Dense_Matrix<U>::value>::type * = nullptr>
-  LinalgSolverLU() {
+  LinalgSolverLU()
+      : _LU_decomposer(),
+        _L_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_lower()),
+        _U_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_upper()) {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
   }
 
   template <typename U = A_Type,
             typename std::enable_if<Is_Diag_Matrix<U>::value>::type * = nullptr>
-  LinalgSolverLU() {}
+  LinalgSolverLU()
+      : _LU_decomposer(),
+        _L_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_lower()),
+        _U_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_upper()) {}
 
   template <
       typename U = A_Type,
       typename std::enable_if<Is_Sparse_Matrix<U>::value>::type * = nullptr>
-  LinalgSolverLU() {
+  LinalgSolverLU()
+      : _LU_decomposer(),
+        _L_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_lower()),
+        _U_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_upper()) {
     this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
   }
 
@@ -144,21 +175,14 @@ public:
 private:
   /* Variable */
   Base::Matrix::LUDecomposition<_T, A_Type::COLS> _LU_decomposer;
-  Base::Matrix::CompiledSparseMatrix<
-      _T, A_Type::COLS, A_Type::COLS,
-      Base::Matrix::LowerTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-      Base::Matrix::LowerTriangularRowPointers<A_Type::COLS, A_Type::COLS>>
-      _L_triangular =
-          Base::Matrix::TriangularSparse<_T, A_Type::COLS,
-                                         A_Type::COLS>::create_lower();
 
-  Base::Matrix::CompiledSparseMatrix<
-      _T, A_Type::COLS, A_Type::COLS,
-      Base::Matrix::UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-      Base::Matrix::UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>
-      _U_triangular =
-          Base::Matrix::TriangularSparse<_T, A_Type::COLS,
-                                         A_Type::COLS>::create_upper();
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+                                     _L_RowIndices, _L_RowPointers>
+      _L_triangular;
+
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+                                     _U_RowIndices, _U_RowPointers>
+      _U_triangular;
 };
 
 /* make LinalgSolverLU */

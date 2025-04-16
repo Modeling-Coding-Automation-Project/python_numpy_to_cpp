@@ -32,7 +32,7 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigRealDense() {}
+  LinalgSolverEigRealDense() : _Eigen_solver() {}
 
   /* Copy Constructor */
   LinalgSolverEigRealDense(const LinalgSolverEigRealDense<T, M> &other)
@@ -136,7 +136,7 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigRealDiag() {}
+  LinalgSolverEigRealDiag() : _eigen_values() {}
 
   /* Copy Constructor */
   LinalgSolverEigRealDiag(const LinalgSolverEigRealDiag<T, M> &other)
@@ -208,7 +208,7 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigRealSparse() {}
+  LinalgSolverEigRealSparse() : _Eigen_solver() {}
 
   /* Copy Constructor */
   LinalgSolverEigRealSparse(
@@ -362,7 +362,7 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigDense() {}
+  LinalgSolverEigDense() : _Eigen_solver() {}
 
   /* Copy Constructor */
   LinalgSolverEigDense(const LinalgSolverEigDense<T, M> &other)
@@ -477,7 +477,7 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigDiag() {}
+  LinalgSolverEigDiag() : _eigen_values() {}
 
   /* Copy Constructor */
   LinalgSolverEigDiag(const LinalgSolverEigDiag<T, M> &other)

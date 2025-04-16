@@ -20,9 +20,18 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
+private:
+  /* Type */
+  using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
+  using _R_TriangluarRowPointers =
+      Base::Matrix::UpperTriangularRowPointers<M, N>;
+
 public:
   /* Constructor */
-  LinalgSolverQR() {}
+  LinalgSolverQR()
+      : _QR_decomposer(),
+        _R_triangular(Base::Matrix::TriangularSparse<T, M, N>::create_upper()) {
+  }
 
   /* Copy Constructor */
   LinalgSolverQR(const LinalgSolverQR<T, M, N> &other)
@@ -56,19 +65,17 @@ public:
   }
 
   /* Get Q, R */
-  inline auto get_R(void)
-      -> Matrix<DefSparse, T, M, N,
-                CreateSparseAvailableFromIndicesAndPointers<
-                    N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-                    Base::Matrix::UpperTriangularRowPointers<M, N>>> const {
+  inline auto get_R(void) -> Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
 
     Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
         this->_R_triangular, this->_QR_decomposer.get_R());
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
-                      N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-                      Base::Matrix::UpperTriangularRowPointers<M, N>>>(
+                      N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>>(
         this->_R_triangular);
   }
 
@@ -91,16 +98,16 @@ public:
 private:
   /* Properties */
   Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;
-  Base::Matrix::CompiledSparseMatrix<
-      T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-      Base::Matrix::UpperTriangularRowPointers<M, N>>
-      _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
+
+  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
+                                     _R_TriangluarRowPointers>
+      _R_triangular;
 };
 
 template <typename T, std::size_t M> class LinalgSolverQRDiag {
 public:
   /* Constructor */
-  LinalgSolverQRDiag() {}
+  LinalgSolverQRDiag() : _R() {}
 
   /* Copy Constructor */
   LinalgSolverQRDiag(const LinalgSolverQRDiag<T, M> &other) : _R(other._R) {}
@@ -142,6 +149,18 @@ private:
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 class LinalgSolverQRSparse {
 public:
+  /* Type */
+  using Value_Type = T;
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "Value data type must be float or double.");
+
+private:
+  /* Type */
+  using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
+  using _R_TriangluarRowPointers =
+      Base::Matrix::UpperTriangularRowPointers<M, N>;
+
+public:
   /* Constructor */
   LinalgSolverQRSparse() {}
 
@@ -181,18 +200,17 @@ public:
     this->_QR_decomposer.solve(A.matrix);
   }
 
-  inline auto get_R(void)
-      -> Matrix<DefSparse, T, M, N,
-                CreateSparseAvailableFromIndicesAndPointers<
-                    N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-                    Base::Matrix::UpperTriangularRowPointers<M, N>>> const {
+  inline auto get_R(void) -> Matrix<
+      DefSparse, T, M, N,
+      CreateSparseAvailableFromIndicesAndPointers<
+          N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
 
     Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
         this->_R_triangular, this->_QR_decomposer.get_R());
 
     return Base::Matrix::CompiledSparseMatrix<
         T, M, N, Base::Matrix::UpperTriangularRowIndices<M, M>,
-        Base::Matrix::UpperTriangularRowPointers<M, N>>(this->_R_triangular);
+        _R_TriangluarRowPointers>(this->_R_triangular);
   }
 
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
@@ -218,9 +236,8 @@ private:
       Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>>
       _QR_decomposer;
 
-  Base::Matrix::CompiledSparseMatrix<
-      T, M, N, Base::Matrix::UpperTriangularRowIndices<M, N>,
-      Base::Matrix::UpperTriangularRowPointers<M, N>>
+  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
+                                     _R_TriangluarRowPointers>
       _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
 };
 

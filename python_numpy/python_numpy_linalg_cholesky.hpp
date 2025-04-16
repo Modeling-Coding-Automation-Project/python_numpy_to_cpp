@@ -30,9 +30,19 @@ private:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
+  using _CholeskyTriangularRowIndices =
+      UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+  using _CholeskyTriangularRowPointers =
+      UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+
 public:
   /* Constructor */
-  LinalgSolverCholesky() {}
+  LinalgSolverCholesky()
+      : _cholesky_decomposed_matrix(),
+        _cholesky_decomposed_triangular(
+            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
+                                           A_Type::COLS>::create_upper()),
+        _zero_div_flag(false) {}
 
   /* Copy Constructor */
   LinalgSolverCholesky(const LinalgSolverCholesky<A_Type> &other)
@@ -151,14 +161,13 @@ private:
   /* Variable */
   Base::Matrix::Matrix<_T, A_Type::COLS, A_Type::COLS>
       _cholesky_decomposed_matrix;
-  Base::Matrix::CompiledSparseMatrix<
-      _T, A_Type::COLS, A_Type::COLS,
-      UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-      UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>
-      _cholesky_decomposed_triangular =
-          Base::Matrix::TriangularSparse<_T, A_Type::COLS,
-                                         A_Type::COLS>::create_upper();
-  bool _zero_div_flag = false;
+
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+                                     _CholeskyTriangularRowIndices,
+                                     _CholeskyTriangularRowPointers>
+      _cholesky_decomposed_triangular;
+
+  bool _zero_div_flag;
 };
 
 /* make LinalgSolverCholesky */
