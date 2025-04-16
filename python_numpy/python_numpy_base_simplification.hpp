@@ -732,26 +732,40 @@ struct RepeatMatrix<0, MATRIX_Type, Args...> {
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type,
           std::size_t... Indices>
-inline auto implement(const MATRIX_Type &matrix,
-                      index_sequence_for_tile<Indices...>)
-    -> Tile_Type<M, N, MATRIX_Type> {
+inline void calculate(Tile_Type<M, N, MATRIX_Type> &Concatenated,
+                      const MATRIX_Type &matrix,
+                      index_sequence_for_tile<Indices...>) {
 
-  return concatenate_block<M, N>((static_cast<void>(Indices), matrix)...);
+  update_block_concatenated_matrix<M, N>(
+      Concatenated, (static_cast<void>(Indices), matrix)...);
 }
 
 } // namespace TileOperation
 
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
-inline auto concatenate_tile(const MATRIX_Type &matrix)
-    -> Tile_Type<M, N, MATRIX_Type> {
+inline void
+update_tile_concatenated_matrix(Tile_Type<M, N, MATRIX_Type> &Concatenated,
+                                const MATRIX_Type &matrix) {
 
   static_assert(M > 0, "M must be greater than 0.");
   static_assert(N > 0, "N must be greater than 0.");
 
   constexpr std::size_t TotalCount = M * N;
 
-  return TileOperation::implement<M, N>(
-      matrix, TileOperation::make_index_sequence_for_tile<TotalCount>{});
+  TileOperation::calculate<M, N>(
+      Concatenated, matrix,
+      TileOperation::make_index_sequence_for_tile<TotalCount>{});
+}
+
+template <std::size_t M, std::size_t N, typename MATRIX_Type>
+inline auto concatenate_tile(const MATRIX_Type &matrix)
+    -> Tile_Type<M, N, MATRIX_Type> {
+
+  Tile_Type<M, N, MATRIX_Type> Concatenated;
+
+  update_tile_concatenated_matrix<M, N>(Concatenated, matrix);
+
+  return Concatenated;
 }
 
 } // namespace PythonNumpy
