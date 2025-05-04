@@ -167,6 +167,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
                                  const Vector<T, M> &b, const Vector<T, N> &x_1,
                                  T decay_rate, const T &division_min, T &rho,
                                  std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -341,6 +342,8 @@ inline Vector<T, M> sparse_gmres_k(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -463,6 +466,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -638,6 +642,8 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, T decay_rate,
                 const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -789,6 +795,8 @@ inline Vector<Complex<T>, M> complex_sparse_gmres_k(
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
