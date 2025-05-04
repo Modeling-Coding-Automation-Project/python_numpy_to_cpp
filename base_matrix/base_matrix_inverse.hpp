@@ -20,6 +20,8 @@ template <typename T, std::size_t M>
 inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                             const Vector<T, M> &x_1, const T &decay_rate,
                             T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
