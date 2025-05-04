@@ -17,9 +17,10 @@ namespace Matrix {
 
 /* GMRES K */
 template <typename T, std::size_t M>
-inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-                            const Vector<T, M> &x_1, const T &decay_rate,
-                            T division_min, T &rho, std::size_t &rep_num) {
+inline typename std::enable_if<(M > 1), Vector<T, M>>::type
+gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
+        std::size_t &rep_num) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -129,6 +130,27 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   for (std::size_t i = 0; i < M; ++i) {
     x[i] = x_1[i] + x_dif[i];
   }
+
+  return x;
+}
+
+template <typename T, std::size_t M>
+inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
+        std::size_t &rep_num) {
+  static_assert(M == 1,
+                "Matrix size must be exactly 1x1 for this specialization.");
+  static_cast<void>(decay_rate);
+  static_cast<void>(division_min);
+  static_cast<void>(rep_num);
+  static_cast<void>(x_1);
+  static_cast<void>(rho);
+
+  Vector<T, M> x;
+
+  x[0] = b[0] /
+         Base::Utility::avoid_zero_divide(A.template get<0, 0>(), division_min);
 
   return x;
 }

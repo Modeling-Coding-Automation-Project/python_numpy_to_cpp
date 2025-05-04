@@ -904,6 +904,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
+    /* 定義 */
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefSparse, T, 3, 3,
@@ -912,6 +913,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         ColumnAvailable<true, false, true>,
         ColumnAvailable<false, true, true>>
         > C({ 1, 3, 8, 2, 4 });
+
 
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
@@ -1262,6 +1264,25 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_comp_Inv_imag.matrix.data,
         C_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver inv Sparse complex imag.");
+
+
+    /* スカラー左除算 */
+    Matrix<DefDense, T, 1, 1> A_scalar({ { 2 } });
+    Matrix<DefDiag, T, 1> B_scalar({ 3 });
+    Matrix<DefSparse, T, 1, 1,
+        SparseAvailable<
+        ColumnAvailable<true>>
+        > C_scalar({ 4 });
+
+    auto A_scalar_linalg_solver = make_LinalgSolver<decltype(A_scalar), decltype(A_scalar)>();
+    auto A_scalar_x = A_scalar_linalg_solver.solve(A_scalar, A_scalar);
+
+    Matrix<DefDense, T, 1, 1> A_scalar_x_answer({
+        { 1.0F }
+        });
+
+    tester.expect_near(A_scalar_x.matrix.data, A_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Dense scalar.");
 
 
     tester.throw_error_if_test_failed();
