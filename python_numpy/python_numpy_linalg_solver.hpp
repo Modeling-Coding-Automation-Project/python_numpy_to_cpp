@@ -262,7 +262,8 @@ public:
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
 
-    Base::Matrix::Matrix<T, M, M> B_dense_matrix = B.matrix.create_dense();
+    Base::Matrix::Matrix<T, M, M> B_dense_matrix =
+        output_dense_matrix(B.matrix);
 
     Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
                                         this->decay_rate, this->division_min,

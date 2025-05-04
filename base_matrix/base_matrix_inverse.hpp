@@ -17,9 +17,12 @@ namespace Matrix {
 
 /* GMRES K */
 template <typename T, std::size_t M>
-inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-                            const Vector<T, M> &x_1, const T &decay_rate,
-                            T division_min, T &rho, std::size_t &rep_num) {
+inline typename std::enable_if<(M > 1), Vector<T, M>>::type
+gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
+        std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -131,6 +134,27 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   return x;
 }
 
+template <typename T, std::size_t M>
+inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
+        std::size_t &rep_num) {
+  static_assert(M == 1,
+                "Matrix size must be exactly 1x1 for this specialization.");
+  static_cast<void>(decay_rate);
+  static_cast<void>(division_min);
+  static_cast<void>(rep_num);
+  static_cast<void>(x_1);
+  static_cast<void>(rho);
+
+  Vector<T, M> x;
+
+  x[0] = b[0] /
+         Base::Utility::avoid_zero_divide(A.template get<0, 0>(), division_min);
+
+  return x;
+}
+
 template <typename T, std::size_t M, std::size_t K>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
                            Matrix<T, M, K> &X_1, const T &decay_rate,
@@ -165,6 +189,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
                                  const Vector<T, M> &b, const Vector<T, N> &x_1,
                                  T decay_rate, const T &division_min, T &rho,
                                  std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -335,10 +360,12 @@ gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
 /* Sparse GMRES K */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Vector<T, M> sparse_gmres_k(
+inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<T, M, M> r;
   Vector<T, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -438,6 +465,28 @@ inline Vector<T, M> sparse_gmres_k(
   return x;
 }
 
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
+    T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M == 1,
+                "Matrix size must be exactly 1x1 for this specialization.");
+  static_cast<void>(decay_rate);
+  static_cast<void>(division_min);
+  static_cast<void>(rep_num);
+  static_cast<void>(x_1);
+  static_cast<void>(rho);
+
+  Vector<T, M> x;
+
+  x[0] = b[0] / Base::Utility::avoid_zero_divide(
+                    get_sparse_matrix_value<0, 0>(SA), division_min);
+
+  return x;
+}
+
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_matrix(
@@ -461,6 +510,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
     T division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
   Matrix<T, N, N> r;
@@ -631,11 +681,13 @@ inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
 
 /* Complex GMRES K */
 template <typename T, std::size_t M>
-inline Vector<Complex<T>, M>
+inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
 complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, T decay_rate,
                 const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -748,6 +800,27 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   return x;
 }
 
+template <typename T, std::size_t M>
+inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
+complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
+                const Vector<Complex<T>, M> &b,
+                const Vector<Complex<T>, M> &x_1, T decay_rate,
+                const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M == 1,
+                "Matrix size must be exactly 1x1 for this specialization.");
+  static_cast<void>(decay_rate);
+  static_cast<void>(division_min);
+  static_cast<void>(rep_num);
+  static_cast<void>(x_1);
+
+  Vector<Complex<T>, M> x;
+
+  x[0] =
+      Base::Matrix::complex_divide(b[0], A.template get<0, 0>(), division_min);
+
+  return x;
+}
+
 template <typename T, std::size_t M, std::size_t K>
 inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const Matrix<Complex<T>, M, K> &B,
@@ -782,11 +855,14 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
 
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Vector<Complex<T>, M> complex_sparse_gmres_k(
+inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
+complex_sparse_gmres_k(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+
   Matrix<Complex<T>, M, M> r;
   Vector<Complex<T>, M + 1> b_hat;
   b_hat[0] = static_cast<T>(1);
@@ -883,6 +959,29 @@ inline Vector<Complex<T>, M> complex_sparse_gmres_k(
   for (std::size_t i = 0; i < M; ++i) {
     x[i] = x_1[i] + x_dif[i];
   }
+
+  return x;
+}
+
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
+complex_sparse_gmres_k(
+    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+        &SA,
+    const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
+    T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
+  static_assert(M == 1,
+                "Matrix size must be exactly 1x1 for this specialization.");
+  static_cast<void>(decay_rate);
+  static_cast<void>(division_min);
+  static_cast<void>(rep_num);
+  static_cast<void>(x_1);
+
+  Vector<Complex<T>, M> x;
+
+  x[0] =
+      Base::Matrix::complex_divide(b[0], SA.template get<0, 0>(), division_min);
 
   return x;
 }
