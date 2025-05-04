@@ -1285,6 +1285,37 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         "check LinalgSolver solve Dense and Dense scalar.");
 
 
+    auto A_scalar_B_scalar_linalg_solver = make_LinalgSolver<decltype(A_scalar), decltype(B_scalar)>();
+    auto A_scalar_B_scalar_x = A_scalar_B_scalar_linalg_solver.solve(A_scalar, B_scalar);
+
+    Matrix<DefDense, T, 1, 1> A_scalar_B_scalar_x_answer({
+        { 1.5F }
+        });
+
+    tester.expect_near(A_scalar_B_scalar_x.matrix.data, A_scalar_B_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Diag scalar.");
+
+    auto A_scalar_C_scalar_linalg_solver = make_LinalgSolver<decltype(A_scalar), decltype(C_scalar)>();
+    auto A_scalar_C_scalar_x = A_scalar_C_scalar_linalg_solver.solve(A_scalar, C_scalar);
+
+    Matrix<DefDense, T, 1, 1> A_scalar_C_scalar_x_answer({
+        { 2.0F }
+        });
+
+    tester.expect_near(A_scalar_C_scalar_x.matrix.data, A_scalar_C_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Sparse scalar.");
+
+    auto B_scalar_A_scalar_linalg_solver = make_LinalgSolver<decltype(B_scalar), decltype(A_scalar)>();
+    auto B_scalar_A_scalar_x = B_scalar_A_scalar_linalg_solver.solve(B_scalar, A_scalar);
+
+    Matrix<DefDense, T, 1, 1> B_scalar_A_scalar_x_answer({
+        { 0.666666667F }
+        });
+
+    tester.expect_near(B_scalar_A_scalar_x.matrix.data, B_scalar_A_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Diag and Dense scalar.");
+
+
     tester.throw_error_if_test_failed();
 }
 
