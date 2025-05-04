@@ -477,11 +477,12 @@ inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
   static_cast<void>(division_min);
   static_cast<void>(rep_num);
   static_cast<void>(x_1);
+  static_cast<void>(rho);
 
   Vector<T, M> x;
 
-  x[0] = b[0] / Base::Utility::avoid_zero_divide(SA.template get<0, 0>(),
-                                                 division_min);
+  x[0] = b[0] / Base::Utility::avoid_zero_divide(
+                    get_sparse_matrix_value<0, 0>(SA), division_min);
 
   return x;
 }

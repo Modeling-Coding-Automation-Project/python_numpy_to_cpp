@@ -1315,6 +1315,89 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_scalar_A_scalar_x.matrix.data, B_scalar_A_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolver solve Diag and Dense scalar.");
 
+    auto B_scalar_B_scalar_linalg_solver = make_LinalgSolver<decltype(B_scalar), decltype(B_scalar)>();
+    auto B_scalar_B_scalar_x = B_scalar_B_scalar_linalg_solver.solve(B_scalar, B_scalar);
+    auto B_scalar_B_scalar_x_dense = B_scalar_B_scalar_x.create_dense();
+
+    Matrix<DefDense, T, 1, 1> B_scalar_B_scalar_x_answer({
+        { 1.0F }
+        });
+
+    tester.expect_near(B_scalar_B_scalar_x_dense.matrix.data, B_scalar_B_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Diag and Diag scalar.");
+
+    auto B_scalar_C_scalar_linalg_solver = make_LinalgSolver<decltype(B_scalar), decltype(C_scalar)>();
+    auto B_scalar_C_scalar_x = B_scalar_C_scalar_linalg_solver.solve(B_scalar, C_scalar);
+
+    Matrix<DefDense, T, 1, 1> B_scalar_C_scalar_x_answer({
+        { 1.33333333F }
+        });
+
+    tester.expect_near(B_scalar_C_scalar_x.matrix.data, B_scalar_C_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Diag and Sparse scalar.");
+
+    auto C_scalar_A_scalar_linalg_solver = make_LinalgSolver<decltype(C_scalar), decltype(A_scalar)>();
+    auto C_scalar_A_scalar_x = C_scalar_A_scalar_linalg_solver.solve(C_scalar, A_scalar);
+
+    Matrix<DefDense, T, 1, 1> C_scalar_A_scalar_x_answer({
+        { 0.5F }
+        });
+
+    tester.expect_near(C_scalar_A_scalar_x.matrix.data, C_scalar_A_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Sparse and Dense scalar.");
+
+    auto C_scalar_B_scalar_linalg_solver = make_LinalgSolver<decltype(C_scalar), decltype(B_scalar)>();
+    auto C_scalar_B_scalar_x = C_scalar_B_scalar_linalg_solver.solve(C_scalar, B_scalar);
+
+    Matrix<DefDense, T, 1, 1> C_scalar_B_scalar_x_answer({
+        { 0.75F }
+        });
+
+    tester.expect_near(C_scalar_B_scalar_x.matrix.data, C_scalar_B_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Sparse and Diag scalar.");
+
+    auto C_scalar_C_scalar_linalg_solver = make_LinalgSolver<decltype(C_scalar), decltype(C_scalar)>();
+    auto C_scalar_C_scalar_x = C_scalar_C_scalar_linalg_solver.solve(C_scalar, C_scalar);
+
+    Matrix<DefDense, T, 1, 1> C_scalar_C_scalar_x_answer({
+        { 1.0F }
+        });
+
+    tester.expect_near(C_scalar_C_scalar_x.matrix.data, C_scalar_C_scalar_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Sparse and Sparse scalar.");
+
+    /* 逆行列 スカラー */
+    auto A_scalar_inv_solver = make_LinalgSolverInv<decltype(A_scalar)>();
+    auto A_scalar_Inv = A_scalar_inv_solver.inv(A_scalar);
+
+    Matrix<DefDense, T, 1, 1> A_scalar_Inv_answer({
+        { 0.5F }
+        });
+
+    tester.expect_near(A_scalar_Inv.matrix.data, A_scalar_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Dense scalar.");
+
+    auto B_scalar_inv_solver = make_LinalgSolverInv<decltype(B_scalar)>();
+    auto B_scalar_Inv = B_scalar_inv_solver.inv(B_scalar);
+    auto B_scalar_Inv_dense = B_scalar_Inv.create_dense();
+
+    Matrix<DefDense, T, 1, 1> B_scalar_Inv_answer({
+        { 0.333333333F }
+        });
+
+    tester.expect_near(B_scalar_Inv_dense.matrix.data, B_scalar_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Diag scalar.");
+
+    auto C_scalar_inv_solver = make_LinalgSolverInv<decltype(C_scalar)>();
+    auto C_scalar_Inv = C_scalar_inv_solver.inv(C_scalar);
+
+    Matrix<DefDense, T, 1, 1> C_scalar_Inv_answer({
+        { 0.25F }
+        });
+
+    tester.expect_near(C_scalar_Inv.matrix.data, C_scalar_Inv_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver inv Sparse scalar.");
+
 
     tester.throw_error_if_test_failed();
 }
