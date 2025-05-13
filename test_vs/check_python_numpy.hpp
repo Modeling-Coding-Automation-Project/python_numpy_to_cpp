@@ -902,13 +902,13 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     reshaped_copy(B_reshape, A_reshape);
 
     Matrix<DefDense, T, 3, 4> B_reshape_answer({
-        {1.0F, 2.0F, 3.0F, 4.0F},
-        {5.0F, 6.0F, 7.0F, 8.0F},
-        {9.0F, 10.0F, 11.0F, 12.0F}
+        {1.0F, 4.0F, 7.0F, 10.0F},
+        {2.0F, 5.0F, 8.0F, 11.0F},
+        {3.0F, 6.0F, 9.0F, 12.0F}
         });
 
     tester.expect_near(B_reshape.matrix.data, B_reshape_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check reshaped_copy, 12, 1 to 3, 4");
+        "check reshaped_copy, 1, 12 to 3, 4");
 
 
 
