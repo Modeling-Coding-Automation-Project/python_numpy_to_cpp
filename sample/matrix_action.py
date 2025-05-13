@@ -1,0 +1,10 @@
+import numpy as np
+
+
+A = np.array([[16, 2, 3, 13],
+              [5, 11, 10, 8],
+              [9, 7, 6, 12],
+              [4, 14, 15, 1]])
+
+B = A.reshape(8, 2, order='F')
+print(B)
