@@ -549,6 +549,17 @@ struct Column {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * From_Type::ROWS + J_idx;
+
+    constexpr std::size_t FROM_MATRIX_ROW_INDEX =
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::COLS);
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_ROW_INDEX * From_Type::COLS;
+
+    static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
+                  "The column index is out of range for the from_matrix.");
+    static_assert(FROM_MATRIX_ROW_INDEX < From_Type::ROWS,
+                  "The row index is out of range for the from_matrix.");
+
     constexpr std::size_t TO_MATRIX_ROW_INDEX =
         static_cast<std::size_t>(NUMBER_OF_ELEMENT / To_Type::COLS);
     constexpr std::size_t TO_MATRIX_COL_INDEX =
@@ -560,7 +571,8 @@ struct Column {
                   "The row index is out of range for the to_matrix.");
 
     to_matrix.template set<TO_MATRIX_COL_INDEX, TO_MATRIX_ROW_INDEX>(
-        from_matrix.template get<I, J_idx>());
+        from_matrix
+            .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
     Column<To_Type, From_Type, I, J_idx - 1>::substitute(to_matrix,
                                                          from_matrix);
   }
@@ -572,6 +584,17 @@ struct Column<To_Type, From_Type, I, 0> {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * From_Type::ROWS;
+
+    constexpr std::size_t FROM_MATRIX_ROW_INDEX =
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::COLS);
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_ROW_INDEX * From_Type::COLS;
+
+    static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
+                  "The column index is out of range for the from_matrix.");
+    static_assert(FROM_MATRIX_ROW_INDEX < From_Type::ROWS,
+                  "The row index is out of range for the from_matrix.");
+
     constexpr std::size_t TO_MATRIX_ROW_INDEX =
         static_cast<std::size_t>(NUMBER_OF_ELEMENT / To_Type::COLS);
     constexpr std::size_t TO_MATRIX_COL_INDEX =
@@ -583,7 +606,8 @@ struct Column<To_Type, From_Type, I, 0> {
                   "The row index is out of range for the to_matrix.");
 
     to_matrix.template set<TO_MATRIX_COL_INDEX, TO_MATRIX_ROW_INDEX>(
-        from_matrix.template get<I, 0>());
+        from_matrix
+            .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
   }
 };
 
