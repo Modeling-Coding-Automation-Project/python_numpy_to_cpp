@@ -548,7 +548,20 @@ template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
 struct Column {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
-    to_matrix.template set<I, J_idx>(from_matrix.template get<I, J_idx>());
+    constexpr std::size_t NUMBER_OF_ELEMENT = I * To_Type::ROWS + J_idx;
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::ROWS);
+    constexpr std::size_t FROM_MATRIX_ROW_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_COL_INDEX * From_Type::ROWS;
+
+    static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
+                  "The column index is out of range for the source matrix.");
+    static_assert(FROM_MATRIX_ROW_INDEX < From_Type::ROWS,
+                  "The row index is out of range for the source matrix.");
+
+    to_matrix.template set<I, J_idx>(
+        from_matrix
+            .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
     Column<To_Type, From_Type, M, N, I, J_idx - 1>::substitute(to_matrix,
                                                                from_matrix);
   }
@@ -560,7 +573,20 @@ template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
 struct Column<To_Type, From_Type, M, N, I, 0> {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
-    to_matrix.template set<I, 0>(from_matrix.template get<I, 0>());
+    constexpr std::size_t NUMBER_OF_ELEMENT = I * To_Type::ROWS;
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::ROWS);
+    constexpr std::size_t FROM_MATRIX_ROW_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_COL_INDEX * From_Type::ROWS;
+
+    static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
+                  "The column index is out of range for the source matrix.");
+    static_assert(FROM_MATRIX_ROW_INDEX < From_Type::ROWS,
+                  "The row index is out of range for the source matrix.");
+
+    to_matrix.template set<I, 0>(
+        from_matrix
+            .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
   }
 };
 
