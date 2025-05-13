@@ -549,10 +549,10 @@ struct Column {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * To_Type::ROWS + J_idx;
-    constexpr std::size_t FROM_MATRIX_COL_INDEX =
-        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::ROWS);
     constexpr std::size_t FROM_MATRIX_ROW_INDEX =
-        NUMBER_OF_ELEMENT - FROM_MATRIX_COL_INDEX * From_Type::ROWS;
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::COLS);
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_ROW_INDEX * From_Type::COLS;
 
     static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
                   "The column index is out of range for the source matrix.");
@@ -574,10 +574,10 @@ struct Column<To_Type, From_Type, M, N, I, 0> {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * To_Type::ROWS;
-    constexpr std::size_t FROM_MATRIX_COL_INDEX =
-        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::ROWS);
     constexpr std::size_t FROM_MATRIX_ROW_INDEX =
-        NUMBER_OF_ELEMENT - FROM_MATRIX_COL_INDEX * From_Type::ROWS;
+        static_cast<std::size_t>(NUMBER_OF_ELEMENT / From_Type::COLS);
+    constexpr std::size_t FROM_MATRIX_COL_INDEX =
+        NUMBER_OF_ELEMENT - FROM_MATRIX_ROW_INDEX * From_Type::COLS;
 
     static_assert(FROM_MATRIX_COL_INDEX < From_Type::COLS,
                   "The column index is out of range for the source matrix.");
