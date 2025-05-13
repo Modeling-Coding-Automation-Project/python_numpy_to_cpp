@@ -3,6 +3,7 @@
 
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
+#include "python_numpy_base_simplified_action.hpp"
 #include "python_numpy_complex.hpp"
 #include "python_numpy_concatenate.hpp"
 #include "python_numpy_linalg_cholesky.hpp"

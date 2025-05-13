@@ -891,6 +891,62 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Sparse_set_row_dense.matrix.data, Sparse_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check set_row SparseMatrix.");
 
+    /* reshape */
+    Matrix<DefDense, T, 1, 12> A_reshape({
+        {1.0F, 2.0F, 3.0F, 4.0F,
+        5.0F, 6.0F, 7.0F, 8.0F,
+        9.0F, 10.0F, 11.0F, 12.0F}
+    });
+    Matrix<DefDense, T, 3, 4> B_reshape;
+
+    reshaped_copy(B_reshape, A_reshape);
+
+    Matrix<DefDense, T, 3, 4> B_reshape_answer({
+        {1.0F, 4.0F, 7.0F, 10.0F},
+        {2.0F, 5.0F, 8.0F, 11.0F},
+        {3.0F, 6.0F, 9.0F, 12.0F}
+        });
+
+    tester.expect_near(B_reshape.matrix.data, B_reshape_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check reshaped_copy, 1, 12 to 3, 4");
+
+    Matrix<DefDense, T, 12, 1> A_reshape_2({
+        {1.0F}, {2.0F}, {3.0F}, {4.0F},
+        {5.0F}, {6.0F}, {7.0F}, {8.0F},
+        {9.0F}, {10.0F}, {11.0F}, {12.0F} 
+    });
+    Matrix<DefDense, T, 3, 4> B_reshape_2;
+
+    Matrix<DefDense, T, 3, 4> B_reshape_answer_2({
+        {1.0F, 4.0F, 7.0F, 10.0F},
+        {2.0F, 5.0F, 8.0F, 11.0F},
+        {3.0F, 6.0F, 9.0F, 12.0F}
+    });
+
+    reshaped_copy(B_reshape_2, A_reshape_2);
+
+    tester.expect_near(B_reshape_2.matrix.data, B_reshape_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+        "check reshaped_copy, 12, 1 to 3, 4");
+
+    Matrix<DefDense, T, 4, 3> A_reshape_3({
+        {1.0F, 2.0F, 3.0F},
+        {4.0F, 5.0F, 6.0F},
+        {7.0F, 8.0F, 9.0F},
+        {10.0F, 11.0F, 12.0F}
+    });
+    Matrix<DefDense, T, 3, 4> B_reshape_3;
+
+    reshaped_copy(B_reshape_3, A_reshape_3);
+
+    Matrix<DefDense, T, 3, 4> B_reshape_answer_3({
+        {1.0F, 10.0F, 8.0F, 6.0F},
+        {4.0F, 2.0F, 11.0F, 9.0F},
+        {7.0F, 5.0F, 3.0F, 12.0F}
+        });
+
+    tester.expect_near(B_reshape_3.matrix.data, B_reshape_answer_3.matrix.data, NEAR_LIMIT_STRICT,
+        "check reshaped_copy, 4, 3 to 3, 4");
+
 
     tester.throw_error_if_test_failed();
 }

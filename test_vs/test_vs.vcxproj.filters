@@ -122,5 +122,8 @@
     <ClInclude Include="..\python_numpy\python_numpy_base_simplification.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\python_numpy\python_numpy_base_simplified_action.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
