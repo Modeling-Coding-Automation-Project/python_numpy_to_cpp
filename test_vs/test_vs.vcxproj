@@ -154,6 +154,7 @@
     <ClInclude Include="..\python_numpy\python_numpy.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base_simplification.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_base_simplified_action.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_complex.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_concatenate.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_cholesky.hpp" />

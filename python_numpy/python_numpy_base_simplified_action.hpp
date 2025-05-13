@@ -540,6 +540,70 @@ inline auto concatenate_tile(const MATRIX_Type &matrix)
   return Concatenated;
 }
 
+namespace ReshapeOperation {
+
+// when J_idx < N
+template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
+          std::size_t I, std::size_t J_idx>
+struct Column {
+  static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
+
+    to_matrix.template set<I, J_idx>(from_matrix.template get<I, J_idx>());
+    Column<To_Type, From_Type, M, N, I, J_idx - 1>::substitute(to_matrix,
+                                                               from_matrix);
+  }
+};
+
+// column recursion termination
+template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
+          std::size_t I>
+struct Column<To_Type, From_Type, M, N, I, 0> {
+  static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
+
+    to_matrix.template set<I, 0>(from_matrix.template get<I, 0>());
+  }
+};
+
+// when I_idx < M
+template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
+          std::size_t I_idx>
+struct Row {
+  static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
+    Column<To_Type, From_Type, M, N, I_idx, N - 1>::substitute(to_matrix,
+                                                               from_matrix);
+    Row<To_Type, From_Type, M, N, I_idx - 1>::substitute(to_matrix,
+                                                         from_matrix);
+  }
+};
+
+// row recursion termination
+template <typename To_Type, typename From_Type, std::size_t M, std::size_t N>
+struct Row<To_Type, From_Type, M, N, 0> {
+  static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
+    Column<To_Type, From_Type, M, N, 0, N - 1>::substitute(to_matrix,
+                                                           from_matrix);
+  }
+};
+
+template <typename To_Type, typename From_Type>
+inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
+  Row<To_Type, From_Type, To_Type::COLS, To_Type::ROWS,
+      (To_Type::COLS - 1)>::substitute(to_matrix, from_matrix);
+}
+
+} // namespace ReshapeOperation
+
+template <typename To_Type, typename From_Type>
+inline void reshaped_copy(To_Type &to_matrix, const From_Type &from_matrix) {
+
+  static_assert(From_Type::COLS * From_Type::ROWS ==
+                    To_Type::COLS * To_Type::ROWS,
+                "The number of elements in the source and destination matrices "
+                "must be the same.");
+
+  ReshapeOperation::substitute(to_matrix, from_matrix);
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
