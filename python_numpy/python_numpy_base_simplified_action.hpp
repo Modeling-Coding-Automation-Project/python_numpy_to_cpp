@@ -543,8 +543,8 @@ inline auto concatenate_tile(const MATRIX_Type &matrix)
 namespace ReshapeOperation {
 
 // when J_idx < N
-template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
-          std::size_t I, std::size_t J_idx>
+template <typename To_Type, typename From_Type, std::size_t I,
+          std::size_t J_idx>
 struct Column {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
@@ -562,15 +562,14 @@ struct Column {
     to_matrix.template set<I, J_idx>(
         from_matrix
             .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
-    Column<To_Type, From_Type, M, N, I, J_idx - 1>::substitute(to_matrix,
-                                                               from_matrix);
+    Column<To_Type, From_Type, I, J_idx - 1>::substitute(to_matrix,
+                                                         from_matrix);
   }
 };
 
 // column recursion termination
-template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
-          std::size_t I>
-struct Column<To_Type, From_Type, M, N, I, 0> {
+template <typename To_Type, typename From_Type, std::size_t I>
+struct Column<To_Type, From_Type, I, 0> {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * To_Type::ROWS;
@@ -595,8 +594,8 @@ template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
           std::size_t I_idx>
 struct Row {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
-    Column<To_Type, From_Type, M, N, I_idx, N - 1>::substitute(to_matrix,
-                                                               from_matrix);
+    Column<To_Type, From_Type, I_idx, N - 1>::substitute(to_matrix,
+                                                         from_matrix);
     Row<To_Type, From_Type, M, N, I_idx - 1>::substitute(to_matrix,
                                                          from_matrix);
   }
@@ -606,8 +605,7 @@ struct Row {
 template <typename To_Type, typename From_Type, std::size_t M, std::size_t N>
 struct Row<To_Type, From_Type, M, N, 0> {
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
-    Column<To_Type, From_Type, M, N, 0, N - 1>::substitute(to_matrix,
-                                                           from_matrix);
+    Column<To_Type, From_Type, 0, N - 1>::substitute(to_matrix, from_matrix);
   }
 };
 
