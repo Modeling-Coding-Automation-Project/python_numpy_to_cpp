@@ -323,6 +323,19 @@ struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
 
 } // namespace PartMatrixOperation
 
+/* Substitute same size Matrix */
+template <typename From_Type, typename To_Type>
+inline void substitute_matrix(To_Type &to_matrix,
+                              const From_Type &from_matrix) {
+
+  static_assert(From_Type::COLS * From_Type::ROWS ==
+                    To_Type::COLS * To_Type::ROWS,
+                "The number of elements in the source and destination matrices "
+                "must be the same.");
+
+  PartMatrixOperation::substitute_each<0, 0>(to_matrix, from_matrix);
+}
+
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 

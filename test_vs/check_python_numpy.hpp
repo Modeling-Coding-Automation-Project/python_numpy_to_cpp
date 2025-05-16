@@ -948,6 +948,28 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         "check reshaped_copy, 4, 3 to 3, 4");
 
 
+    /* 違うタイプ同士の行列を代入 */
+    auto B = make_DiagMatrixIdentity<T, 3>();
+
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
+
+    substitute_matrix(C, B);
+    auto C_dense = C.create_dense();
+
+    auto C_answer = make_DenseMatrix<3, 3>(
+        static_cast<T>(1), static_cast<T>(0), static_cast<T>(0),
+        static_cast<T>(0), static_cast<T>(0), static_cast<T>(0),
+        static_cast<T>(0), static_cast<T>(0), static_cast<T>(1));
+
+    tester.expect_near(C_dense.matrix.data, C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check substitute_matrix.");
+
+
     tester.throw_error_if_test_failed();
 }
 
