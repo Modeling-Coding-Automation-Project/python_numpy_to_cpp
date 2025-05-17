@@ -664,6 +664,25 @@ inline void update_reshaped_matrix(To_Type &to_matrix,
   ReshapeOperation::substitute(to_matrix, from_matrix);
 }
 
+/* Reshape (So far, it can only outputs Dense Matrix.) */
+template <std::size_t M, std::size_t N, typename From_Type>
+inline auto reshape(const From_Type &from_matrix)
+    -> DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N> {
+
+  static_assert(From_Type::COLS * From_Type::ROWS == M * N,
+                "The number of elements in the source and destination matrices "
+                "must be the same.");
+
+  using To_Type =
+      DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N>;
+
+  To_Type to_matrix;
+
+  ReshapeOperation::substitute(to_matrix, from_matrix);
+
+  return to_matrix;
+}
+
 } // namespace PythonNumpy
 
 #endif // __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__

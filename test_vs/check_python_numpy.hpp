@@ -947,6 +947,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(B_reshape_3.matrix.data, B_reshape_answer_3.matrix.data, NEAR_LIMIT_STRICT,
         "check update_reshaped_matrix, 4, 3 to 3, 4");
 
+    auto A_reshape_4 = reshape<6, 2>(A_reshape_3);
+
+    Matrix<DefDense, T, 6, 2> A_reshape_answer_4({
+        {1.0F, 8.0F},
+        {4.0F, 11.0F},
+        {7.0F, 3.0F},
+        {10.0F, 6.0F},
+        {2.0F, 9.0F},
+        {5.0F, 12.0F}
+        });
+
+    tester.expect_near(A_reshape_4.matrix.data, A_reshape_answer_4.matrix.data, NEAR_LIMIT_STRICT,
+        "check reshape, 4, 3 to 6, 2");
+
 
     /* 違うタイプ同士の行列を代入 */
     auto B = make_DiagMatrixIdentity<T, 3>();
