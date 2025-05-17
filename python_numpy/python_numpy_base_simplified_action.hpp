@@ -323,6 +323,19 @@ struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
 
 } // namespace PartMatrixOperation
 
+/* Substitute same size Matrix */
+template <typename From_Type, typename To_Type>
+inline void substitute_matrix(To_Type &to_matrix,
+                              const From_Type &from_matrix) {
+
+  static_assert(From_Type::COLS * From_Type::ROWS ==
+                    To_Type::COLS * To_Type::ROWS,
+                "The number of elements in the source and destination matrices "
+                "must be the same.");
+
+  PartMatrixOperation::substitute_each<0, 0>(to_matrix, from_matrix);
+}
+
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 
@@ -640,7 +653,8 @@ inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 } // namespace ReshapeOperation
 
 template <typename To_Type, typename From_Type>
-inline void reshaped_copy(To_Type &to_matrix, const From_Type &from_matrix) {
+inline void update_reshaped_matrix(To_Type &to_matrix,
+                                   const From_Type &from_matrix) {
 
   static_assert(From_Type::COLS * From_Type::ROWS ==
                     To_Type::COLS * To_Type::ROWS,
@@ -648,6 +662,25 @@ inline void reshaped_copy(To_Type &to_matrix, const From_Type &from_matrix) {
                 "must be the same.");
 
   ReshapeOperation::substitute(to_matrix, from_matrix);
+}
+
+/* Reshape (So far, it can only outputs Dense Matrix.) */
+template <std::size_t M, std::size_t N, typename From_Type>
+inline auto reshape(const From_Type &from_matrix)
+    -> DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N> {
+
+  static_assert(From_Type::COLS * From_Type::ROWS == M * N,
+                "The number of elements in the source and destination matrices "
+                "must be the same.");
+
+  using To_Type =
+      DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N>;
+
+  To_Type to_matrix;
+
+  ReshapeOperation::substitute(to_matrix, from_matrix);
+
+  return to_matrix;
 }
 
 } // namespace PythonNumpy

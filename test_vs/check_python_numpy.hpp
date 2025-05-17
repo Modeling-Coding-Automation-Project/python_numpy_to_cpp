@@ -899,7 +899,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     });
     Matrix<DefDense, T, 3, 4> B_reshape;
 
-    reshaped_copy(B_reshape, A_reshape);
+    update_reshaped_matrix(B_reshape, A_reshape);
 
     Matrix<DefDense, T, 3, 4> B_reshape_answer({
         {1.0F, 4.0F, 7.0F, 10.0F},
@@ -908,7 +908,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         });
 
     tester.expect_near(B_reshape.matrix.data, B_reshape_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check reshaped_copy, 1, 12 to 3, 4");
+        "check update_reshaped_matrix, 1, 12 to 3, 4");
 
     Matrix<DefDense, T, 12, 1> A_reshape_2({
         {1.0F}, {2.0F}, {3.0F}, {4.0F},
@@ -923,10 +923,10 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {3.0F, 6.0F, 9.0F, 12.0F}
     });
 
-    reshaped_copy(B_reshape_2, A_reshape_2);
+    update_reshaped_matrix(B_reshape_2, A_reshape_2);
 
     tester.expect_near(B_reshape_2.matrix.data, B_reshape_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check reshaped_copy, 12, 1 to 3, 4");
+        "check update_reshaped_matrix, 12, 1 to 3, 4");
 
     Matrix<DefDense, T, 4, 3> A_reshape_3({
         {1.0F, 2.0F, 3.0F},
@@ -936,7 +936,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     });
     Matrix<DefDense, T, 3, 4> B_reshape_3;
 
-    reshaped_copy(B_reshape_3, A_reshape_3);
+    update_reshaped_matrix(B_reshape_3, A_reshape_3);
 
     Matrix<DefDense, T, 3, 4> B_reshape_answer_3({
         {1.0F, 10.0F, 8.0F, 6.0F},
@@ -945,7 +945,43 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         });
 
     tester.expect_near(B_reshape_3.matrix.data, B_reshape_answer_3.matrix.data, NEAR_LIMIT_STRICT,
-        "check reshaped_copy, 4, 3 to 3, 4");
+        "check update_reshaped_matrix, 4, 3 to 3, 4");
+
+    auto A_reshape_4 = reshape<6, 2>(A_reshape_3);
+
+    Matrix<DefDense, T, 6, 2> A_reshape_answer_4({
+        {1.0F, 8.0F},
+        {4.0F, 11.0F},
+        {7.0F, 3.0F},
+        {10.0F, 6.0F},
+        {2.0F, 9.0F},
+        {5.0F, 12.0F}
+        });
+
+    tester.expect_near(A_reshape_4.matrix.data, A_reshape_answer_4.matrix.data, NEAR_LIMIT_STRICT,
+        "check reshape, 4, 3 to 6, 2");
+
+
+    /* 違うタイプ同士の行列を代入 */
+    auto B = make_DiagMatrixIdentity<T, 3>();
+
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C({ 1, 3, 8, 2, 4 });
+
+    substitute_matrix(C, B);
+    auto C_dense = C.create_dense();
+
+    auto C_answer = make_DenseMatrix<3, 3>(
+        static_cast<T>(1), static_cast<T>(0), static_cast<T>(0),
+        static_cast<T>(0), static_cast<T>(0), static_cast<T>(0),
+        static_cast<T>(0), static_cast<T>(0), static_cast<T>(1));
+
+    tester.expect_near(C_dense.matrix.data, C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check substitute_matrix.");
 
 
     tester.throw_error_if_test_failed();
