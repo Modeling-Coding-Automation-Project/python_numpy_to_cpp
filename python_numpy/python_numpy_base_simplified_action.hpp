@@ -653,7 +653,8 @@ inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 } // namespace ReshapeOperation
 
 template <typename To_Type, typename From_Type>
-inline void reshaped_copy(To_Type &to_matrix, const From_Type &from_matrix) {
+inline void update_reshaped_matrix(To_Type &to_matrix,
+                                   const From_Type &from_matrix) {
 
   static_assert(From_Type::COLS * From_Type::ROWS ==
                     To_Type::COLS * To_Type::ROWS,
