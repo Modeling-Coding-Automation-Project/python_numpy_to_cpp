@@ -89,7 +89,7 @@ public:
   /* Variable */
   T division_min;
 
-private:
+protected:
   /* Variable */
   Matrix<T, M, M> _Lower;
   Matrix<T, M, M> _Upper;

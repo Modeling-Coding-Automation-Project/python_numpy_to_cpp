@@ -118,12 +118,12 @@ public:
   /* Variable */
   T division_min;
 
-private:
+protected:
   /* Variable */
   Matrix<T, M, M> _Q_matrix;
   Matrix<T, M, N> _R_matrix;
 
-private:
+protected:
   /* Function */
   inline void _decompose() {
     for (std::size_t j = 0; j < N; ++j) {
@@ -162,7 +162,7 @@ public:
   /* Variable */
   T division_min;
 
-private:
+protected:
   /* Variable */
   DiagMatrix<T, M> _Q_matrix;
   DiagMatrix<T, M> _R_matrix;
@@ -193,12 +193,12 @@ public:
   /* Variable */
   T division_min;
 
-private:
+protected:
   /* Variable */
   Matrix<T, M, M> _Q_matrix;
   Matrix<T, M, N> _R_matrix;
 
-private:
+protected:
   /* Function */
   inline void _decompose(
       const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {

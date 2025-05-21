@@ -334,7 +334,7 @@ public:
   using Matrix_Type = DefSparse;
   using SparseAvailable_Type = SparseAvailable;
 
-private:
+protected:
   /* Type */
   using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
   using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
