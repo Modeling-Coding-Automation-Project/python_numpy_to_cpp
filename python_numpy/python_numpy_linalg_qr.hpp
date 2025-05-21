@@ -20,7 +20,7 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
-private:
+protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
   using _R_TriangluarRowPointers =
@@ -95,7 +95,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Properties */
   Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;
 
@@ -141,7 +141,7 @@ public:
     return Matrix<DefDiag, T, M>::identity();
   }
 
-private:
+protected:
   /* Properties */
   Matrix<DefDiag, T, M> _R;
 };
@@ -154,7 +154,7 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
-private:
+protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
   using _R_TriangluarRowPointers =
@@ -229,7 +229,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   Base::Matrix::QRDecompositionSparse<
       T, M, N, Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>,

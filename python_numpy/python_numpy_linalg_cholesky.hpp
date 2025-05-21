@@ -26,7 +26,7 @@ public:
           A_Type::COLS, UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
           UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
 
-private:
+protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
@@ -157,7 +157,7 @@ public:
   /* Variable */
   _T division_min = static_cast<_T>(DEFAULT_DIVISION_MIN_LINALG_CHOLESKY);
 
-private:
+protected:
   /* Variable */
   Base::Matrix::Matrix<_T, A_Type::COLS, A_Type::COLS>
       _cholesky_decomposed_matrix;

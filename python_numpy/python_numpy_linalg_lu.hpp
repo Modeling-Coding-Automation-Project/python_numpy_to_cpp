@@ -33,7 +33,7 @@ public:
           A_Type::COLS, LowerTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
           LowerTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
 
-private:
+protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
@@ -172,7 +172,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<_T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   Base::Matrix::LUDecomposition<_T, A_Type::COLS> _LU_decomposer;
 

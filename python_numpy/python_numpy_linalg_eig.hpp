@@ -117,7 +117,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
 };
@@ -189,7 +189,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   Base::Matrix::Matrix<T, M, 1> _eigen_values;
 };
@@ -294,7 +294,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
 };
@@ -458,7 +458,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
 };
@@ -533,7 +533,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   EigenValues_Type _eigen_values;
 };
@@ -645,7 +645,7 @@ public:
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
-private:
+protected:
   /* Variable */
   EigenSolver_Type _Eigen_solver;
 };

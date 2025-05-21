@@ -167,7 +167,7 @@ public:
   T small_value;
   T gmres_k_decay_rate;
 
-private:
+protected:
   /* Variable */
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
@@ -182,7 +182,7 @@ private:
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
-private:
+protected:
   /* Function */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
@@ -581,7 +581,7 @@ public:
   T small_value;
   T gmres_k_decay_rate;
 
-private:
+protected:
   /* Variable */
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
@@ -595,7 +595,7 @@ private:
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
 
-private:
+protected:
   /* Function */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
