@@ -16,6 +16,9 @@ namespace Base {
 namespace Matrix {
 
 /* GMRES K */
+
+namespace InverseOperation {
+
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M > 1), Vector<T, M>>::type
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
@@ -156,13 +159,15 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   return x;
 }
 
+} // namespace InverseOperation
+
 template <typename T, std::size_t M>
 inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                             const Vector<T, M> &x_1, const T &decay_rate,
                             T division_min, T &rho, std::size_t &rep_num) {
 
-  return gmres_k_core<T, M>(A, b, x_1, decay_rate, division_min, rho, rep_num,
-                            M);
+  return InverseOperation::gmres_k_core<T, M>(A, b, x_1, decay_rate,
+                                              division_min, rho, rep_num, M);
 }
 
 template <typename T, std::size_t M, std::size_t K>
