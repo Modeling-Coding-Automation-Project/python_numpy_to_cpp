@@ -185,7 +185,7 @@ public:
                                  this->decay_rate, this->division_min,
                                  this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
@@ -196,7 +196,7 @@ public:
                                  this->decay_rate, this->division_min,
                                  this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, M>(X_1);
+    return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
@@ -210,17 +210,17 @@ public:
                                  this->decay_rate, this->division_min,
                                  this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
-                                                this->division_min);
+    this->X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
+                                                      this->division_min);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
@@ -229,7 +229,7 @@ public:
     Base::Matrix::DiagMatrix<T, M> result =
         Base::Matrix::diag_divide_diag(B.matrix, A.matrix, this->division_min);
 
-    X_1 = Base::Matrix::output_dense_matrix(result);
+    this->X_1 = Base::Matrix::output_dense_matrix(result);
 
     return Matrix<DefDiag, T, M>(std::move(result));
   }
@@ -241,10 +241,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
-                                                this->division_min);
+    this->X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
+                                                      this->division_min);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
@@ -255,7 +255,7 @@ public:
                                         this->decay_rate, this->division_min,
                                         this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
@@ -269,7 +269,7 @@ public:
                                         this->decay_rate, this->division_min,
                                         this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, M>(X_1);
+    return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
@@ -283,7 +283,7 @@ public:
                                         this->decay_rate, this->division_min,
                                         this->rho, this->rep_num);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
   /* Inv function */
@@ -293,7 +293,7 @@ public:
     return InverseOperation::InverseDense<
         Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
                                                   this->division_min, this->rho,
-                                                  this->rep_num, X_1);
+                                                  this->rep_num, this->X_1);
   }
 
   inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
