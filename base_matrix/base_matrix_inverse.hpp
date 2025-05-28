@@ -564,6 +564,18 @@ inline Vector<T, M> sparse_gmres_k(
       SA, b, x_1, decay_rate, division_min, rho, rep_num, M);
 }
 
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline Vector<T, M> sparse_gmres_k_partition(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
+
+  return InverseOperation::sparse_gmres_k_core<T, M>(
+      SA, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
+}
+
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_matrix(
@@ -576,6 +588,22 @@ inline void sparse_gmres_k_matrix(
     Vector<T, M> x = Base::Matrix::sparse_gmres_k(
         SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
+          typename RowPointers_A>
+inline void sparse_gmres_k_partition_matrix(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
+    const T &division_min, std::array<T, K> &rho,
+    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+
+  for (std::size_t i = 0; i < K; i++) {
+    Vector<T, M> x = Base::Matrix::sparse_gmres_k_partition(
+        SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
     X_1.set_row(i, x);
   }
 }
