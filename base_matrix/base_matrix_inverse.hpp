@@ -423,7 +423,8 @@ template <typename T, std::size_t M, typename RowIndices_A,
 inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -442,28 +443,28 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
-  for (std::size_t n = 1; n <= M; n++) {
+  for (std::size_t n = 1; n <= matrix_size; n++) {
     // Generate orthogonal basis
     Vector<T, M> v = SA * q.create_row_vector(n - 1);
 
     for (std::size_t j = 0; j < n; ++j) {
       h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         h(j, n - 1) += q(i, j) * v[i];
       }
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         v[i] -= h(j, n - 1) * q(i, j);
       }
     }
 
-    if (n < M) {
+    if (n < matrix_size) {
       h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         q(i, n) =
             v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -512,13 +513,13 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t j = 0; j < matrix_size; ++j) {
       x_dif[j] += y[i] * q(j, i);
     }
   }
 
   Vector<T, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     x[i] = x_1[i] + x_dif[i];
   }
 
@@ -531,7 +532,8 @@ inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
 sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
   static_assert(M == 1,
                 "Matrix size must be exactly 1x1 for this specialization.");
   static_cast<void>(decay_rate);
@@ -539,6 +541,7 @@ sparse_gmres_k_core(
   static_cast<void>(rep_num);
   static_cast<void>(x_1);
   static_cast<void>(rho);
+  static_cast<void>(matrix_size);
 
   Vector<T, M> x;
 
@@ -558,7 +561,7 @@ inline Vector<T, M> sparse_gmres_k(
     const T &division_min, T &rho, std::size_t &rep_num) {
 
   return InverseOperation::sparse_gmres_k_core<T, M>(
-      SA, b, x_1, decay_rate, division_min, rho, rep_num);
+      SA, b, x_1, decay_rate, division_min, rho, rep_num, M);
 }
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
