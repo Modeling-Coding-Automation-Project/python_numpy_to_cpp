@@ -609,6 +609,223 @@ inline auto make_LinalgSolver(void)
 template <typename A_Type, typename B_Type>
 using LinalgSolver_Type = decltype(make_LinalgSolver<A_Type, B_Type>());
 
+/* Linalg Partition Solver */
+template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
+          typename SparseAvailable_B>
+class LinalgPartitionSolver {
+public:
+  /* Type */
+  using Value_Type = typename UnderlyingType<T>::Type;
+  static_assert(std::is_same<Value_Type, double>::value ||
+                    std::is_same<Value_Type, float>::value,
+                "Value data type must be float or double.");
+
+public:
+  /* Constructor */
+  LinalgPartitionSolver()
+      : decay_rate(static_cast<Value_Type>(0)),
+        division_min(
+            static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER)),
+        rho({}), rep_num({}) {}
+
+  /* Copy Constructor */
+  LinalgPartitionSolver(const LinalgPartitionSolver<T, M, K, SparseAvailable_A,
+                                                    SparseAvailable_B> &other)
+      : decay_rate(other.decay_rate), division_min(other.division_min),
+        rho(other.rho), rep_num(other.rep_num) {}
+
+  LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(const LinalgPartitionSolver<T, M, K, SparseAvailable_A,
+                                        SparseAvailable_B> &other) {
+    if (this != &other) {
+      this->decay_rate = other.decay_rate;
+      this->division_min = other.division_min;
+      this->rho = other.rho;
+      this->rep_num = other.rep_num;
+    }
+    return *this;
+  }
+
+  /* Move Constructor */
+  LinalgPartitionSolver(
+      LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
+          &&other) noexcept
+      : decay_rate(std::move(other.decay_rate)),
+        division_min(std::move(other.division_min)), rho(std::move(other.rho)),
+        rep_num(std::move(other.rep_num)) {}
+
+  LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
+                &&other) {
+    if (this != &other) {
+      this->decay_rate = std::move(other.decay_rate);
+      this->division_min = std::move(other.division_min);
+      this->rho = std::move(other.rho);
+      this->rep_num = std::move(other.rep_num);
+    }
+    return *this;
+  }
+
+  // /* Solve function */
+  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
+  //                   const Matrix<DefDense, T, M, K> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+  //                                this->decay_rate, this->division_min,
+  //                                this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
+  //                   const Matrix<DefDiag, T, M> &B)
+  //     -> Matrix<DefDense, T, M, M> {
+
+  //   Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+  //                                this->decay_rate, this->division_min,
+  //                                this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, M>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
+  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+  //       Base::Matrix::output_dense_matrix(B.matrix);
+
+  //   Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+  //                                this->decay_rate, this->division_min,
+  //                                this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefDiag, T, M> &A,
+  //                   const Matrix<DefDense, T, M, K> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
+  //                                               this->division_min);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefDiag, T, M> &A,
+  //                   const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M>
+  //                   {
+
+  //   Base::Matrix::DiagMatrix<T, M> result =
+  //       Base::Matrix::diag_divide_diag(B.matrix, A.matrix,
+  //       this->division_min);
+
+  //   X_1 = Base::Matrix::output_dense_matrix(result);
+
+  //   return Matrix<DefDiag, T, M>(std::move(result));
+  // }
+
+  // inline auto solve(const Matrix<DefDiag, T, M> &A,
+  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   Base::Matrix::Matrix<T, M, K> B_dense =
+  //       Base::Matrix::output_dense_matrix(B.matrix);
+
+  //   X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
+  //                                               this->division_min);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+  //                   const Matrix<DefDense, T, M, K> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+  //                                       this->decay_rate, this->division_min,
+  //                                       this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+  //                   const Matrix<DefDiag, T, M> &B)
+  //     -> Matrix<DefDense, T, M, M> {
+
+  //   Base::Matrix::Matrix<T, M, M> B_dense_matrix =
+  //       output_dense_matrix(B.matrix);
+
+  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+  //                                       this->decay_rate, this->division_min,
+  //                                       this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, M>(X_1);
+  // }
+
+  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+  //     -> Matrix<DefDense, T, M, K> {
+
+  //   Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+  //       Base::Matrix::output_dense_matrix(B.matrix);
+
+  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+  //                                       this->decay_rate, this->division_min,
+  //                                       this->rho, this->rep_num);
+
+  //   return Matrix<DefDense, T, M, K>(X_1);
+  // }
+
+  // /* Inv function */
+  // inline auto inv(const Matrix<DefDense, T, M, M> &A)
+  //     -> Matrix<DefDense, T, M, M> {
+
+  //   return InverseOperation::InverseDense<
+  //       Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
+  //                                                 this->division_min,
+  //                                                 this->rho, this->rep_num,
+  //                                                 X_1);
+  // }
+
+  // inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
+  //     -> Matrix<DefDense, T, M, M> {
+
+  //   return InverseOperation::InverseSparse<
+  //       Value_Type, T, M, K, SparseAvailable_A,
+  //       IS_COMPLEX>::compute(A, this->decay_rate, this->division_min,
+  //       this->rho,
+  //                            this->rep_num, X_1);
+  // }
+
+  // inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
+  //   return Matrix<DefDense, T, M, K>(this->X_1);
+  // }
+
+  // inline void set_decay_rate(const Value_Type &decay_rate_in) {
+  //   this->decay_rate = decay_rate_in;
+  // }
+
+  // inline void set_division_min(const Value_Type &division_min_in) {
+  //   this->division_min = division_min_in;
+  // }
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = K;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
+  /* Variable */
+  Value_Type decay_rate;
+  Value_Type division_min;
+  std::array<Value_Type, K> rho;
+  std::array<std::size_t, K> rep_num;
+};
+
 /* least-squares solution to a linear matrix equation */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
