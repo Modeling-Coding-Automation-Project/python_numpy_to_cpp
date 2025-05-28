@@ -213,6 +213,34 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
   }
 }
 
+template <typename T, std::size_t M, std::size_t K>
+inline void gmres_k_partition_matrix(
+    const Matrix<T, M, M> &A, const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1,
+    const T &decay_rate, const T &division_min, std::array<T, K> &rho,
+    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+
+  for (std::size_t i = 0; i < K; i++) {
+    Vector<T, M> x = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M>
+inline void gmres_k_partition_matrix(
+    const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B, Matrix<T, M, M> &X_1,
+    const T &decay_rate, const T &division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num, const std::size_t &matrix_size) {
+
+  for (std::size_t i = 0; i < M; i++) {
+    Vector<T, M> x = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
+    X_1.set_row(i, x);
+  }
+}
+
 /* GMRES K for rectangular matrix */
 template <typename T, std::size_t M, std::size_t N>
 inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
