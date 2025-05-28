@@ -666,150 +666,161 @@ public:
     return *this;
   }
 
-  // /* Solve function */
-  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
-  //                   const Matrix<DefDense, T, M, K> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+  /* Solve function */
+  inline auto solve(const Matrix<DefDense, T, M, M> &A,
+                    const Matrix<DefDense, T, M, K> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  //   Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-  //                                this->decay_rate, this->division_min,
-  //                                this->rho, this->rep_num);
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, X_1, this->decay_rate,
+                                 this->division_min, this->rho, this->rep_num);
 
-  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
-  //                   const Matrix<DefDiag, T, M> &B)
-  //     -> Matrix<DefDense, T, M, M> {
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  //   Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-  //                                this->decay_rate, this->division_min,
-  //                                this->rho, this->rep_num);
+  inline auto solve(const Matrix<DefDense, T, M, M> &A,
+                    const Matrix<DefDiag, T, M> &B)
+      -> Matrix<DefDense, T, M, M> {
 
-  //   return Matrix<DefDense, T, M, M>(X_1);
-  // }
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  // inline auto solve(const Matrix<DefDense, T, M, M> &A,
-  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, X_1, this->decay_rate,
+                                 this->division_min, this->rho, this->rep_num);
 
-  //   Base::Matrix::Matrix<T, M, K> B_dense_matrix =
-  //       Base::Matrix::output_dense_matrix(B.matrix);
+    return Matrix<DefDense, T, M, M>(X_1);
+  }
 
-  //   Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-  //                                this->decay_rate, this->division_min,
-  //                                this->rho, this->rep_num);
+  inline auto solve(const Matrix<DefDense, T, M, M> &A,
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  // inline auto solve(const Matrix<DefDiag, T, M> &A,
-  //                   const Matrix<DefDense, T, M, K> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
-  //   X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B.matrix,
-  //                                               this->division_min);
+    Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, X_1,
+                                 this->decay_rate, this->division_min,
+                                 this->rho, this->rep_num);
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  // inline auto solve(const Matrix<DefDiag, T, M> &A,
-  //                   const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M>
-  //                   {
+  inline auto solve(const Matrix<DefDiag, T, M> &A,
+                    const Matrix<DefDense, T, M, K> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  //   Base::Matrix::DiagMatrix<T, M> result =
-  //       Base::Matrix::diag_divide_diag(B.matrix, A.matrix,
-  //       this->division_min);
+    Base::Matrix::Matrix<T, M, K> X_1 = Base::Matrix::diag_inv_multiply_dense(
+        A.matrix, B.matrix, this->division_min);
 
-  //   X_1 = Base::Matrix::output_dense_matrix(result);
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  //   return Matrix<DefDiag, T, M>(std::move(result));
-  // }
+  inline auto solve(const Matrix<DefDiag, T, M> &A,
+                    const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M> {
 
-  // inline auto solve(const Matrix<DefDiag, T, M> &A,
-  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+    Base::Matrix::DiagMatrix<T, M> result =
+        Base::Matrix::diag_divide_diag(B.matrix, A.matrix, this->division_min);
 
-  //   Base::Matrix::Matrix<T, M, K> B_dense =
-  //       Base::Matrix::output_dense_matrix(B.matrix);
+    Base::Matrix::Matrix<T, M, K> X_1 =
+        Base::Matrix::output_dense_matrix(result);
 
-  //   X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
-  //                                               this->division_min);
+    return Matrix<DefDiag, T, M>(std::move(result));
+  }
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+  inline auto solve(const Matrix<DefDiag, T, M> &A,
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
-  //                   const Matrix<DefDense, T, M, K> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+    Base::Matrix::Matrix<T, M, K> B_dense =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
-  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-  //                                       this->decay_rate, this->division_min,
-  //                                       this->rho, this->rep_num);
+    Base::Matrix::Matrix<T, M, K> X_1 = Base::Matrix::diag_inv_multiply_dense(
+        A.matrix, B_dense, this->division_min);
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
-  //                   const Matrix<DefDiag, T, M> &B)
-  //     -> Matrix<DefDense, T, M, M> {
+  inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                    const Matrix<DefDense, T, M, K> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  //   Base::Matrix::Matrix<T, M, M> B_dense_matrix =
-  //       output_dense_matrix(B.matrix);
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-  //                                       this->decay_rate, this->division_min,
-  //                                       this->rho, this->rep_num);
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
-  //   return Matrix<DefDense, T, M, M>(X_1);
-  // }
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  // inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
-  //                   const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
-  //     -> Matrix<DefDense, T, M, K> {
+  inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                    const Matrix<DefDiag, T, M> &B)
+      -> Matrix<DefDense, T, M, M> {
 
-  //   Base::Matrix::Matrix<T, M, K> B_dense_matrix =
-  //       Base::Matrix::output_dense_matrix(B.matrix);
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  //   Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-  //                                       this->decay_rate, this->division_min,
-  //                                       this->rho, this->rep_num);
+    Base::Matrix::Matrix<T, M, M> B_dense_matrix =
+        output_dense_matrix(B.matrix);
 
-  //   return Matrix<DefDense, T, M, K>(X_1);
-  // }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
-  // /* Inv function */
-  // inline auto inv(const Matrix<DefDense, T, M, M> &A)
-  //     -> Matrix<DefDense, T, M, M> {
+    return Matrix<DefDense, T, M, M>(X_1);
+  }
 
-  //   return InverseOperation::InverseDense<
-  //       Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
-  //                                                 this->division_min,
-  //                                                 this->rho, this->rep_num,
-  //                                                 X_1);
-  // }
+  inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+      -> Matrix<DefDense, T, M, K> {
 
-  // inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
-  //     -> Matrix<DefDense, T, M, M> {
+    Base::Matrix::Matrix<T, M, K> X_1;
 
-  //   return InverseOperation::InverseSparse<
-  //       Value_Type, T, M, K, SparseAvailable_A,
-  //       IS_COMPLEX>::compute(A, this->decay_rate, this->division_min,
-  //       this->rho,
-  //                            this->rep_num, X_1);
-  // }
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
 
-  // inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
-  //   return Matrix<DefDense, T, M, K>(this->X_1);
-  // }
+    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, X_1,
+                                        this->decay_rate, this->division_min,
+                                        this->rho, this->rep_num);
 
-  // inline void set_decay_rate(const Value_Type &decay_rate_in) {
-  //   this->decay_rate = decay_rate_in;
-  // }
+    return Matrix<DefDense, T, M, K>(X_1);
+  }
 
-  // inline void set_division_min(const Value_Type &division_min_in) {
-  //   this->division_min = division_min_in;
-  // }
+  /* Inv function */
+  inline auto inv(const Matrix<DefDense, T, M, M> &A)
+      -> Matrix<DefDense, T, M, M> {
+
+    Base::Matrix::Matrix<T, M, K> X_1;
+
+    return InverseOperation::InverseDense<
+        Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
+                                                  this->division_min, this->rho,
+                                                  this->rep_num, X_1);
+  }
+
+  inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
+      -> Matrix<DefDense, T, M, M> {
+
+    Base::Matrix::Matrix<T, M, K> X_1;
+
+    return InverseOperation::InverseSparse<
+        Value_Type, T, M, K, SparseAvailable_A,
+        IS_COMPLEX>::compute(A, this->decay_rate, this->division_min, this->rho,
+                             this->rep_num, X_1);
+  }
+
+  inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline void set_decay_rate(const Value_Type &decay_rate_in) {
+    this->decay_rate = decay_rate_in;
+  }
+
+  inline void set_division_min(const Value_Type &division_min_in) {
+    this->division_min = division_min_in;
+  }
 
 public:
   /* Constant */
