@@ -54,7 +54,7 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   }
   b_hat[0] = b_norm;
 
-  for (std::size_t n = 1; n <= M; n++) {
+  for (std::size_t n = 1; n <= matrix_size; n++) {
     // Generate orthogonal basis
     Vector<T, M> v;
     for (std::size_t i = 0; i < matrix_size; ++i) {
