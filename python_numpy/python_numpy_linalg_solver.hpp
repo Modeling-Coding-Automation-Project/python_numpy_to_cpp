@@ -668,31 +668,36 @@ public:
 
   /* Solve function */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
-                    const Matrix<DefDense, T, M, K> &B)
+                    const Matrix<DefDense, T, M, K> &B,
+                    const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, X_1, this->decay_rate,
-                                 this->division_min, this->rho, this->rep_num);
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
-                    const Matrix<DefDiag, T, M> &B)
+                    const Matrix<DefDiag, T, M> &B,
+                    const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, M> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, X_1, this->decay_rate,
-                                 this->division_min, this->rho, this->rep_num);
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
-                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
+                    const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
+                    const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
@@ -700,25 +705,27 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, X_1,
-                                 this->decay_rate, this->division_min,
-                                 this->rho, this->rep_num);
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B_dense_matrix, X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
-                    const Matrix<DefDense, T, M, K> &B)
+                    const Matrix<DefDense, T, M, K> &B,
+                    const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1 = Base::Matrix::diag_inv_multiply_dense(
-        A.matrix, B.matrix, this->division_min);
+        A.matrix, B.matrix, this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
-                    const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M> {
+                    const Matrix<DefDiag, T, M> &B,
+                    const std::size_t &matrix_size) -> Matrix<DefDiag, T, M> {
 
     Base::Matrix::DiagMatrix<T, M> result =
         Base::Matrix::diag_divide_diag(B.matrix, A.matrix, this->division_min);
