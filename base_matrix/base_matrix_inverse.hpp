@@ -416,9 +416,11 @@ gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
 }
 
 /* Sparse GMRES K */
+namespace InverseOperation {
+
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
+inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, T &rho, std::size_t &rep_num) {
@@ -525,7 +527,8 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
 
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
+inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, T &rho, std::size_t &rep_num) {
@@ -543,6 +546,19 @@ inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
                     get_sparse_matrix_value<0, 0>(SA), division_min);
 
   return x;
+}
+
+} // namespace InverseOperation
+
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline Vector<T, M> sparse_gmres_k(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
+    const T &division_min, T &rho, std::size_t &rep_num) {
+
+  return InverseOperation::sparse_gmres_k_core<T, M>(
+      SA, b, x_1, decay_rate, division_min, rho, rep_num);
 }
 
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
