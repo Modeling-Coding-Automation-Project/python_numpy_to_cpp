@@ -238,11 +238,14 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense =
-        Base::Matrix::output_dense_matrix(B.matrix);
+    using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
+    using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
 
-    this->X_1 = Base::Matrix::diag_inv_multiply_dense(A.matrix, B_dense,
-                                                      this->division_min);
+    Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
+        result = Base::Matrix::diag_inv_multiply_sparse(A.matrix, B.matrix,
+                                                        this->division_min);
+
+    this->X_1 = Base::Matrix::output_dense_matrix(result);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }

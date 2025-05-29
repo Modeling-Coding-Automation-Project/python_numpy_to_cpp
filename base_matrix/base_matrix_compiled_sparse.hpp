@@ -1118,11 +1118,11 @@ struct Loop {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          const T &division_min, Matrix<T, M, N> &result) {
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
-    result.values[RowIndices_B::list[Start]] =
-        B.values[RowIndices_B::list[Start]] /
-        Base::Utility::avoid_zero_divide(A[J], division_min);
+    result.values[Start] =
+        B.values[Start] / Base::Utility::avoid_zero_divide(A[J], division_min);
 
     Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, Start + 1, End>::compute(
         A, B, division_min, result);
@@ -1136,7 +1136,8 @@ struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          const T &division_min, Matrix<T, M, N> &result) {
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
     static_cast<void>(A);
     static_cast<void>(B);
@@ -1153,7 +1154,8 @@ struct Core {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          const T &division_min, Matrix<T, M, N> &result) {
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
     Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, RowPointers_B::list[J],
          RowPointers_B::list[J + 1]>::compute(A, B, division_min, result);
@@ -1167,7 +1169,8 @@ struct Row {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          const T &division_min, Matrix<T, M, N> &result) {
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
     Core<T, M, N, RowIndices_B, RowPointers_B, J, 0>::compute(
         A, B, division_min, result);
@@ -1183,7 +1186,8 @@ struct Row<T, M, N, RowIndices_B, RowPointers_B, 0> {
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          const T &division_min, Matrix<T, M, N> &result) {
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
     Core<T, M, N, RowIndices_B, RowPointers_B, 0, 0>::compute(
         A, B, division_min, result);
@@ -1195,7 +1199,8 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
 inline void
 compute(const DiagMatrix<T, M> &A,
         const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-        const T &division_min, Matrix<T, M, N> &result) {
+        const T &division_min,
+        CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
 
   Row<T, M, N, RowIndices_B, RowPointers_B, M - 1>::compute(A, B, division_min,
                                                             result);
