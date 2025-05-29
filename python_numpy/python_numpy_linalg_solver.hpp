@@ -801,29 +801,6 @@ public:
     return Matrix<DefDense, T, M, K>(X_1);
   }
 
-  /* Inv function */
-  inline auto inv(const Matrix<DefDense, T, M, M> &A)
-      -> Matrix<DefDense, T, M, M> {
-
-    Base::Matrix::Matrix<T, M, K> X_1;
-
-    return InverseOperation::InverseDense<
-        Value_Type, T, M, K, IS_COMPLEX>::compute(A, this->decay_rate,
-                                                  this->division_min, this->rho,
-                                                  this->rep_num, X_1);
-  }
-
-  inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
-      -> Matrix<DefDense, T, M, M> {
-
-    Base::Matrix::Matrix<T, M, K> X_1;
-
-    return InverseOperation::InverseSparse<
-        Value_Type, T, M, K, SparseAvailable_A,
-        IS_COMPLEX>::compute(A, this->decay_rate, this->division_min, this->rho,
-                             this->rep_num, X_1);
-  }
-
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
