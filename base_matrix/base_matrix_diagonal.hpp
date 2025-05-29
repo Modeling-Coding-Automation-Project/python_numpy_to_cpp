@@ -947,6 +947,22 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   return result;
 }
 
+template <typename T, std::size_t M, std::size_t N>
+inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
+    const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B, const T &division_min,
+    const std::size_t &matrix_size) {
+  Matrix<T, M, N> result;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    for (std::size_t k = 0; k < N; ++k) {
+      result.access(j, k) =
+          B.access(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
+    }
+  }
+
+  return result;
+}
+
 /* Convert Real Matrix to Complex */
 namespace DiagMatrixRealToComplex {
 

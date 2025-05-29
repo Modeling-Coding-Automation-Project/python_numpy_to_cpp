@@ -717,8 +717,9 @@ public:
                     const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> X_1 = Base::Matrix::diag_inv_multiply_dense(
-        A.matrix, B.matrix, this->division_min, matrix_size);
+    Base::Matrix::Matrix<T, M, K> X_1 =
+        Base::Matrix::diag_inv_multiply_dense_partition(
+            A.matrix, B.matrix, this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1);
   }
