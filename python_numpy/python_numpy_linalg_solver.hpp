@@ -750,7 +750,7 @@ public:
         X_1 = Base::Matrix::diag_inv_multiply_sparse_partition(
             A.matrix, B, this->division_min, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1.create_dense());
+    return Matrix<DefDense, T, M, K>(Base::Matrix::output_dense_matrix(X_1));
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
