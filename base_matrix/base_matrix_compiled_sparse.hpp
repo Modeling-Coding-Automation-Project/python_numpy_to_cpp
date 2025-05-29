@@ -1101,6 +1101,29 @@ get_imag_matrix_from_complex_matrix(
   return To_matrix;
 }
 
+/* Diagonal Inverse Multiply Sparse Partition */
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+inline CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B>
+diag_inv_multiply_sparse_partition(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+    const T &division_min, const std::size_t &matrix_size) {
+
+  CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> result = B;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+         ++k) {
+
+      result.values[k] =
+          A.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+    }
+  }
+
+  return result;
+}
+
 } // namespace Matrix
 } // namespace Base
 

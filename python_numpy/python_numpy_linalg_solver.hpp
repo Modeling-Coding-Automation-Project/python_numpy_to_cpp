@@ -743,14 +743,14 @@ public:
                     const std::size_t &matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> B_dense =
-        Base::Matrix::output_dense_matrix(B.matrix);
+    using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
+    using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
 
-    Base::Matrix::Matrix<T, M, K> X_1 =
-        Base::Matrix::diag_inv_multiply_dense_partition(
-            A.matrix, B_dense, this->division_min, matrix_size);
+    Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
+        X_1 = Base::Matrix::diag_inv_multiply_sparse_partition(
+            A.matrix, B, this->division_min, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(X_1.create_dense());
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
