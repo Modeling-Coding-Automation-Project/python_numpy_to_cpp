@@ -873,6 +873,20 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
   return result;
 }
 
+template <typename T, std::size_t M>
+inline DiagMatrix<T, M>
+diag_divide_diag_partition(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                           const T &division_min,
+                           const std::size_t &matrix_size) {
+  DiagMatrix<T, M> result;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    result[j] = A[j] / Base::Utility::avoid_zero_divide(B[j], division_min);
+  }
+
+  return result;
+}
+
 /* Diag Matrix Inverse multiply Matrix */
 namespace DiagMatrixInverseMultiplyMatrix {
 
