@@ -873,6 +873,20 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
   return result;
 }
 
+template <typename T, std::size_t M>
+inline DiagMatrix<T, M>
+diag_divide_diag_partition(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
+                           const T &division_min,
+                           const std::size_t &matrix_size) {
+  DiagMatrix<T, M> result;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    result[j] = A[j] / Base::Utility::avoid_zero_divide(B[j], division_min);
+  }
+
+  return result;
+}
+
 /* Diag Matrix Inverse multiply Matrix */
 namespace DiagMatrixInverseMultiplyMatrix {
 
@@ -943,6 +957,22 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   DiagMatrixInverseMultiplyMatrix::compute<T, M, N>(A, B, result, division_min);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N>
+inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
+    const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B, const T &division_min,
+    const std::size_t &matrix_size) {
+  Matrix<T, M, N> result;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    for (std::size_t k = 0; k < matrix_size; ++k) {
+      result(j, k) =
+          B(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
+    }
+  }
 
   return result;
 }

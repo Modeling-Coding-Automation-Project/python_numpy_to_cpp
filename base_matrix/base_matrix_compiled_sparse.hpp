@@ -113,6 +113,7 @@ struct Loop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
+
     result(J, RowIndices::list[Start]) = mat.values[Start];
     Loop<T, M, N, RowIndices, RowPointers, J, K, Start + 1, End>::compute(
         mat, result);
@@ -126,6 +127,7 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
+
     static_cast<void>(mat);
     static_cast<void>(result);
     // End of loop, do nothing
@@ -139,6 +141,7 @@ struct Core {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
+
     Loop<T, M, N, RowIndices, RowPointers, J, K, RowPointers::list[J],
          RowPointers::list[J + 1]>::compute(mat, result);
   }
@@ -151,6 +154,7 @@ struct Row {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
+
     Core<T, M, N, RowIndices, RowPointers, J, 0>::compute(mat, result);
     Row<T, M, N, RowIndices, RowPointers, J - 1>::compute(mat, result);
   }
@@ -163,6 +167,7 @@ struct Row<T, M, N, RowIndices, RowPointers, 0> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
           Matrix<T, M, N> &result) {
+
     Core<T, M, N, RowIndices, RowPointers, 0, 0>::compute(mat, result);
   }
 };
@@ -172,6 +177,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &mat,
         Matrix<T, M, N> &result) {
+
   Row<T, M, N, RowIndices, RowPointers, M - 1>::compute(mat, result);
 }
 
@@ -1099,6 +1105,163 @@ get_imag_matrix_from_complex_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   return To_matrix;
+}
+
+/* Diagonal Inverse Multiply Sparse */
+namespace DiagonalInverseMultiplySparse {
+
+// Start < End (Core)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t K,
+          std::size_t Start, std::size_t End>
+struct Loop {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+    result.values[Start] =
+        B.values[Start] / Base::Utility::avoid_zero_divide(A[J], division_min);
+
+    Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, Start + 1, End>::compute(
+        A, B, division_min, result);
+  }
+};
+
+// Start == End (End of Core Loop)
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+    static_cast<void>(A);
+    static_cast<void>(B);
+    static_cast<void>(division_min);
+    static_cast<void>(result);
+    // End of loop, do nothing
+  }
+};
+
+// Pointer loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J, std::size_t K>
+struct Core {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+    Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, RowPointers_B::list[J],
+         RowPointers_B::list[J + 1]>::compute(A, B, division_min, result);
+  }
+};
+
+// Row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B, std::size_t J>
+struct Row {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+    Core<T, M, N, RowIndices_B, RowPointers_B, J, 0>::compute(
+        A, B, division_min, result);
+    Row<T, M, N, RowIndices_B, RowPointers_B, J - 1>::compute(
+        A, B, division_min, result);
+  }
+};
+
+// End of row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+struct Row<T, M, N, RowIndices_B, RowPointers_B, 0> {
+  static void
+  compute(const DiagMatrix<T, M> &A,
+          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+          const T &division_min,
+          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+    Core<T, M, N, RowIndices_B, RowPointers_B, 0, 0>::compute(
+        A, B, division_min, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+inline void
+compute(const DiagMatrix<T, M> &A,
+        const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+        const T &division_min,
+        CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &result) {
+
+  Row<T, M, N, RowIndices_B, RowPointers_B, M - 1>::compute(A, B, division_min,
+                                                            result);
+}
+
+} // namespace DiagonalInverseMultiplySparse
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+inline CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B>
+diag_inv_multiply_sparse(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+    const T &division_min) {
+
+  CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> result = B;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+         ++k) {
+
+      result.values[k] =
+          B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+    }
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  DiagonalInverseMultiplySparse::compute<T, M, N, RowIndices_B, RowPointers_B>(
+      A, B, division_min, result);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
+          typename RowPointers_B>
+inline CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B>
+diag_inv_multiply_sparse_partition(
+    const DiagMatrix<T, M> &A,
+    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
+    const T &division_min, const std::size_t &matrix_size) {
+
+  CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> result;
+
+  for (std::size_t j = 0; j < matrix_size; ++j) {
+    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+         ++k) {
+
+      if (RowIndices_B::list[k] < matrix_size) {
+
+        result.values[k] =
+            B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+      }
+    }
+  }
+
+  return result;
 }
 
 } // namespace Matrix

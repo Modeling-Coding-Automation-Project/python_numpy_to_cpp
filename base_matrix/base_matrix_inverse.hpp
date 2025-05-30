@@ -16,11 +16,15 @@ namespace Base {
 namespace Matrix {
 
 /* GMRES K */
+
+namespace InverseOperation {
+
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M > 1), Vector<T, M>>::type
-gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
-        std::size_t &rep_num) {
+gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+             const Vector<T, M> &x_1, const T &decay_rate,
+             const T &division_min, T &rho, std::size_t &rep_num,
+             const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -36,9 +40,9 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 
   // b - Ax
   Vector<T, M> b_ax;
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     T sum = static_cast<T>(0);
-    for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t j = 0; j < matrix_size; ++j) {
       sum += A(i, j) * x_1[j];
     }
     b_ax[i] = b[i] - sum;
@@ -46,33 +50,33 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
-  for (std::size_t n = 1; n <= M; n++) {
+  for (std::size_t n = 1; n <= matrix_size; n++) {
     // Generate orthogonal basis
     Vector<T, M> v;
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t i = 0; i < matrix_size; ++i) {
+      for (std::size_t j = 0; j < matrix_size; ++j) {
         v[i] += A(i, j) * q(j, n - 1);
       }
     }
 
     for (std::size_t j = 0; j < n; ++j) {
       h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         h(j, n - 1) += q(i, j) * v[i];
       }
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         v[i] -= h(j, n - 1) * q(i, j);
       }
     }
 
-    if (n < M) {
+    if (n < matrix_size) {
       h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         q(i, n) =
             v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -121,13 +125,13 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t j = 0; j < matrix_size; ++j) {
       x_dif[j] += y[i] * q(j, i);
     }
   }
 
   Vector<T, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     x[i] = x_1[i] + x_dif[i];
   }
 
@@ -136,9 +140,10 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
-gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-        const Vector<T, M> &x_1, const T &decay_rate, T division_min, T &rho,
-        std::size_t &rep_num) {
+gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+             const Vector<T, M> &x_1, const T &decay_rate,
+             const T &division_min, T &rho, std::size_t &rep_num,
+             const std::size_t &matrix_size) {
   static_assert(M == 1,
                 "Matrix size must be exactly 1x1 for this specialization.");
   static_cast<void>(decay_rate);
@@ -146,6 +151,7 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   static_cast<void>(rep_num);
   static_cast<void>(x_1);
   static_cast<void>(rho);
+  static_cast<void>(matrix_size);
 
   Vector<T, M> x;
 
@@ -155,11 +161,38 @@ gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   return x;
 }
 
+} // namespace InverseOperation
+
+template <typename T, std::size_t M>
+inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                            const Vector<T, M> &x_1, const T &decay_rate,
+                            const T &division_min, T &rho,
+                            std::size_t &rep_num) {
+
+  return InverseOperation::gmres_k_core<T, M>(A, b, x_1, decay_rate,
+                                              division_min, rho, rep_num, M);
+}
+
+template <typename T, std::size_t M>
+inline Vector<T, M>
+gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                  const Vector<T, M> &x_1, const T &decay_rate,
+                  const T &division_min, T &rho, std::size_t &rep_num,
+                  const std::size_t &matrix_size) {
+
+  return InverseOperation::gmres_k_core<T, M>(
+      A, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
+}
+
+/* GMRES K for Matrix */
 template <typename T, std::size_t M, std::size_t K>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
                            Matrix<T, M, K> &X_1, const T &decay_rate,
-                           T division_min, std::array<T, K> &rho,
+                           const T &division_min, std::array<T, K> &rho,
                            std::array<std::size_t, K> &rep_num) {
+  static_assert(
+      K >= M,
+      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<T, M> x =
@@ -172,13 +205,44 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
 template <typename T, std::size_t M>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
                            Matrix<T, M, M> &X_1, const T &decay_rate,
-                           T division_min, std::array<T, M> &rho,
+                           const T &division_min, std::array<T, M> &rho,
                            std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
     Vector<T, M> x =
         Base::Matrix::gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
                               division_min, rho[i], rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M, std::size_t K>
+inline void gmres_k_partition_matrix(
+    const Matrix<T, M, M> &A, const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1,
+    const T &decay_rate, const T &division_min, std::array<T, K> &rho,
+    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+  static_assert(
+      K >= M,
+      "B matrix row number must be equal or larger than column number.");
+
+  for (std::size_t i = 0; i < matrix_size; i++) {
+    Vector<T, M> x = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M>
+inline void gmres_k_partition_matrix(
+    const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B, Matrix<T, M, M> &X_1,
+    const T &decay_rate, const T &division_min, std::array<T, M> &rho,
+    std::array<std::size_t, M> &rep_num, const std::size_t &matrix_size) {
+
+  for (std::size_t i = 0; i < matrix_size; i++) {
+    Vector<T, M> x = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
     X_1.set_row(i, x);
   }
 }
@@ -358,12 +422,15 @@ gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
 }
 
 /* Sparse GMRES K */
+namespace InverseOperation {
+
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
+inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    T division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -378,32 +445,57 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
   T ZERO = static_cast<T>(0);
 
   // b - Ax
-  Vector<T, M> b_ax = b - (SA * x_1);
+  Vector<T, M> b_ax;
+  for (std::size_t j = 0; j < matrix_size; j++) {
+    T sum = static_cast<T>(0);
+    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+         k++) {
+
+      if (RowIndices_A::list[k] < matrix_size) {
+
+        sum += SA.values[k] * x_1[RowIndices_A::list[k]];
+      }
+    }
+    b_ax[j] = b[j] - sum;
+  }
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
   }
   b_hat[0] = b_norm;
 
-  for (std::size_t n = 1; n <= M; n++) {
+  for (std::size_t n = 1; n <= matrix_size; n++) {
     // Generate orthogonal basis
-    Vector<T, M> v = SA * q.create_row_vector(n - 1);
+    Vector<T, M> v;
+    Vector<T, M> q_row_vector = q.create_row_vector(n - 1);
+    for (std::size_t j = 0; j < matrix_size; j++) {
+      T sum = static_cast<T>(0);
+      for (std::size_t k = RowPointers_A::list[j];
+           k < RowPointers_A::list[j + 1]; k++) {
+
+        if (RowIndices_A::list[k] < matrix_size) {
+
+          sum += SA.values[k] * q_row_vector[RowIndices_A::list[k]];
+        }
+      }
+      v[j] = sum;
+    }
 
     for (std::size_t j = 0; j < n; ++j) {
       h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         h(j, n - 1) += q(i, j) * v[i];
       }
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         v[i] -= h(j, n - 1) * q(i, j);
       }
     }
 
-    if (n < M) {
+    if (n < matrix_size) {
       h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t i = 0; i < matrix_size; ++i) {
         q(i, n) =
             v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
       }
@@ -452,13 +544,13 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
   }
 
   for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t j = 0; j < matrix_size; ++j) {
       x_dif[j] += y[i] * q(j, i);
     }
   }
 
   Vector<T, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
+  for (std::size_t i = 0; i < matrix_size; ++i) {
     x[i] = x_1[i] + x_dif[i];
   }
 
@@ -467,10 +559,12 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k(
 
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
+inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    T division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
   static_assert(M == 1,
                 "Matrix size must be exactly 1x1 for this specialization.");
   static_cast<void>(decay_rate);
@@ -478,6 +572,7 @@ inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
   static_cast<void>(rep_num);
   static_cast<void>(x_1);
   static_cast<void>(rho);
+  static_cast<void>(matrix_size);
 
   Vector<T, M> x;
 
@@ -487,18 +582,65 @@ inline typename std::enable_if<(M <= 1), Vector<T, M>>::type sparse_gmres_k(
   return x;
 }
 
+} // namespace InverseOperation
+
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline Vector<T, M> sparse_gmres_k(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
+    const T &division_min, T &rho, std::size_t &rep_num) {
+
+  return InverseOperation::sparse_gmres_k_core<T, M>(
+      SA, b, x_1, decay_rate, division_min, rho, rep_num, M);
+}
+
+template <typename T, std::size_t M, typename RowIndices_A,
+          typename RowPointers_A>
+inline Vector<T, M> sparse_gmres_k_partition(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
+    const T &division_min, T &rho, std::size_t &rep_num,
+    const std::size_t &matrix_size) {
+
+  return InverseOperation::sparse_gmres_k_core<T, M>(
+      SA, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
+}
+
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_matrix(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
-    T division_min, std::array<T, K> &rho,
+    const T &division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num) {
+  static_assert(
+      K >= M,
+      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<T, M> x = Base::Matrix::sparse_gmres_k(
         SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i]);
+    X_1.set_row(i, x);
+  }
+}
+
+template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
+          typename RowPointers_A>
+inline void sparse_gmres_k_partition_matrix(
+    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
+    const T &division_min, std::array<T, K> &rho,
+    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+  static_assert(
+      K >= M,
+      "B matrix row number must be equal or larger than column number.");
+
+  for (std::size_t i = 0; i < matrix_size; i++) {
+    Vector<T, M> x = Base::Matrix::sparse_gmres_k_partition(
+        SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
+        rep_num[i], matrix_size);
     X_1.set_row(i, x);
   }
 }
@@ -509,7 +651,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline Vector<T, N> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
-    T division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min, T &rho, std::size_t &rep_num) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
@@ -630,7 +772,7 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 inline void sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1, const T &decay_rate,
-    T division_min, std::array<T, K> &rho,
+    const T &division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num) {
 
   for (std::size_t i = 0; i < K; i++) {
@@ -646,7 +788,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline void sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1, const T &decay_rate,
-    T division_min, std::array<T, M> &rho,
+    const T &division_min, std::array<T, M> &rho,
     std::array<std::size_t, M> &rep_num) {
 
   for (std::size_t i = 0; i < M; i++) {
@@ -828,6 +970,9 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const T &decay_rate, const T &division_min,
                                    std::array<T, K> &rho,
                                    std::array<std::size_t, K> &rep_num) {
+  static_assert(
+      K >= M,
+      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<Complex<T>, M> x = Base::Matrix::complex_gmres_k(
