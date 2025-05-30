@@ -1235,6 +1235,20 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_A_P_x.matrix.data, C_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Sparse and Dense.");
 
+    static auto C_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(B_P)>();
+
+    auto C_B_P_x = C_B_P_linalg_solver.solve(C_P, B_P, 3);
+
+    Matrix<DefDense, T, 4, 4> C_B_P_x_answer({
+        { 1.0F, 0.0F, 0.0F, 0.0F },
+        { 0.75F, -0.5F, 1.5F, 0.0F },
+        { -0.375F, 0.25F, 0.0F, 0.0F },
+        { 0.0F, 0.0F, 0.0F, 0.0F }
+        });
+
+    tester.expect_near(C_B_P_x.matrix.data, C_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Sparse and Diag.");
+
     static auto C_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(C_P)>();
 
     auto C_C_P_x = C_C_P_linalg_solver.solve(C_P, C_P, 3);
