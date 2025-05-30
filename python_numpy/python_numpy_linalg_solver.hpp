@@ -751,9 +751,6 @@ public:
         Base::Matrix::diag_divide_diag_partition(
             B.matrix, A.matrix, this->division_min, matrix_size);
 
-    Base::Matrix::Matrix<T, M, K> X_1 =
-        Base::Matrix::output_dense_matrix(result);
-
     return Matrix<DefDiag, T, M>(std::move(result));
   }
 
