@@ -1141,27 +1141,28 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     auto A_A_P_x = A_A_P_linalg_solver.solve(A_P, A_P, 3);
 
     Matrix<DefDense, T, 4, 4> A_A_P_x_answer({
-        { 1.0F, 0.0F, 0.0F, -3.0F },
-        { 0.0F, 1.0F, 0.0F, 2.6F },
-        { 0.0F, 0.0F, 1.0F, 2.6F },
+        { 1.0F, 0.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F, 0.0F },
         { 0.0F, 0.0F, 0.0F, 0.0F }
         });
 
     tester.expect_near(A_A_P_x.matrix.data, A_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Dense and Dense.");
 
-    //static auto A_B_linalg_solver = make_LinalgPartitionSolver<decltype(A), decltype(B)>();
+    static auto A_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(A_P), decltype(B_P)>();
 
-    //auto A_B_x = A_B_linalg_solver.solve(A, B);
+    auto A_B_P_x = A_B_P_linalg_solver.solve(A_P, B_P, 3);
 
-    //Matrix<DefDense, T, 3, 3> A_B_x_answer({
-    //    {-6.66666667e-01F, 6.66666667e-01F, 0.0F},
-    //    {6.33333333e-01F, -1.33333333F, 0.9F},
-    //    {1.33333333e-01F, 6.66666667e-01F, -0.6F}
-    //    });
+    Matrix<DefDense, T, 4, 4> A_B_P_x_answer({
+        {-6.66666667e-01F, 6.66666667e-01F, 0.0F, 0.0F},
+        {6.33333333e-01F, -1.33333333F, 0.9F, 0.0F},
+        {1.33333333e-01F, 6.66666667e-01F, -0.6F, 0.0F},
+        {0.0F, 0.0F, 0.0F, 0.0F}
+        });
 
-    //tester.expect_near(A_B_x.matrix.data, A_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check LinalgPartitionSolver solve Dense and Diag.");
+    tester.expect_near(A_B_P_x.matrix.data, A_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Dense and Diag.");
 
     //static auto A_C_linalg_solver = make_LinalgPartitionSolver<decltype(A), decltype(C)>();
 

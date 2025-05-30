@@ -225,7 +225,7 @@ inline void gmres_k_partition_matrix(
       K >= M,
       "B matrix row number must be equal or larger than column number.");
 
-  for (std::size_t i = 0; i < K; i++) {
+  for (std::size_t i = 0; i < matrix_size; i++) {
     Vector<T, M> x = Base::Matrix::gmres_k_partition(
         A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i], matrix_size);
@@ -612,7 +612,7 @@ inline void sparse_gmres_k_partition_matrix(
       K >= M,
       "B matrix row number must be equal or larger than column number.");
 
-  for (std::size_t i = 0; i < K; i++) {
+  for (std::size_t i = 0; i < matrix_size; i++) {
     Vector<T, M> x = Base::Matrix::sparse_gmres_k_partition(
         SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i], matrix_size);

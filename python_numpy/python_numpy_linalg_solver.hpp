@@ -671,11 +671,14 @@ public:
 
   /* Solve function */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
-                    const Matrix<DefDense, T, M, K> &B,
-                    const std::size_t &matrix_size)
+                    const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::gmres_k_partition_matrix(
         A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
@@ -685,11 +688,14 @@ public:
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
-                    const Matrix<DefDiag, T, M> &B,
-                    const std::size_t &matrix_size)
+                    const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::gmres_k_partition_matrix(
         A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
@@ -700,10 +706,13 @@ public:
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
-                    const std::size_t &matrix_size)
-      -> Matrix<DefDense, T, M, K> {
+                    std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
@@ -716,9 +725,12 @@ public:
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
-                    const Matrix<DefDense, T, M, K> &B,
-                    const std::size_t &matrix_size)
+                    const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::Matrix<T, M, K> X_1 =
         Base::Matrix::diag_inv_multiply_dense_partition(
@@ -728,8 +740,12 @@ public:
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
-                    const Matrix<DefDiag, T, M> &B,
-                    const std::size_t &matrix_size) -> Matrix<DefDiag, T, M> {
+                    const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
+      -> Matrix<DefDiag, T, M> {
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::DiagMatrix<T, M> result =
         Base::Matrix::diag_divide_diag_partition(
@@ -743,11 +759,14 @@ public:
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
-                    const std::size_t &matrix_size)
-      -> Matrix<DefDense, T, M, K> {
+                    std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
     using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
     using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
         X_1 = Base::Matrix::diag_inv_multiply_sparse_partition(
@@ -757,11 +776,14 @@ public:
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
-                    const Matrix<DefDense, T, M, K> &B,
-                    const std::size_t &matrix_size)
+                    const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::sparse_gmres_k_partition_matrix(
         A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
@@ -771,11 +793,14 @@ public:
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
-                    const Matrix<DefDiag, T, M> &B,
-                    const std::size_t &matrix_size)
+                    const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::Matrix<T, M, M> B_dense_matrix =
         output_dense_matrix(B.matrix);
@@ -789,10 +814,13 @@ public:
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
-                    const std::size_t &matrix_size)
-      -> Matrix<DefDense, T, M, K> {
+                    std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
     Base::Matrix::Matrix<T, M, K> X_1;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
 
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
