@@ -221,11 +221,15 @@ inline void gmres_k_partition_matrix(
     const Matrix<T, M, M> &A, const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1,
     const T &decay_rate, const T &division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
-  static_assert(
-      K >= M,
-      "B matrix row number must be equal or larger than column number.");
 
-  for (std::size_t i = 0; i < matrix_size; i++) {
+  std::size_t repeat_number;
+  if (matrix_size < K) {
+    repeat_number = matrix_size;
+  } else {
+    repeat_number = K;
+  }
+
+  for (std::size_t i = 0; i < repeat_number; i++) {
     Vector<T, M> x = Base::Matrix::gmres_k_partition(
         A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i], matrix_size);
@@ -614,9 +618,6 @@ inline void sparse_gmres_k_matrix(
     const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
     const T &division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num) {
-  static_assert(
-      K >= M,
-      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<T, M> x = Base::Matrix::sparse_gmres_k(
@@ -633,11 +634,15 @@ inline void sparse_gmres_k_partition_matrix(
     const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
     const T &division_min, std::array<T, K> &rho,
     std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
-  static_assert(
-      K >= M,
-      "B matrix row number must be equal or larger than column number.");
 
-  for (std::size_t i = 0; i < matrix_size; i++) {
+  std::size_t repeat_number;
+  if (matrix_size < K) {
+    repeat_number = matrix_size;
+  } else {
+    repeat_number = K;
+  }
+
+  for (std::size_t i = 0; i < repeat_number; i++) {
     Vector<T, M> x = Base::Matrix::sparse_gmres_k_partition(
         SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
         rep_num[i], matrix_size);
