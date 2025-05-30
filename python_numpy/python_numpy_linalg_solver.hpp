@@ -831,6 +831,192 @@ public:
   std::array<std::size_t, K> rep_num;
 };
 
+/* make LinalgPartitionSolver */
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             A_Type::COLS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, A_Type::COLS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
+                            Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
+                            Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
+                            Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             A_Type::COLS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, A_Type::COLS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
+                            Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             A_Type::COLS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, A_Type::COLS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+template <
+    typename A_Type, typename B_Type,
+    typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
+                            Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
+inline auto make_LinalgPartitionSolver(void)
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
+                             B_Type::ROWS,
+                             typename A_Type::SparseAvailable_Type,
+                             typename B_Type::SparseAvailable_Type> {
+
+  static_assert(std::is_same<typename A_Type::Value_Type,
+                             typename B_Type::Value_Type>::value,
+                "Value data type of A and B must be the same.");
+
+  return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
+                               A_Type::COLS, B_Type::ROWS,
+                               typename A_Type::SparseAvailable_Type,
+                               typename B_Type::SparseAvailable_Type>();
+}
+
+/* LinalgPartitionSolver Type */
+template <typename A_Type, typename B_Type>
+using LinalgPartitionSolver_Type =
+    decltype(make_LinalgPartitionSolver<A_Type, B_Type>());
+
 /* least-squares solution to a linear matrix equation */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
