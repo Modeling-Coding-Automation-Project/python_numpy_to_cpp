@@ -1247,14 +1247,17 @@ diag_inv_multiply_sparse_partition(
     const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
     const T &division_min, const std::size_t &matrix_size) {
 
-  CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> result = B;
+  CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> result;
 
   for (std::size_t j = 0; j < matrix_size; ++j) {
     for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
          ++k) {
 
-      result.values[k] =
-          B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+      if (RowIndices_B::list[k] < matrix_size) {
+
+        result.values[k] =
+            B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+      }
     }
   }
 

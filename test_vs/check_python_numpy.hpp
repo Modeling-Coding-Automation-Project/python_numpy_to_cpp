@@ -1192,45 +1192,48 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_A_P_x.matrix.data, B_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Diag and Dense.");
 
-    //static auto B_B_linalg_solver = make_LinalgPartitionSolver<decltype(B), decltype(B)>();
+    static auto B_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(B_P)>();
 
-    //auto B_B_x = B_B_linalg_solver.solve(B, B);
-    //auto B_B_x_dense = B_B_x.create_dense();
+    auto B_B_P_x = B_B_P_linalg_solver.solve(B_P, B_P, 3);
+    auto B_B_P_x_dense = B_B_P_x.create_dense();
 
-    //Matrix<DefDense, T, 3, 3> B_B_x_answer({
-    //    { 1.0F, 0.0F, 0.0F },
-    //    { 0.0F, 1.0F, 0.0F },
-    //    { 0.0F, 0.0F, 1.0F }
-    //    });
+    Matrix<DefDense, T, 4, 4> B_B_P_x_answer({
+        { 1.0F, 0.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 0.0F, 0.0F }
+        });
 
-    //tester.expect_near(B_B_x_dense.matrix.data, B_B_x_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check LinalgPartitionSolver solve Diag and Diag.");
+    tester.expect_near(B_B_P_x_dense.matrix.data, B_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Diag and Diag.");
 
-    //static auto B_C_linalg_solver = make_LinalgPartitionSolver<decltype(B), decltype(C)>();
+    static auto B_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(C_P)>();
 
-    //auto B_C_x = B_C_linalg_solver.solve(B, C);
+    auto B_C_P_x = B_C_P_linalg_solver.solve(B_P, C_P, 3);
 
-    //Matrix<DefDense, T, 3, 3> B_C_x_answer({
-    //    { 1.0F, 0.0F, 0.0F },
-    //    { 1.5F, 0.0F, 4.0F },
-    //    { 0.0F, 0.66666667F, 1.33333333F }
-    //    });
+    Matrix<DefDense, T, 4, 4> B_C_P_x_answer({
+        { 1.0F, 0.0F, 0.0F, 0.0F },
+        { 1.5F, 0.0F, 4.0F, 0.0F },
+        { 0.0F, 0.66666667F, 1.33333333F, 0.0F },
+        { 0.0F, 0.0F, 0.0F, 0.0F }
+        });
 
-    //tester.expect_near(B_C_x.matrix.data, B_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check LinalgPartitionSolver solve Diag and Sparse.");
+    tester.expect_near(B_C_P_x.matrix.data, B_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Diag and Sparse.");
 
-    //static auto C_C_linalg_solver = make_LinalgPartitionSolver<decltype(C), decltype(C)>();
+    static auto C_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(C_P)>();
 
-    //auto C_C_x = C_C_linalg_solver.solve(C, C);
+    auto C_C_P_x = C_C_P_linalg_solver.solve(C_P, C_P, 3);
 
-    //Matrix<DefDense, T, 3, 3> C_C_x_answer({
-    //    { 1.0F, 0.0F, 0.0F },
-    //    { 0.0F, 1.0F, 0.0F },
-    //    { 0.0F, 0.0F, 1.0F }
-    //    });
+    Matrix<DefDense, T, 4, 4> C_C_P_x_answer({
+        { 1.0F, 0.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 0.0F, 0.0F }
+        });
 
-    //tester.expect_near(C_C_x.matrix.data, C_C_x_answer.matrix.data, NEAR_LIMIT_STRICT,
-    //    "check LinalgPartitionSolver solve Sparse and Sparse.");
+    tester.expect_near(C_C_P_x.matrix.data, C_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Sparse and Sparse.");
 
 
     /* 矩形　左除算 */

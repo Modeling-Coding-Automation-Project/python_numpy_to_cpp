@@ -445,7 +445,19 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
   T ZERO = static_cast<T>(0);
 
   // b - Ax
-  Vector<T, M> b_ax = b - (SA * x_1);
+  Vector<T, M> b_ax;
+  for (std::size_t j = 0; j < matrix_size; j++) {
+    T sum = static_cast<T>(0);
+    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+         k++) {
+
+      if (RowIndices_A::list[k] < matrix_size) {
+
+        sum += SA.values[k] * x_1[RowIndices_A::list[k]];
+      }
+    }
+    b_ax[j] = b[j] - sum;
+  }
 
   // Normalize b_Ax
   T b_norm = b_ax.norm(division_min);
@@ -456,7 +468,20 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
 
   for (std::size_t n = 1; n <= matrix_size; n++) {
     // Generate orthogonal basis
-    Vector<T, M> v = SA * q.create_row_vector(n - 1);
+    Vector<T, M> v;
+    Vector<T, M> q_row_vector = q.create_row_vector(n - 1);
+    for (std::size_t j = 0; j < matrix_size; j++) {
+      T sum = static_cast<T>(0);
+      for (std::size_t k = RowPointers_A::list[j];
+           k < RowPointers_A::list[j + 1]; k++) {
+
+        if (RowIndices_A::list[k] < matrix_size) {
+
+          sum += SA.values[k] * q_row_vector[RowIndices_A::list[k]];
+        }
+      }
+      v[j] = sum;
+    }
 
     for (std::size_t j = 0; j < n; ++j) {
       h(j, n - 1) = 0;
