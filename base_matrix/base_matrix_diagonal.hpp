@@ -968,9 +968,9 @@ inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
   Matrix<T, M, N> result;
 
   for (std::size_t j = 0; j < matrix_size; ++j) {
-    for (std::size_t k = 0; k < N; ++k) {
-      result.access(j, k) =
-          B.access(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
+    for (std::size_t k = 0; k < matrix_size; ++k) {
+      result(j, k) =
+          B(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
     }
   }
 
