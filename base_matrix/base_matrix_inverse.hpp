@@ -190,9 +190,6 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
                            Matrix<T, M, K> &X_1, const T &decay_rate,
                            const T &division_min, std::array<T, K> &rho,
                            std::array<std::size_t, K> &rep_num) {
-  static_assert(
-      K >= M,
-      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<T, M> x =
@@ -975,9 +972,6 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const T &decay_rate, const T &division_min,
                                    std::array<T, K> &rho,
                                    std::array<std::size_t, K> &rep_num) {
-  static_assert(
-      K >= M,
-      "B matrix row number must be equal or larger than column number.");
 
   for (std::size_t i = 0; i < K; i++) {
     Vector<Complex<T>, M> x = Base::Matrix::complex_gmres_k(

@@ -1035,6 +1035,20 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
 
+    LinalgSolver_Type<decltype(A), decltype(b)> A_b_linalg_solver
+        = make_LinalgSolver<decltype(A), decltype(b)>();
+
+    auto A_b_x = A_b_linalg_solver.solve(A, b);
+
+    Matrix<DefDense, T, 3, 2> A_b_x_answer({
+        { -1.0F, -0.66666667F },
+        { 1.0F, 1.23333333F },
+        { 1.0F, 2.73333333F }
+        });
+
+    tester.expect_near(A_b_x.matrix.data, A_b_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Dense small.");
+
     LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver
         = make_LinalgSolver<decltype(A), decltype(A)>();
 
