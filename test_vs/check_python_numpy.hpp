@@ -1019,7 +1019,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     MCAPTester<T> tester;
 
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
-    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+    const T NEAR_LIMIT_SOFT = 1.0e-3F;
 
     /* 定義 */
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
@@ -1034,6 +1034,48 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     /* 左除算 */
     Matrix<DefDense, T, 3, 2> b({ { 4, 10 }, { 5, 18 }, { 6, 23 } });
+
+    LinalgSolver_Type<decltype(A), decltype(b)> A_b_linalg_solver
+        = make_LinalgSolver<decltype(A), decltype(b)>();
+
+    auto A_b_x = A_b_linalg_solver.solve(A, b);
+
+    Matrix<DefDense, T, 3, 2> A_b_x_answer({
+        { -1.0F, -0.66666667F },
+        { 1.0F, 1.23333333F },
+        { 1.0F, 2.73333333F }
+        });
+
+    tester.expect_near(A_b_x.matrix.data, A_b_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolver solve Dense and Dense small.");
+
+    Matrix<DefDense, T, 3, 3> I({
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F }
+    });
+
+    Matrix<DefDense, T, 3, 1> b_1({
+        { 2.0F },
+        { 3.0F },
+        { 1.0F }
+        });
+
+    LinalgSolver_Type<decltype(I), decltype(b_1)> I_b_linalg_solver
+        = make_LinalgSolver<decltype(I), decltype(b_1)>();
+
+    I_b_linalg_solver.set_division_min(static_cast<T>(1.0e-5));
+
+    auto I_b_x = I_b_linalg_solver.solve(I, b_1);
+
+    Matrix<DefDense, T, 3, 1> I_b_x_answer({
+        { 2.0F },
+        { 3.0F },
+        { 1.0F }
+    });
+
+    tester.expect_near(I_b_x.matrix.data, I_b_x_answer.matrix.data, NEAR_LIMIT_SOFT,
+        "check LinalgSolver solve Dense Identity and Vector.");
 
     LinalgSolver_Type<decltype(A), decltype(A)> A_A_linalg_solver
         = make_LinalgSolver<decltype(A), decltype(A)>();
