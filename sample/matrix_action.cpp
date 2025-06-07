@@ -56,5 +56,17 @@ int main() {
   }
   std::cout << std::endl;
 
+  /* Substitute small matrix to large matrix */
+  substitute_part_matrix<1, 1>(A, C);
+
+  std::cout << "A = " << std::endl;
+  for (size_t i = 0; i < A.cols(); ++i) {
+    for (size_t j = 0; j < A.rows(); ++j) {
+      std::cout << A(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }
