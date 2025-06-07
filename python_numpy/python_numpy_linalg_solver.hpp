@@ -659,7 +659,7 @@ public:
 
   LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
   operator=(LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
-                &&other) {
+                &&other) noexcept {
     if (this != &other) {
       this->decay_rate = std::move(other.decay_rate);
       this->division_min = std::move(other.division_min);
