@@ -336,6 +336,21 @@ inline void substitute_matrix(To_Type &to_matrix,
   PartMatrixOperation::substitute_each<0, 0>(to_matrix, from_matrix);
 }
 
+/* Substitute small size Matrix to large size Matrix */
+template <std::size_t Col_Offset, std::size_t Row_Offset, typename Large_Type,
+          typename Small_Type>
+inline void substitute_part_matrix(Large_Type &Large, const Small_Type &Small) {
+
+  static_assert(Large_Type::COLS >= (Small_Type::COLS + Col_Offset),
+                "Large matrix must have enough columns to substitute the small "
+                "matrix.");
+  static_assert(Large_Type::ROWS >= (Small_Type::ROWS + Row_Offset),
+                "Large matrix must have enough rows to substitute the small "
+                "matrix.");
+
+  PartMatrixOperation::substitute_each<Col_Offset, Row_Offset>(Large, Small);
+}
+
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 

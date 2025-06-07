@@ -983,6 +983,31 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(C_dense.matrix.data, C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check substitute_matrix.");
 
+    /* 大きい行列に対して小さい行列を代入 */
+    Matrix<DefDense, T, 4, 4> A_P({
+        {1, 2, 3, 10},
+        {5, 4, 6, 11},
+        {9, 8, 7, 12},
+        {13, 14, 15, 16}
+        });
+
+    Matrix<DefDense, T, 2, 2> B_P({
+        {1, 2},
+        {3, 4}
+        });
+
+    substitute_part_matrix<1, 1>(A_P, B_P);
+
+    Matrix<DefDense, T, 4, 4> A_P_answer({
+        {1, 2, 3, 10},
+        {5, 1, 2, 11},
+        {9, 3, 4, 12},
+        {13, 14, 15, 16}
+        });
+
+    tester.expect_near(A_P.matrix.data, A_P_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check substitute_part_matrix, 4, 4 to 2, 2 at 1, 1");
+
 
     tester.throw_error_if_test_failed();
 }
