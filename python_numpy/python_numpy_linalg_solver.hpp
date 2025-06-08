@@ -824,9 +824,6 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
-    using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
-    using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
-
     if (matrix_size > M) {
       matrix_size = M;
     }
