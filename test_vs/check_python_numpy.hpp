@@ -1217,6 +1217,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_A_P_x.matrix.data, A_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Dense and Dense.");
 
+    A_A_P_x = A_A_P_linalg_solver.cold_solve(A_P, A_P, 3);
+
+    tester.expect_near(A_A_P_x.matrix.data, A_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Dense and Dense cold solve.");
+
     static auto A_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(A_P), decltype(B_P)>();
 
     auto A_B_P_x = A_B_P_linalg_solver.solve(A_P, B_P, 3);
@@ -1230,6 +1235,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(A_B_P_x.matrix.data, A_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Dense and Diag.");
+
+    A_B_P_x = A_B_P_linalg_solver.cold_solve(A_P, B_P, 3);
+
+    tester.expect_near(A_B_P_x.matrix.data, A_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Dense and Diag cold solve.");
 
     static auto A_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(A_P), decltype(C_P)>();
 
@@ -1245,6 +1255,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(A_C_P_x.matrix.data, A_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Dense and Sparse.");
 
+    A_C_P_x = A_C_P_linalg_solver.cold_solve(A_P, C_P, 3);
+
+    tester.expect_near(A_C_P_x.matrix.data, A_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Dense and Sparse cold solve.");
+
     static auto B_A_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(A_P)>();
 
     auto B_A_P_x = B_A_P_linalg_solver.solve(B_P, A_P, 3);
@@ -1258,6 +1273,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(B_A_P_x.matrix.data, B_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Diag and Dense.");
+
+    B_A_P_x = B_A_P_linalg_solver.cold_solve(B_P, A_P, 3);
+
+    tester.expect_near(B_A_P_x.matrix.data, B_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Diag and Dense cold solve.");
 
     static auto B_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(B_P)>();
 
@@ -1288,6 +1308,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(B_C_P_x.matrix.data, B_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Diag and Sparse.");
 
+    B_C_P_x = B_C_P_linalg_solver.cold_solve(B_P, C_P, 3);
+
+    tester.expect_near(B_C_P_x.matrix.data, B_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Diag and Sparse cold solve.");
+
     static auto C_A_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(A_P)>();
 
     auto C_A_P_x = C_A_P_linalg_solver.solve(C_P, A_P, 3);
@@ -1301,6 +1326,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(C_A_P_x.matrix.data, C_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Sparse and Dense.");
+
+    C_A_P_x = C_A_P_linalg_solver.cold_solve(C_P, A_P, 3);
+
+    tester.expect_near(C_A_P_x.matrix.data, C_A_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Sparse and Dense cold solve.");
 
     static auto C_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(B_P)>();
 
@@ -1316,6 +1346,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(C_B_P_x.matrix.data, C_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Sparse and Diag.");
 
+    C_B_P_x = C_B_P_linalg_solver.cold_solve(C_P, B_P, 3);
+
+    tester.expect_near(C_B_P_x.matrix.data, C_B_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Sparse and Diag cold solve.");
+
     static auto C_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(C_P)>();
 
     auto C_C_P_x = C_C_P_linalg_solver.solve(C_P, C_P, 3);
@@ -1329,6 +1364,11 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     tester.expect_near(C_C_P_x.matrix.data, C_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgPartitionSolver solve Sparse and Sparse.");
+
+    C_C_P_x = C_C_P_linalg_solver.cold_solve(C_P, C_P, 3);
+
+    tester.expect_near(C_C_P_x.matrix.data, C_C_P_x_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgPartitionSolver solve Sparse and Sparse cold solve.");
 
 
     /* 矩形　左除算 */

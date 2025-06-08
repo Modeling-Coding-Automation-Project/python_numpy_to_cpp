@@ -164,8 +164,9 @@ public:
         division_min(std::move(other.division_min)), rho(std::move(other.rho)),
         rep_num(std::move(other.rep_num)) {}
 
-  LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &operator=(
-      LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &&other) {
+  LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
+  operator=(LinalgSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
+                &&other) noexcept {
     if (this != &other) {
       this->X_1 = std::move(other.X_1);
       this->decay_rate = std::move(other.decay_rate);
@@ -626,7 +627,7 @@ public:
 public:
   /* Constructor */
   LinalgPartitionSolver()
-      : decay_rate(static_cast<Value_Type>(0)),
+      : X_1(), decay_rate(static_cast<Value_Type>(0)),
         division_min(
             static_cast<Value_Type>(DEFAULT_DIVISION_MIN_LINALG_SOLVER)),
         rho({}), rep_num({}) {}
@@ -634,13 +635,15 @@ public:
   /* Copy Constructor */
   LinalgPartitionSolver(const LinalgPartitionSolver<T, M, K, SparseAvailable_A,
                                                     SparseAvailable_B> &other)
-      : decay_rate(other.decay_rate), division_min(other.division_min),
-        rho(other.rho), rep_num(other.rep_num) {}
+      : X_1(other.X_1), decay_rate(other.decay_rate),
+        division_min(other.division_min), rho(other.rho),
+        rep_num(other.rep_num) {}
 
   LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B> &
   operator=(const LinalgPartitionSolver<T, M, K, SparseAvailable_A,
                                         SparseAvailable_B> &other) {
     if (this != &other) {
+      this->X_1 = other.X_1;
       this->decay_rate = other.decay_rate;
       this->division_min = other.division_min;
       this->rho = other.rho;
@@ -653,7 +656,7 @@ public:
   LinalgPartitionSolver(
       LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
           &&other) noexcept
-      : decay_rate(std::move(other.decay_rate)),
+      : X_1(std::move(other.X_1)), decay_rate(std::move(other.decay_rate)),
         division_min(std::move(other.division_min)), rho(std::move(other.rho)),
         rep_num(std::move(other.rep_num)) {}
 
@@ -661,6 +664,7 @@ public:
   operator=(LinalgPartitionSolver<T, M, K, SparseAvailable_A, SparseAvailable_B>
                 &&other) noexcept {
     if (this != &other) {
+      this->X_1 = std::move(other.X_1);
       this->decay_rate = std::move(other.decay_rate);
       this->division_min = std::move(other.division_min);
       this->rho = std::move(other.rho);
@@ -674,41 +678,69 @@ public:
                     const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> X_1;
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
+                         const Matrix<DefDense, T, M, K> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
 
     if (matrix_size > M) {
       matrix_size = M;
     }
 
     Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
+        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
         this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
 
-    Base::Matrix::Matrix<T, M, K> X_1;
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, M>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
+                         const Matrix<DefDiag, T, M> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, M> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
 
     if (matrix_size > M) {
       matrix_size = M;
     }
 
     Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
+        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
         this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, M>(X_1);
+    return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
-
-    Base::Matrix::Matrix<T, M, K> X_1;
 
     if (matrix_size > M) {
       matrix_size = M;
@@ -718,10 +750,30 @@ public:
         Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
+                         const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
+
+    Base::Matrix::gmres_k_partition_matrix(
+        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
@@ -732,11 +784,25 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::Matrix<T, M, K> X_1 =
+    this->X_1 = Base::Matrix::diag_inv_multiply_dense_partition(
+        A.matrix, B.matrix, this->division_min, matrix_size);
+
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefDiag, T, M> &A,
+                         const Matrix<DefDense, T, M, K> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary =
         Base::Matrix::diag_inv_multiply_dense_partition(
             A.matrix, B.matrix, this->division_min, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefDiag, T, M> &A,
@@ -758,6 +824,21 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    this->X_1 = Base::Matrix::output_dense_matrix(
+        Base::Matrix::diag_inv_multiply_sparse_partition(
+            A.matrix, B.matrix, this->division_min, matrix_size));
+
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefDiag, T, M> &A,
+                         const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
     using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
     using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
 
@@ -766,34 +847,48 @@ public:
     }
 
     Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
-        X_1 = Base::Matrix::diag_inv_multiply_sparse_partition(
+        X_1_temporary = Base::Matrix::diag_inv_multiply_sparse_partition(
             A.matrix, B.matrix, this->division_min, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(Base::Matrix::output_dense_matrix(X_1));
+    return Matrix<DefDense, T, M, K>(
+        Base::Matrix::output_dense_matrix(X_1_temporary));
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::Matrix<T, M, K> X_1;
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::sparse_gmres_k_partition_matrix(
+        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+        this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                         const Matrix<DefDense, T, M, K> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
 
     if (matrix_size > M) {
       matrix_size = M;
     }
 
     Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1, this->decay_rate, this->division_min,
+        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
         this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
-
-    Base::Matrix::Matrix<T, M, K> X_1;
 
     if (matrix_size > M) {
       matrix_size = M;
@@ -803,17 +898,35 @@ public:
         output_dense_matrix(B.matrix);
 
     Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, M>(X_1);
+    return Matrix<DefDense, T, M, M>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                         const Matrix<DefDiag, T, M> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, M> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::Matrix<T, M, M> B_dense_matrix =
+        output_dense_matrix(B.matrix);
+
+    Base::Matrix::sparse_gmres_k_partition_matrix(
+        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
 
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
-
-    Base::Matrix::Matrix<T, M, K> X_1;
 
     if (matrix_size > M) {
       matrix_size = M;
@@ -823,10 +936,30 @@ public:
         Base::Matrix::output_dense_matrix(B.matrix);
 
     Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
 
-    return Matrix<DefDense, T, M, K>(X_1);
+    return Matrix<DefDense, T, M, K>(this->X_1);
+  }
+
+  inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
+                         const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
+                         std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
+
+    Base::Matrix::Matrix<T, M, K> X_1_temporary;
+
+    if (matrix_size > M) {
+      matrix_size = M;
+    }
+
+    Base::Matrix::Matrix<T, M, K> B_dense_matrix =
+        Base::Matrix::output_dense_matrix(B.matrix);
+
+    Base::Matrix::sparse_gmres_k_partition_matrix(
+        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
+        this->division_min, this->rho, this->rep_num, matrix_size);
+
+    return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
@@ -850,6 +983,8 @@ public:
 
 public:
   /* Variable */
+  Base::Matrix::Matrix<T, M, K> X_1;
+
   Value_Type decay_rate;
   Value_Type division_min;
   std::array<Value_Type, K> rho;
