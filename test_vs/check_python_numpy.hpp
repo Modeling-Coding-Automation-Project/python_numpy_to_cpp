@@ -1205,7 +1205,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         = std::move(A_A_P_linalg_solver_copy);
     A_A_P_linalg_solver = A_A_P_linalg_solver_move;
 
-    auto A_A_P_x = A_A_P_linalg_solver.solve(A_P, A_P, 3);
+    auto A_A_P_x = A_A_P_linalg_solver.cold_solve(A_P, A_P, 3);
 
     Matrix<DefDense, T, 4, 4> A_A_P_x_answer({
         { 1.0F, 0.0F, 0.0F, 0.0F },
@@ -1219,7 +1219,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto A_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(A_P), decltype(B_P)>();
 
-    auto A_B_P_x = A_B_P_linalg_solver.solve(A_P, B_P, 3);
+    auto A_B_P_x = A_B_P_linalg_solver.cold_solve(A_P, B_P, 3);
 
     Matrix<DefDense, T, 4, 4> A_B_P_x_answer({
         {-6.66666667e-01F, 6.66666667e-01F, 0.0F, 0.0F},
@@ -1233,7 +1233,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto A_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(A_P), decltype(C_P)>();
 
-    auto A_C_P_x = A_C_P_linalg_solver.solve(A_P, C_P, 3);
+    auto A_C_P_x = A_C_P_linalg_solver.cold_solve(A_P, C_P, 3);
 
     Matrix<DefDense, T, 4, 4> A_C_P_x_answer({
         { 3.33333333e-01F, 0.0F, 2.66666667F, 0.0F},
@@ -1247,7 +1247,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto B_A_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(A_P)>();
 
-    auto B_A_P_x = B_A_P_linalg_solver.solve(B_P, A_P, 3);
+    auto B_A_P_x = B_A_P_linalg_solver.cold_solve(B_P, A_P, 3);
 
     Matrix<DefDense, T, 4, 4> B_A_P_x_answer({
         { 1.0F, 2.0F, 3.0F, 0.0F },
@@ -1276,7 +1276,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto B_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(B_P), decltype(C_P)>();
 
-    auto B_C_P_x = B_C_P_linalg_solver.solve(B_P, C_P, 3);
+    auto B_C_P_x = B_C_P_linalg_solver.cold_solve(B_P, C_P, 3);
 
     Matrix<DefDense, T, 4, 4> B_C_P_x_answer({
         { 1.0F, 0.0F, 0.0F, 0.0F },
@@ -1290,7 +1290,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto C_A_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(A_P)>();
 
-    auto C_A_P_x = C_A_P_linalg_solver.solve(C_P, A_P, 3);
+    auto C_A_P_x = C_A_P_linalg_solver.cold_solve(C_P, A_P, 3);
 
     Matrix<DefDense, T, 4, 4> C_A_P_x_answer({
         { 1.0F, 2.0F, 3.0F, 0.0F },
@@ -1304,7 +1304,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto C_B_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(B_P)>();
 
-    auto C_B_P_x = C_B_P_linalg_solver.solve(C_P, B_P, 3);
+    auto C_B_P_x = C_B_P_linalg_solver.cold_solve(C_P, B_P, 3);
 
     Matrix<DefDense, T, 4, 4> C_B_P_x_answer({
         { 1.0F, 0.0F, 0.0F, 0.0F },
@@ -1318,7 +1318,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
 
     static auto C_C_P_linalg_solver = make_LinalgPartitionSolver<decltype(C_P), decltype(C_P)>();
 
-    auto C_C_P_x = C_C_P_linalg_solver.solve(C_P, C_P, 3);
+    auto C_C_P_x = C_C_P_linalg_solver.cold_solve(C_P, C_P, 3);
 
     Matrix<DefDense, T, 4, 4> C_C_P_x_answer({
         { 1.0F, 0.0F, 0.0F, 0.0F },
