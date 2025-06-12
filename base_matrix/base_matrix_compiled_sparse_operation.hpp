@@ -1,3 +1,31 @@
+/********************************************************************************
+@file base_matrix_compiled_sparse_operation.hpp
+@brief
+This file provides a comprehensive set of template-based operations for sparse
+matrix arithmetic in C++. It supports various combinations of sparse, dense, and
+diagonal matrices and vectors, including addition, subtraction, multiplication,
+and transpose operations. The implementation is highly generic and leverages
+template metaprogramming for compile-time recursion and efficient code
+generation. Both recursive template and for-loop based implementations are
+provided, controlled by macros.
+
+@details
+The file defines operations for:
+- Sparse matrix negation, addition, subtraction, and scalar multiplication.
+- Sparse matrix multiplication with dense matrices, diagonal matrices, and
+vectors.
+- Dense matrix and diagonal matrix arithmetic with sparse matrices.
+- Sparse matrix multiplication with other sparse matrices, including transposed
+cases.
+- Setting diagonal matrix values into sparse matrices.
+- Utility structures for compile-time calculation of result matrix types.
+
+@note
+tparam M is the number of columns in the matrix.
+tparam N is the number of rows in the matrix.
+Somehow programming custom is vice versa,
+but in this project, we use the mathematical custom.
+********************************************************************************/
 #ifndef __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
 #define __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
 
@@ -24,6 +52,24 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
           std::size_t End>
 struct Loop {
+  /**
+   * @brief
+   * Recursively computes the negation of all values in a sparse matrix row
+   * segment.
+   *
+   * @tparam T Value type of the matrix.
+   * @tparam M Number of columns in the matrix.
+   * @tparam N Number of rows in the matrix.
+   * @tparam RowIndices Type representing the row indices of nonzero elements.
+   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam J Current row index (compile-time).
+   * @tparam K Unused parameter for compatibility.
+   * @tparam Start Start index of the current segment.
+   * @tparam End End index of the current segment.
+   * @param[in]  A Input sparse matrix.
+   * @param[out] Y Output sparse matrix, where each value is set to the negation
+   * of the corresponding value in A.
+   */
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
           CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
@@ -36,6 +82,26 @@ struct Loop {
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
 struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
+  /**
+   * @brief
+   * End condition for the recursive negation loop in sparse matrix operations.
+   *
+   * This specialization of the Loop struct is instantiated when the Start index
+   * equals the End index, indicating that all elements in the current segment
+   * have been processed. The function does nothing, serving as the base case to
+   * terminate recursion.
+   *
+   * @tparam T Value type of the matrix.
+   * @tparam M Number of columns in the matrix.
+   * @tparam N Number of rows in the matrix.
+   * @tparam RowIndices Type representing the row indices of nonzero elements.
+   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam J Current row index (compile-time).
+   * @tparam K Unused parameter for compatibility.
+   * @tparam End End index of the current segment.
+   * @param[in]  A Input sparse matrix.
+   * @param[out] Y Output sparse matrix.
+   */
   static void
   compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
           CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
