@@ -1,3 +1,21 @@
+/**
+ * @file base_matrix_eigen_solver.hpp
+ * @brief Eigenvalue and Eigenvector Solver for Real and Complex Matrices
+ *
+ * This header provides template classes for computing eigenvalues and
+ * eigenvectors of square matrices, supporting both real and complex types. The
+ * solvers use the QR algorithm (with optional Hessenberg reduction and
+ * Wilkinson shift) for eigenvalue computation, and the inverse iteration method
+ * for eigenvector computation. The implementation is compatible with both
+ * std::vector and std::array storage, controlled by the
+ * __BASE_MATRIX_USE_STD_VECTOR__ macro.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __BASE_MATRIX_EIGEN_SOLVER_HPP__
 #define __BASE_MATRIX_EIGEN_SOLVER_HPP__
 
@@ -24,6 +42,17 @@ const std::size_t DEFAULT_ITERATION_MAX_EIGEN_SOLVER = 10;
 const double DEFAULT_DIVISION_MIN_EIGEN_SOLVER = 1.0e-20;
 const double EIGEN_SMALL_VALUE = 1.0e-6;
 
+/**
+ * @brief EigenSolverReal is a template class for computing eigenvalues and
+ * eigenvectors of real square matrices.
+ *
+ * This class provides methods to solve eigenvalues and eigenvectors using the
+ * QR algorithm, with optional Hessenberg reduction and Wilkinson shift. It
+ * supports both std::vector and std::array storage for eigenvalues.
+ *
+ * @tparam T Type of the matrix elements (e.g., float, double).
+ * @tparam M Size of the square matrix (number of rows and columns).
+ */
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
   /* Constructor */
@@ -108,49 +137,141 @@ public:
 
 public:
   /* Function */
+
+  /**
+   * @brief Computes the eigenvalues of a square matrix using the QR method.
+   *
+   * This function takes a square matrix as input and computes its eigenvalues
+   * by internally invoking the QR algorithm. The results are stored within the
+   * class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input square matrix whose eigenvalues are to be computed.
+   */
   inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_solve_values_with_qr_method(matrix);
   }
 
+  /**
+   * @brief Continues solving eigenvalues using the QR method.
+   *
+   * This function continues the process of computing eigenvalues using the QR
+   * method, which may have been started previously. It is useful for iterative
+   * refinement of eigenvalue calculations.
+   */
   inline void continue_solving_eigen_values(void) {
     this->_continue_solving_values_with_qr_method();
   }
 
+  /**
+   * @brief Computes the eigenvectors of a square matrix using the inverse
+   * iteration method.
+   *
+   * This function takes a square matrix as input and computes its eigenvectors
+   * by internally invoking the inverse iteration method. The results are stored
+   * within the class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input square matrix whose eigenvectors are to be
+   * computed.
+   */
   inline void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+  /**
+   * @brief Computes both eigenvalues and eigenvectors of a square matrix.
+   *
+   * This function computes the eigenvalues using the QR method and the
+   * eigenvectors using the inverse iteration method, storing the results
+   * within the class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input square matrix whose eigenvalues and eigenvectors
+   * are to be computed.
+   */
   inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_values_with_qr_method(matrix);
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
+  /**
+   * @brief Retrieves the computed eigenvalues.
+   * This function returns the eigenvalues computed by the QR method as a
+   * vector.
+   * @return std::vector<T> A vector containing the eigenvalues.
+   * */
   inline std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
+  /**
+   * @brief Retrieves the computed eigenvalues.
+   * This function returns the eigenvalues computed by the QR method as an
+   * array.
+   * @return std::array<T, M> An array containing the eigenvalues.
+   * */
   inline std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
+  /**
+   * @brief Retrieves the computed eigenvectors.
+   * This function returns the eigenvectors computed by the inverse iteration
+   * method as a matrix.
+   * @return Matrix<T, M, M> A matrix containing the eigenvectors.
+   */
   inline Matrix<T, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
   }
 
+  /**
+   * @brief Retrieves the Hessenberg form of the matrix.
+   * This function returns the Hessenberg form of the matrix computed during the
+   * QR method.
+   * @return Matrix<T, M, M> A matrix in Hessenberg form.
+   */
   inline void set_iteration_max(const std::size_t &iteration_max_in) {
     this->iteration_max = iteration_max_in;
   }
 
+  /**
+   * @brief Sets the minimum division value for numerical stability.
+   * This function sets the minimum value used to avoid division by zero in
+   * numerical computations.
+   * @param division_min_in The minimum division value.
+   */
   inline void set_division_min(const T &division_min_in) {
     this->division_min = division_min_in;
   }
 
+  /**
+   * @brief Sets a small value for numerical stability.
+   * This function sets a small value used to determine convergence in the QR
+   * method.
+   * @param small_value_in The small value for numerical stability.
+   */
   inline void set_small_value(const T &small_value_in) {
     this->small_value = small_value_in;
   }
 
+  /**
+   * @brief Sets the decay rate for GMRES k.
+   * This function sets the decay rate for the GMRES k method, which is used in
+   * iterative methods for solving linear systems.
+   * @param gmres_k_decay_rate_in The decay rate for GMRES k.
+   */
   inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
     this->gmres_k_decay_rate = gmres_k_decay_rate_in;
   }
 
+  /**
+   * @brief Retrieves the Hessenberg form of the matrix.
+   * This function returns the Hessenberg form of the matrix computed during the
+   * QR method.
+   * @return Matrix<T, M, M> A matrix in Hessenberg form.
+   */
   inline Matrix<T, M, M> check_validity(const Matrix<T, M, M> &matrix) {
     Matrix<T, M, M> result =
         matrix * this->_eigen_vectors -
@@ -184,6 +305,13 @@ protected:
 
 protected:
   /* Function */
+
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
     std::array<T, M> u;
@@ -244,6 +372,12 @@ protected:
     this->_Hessen = R;
   }
 
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _qr_decomposition(Matrix<T, M, M> &Q, Matrix<T, M, M> &R,
                                 const Matrix<T, M, M> &A) {
     R = A;
@@ -309,6 +443,14 @@ protected:
     }
   }
 
+  /**
+   * @brief Computes the Wilkinson shift for the QR method.
+   * This function computes the Wilkinson shift, which is used to improve the
+   * convergence of the QR algorithm for eigenvalue computation.
+   * @param A The input square matrix from which the Wilkinson shift is
+   * computed.
+   * @return T The computed Wilkinson shift value.
+   */
   inline T _wilkinson_shift(const Matrix<T, M, M> &A) {
     T a11 = A(M - 2, M - 2);
     T a12 = A(M - 2, M - 1);
@@ -331,6 +473,12 @@ protected:
     return (dmu1 <= dmu2) ? mu1 : mu2;
   }
 
+  /**
+   * @brief Continues solving eigenvalues using the QR method.
+   * This function continues the process of computing eigenvalues using the QR
+   * method, which may have been started previously. It is useful for iterative
+   * refinement of eigenvalue calculations.
+   */
   inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
       Matrix<T, M, M> A = this->_Hessen;
@@ -363,12 +511,26 @@ protected:
     }
   }
 
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A0 The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _solve_values_with_qr_method(const Matrix<T, M, M> &A0) {
     this->_hessenberg(A0);
 
     this->_continue_solving_values_with_qr_method();
   }
 
+  /**
+   * @brief Solves eigenvectors using the inverse iteration method.
+   * This function computes the eigenvectors of a square matrix using the
+   * inverse iteration method, which is applied to each eigenvalue computed by
+   * the QR method.
+   * @param matrix The input square matrix whose eigenvectors are to be
+   * computed.
+   */
   inline void
   _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
 
@@ -414,6 +576,17 @@ protected:
   }
 };
 
+/**
+ * @brief EigenSolverComplex is a template class for computing eigenvalues and
+ * eigenvectors of complex square matrices.
+ *
+ * This class provides methods to solve eigenvalues and eigenvectors using the
+ * QR algorithm, with optional Hessenberg reduction and Wilkinson shift. It
+ * supports both std::vector and std::array storage for eigenvalues.
+ *
+ * @tparam T Type of the matrix elements (e.g., float, double).
+ * @tparam M Size of the square matrix (number of rows and columns).
+ */
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
 /* Constructor */
@@ -510,58 +683,160 @@ public:
 
 public:
   /* Function */
+
+  /**
+   * @brief Computes the eigenvalues of a complex square matrix using the QR
+   * method.
+   *
+   * This function takes a complex square matrix as input and computes its
+   * eigenvalues by internally invoking the QR algorithm. The results are stored
+   * within the class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input complex square matrix whose eigenvalues are to be
+   * computed.
+   */
   inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_solve_with_qr_method(matrix);
   }
 
+  /**
+   * @brief Continues solving eigenvalues using the QR method.
+   *
+   * This function continues the process of computing eigenvalues using the QR
+   * method, which may have been started previously. It is useful for iterative
+   * refinement of eigenvalue calculations.
+   */
   inline void continue_solving_eigen_values(void) {
     this->_continue_solving_values_with_qr_method();
   }
 
+  /**
+   * @brief Computes the eigenvectors of a complex square matrix using the
+   * inverse iteration method.
+   *
+   * This function takes a complex square matrix as input and computes its
+   * eigenvectors by internally invoking the inverse iteration method. The
+   * results are stored within the class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input complex square matrix whose eigenvectors are to be
+   * computed.
+   */
   inline void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
+  /**
+   * @brief Computes both eigenvalues and eigenvectors of a complex square
+   * matrix.
+   *
+   * This function computes the eigenvalues using the QR method and the
+   * eigenvectors using the inverse iteration method, storing the results
+   * within the class instance.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The dimension of the square matrix.
+   * @param matrix The input complex square matrix whose eigenvalues and
+   * eigenvectors are to be computed.
+   */
   inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
     this->_solve_with_qr_method(matrix);
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
+  /**
+   * @brief Retrieves the computed eigenvalues.
+   * This function returns the eigenvalues computed by the QR method as a
+   * vector.
+   * @return std::vector<Complex<T>> A vector containing the eigenvalues.
+   * */
   inline std::vector<Complex<T>> get_eigen_values(void) {
     return this->_eigen_values;
   }
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
+  /**
+   * @brief Retrieves the computed eigenvalues.
+   * This function returns the eigenvalues computed by the QR method as an
+   * array.
+   * @return std::array<Complex<T>, M> An array containing the eigenvalues.
+   * */
   inline std::array<Complex<T>, M> get_eigen_values(void) {
     return this->_eigen_values;
   }
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
+  /**
+   * @brief Retrieves the computed eigenvectors.
+   * This function returns the eigenvectors computed by the inverse iteration
+   * method as a matrix.
+   * @return Matrix<Complex<T>, M, M> A matrix containing the eigenvectors.
+   */
   inline Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
     return this->_eigen_vectors;
   }
 
+  /**
+   * @brief Retrieves the Hessenberg form of the matrix.
+   * This function returns the Hessenberg form of the matrix computed during the
+   * QR method.
+   * @return Matrix<Complex<T>, M, M> A matrix in Hessenberg form.
+   */
   inline void set_iteration_max(const std::size_t &iteration_max_in) {
     this->iteration_max = iteration_max_in;
   }
 
+  /**
+   * @brief Sets the maximum number of iterations for eigenvector computation.
+   * This function sets the maximum number of iterations for computing
+   * eigenvectors using the inverse iteration method.
+   * @param iteration_max_for_eigen_vector_in The maximum number of iterations
+   * for eigenvector computation.
+   */
   inline void set_iteration_max_for_eigen_vector(
       const std::size_t &iteration_max_for_eigen_vector_in) {
     this->iteration_max_for_eigen_vector = iteration_max_for_eigen_vector_in;
   }
 
+  /**
+   * @brief Sets the minimum division value for numerical stability.
+   * This function sets the minimum value used to avoid division by zero in
+   * numerical computations.
+   * @param division_min_in The minimum division value.
+   */
   inline void set_division_min(const T &division_min_in) {
     this->division_min = division_min_in;
   }
 
+  /**
+   * @brief Sets a small value for numerical stability.
+   * This function sets a small value used to determine convergence in the QR
+   * method.
+   * @param small_value_in The small value for numerical stability.
+   */
   inline void set_small_value(const T &small_value_in) {
     this->small_value = small_value_in;
   }
 
+  /**
+   * @brief Sets the decay rate for GMRES k.
+   * This function sets the decay rate for the GMRES k method, which is used in
+   * iterative methods for solving linear systems.
+   * @param gmres_k_decay_rate_in The decay rate for GMRES k.
+   */
   inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
     this->gmres_k_decay_rate = gmres_k_decay_rate_in;
   }
 
+  /**
+   * @brief Retrieves the Hessenberg form of the matrix.
+   * This function returns the Hessenberg form of the matrix computed during the
+   * QR method.
+   * @return Matrix<Complex<T>, M, M> A matrix in Hessenberg form.
+   */
   inline Matrix<Complex<T>, M, M>
   check_validity(const Matrix<T, M, M> &matrix) {
     Matrix<Complex<T>, M, M> result =
@@ -597,6 +872,13 @@ protected:
 
 protected:
   /* Function */
+
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _hessenberg(const Matrix<T, M, M> &A) {
     Matrix<T, M, M> R = A;
     std::array<T, M> u;
@@ -657,6 +939,12 @@ protected:
     this->_Hessen = Base::Matrix::convert_matrix_real_to_complex(R);
   }
 
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
                                 Matrix<Complex<T>, M, M> &R,
                                 const Matrix<Complex<T>, M, M> &A) {
@@ -728,6 +1016,14 @@ protected:
     }
   }
 
+  /**
+   * @brief Computes the Wilkinson shift for the QR method.
+   * This function computes the Wilkinson shift, which is used to improve the
+   * convergence of the QR algorithm for eigenvalue computation.
+   * @param A The input square matrix from which the Wilkinson shift is
+   * computed.
+   * @return Complex<T> The computed Wilkinson shift value.
+   */
   inline Complex<T> _wilkinson_shift(const Matrix<Complex<T>, M, M> &A) {
     Complex<T> a11 = A(M - 2, M - 2);
     Complex<T> a12 = A(M - 2, M - 1);
@@ -749,12 +1045,24 @@ protected:
     }
   }
 
+  /**
+   * @brief Solves eigenvalues using the QR method.
+   * This function computes the eigenvalues of a square matrix using the QR
+   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
+   * @param A0 The input square matrix whose eigenvalues are to be computed.
+   */
   inline void _solve_with_qr_method(const Matrix<T, M, M> &A0) {
     this->_hessenberg(A0);
 
     this->_continue_solving_values_with_qr_method();
   }
 
+  /**
+   * @brief Continues solving eigenvalues using the QR method.
+   * This function continues the process of computing eigenvalues using the QR
+   * method, which may have been started previously. It is useful for iterative
+   * refinement of eigenvalue calculations.
+   */
   inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
       Matrix<Complex<T>, M, M> A = this->_Hessen;
@@ -787,6 +1095,14 @@ protected:
     }
   }
 
+  /**
+   * @brief Solves eigenvectors using the inverse iteration method.
+   * This function computes the eigenvectors of a square matrix using the
+   * inverse iteration method, which is applied to each eigenvalue computed by
+   * the QR method.
+   * @param matrix The input square matrix whose eigenvectors are to be
+   * computed.
+   */
   inline void
   _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
 
