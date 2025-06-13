@@ -1,3 +1,22 @@
+/**
+ * @file base_matrix_diagonal.hpp
+ * @brief Diagonal Matrix Operations for the Base::Matrix Namespace
+ *
+ * This header defines the DiagMatrix class template and a comprehensive set of
+ * operations for diagonal matrices within the Base::Matrix namespace. The code
+ * provides efficient, type-safe, and optionally loop-unrolled implementations
+ * for diagonal matrix arithmetic, including addition, subtraction,
+ * multiplication, division, inversion, and conversion between real and complex
+ * representations. It also supports interactions with dense matrices and
+ * vectors, as well as utility functions such as trace computation and dense
+ * matrix extraction.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __BASE_MATRIX_DIAGONAL_HPP__
 #define __BASE_MATRIX_DIAGONAL_HPP__
 
@@ -15,6 +34,19 @@
 namespace Base {
 namespace Matrix {
 
+/**
+ * @brief DiagMatrix is a fixed-size diagonal matrix class template.
+ *
+ * This class represents a diagonal matrix of size MxM, storing only the
+ * diagonal elements. The storage can be either std::vector<T> or std::array<T,
+ * M> depending on the
+ * __BASE_MATRIX_USE_STD_VECTOR__ macro.
+ *
+ * @tparam T Type of the matrix elements.
+ * @tparam M Size of the matrix (number of rows and columns).
+ *
+ * @note Only the diagonal elements are stored and manipulated.
+ */
 template <typename T, std::size_t M> class DiagMatrix {
 public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
@@ -80,26 +112,105 @@ public:
   }
 
   /* Function */
+
+  /**
+   * @brief Creates and returns an identity diagonal matrix.
+   *
+   * This static method constructs a diagonal matrix of size M x M,
+   * where all diagonal elements are set to 1 (of type T), and all
+   * off-diagonal elements are zero. The resulting matrix is an identity
+   * matrix in the context of diagonal matrices.
+   *
+   * @tparam T The type of the matrix elements.
+   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @return DiagMatrix<T, M> An identity diagonal matrix of type T and size M.
+   */
   static inline DiagMatrix<T, M> identity() {
     DiagMatrix<T, M> identity(std::vector<T>(M, static_cast<T>(1)));
 
     return identity;
   }
 
+  /**
+   * @brief Creates and returns a diagonal matrix filled with a specified value.
+   *
+   * This static method constructs a diagonal matrix of size M x M,
+   * where all diagonal elements are set to the specified value, and all
+   * off-diagonal elements are zero.
+   *
+   * @tparam T The type of the matrix elements.
+   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @param value The value to fill the diagonal elements.
+   * @return DiagMatrix<T, M> A diagonal matrix of type T and size M filled with
+   * the specified value.
+   */
   static inline DiagMatrix<T, M> full(const T &value) {
     DiagMatrix<T, M> full(std::vector<T>(M, value));
 
     return full;
   }
 
+  /**
+   * @brief Creates and returns a diagonal matrix filled with zeros.
+   *
+   * This static method constructs a diagonal matrix of size M x M,
+   * where all diagonal elements are set to zero, and all off-diagonal
+   * elements are also zero.
+   *
+   * @tparam T The type of the matrix elements.
+   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @return DiagMatrix<T, M> A diagonal matrix of type T and size M filled with
+   * zeros.
+   */
   T &operator[](std::size_t index) { return this->data[index]; }
 
+  /**
+   * @brief Accesses the diagonal element at the specified index.
+   *
+   * This method provides read-only access to the diagonal element at the
+   * specified index. If the index is out of bounds, it returns the last
+   * element in the diagonal.
+   *
+   * @param index The index of the diagonal element to access.
+   * @return const T& A constant reference to the diagonal element at the
+   * specified index.
+   */
   const T &operator[](std::size_t index) const { return this->data[index]; }
 
+  /**
+   * @brief Accesses the diagonal element at the specified index.
+   *
+   * This method provides read-write access to the diagonal element at the
+   * specified index. If the index is out of bounds, it returns the last
+   * element in the diagonal.
+   *
+   * @param index The index of the diagonal element to access.
+   * @return T& A reference to the diagonal element at the specified index.
+   */
   constexpr std::size_t rows() const { return M; }
 
+  /**
+   * @brief Returns the number of columns in the diagonal matrix.
+   *
+   * Since this is a square matrix, the number of columns is equal to the
+   * number of rows.
+   *
+   * @return std::size_t The number of columns in the diagonal matrix.
+   */
   constexpr std::size_t cols() const { return M; }
 
+  /**
+   * @brief Returns a vector representing the specified row of the diagonal
+   * matrix.
+   *
+   * For a diagonal matrix, only the diagonal element at the given row index is
+   * non-zero. If the provided row index is out of bounds (greater than or equal
+   * to M), it is clamped to the last valid index.
+   *
+   * @param row The index of the row to retrieve.
+   * @return Vector<T, M> A vector with only the diagonal element at the
+   * specified row set, all other elements are zero.
+   */
   inline Vector<T, M> get_row(std::size_t row) const {
     if (row >= M) {
       row = M - 1;
@@ -111,6 +222,18 @@ public:
     return result;
   }
 
+  /**
+   * @brief Returns a vector representing the specified column of the diagonal
+   * matrix.
+   *
+   * For a diagonal matrix, only the diagonal element at the given column index
+   * is non-zero. If the provided column index is out of bounds (greater than or
+   * equal to M), it is clamped to the last valid index.
+   *
+   * @param col The index of the column to retrieve.
+   * @return Vector<T, M> A vector with only the diagonal element at the
+   * specified column set, all other elements are zero.
+   */
   inline DiagMatrix<T, M> inv(T division_min) const {
     DiagMatrix<T, M> result;
 
@@ -135,6 +258,16 @@ namespace DiagMatrixAddDiagMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise addition of two diagonal matrices.
+   *
+   * This function recursively computes the sum of two diagonal matrices A and
+   * B, storing the result in the provided result matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after addition.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] + B[M_idx];
@@ -144,12 +277,33 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise addition of two diagonal matrices.
+   *
+   * This function serves as the base case for the recursive addition of two
+   * diagonal matrices A and B, storing the result in the provided result
+   * matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after addition.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] + B[0];
   }
 };
 
+/**
+ * @brief Computes the element-wise addition of two diagonal matrices.
+ *
+ * This function initiates the recursive computation of the sum of two diagonal
+ * matrices A and B, storing the result in the provided result matrix.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param result The resulting diagonal matrix after addition.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
@@ -158,6 +312,17 @@ inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
 
 } // namespace DiagMatrixAddDiagMatrix
 
+/**
+ * @brief Adds two diagonal matrices element-wise.
+ *
+ * This function computes the sum of two diagonal matrices A and B, returning a
+ * new diagonal matrix that contains the element-wise sums of the corresponding
+ * diagonal elements.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after addition.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
@@ -182,6 +347,17 @@ namespace DiagMatrixAddMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise addition of a diagonal matrix and a dense
+   * matrix.
+   *
+   * This function recursively computes the sum of a diagonal matrix A and a
+   * dense matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix.
+   * @param result The resulting dense matrix after addition.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
@@ -192,12 +368,34 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise addition of a diagonal matrix and a dense
+   * matrix.
+   *
+   * This function serves as the base case for the recursive addition of a
+   * diagonal matrix A and a dense matrix B, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param result The resulting dense matrix after addition.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<0, 0>(result.template get<0, 0>() + A[0]);
   }
 };
 
+/**
+ * @brief Computes the element-wise addition of a diagonal matrix and a dense
+ * matrix.
+ *
+ * This function initiates the recursive computation of the sum of a diagonal
+ * matrix A and a dense matrix B, storing the result in the provided result
+ * matrix.
+ *
+ * @param A The diagonal matrix.
+ * @param result The resulting dense matrix after addition.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
   Core<T, M, M - 1>::compute(A, result);
@@ -205,6 +403,17 @@ inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
 } // namespace DiagMatrixAddMatrix
 
+/**
+ * @brief Adds a diagonal matrix to a dense matrix element-wise.
+ *
+ * This function computes the sum of a diagonal matrix A and a dense matrix B,
+ * returning a new dense matrix that contains the element-wise sums of the
+ * corresponding diagonal elements.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix.
+ * @return Matrix<T, M, M> The resulting dense matrix after addition.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, M> &B) {
@@ -225,6 +434,17 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/**
+ * @brief Adds a dense matrix to a diagonal matrix element-wise.
+ *
+ * This function computes the sum of a dense matrix A and a diagonal matrix B,
+ * returning a new dense matrix that contains the element-wise sums of the
+ * corresponding diagonal elements.
+ *
+ * @param A The dense matrix.
+ * @param B The diagonal matrix.
+ * @return Matrix<T, M, M> The resulting dense matrix after addition.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
                                  const DiagMatrix<T, M> &B) {
@@ -250,6 +470,15 @@ namespace DiagMatrixMinus {
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t I_idx> struct Loop {
+  /**
+   * @brief Computes the element-wise negation of a diagonal matrix.
+   *
+   * This function recursively computes the negation of a diagonal matrix A,
+   * storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix to negate.
+   * @param result The resulting diagonal matrix after negation.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     result[I_idx] = -A[I_idx];
     Loop<T, M, I_idx - 1>::compute(A, result);
@@ -258,11 +487,29 @@ template <typename T, std::size_t M, std::size_t I_idx> struct Loop {
 
 // row recursion termination
 template <typename T, std::size_t M> struct Loop<T, M, 0> {
+  /**
+   * @brief Computes the element-wise negation of a diagonal matrix.
+   *
+   * This function serves as the base case for the recursive negation of a
+   * diagonal matrix A, storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix to negate.
+   * @param result The resulting diagonal matrix after negation.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     result[0] = -A[0];
   }
 };
 
+/**
+ * @brief Computes the element-wise negation of a diagonal matrix.
+ *
+ * This function initiates the recursive computation of the negation of a
+ * diagonal matrix A, storing the result in the provided result matrix.
+ *
+ * @param A The diagonal matrix to negate.
+ * @param result The resulting diagonal matrix after negation.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
   Loop<T, M, M - 1>::compute(A, result);
@@ -270,6 +517,16 @@ inline void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
 
 } // namespace DiagMatrixMinus
 
+/**
+ * @brief Negates a diagonal matrix element-wise.
+ *
+ * This function computes the negation of a diagonal matrix A, returning a new
+ * diagonal matrix that contains the negated values of the corresponding
+ * diagonal elements.
+ *
+ * @param A The diagonal matrix to negate.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after negation.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
   DiagMatrix<T, M> result;
@@ -294,6 +551,16 @@ namespace DiagMatrixSubDiagMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise subtraction of two diagonal matrices.
+   *
+   * This function recursively computes the difference between two diagonal
+   * matrices A and B, storing the result in the provided result matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] - B[M_idx];
@@ -303,12 +570,34 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise subtraction of two diagonal matrices.
+   *
+   * This function serves as the base case for the recursive subtraction of two
+   * diagonal matrices A and B, storing the result in the provided result
+   * matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] - B[0];
   }
 };
 
+/**
+ * @brief Computes the element-wise subtraction of two diagonal matrices.
+ *
+ * This function initiates the recursive computation of the difference between
+ * two diagonal matrices A and B, storing the result in the provided result
+ * matrix.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param result The resulting diagonal matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
@@ -317,6 +606,17 @@ inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
 
 } // namespace DiagMatrixSubDiagMatrix
 
+/**
+ * @brief Subtracts two diagonal matrices element-wise.
+ *
+ * This function computes the difference between two diagonal matrices A and B,
+ * returning a new diagonal matrix that contains the element-wise differences
+ * of the corresponding diagonal elements.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
@@ -341,6 +641,17 @@ namespace DiagMatrixSubMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise subtraction of a diagonal matrix from a
+   * dense matrix.
+   *
+   * This function recursively computes the difference between a dense matrix A
+   * and a diagonal matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The dense matrix.
+   * @param B The diagonal matrix.
+   * @param result The resulting dense matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
@@ -351,12 +662,34 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise subtraction of a diagonal matrix from a
+   * dense matrix.
+   *
+   * This function serves as the base case for the recursive subtraction of a
+   * diagonal matrix A from a dense matrix, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param result The resulting dense matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<0, 0>(result.template get<0, 0>() + A[0]);
   }
 };
 
+/**
+ * @brief Computes the element-wise subtraction of a diagonal matrix from a
+ * dense matrix.
+ *
+ * This function initiates the recursive computation of the difference between
+ * a dense matrix A and a diagonal matrix B, storing the result in the provided
+ * result matrix.
+ *
+ * @param A The diagonal matrix.
+ * @param result The resulting dense matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline void compute(const Matrix<T, M, M> &A, Matrix<T, M, M> &result) {
   Core<T, M, M - 1>::compute(A, result);
@@ -364,6 +697,17 @@ inline void compute(const Matrix<T, M, M> &A, Matrix<T, M, M> &result) {
 
 } // namespace DiagMatrixSubMatrix
 
+/**
+ * @brief Subtracts a diagonal matrix from a dense matrix element-wise.
+ *
+ * This function computes the difference between a diagonal matrix A and a
+ * dense matrix B, returning a new dense matrix that contains the element-wise
+ * differences of the corresponding diagonal elements.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix.
+ * @return Matrix<T, M, M> The resulting dense matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, M> &B) {
@@ -388,6 +732,16 @@ namespace MatrixSubDiagMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise subtraction of a diagonal matrix from a
+   * dense matrix.
+   *
+   * This function recursively computes the difference between a dense matrix A
+   * and a diagonal matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param result The resulting dense matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
     result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() -
@@ -398,11 +752,33 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise subtraction of a diagonal matrix from a
+   * dense matrix.
+   *
+   * This function serves as the base case for the recursive subtraction of a
+   * diagonal matrix A from a dense matrix, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param result The resulting dense matrix after subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     result.template set<0, 0>(result.template get<0, 0>() - A[0]);
   }
 };
 
+/**
+ * @brief Computes the element-wise subtraction of a diagonal matrix from a
+ * dense matrix.
+ *
+ * This function initiates the recursive computation of the difference between
+ * a dense matrix A and a diagonal matrix B, storing the result in the provided
+ * result matrix.
+ *
+ * @param A The diagonal matrix.
+ * @param result The resulting dense matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
   Core<T, M, M - 1>::compute(A, result);
@@ -410,6 +786,17 @@ inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
 } // namespace MatrixSubDiagMatrix
 
+/**
+ * @brief Subtracts a dense matrix from a diagonal matrix element-wise.
+ *
+ * This function computes the difference between a diagonal matrix A and a
+ * dense matrix B, returning a new dense matrix that contains the element-wise
+ * differences of the corresponding diagonal elements.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix.
+ * @return Matrix<T, M, M> The resulting dense matrix after subtraction.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
                                  const DiagMatrix<T, M> &B) {
@@ -435,6 +822,17 @@ namespace DiagMatrixMultiplyScalar {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise multiplication of a diagonal matrix by a
+   * scalar.
+   *
+   * This function recursively computes the product of a diagonal matrix and a
+   * scalar, storing the result in the provided result matrix.
+   *
+   * @param mat The diagonal matrix to multiply.
+   * @param scalar The scalar value to multiply with.
+   * @param result The resulting diagonal matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = mat[M_idx] * scalar;
@@ -444,12 +842,36 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise multiplication of a diagonal matrix by a
+   * scalar.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * diagonal matrix and a scalar, storing the result in the provided result
+   * matrix.
+   *
+   * @param mat The diagonal matrix to multiply.
+   * @param scalar The scalar value to multiply with.
+   * @param result The resulting diagonal matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     result[0] = mat[0] * scalar;
   }
 };
 
+/**
+ * @brief Computes the element-wise multiplication of a diagonal matrix by a
+ * scalar.
+ *
+ * This function initiates the recursive computation of the product of a
+ * diagonal matrix and a scalar, storing the result in the provided result
+ * matrix.
+ *
+ * @param mat The diagonal matrix to multiply.
+ * @param scalar The scalar value to multiply with.
+ * @param result The resulting diagonal matrix after multiplication.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &mat, const T &scalar,
                     DiagMatrix<T, M> &result) {
@@ -458,6 +880,17 @@ inline void compute(const DiagMatrix<T, M> &mat, const T &scalar,
 
 } // namespace DiagMatrixMultiplyScalar
 
+/**
+ * @brief Multiplies a diagonal matrix by a scalar.
+ *
+ * This function computes the product of a diagonal matrix A and a scalar value,
+ * returning a new diagonal matrix that contains the products of the
+ * corresponding diagonal elements with the scalar.
+ *
+ * @param A The diagonal matrix to multiply.
+ * @param scalar The scalar value to multiply with.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after multiplication.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
   DiagMatrix<T, M> result;
@@ -477,6 +910,17 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
   return result;
 }
 
+/**
+ * @brief Multiplies a scalar by a diagonal matrix.
+ *
+ * This function computes the product of a scalar value and a diagonal matrix A,
+ * returning a new diagonal matrix that contains the products of the
+ * corresponding diagonal elements with the scalar.
+ *
+ * @param scalar The scalar value to multiply with.
+ * @param A The diagonal matrix to multiply.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after multiplication.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
   DiagMatrix<T, M> result;
@@ -501,6 +945,16 @@ namespace DiagMatrixMultiplyVector {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a vector.
+   *
+   * This function recursively computes the product of a diagonal matrix A and a
+   * vector vec, storing the result in the provided result vector.
+   *
+   * @param A The diagonal matrix.
+   * @param vec The vector to multiply with.
+   * @param result The resulting vector after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
                       Vector<T, M> &result) {
     result[M_idx] = A[M_idx] * vec[M_idx];
@@ -510,12 +964,34 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a vector.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * diagonal matrix A and a vector vec, storing the result in the provided
+   * result vector.
+   *
+   * @param A The diagonal matrix.
+   * @param vec The vector to multiply with.
+   * @param result The resulting vector after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
                       Vector<T, M> &result) {
     result[0] = A[0] * vec[0];
   }
 };
 
+/**
+ * @brief Computes the multiplication of a diagonal matrix with a vector.
+ *
+ * This function initiates the recursive computation of the product of a
+ * diagonal matrix A and a vector vec, storing the result in the provided
+ * result vector.
+ *
+ * @param A The diagonal matrix.
+ * @param vec The vector to multiply with.
+ * @param result The resulting vector after multiplication.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                     Vector<T, M> &result) {
@@ -524,6 +1000,17 @@ inline void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
 
 } // namespace DiagMatrixMultiplyVector
 
+/**
+ * @brief Multiplies a diagonal matrix by a vector.
+ *
+ * This function computes the product of a diagonal matrix A and a vector vec,
+ * returning a new vector that contains the products of the corresponding
+ * diagonal elements with the vector elements.
+ *
+ * @param A The diagonal matrix to multiply.
+ * @param vec The vector to multiply with.
+ * @return Vector<T, M> The resulting vector after multiplication.
+ */
 template <typename T, std::size_t M>
 inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
                               const Vector<T, M> &vec) {
@@ -549,6 +1036,16 @@ namespace DiagMatrixMultiplyDiagMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise multiplication of two diagonal matrices.
+   *
+   * This function recursively computes the product of two diagonal matrices A
+   * and B, storing the result in the provided result matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] * B[M_idx];
@@ -558,12 +1055,33 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise multiplication of two diagonal matrices.
+   *
+   * This function serves as the base case for the recursive multiplication of
+   * two diagonal matrices A and B, storing the result in the provided result
+   * matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] * B[0];
   }
 };
 
+/**
+ * @brief Computes the element-wise multiplication of two diagonal matrices.
+ *
+ * This function initiates the recursive computation of the product of two
+ * diagonal matrices A and B, storing the result in the provided result matrix.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param result The resulting diagonal matrix after multiplication.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
@@ -572,6 +1090,17 @@ inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
 
 } // namespace DiagMatrixMultiplyDiagMatrix
 
+/**
+ * @brief Multiplies two diagonal matrices element-wise.
+ *
+ * This function computes the product of two diagonal matrices A and B,
+ * returning a new diagonal matrix that contains the products of the
+ * corresponding diagonal elements.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after multiplication.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
@@ -599,6 +1128,17 @@ namespace DiagMatrixMultiplyMatrix {
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t K>
 struct Core {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a dense
+   * matrix.
+   *
+   * This function recursively computes the product of a diagonal matrix A and a
+   * dense matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
@@ -610,6 +1150,18 @@ struct Core {
 // Specialization for K == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct Core<T, M, N, J, 0> {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a dense
+   * matrix.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * diagonal matrix A and a dense matrix B, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
 
@@ -620,6 +1172,17 @@ struct Core<T, M, N, J, 0> {
 // Column-wise multiplication
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct Column {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a dense
+   * matrix, column by column.
+   *
+   * This function recursively computes the product of a diagonal matrix A and a
+   * dense matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Core<T, M, N, J, N - 1>::compute(A, B, result);
@@ -629,12 +1192,35 @@ struct Column {
 
 // Specialization for J == 0
 template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
+  /**
+   * @brief Computes the multiplication of a diagonal matrix with a dense
+   * matrix, starting from the first column.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * diagonal matrix A and a dense matrix B, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Core<T, M, N, 0, N - 1>::compute(A, B, result);
   }
 };
 
+/**
+ * @brief Computes the multiplication of a diagonal matrix with a dense matrix.
+ *
+ * This function initiates the recursive computation of the product of a
+ * diagonal matrix A and a dense matrix B, storing the result in the provided
+ * result matrix.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix.
+ * @param result The resulting dense matrix after multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result) {
@@ -643,6 +1229,17 @@ inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
 
 } // namespace DiagMatrixMultiplyMatrix
 
+/**
+ * @brief Multiplies a diagonal matrix by a dense matrix.
+ *
+ * This function computes the product of a diagonal matrix A and a dense matrix
+ * B, returning a new dense matrix that contains the products of the
+ * corresponding diagonal elements with the dense matrix elements.
+ *
+ * @param A The diagonal matrix to multiply.
+ * @param B The dense matrix to multiply with.
+ * @return Matrix<T, M, N> The resulting dense matrix after multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, N> &B) {
@@ -671,6 +1268,17 @@ namespace MatrixMultiplyDiagMatrix {
 template <typename T, std::size_t L, std::size_t M, std::size_t I,
           std::size_t J>
 struct Core {
+  /**
+   * @brief Computes the multiplication of a dense matrix with a diagonal
+   * matrix.
+   *
+   * This function recursively computes the product of a dense matrix A and a
+   * diagonal matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The dense matrix.
+   * @param B The diagonal matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
 
@@ -682,6 +1290,18 @@ struct Core {
 // Specialization for J = 0
 template <typename T, std::size_t L, std::size_t M, std::size_t I>
 struct Core<T, L, M, I, 0> {
+  /**
+   * @brief Computes the multiplication of a dense matrix with a diagonal
+   * matrix.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * dense matrix A and a diagonal matrix B, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The dense matrix.
+   * @param B The diagonal matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
 
@@ -692,6 +1312,17 @@ struct Core<T, L, M, I, 0> {
 // Column-wise multiplication
 template <typename T, std::size_t L, std::size_t M, std::size_t I>
 struct Column {
+  /**
+   * @brief Computes the multiplication of a dense matrix with a diagonal
+   * matrix, column by column.
+   *
+   * This function recursively computes the product of a dense matrix A and a
+   * diagonal matrix B, storing the result in the provided result matrix.
+   *
+   * @param A The dense matrix.
+   * @param B The diagonal matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Core<T, L, M, I, M - 1>::compute(A, B, result);
@@ -701,12 +1332,35 @@ struct Column {
 
 // Specialization for I = 0
 template <typename T, std::size_t L, std::size_t M> struct Column<T, L, M, 0> {
+  /**
+   * @brief Computes the multiplication of a dense matrix with a diagonal
+   * matrix, starting from the first column.
+   *
+   * This function serves as the base case for the recursive multiplication of a
+   * dense matrix A and a diagonal matrix B, storing the result in the provided
+   * result matrix.
+   *
+   * @param A The dense matrix.
+   * @param B The diagonal matrix.
+   * @param result The resulting dense matrix after multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Core<T, L, M, 0, M - 1>::compute(A, B, result);
   }
 };
 
+/**
+ * @brief Computes the multiplication of a dense matrix with a diagonal matrix.
+ *
+ * This function initiates the recursive computation of the product of a dense
+ * matrix A and a diagonal matrix B, storing the result in the provided result
+ * matrix.
+ *
+ * @param A The dense matrix.
+ * @param B The diagonal matrix.
+ * @param result The resulting dense matrix after multiplication.
+ */
 template <typename T, std::size_t L, std::size_t M>
 inline void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                     Matrix<T, L, M> &result) {
@@ -715,6 +1369,17 @@ inline void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
 
 } // namespace MatrixMultiplyDiagMatrix
 
+/**
+ * @brief Multiplies a dense matrix by a diagonal matrix.
+ *
+ * This function computes the product of a dense matrix A and a diagonal matrix
+ * B, returning a new dense matrix that contains the products of the
+ * corresponding diagonal elements with the dense matrix elements.
+ *
+ * @param A The dense matrix to multiply.
+ * @param B The diagonal matrix to multiply with.
+ * @return Matrix<T, L, M> The resulting dense matrix after multiplication.
+ */
 template <typename T, std::size_t L, std::size_t M>
 inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
                                  const DiagMatrix<T, M> &B) {
@@ -742,6 +1407,15 @@ namespace DiagMatrixTrace {
 
 // Base case: when index reaches 0
 template <typename T, std::size_t M, std::size_t Index> struct Core {
+  /**
+   * @brief Computes the trace of a diagonal matrix.
+   *
+   * This function recursively computes the trace of a diagonal matrix A by
+   * summing its diagonal elements.
+   *
+   * @param A The diagonal matrix.
+   * @return T The computed trace of the diagonal matrix.
+   */
   static T compute(const DiagMatrix<T, M> &A) {
     return A[Index] + Core<T, M, Index - 1>::compute(A);
   }
@@ -749,9 +1423,27 @@ template <typename T, std::size_t M, std::size_t Index> struct Core {
 
 // Specialization for the base case when Index is 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the trace of a diagonal matrix when the index is 0.
+   *
+   * This function serves as the base case for the recursive computation of the
+   * trace of a diagonal matrix A, returning its first diagonal element.
+   *
+   * @param A The diagonal matrix.
+   * @return T The first diagonal element of the diagonal matrix.
+   */
   static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
 };
 
+/**
+ * @brief Computes the trace of a diagonal matrix.
+ *
+ * This function initiates the recursive computation of the trace of a diagonal
+ * matrix A by summing its diagonal elements.
+ *
+ * @param A The diagonal matrix.
+ * @return T The computed trace of the diagonal matrix.
+ */
 template <typename T, std::size_t M>
 inline T compute(const DiagMatrix<T, M> &A) {
   return Core<T, M, M - 1>::compute(A);
@@ -759,6 +1451,15 @@ inline T compute(const DiagMatrix<T, M> &A) {
 
 } // namespace DiagMatrixTrace
 
+/**
+ * @brief Computes the trace of a diagonal matrix.
+ *
+ * This function calculates the trace of a diagonal matrix A by summing its
+ * diagonal elements, returning the computed trace value.
+ *
+ * @param A The diagonal matrix.
+ * @return T The computed trace of the diagonal matrix.
+ */
 template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
   T trace = static_cast<T>(0);
@@ -783,6 +1484,16 @@ namespace DiagMatrixToDense {
 
 // Diagonal element assignment core
 template <typename T, std::size_t M, std::size_t I> struct Core {
+  /**
+   * @brief Assigns the diagonal elements of a diagonal matrix to a dense
+   * matrix.
+   *
+   * This function recursively assigns the diagonal elements of a diagonal
+   * matrix A to the corresponding positions in a dense matrix result.
+   *
+   * @param result The resulting dense matrix.
+   * @param A The diagonal matrix from which to assign elements.
+   */
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
 
     result.template set<I, I>(A[I]);
@@ -792,11 +1503,31 @@ template <typename T, std::size_t M, std::size_t I> struct Core {
 
 // Base case for recursion termination
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Assigns the first diagonal element of a diagonal matrix to a dense
+   * matrix.
+   *
+   * This function serves as the base case for the recursive assignment of
+   * diagonal elements from a diagonal matrix A to a dense matrix result.
+   *
+   * @param result The resulting dense matrix.
+   * @param A The diagonal matrix from which to assign the first element.
+   */
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
     result.template set<0, 0>(A[0]);
   }
 };
 
+/**
+ * @brief Computes the dense matrix representation of a diagonal matrix.
+ *
+ * This function initiates the recursive assignment of diagonal elements from a
+ * diagonal matrix A to a dense matrix result, effectively creating a dense
+ * representation of the diagonal matrix.
+ *
+ * @param A The diagonal matrix to convert to dense format.
+ * @param result The resulting dense matrix after conversion.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
   Core<T, M, M - 1>::assign(result, A);
@@ -804,6 +1535,16 @@ inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
 
 } // namespace DiagMatrixToDense
 
+/**
+ * @brief Converts a diagonal matrix to a dense matrix.
+ *
+ * This function creates a dense matrix representation of a diagonal matrix A,
+ * where the diagonal elements of A are assigned to the corresponding diagonal
+ * positions in the resulting dense matrix.
+ *
+ * @param A The diagonal matrix to convert.
+ * @return Matrix<T, M, M> The resulting dense matrix after conversion.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
   Matrix<T, M, M> result;
@@ -828,6 +1569,17 @@ namespace DiagMatrixDivideDiagMatrix {
 
 // M_idx < M
 template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Computes the element-wise division of two diagonal matrices.
+   *
+   * This function recursively computes the division of two diagonal matrices A
+   * and B, storing the result in the provided result matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[M_idx] =
@@ -838,12 +1590,36 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
 
 // Termination condition: M_idx == 0
 template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Computes the element-wise division of two diagonal matrices when the
+   * index is 0.
+   *
+   * This function serves as the base case for the recursive division of two
+   * diagonal matrices A and B, storing the result in the provided result
+   * matrix.
+   *
+   * @param A The first diagonal matrix.
+   * @param B The second diagonal matrix.
+   * @param result The resulting diagonal matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[0] = A[0] / Base::Utility::avoid_zero_divide(B[0], division_min);
   }
 };
 
+/**
+ * @brief Computes the element-wise division of two diagonal matrices.
+ *
+ * This function initiates the recursive computation of the division of two
+ * diagonal matrices A and B, storing the result in the provided result matrix.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param result The resulting diagonal matrix after division.
+ * @param division_min The minimum value to avoid division by zero.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result, const T division_min) {
@@ -852,6 +1628,18 @@ inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
 
 } // namespace DiagMatrixDivideDiagMatrix
 
+/**
+ * @brief Divides two diagonal matrices element-wise.
+ *
+ * This function computes the element-wise division of two diagonal matrices A
+ * and B, returning a new diagonal matrix that contains the results of the
+ * division of the corresponding diagonal elements.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param division_min The minimum value to avoid division by zero.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after division.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
                                          const DiagMatrix<T, M> &B,
@@ -873,6 +1661,20 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/**
+ * @brief Divides two diagonal matrices element-wise with partitioning.
+ *
+ * This function computes the element-wise division of two diagonal matrices A
+ * and B, returning a new diagonal matrix that contains the results of the
+ * division of the corresponding diagonal elements, limited to a specified
+ * matrix size.
+ *
+ * @param A The first diagonal matrix.
+ * @param B The second diagonal matrix.
+ * @param division_min The minimum value to avoid division by zero.
+ * @param matrix_size The size of the matrices to consider for the operation.
+ * @return DiagMatrix<T, M> The resulting diagonal matrix after division.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M>
 diag_divide_diag_partition(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
@@ -894,6 +1696,19 @@ namespace DiagMatrixInverseMultiplyMatrix {
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t K>
 struct Column {
+  /**
+   * @brief Computes the element-wise division of a dense matrix by a diagonal
+   * matrix.
+   *
+   * This function recursively computes the division of each element in a dense
+   * matrix B by the corresponding diagonal element in a diagonal matrix A,
+   * storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix to divide.
+   * @param result The resulting dense matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, K) =
@@ -905,6 +1720,20 @@ struct Column {
 // if K == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct Column<T, M, N, J, 0> {
+  /**
+   * @brief Computes the element-wise division of the first column of a dense
+   * matrix by a diagonal matrix.
+   *
+   * This function serves as the base case for the recursive division of each
+   * element in the first column of a dense matrix B by the corresponding
+   * diagonal element in a diagonal matrix A, storing the result in the
+   * provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix to divide.
+   * @param result The resulting dense matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, 0) =
@@ -914,6 +1743,19 @@ struct Column<T, M, N, J, 0> {
 
 // Column-wise multiplication
 template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
+  /**
+   * @brief Computes the element-wise division of a dense matrix by a diagonal
+   * matrix, row by row.
+   *
+   * This function recursively computes the division of each element in a dense
+   * matrix B by the corresponding diagonal element in a diagonal matrix A,
+   * storing the result in the provided result matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix to divide.
+   * @param result The resulting dense matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     Column<T, M, N, J, N - 1>::compute(A, B, result, division_min);
@@ -923,12 +1765,39 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
 
 // if J == 0
 template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
+  /**
+   * @brief Computes the element-wise division of the first row of a dense
+   * matrix by a diagonal matrix.
+   *
+   * This function serves as the base case for the recursive division of each
+   * element in the first row of a dense matrix B by the corresponding diagonal
+   * element in a diagonal matrix A, storing the result in the provided result
+   * matrix.
+   *
+   * @param A The diagonal matrix.
+   * @param B The dense matrix to divide.
+   * @param result The resulting dense matrix after division.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     Column<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
   }
 };
 
+/**
+ * @brief Computes the element-wise division of a dense matrix by a diagonal
+ * matrix.
+ *
+ * This function initiates the recursive computation of the division of each
+ * element in a dense matrix B by the corresponding diagonal element in a
+ * diagonal matrix A, storing the result in the provided result matrix.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix to divide.
+ * @param result The resulting dense matrix after division.
+ * @param division_min The minimum value to avoid division by zero.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result, T division_min) {
@@ -937,6 +1806,19 @@ inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
 
 } // namespace DiagMatrixInverseMultiplyMatrix
 
+/**
+ * @brief Divides each element of a dense matrix by the corresponding diagonal
+ * element of a diagonal matrix.
+ *
+ * This function computes the element-wise division of each element in a dense
+ * matrix B by the corresponding diagonal element in a diagonal matrix A,
+ * returning a new dense matrix that contains the results of the division.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix to divide.
+ * @param division_min The minimum value to avoid division by zero.
+ * @return Matrix<T, M, N> The resulting dense matrix after division.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
                                                const Matrix<T, M, N> &B,
@@ -961,6 +1843,21 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
   return result;
 }
 
+/**
+ * @brief Divides each element of a dense matrix by the corresponding diagonal
+ * element of a diagonal matrix, with partitioning.
+ *
+ * This function computes the element-wise division of each element in a dense
+ * matrix B by the corresponding diagonal element in a diagonal matrix A,
+ * returning a new dense matrix that contains the results of the division,
+ * limited to a specified matrix size.
+ *
+ * @param A The diagonal matrix.
+ * @param B The dense matrix to divide.
+ * @param division_min The minimum value to avoid division by zero.
+ * @param matrix_size The size of the matrices to consider for the operation.
+ * @return Matrix<T, M, N> The resulting dense matrix after division.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
     const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B, const T &division_min,
@@ -983,6 +1880,16 @@ namespace DiagMatrixRealToComplex {
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t I>
 struct DiagMatrixRealToComplexLoop {
+  /**
+   * @brief Converts a real diagonal matrix to a complex diagonal matrix.
+   *
+   * This function recursively converts each element of a real diagonal matrix
+   * to a complex diagonal matrix, where the real part is preserved and the
+   * imaginary part is set to zero.
+   *
+   * @param From_matrix The real diagonal matrix to convert.
+   * @param To_matrix The resulting complex diagonal matrix after conversion.
+   */
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
     To_matrix[I].real = From_matrix[I];
@@ -993,12 +1900,33 @@ struct DiagMatrixRealToComplexLoop {
 /* Specialization to end the recursion */
 template <typename T, std::size_t M>
 struct DiagMatrixRealToComplexLoop<T, M, 0> {
+  /**
+   * @brief Converts the first element of a real diagonal matrix to a complex
+   * diagonal matrix.
+   *
+   * This function serves as the base case for the recursive conversion of a
+   * real diagonal matrix to a complex diagonal matrix, where the first element
+   * is converted.
+   *
+   * @param From_matrix The real diagonal matrix to convert.
+   * @param To_matrix The resulting complex diagonal matrix after conversion.
+   */
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
     To_matrix[0].real = From_matrix[0];
   }
 };
 
+/**
+ * @brief Converts a real diagonal matrix to a complex diagonal matrix.
+ *
+ * This function initiates the recursive conversion of a real diagonal matrix
+ * to a complex diagonal matrix, where each element is converted to a complex
+ * number with the real part preserved and the imaginary part set to zero.
+ *
+ * @param From_matrix The real diagonal matrix to convert.
+ * @param To_matrix The resulting complex diagonal matrix after conversion.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &From_matrix,
                     DiagMatrix<Complex<T>, M> &To_matrix) {
@@ -1007,6 +1935,17 @@ inline void compute(const DiagMatrix<T, M> &From_matrix,
 
 } // namespace DiagMatrixRealToComplex
 
+/**
+ * @brief Converts a real diagonal matrix to a complex diagonal matrix.
+ *
+ * This function creates a complex diagonal matrix from a real diagonal matrix
+ * A, where each element of A is converted to a complex number with the real
+ * part preserved and the imaginary part set to zero.
+ *
+ * @param From_matrix The real diagonal matrix to convert.
+ * @return DiagMatrix<Complex<T>, M> The resulting complex diagonal matrix after
+ * conversion.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<Complex<T>, M>
 convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
@@ -1033,6 +1972,17 @@ namespace GetRealDiagMatrixFromComplex {
 
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t I> struct Loop {
+  /**
+   * @brief Extracts the real part of a complex diagonal matrix and stores it in
+   * a real diagonal matrix.
+   *
+   * This function recursively extracts the real part of each element in a
+   * complex diagonal matrix and stores it in a corresponding position in a real
+   * diagonal matrix.
+   *
+   * @param From_matrix The complex diagonal matrix to extract from.
+   * @param To_matrix The resulting real diagonal matrix after extraction.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[I] = From_matrix[I].real;
@@ -1042,12 +1992,34 @@ template <typename T, std::size_t M, std::size_t I> struct Loop {
 
 /* Specialization to end the recursion */
 template <typename T, std::size_t M> struct Loop<T, M, 0> {
+  /**
+   * @brief Extracts the real part of the first element of a complex diagonal
+   * matrix and stores it in a real diagonal matrix.
+   *
+   * This function serves as the base case for the recursive extraction of the
+   * real part of a complex diagonal matrix, storing the first element in a real
+   * diagonal matrix.
+   *
+   * @param From_matrix The complex diagonal matrix to extract from.
+   * @param To_matrix The resulting real diagonal matrix after extraction.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[0] = From_matrix[0].real;
   }
 };
 
+/**
+ * @brief Extracts the real part of a complex diagonal matrix and stores it in a
+ * real diagonal matrix.
+ *
+ * This function initiates the recursive extraction of the real part of each
+ * element in a complex diagonal matrix and stores it in a corresponding
+ * position in a real diagonal matrix.
+ *
+ * @param From_matrix The complex diagonal matrix to extract from.
+ * @param To_matrix The resulting real diagonal matrix after extraction.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<Complex<T>, 3> &From_matrix,
                     DiagMatrix<T, 3> &To_matrix) {
@@ -1056,6 +2028,16 @@ inline void compute(const DiagMatrix<Complex<T>, 3> &From_matrix,
 
 } // namespace GetRealDiagMatrixFromComplex
 
+/**
+ * @brief Extracts the real part of a complex diagonal matrix and stores it in a
+ * real diagonal matrix.
+ *
+ * This function creates a real diagonal matrix from a complex diagonal matrix
+ * A, where each element of A is converted to its real part.
+ *
+ * @param From_matrix The complex diagonal matrix to extract from.
+ * @return DiagMatrix<T, M> The resulting real diagonal matrix after extraction.
+ */
 template <typename T, std::size_t M>
 inline auto get_real_matrix_from_complex_matrix(
     const DiagMatrix<Complex<T>, M> &From_matrix) -> DiagMatrix<T, M> {
@@ -1082,6 +2064,17 @@ namespace GetImagDiagMatrixFromComplex {
 
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t I> struct Loop {
+  /**
+   * @brief Extracts the imaginary part of a complex diagonal matrix and stores
+   * it in a real diagonal matrix.
+   *
+   * This function recursively extracts the imaginary part of each element in a
+   * complex diagonal matrix and stores it in a corresponding position in a real
+   * diagonal matrix.
+   *
+   * @param From_matrix The complex diagonal matrix to extract from.
+   * @param To_matrix The resulting real diagonal matrix after extraction.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[I] = From_matrix[I].imag;
@@ -1091,12 +2084,34 @@ template <typename T, std::size_t M, std::size_t I> struct Loop {
 
 /* Specialization to end the recursion */
 template <typename T, std::size_t M> struct Loop<T, M, 0> {
+  /**
+   * @brief Extracts the imaginary part of the first element of a complex
+   * diagonal matrix and stores it in a real diagonal matrix.
+   *
+   * This function serves as the base case for the recursive extraction of the
+   * imaginary part of a complex diagonal matrix, storing the first element in a
+   * real diagonal matrix.
+   *
+   * @param From_matrix The complex diagonal matrix to extract from.
+   * @param To_matrix The resulting real diagonal matrix after extraction.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[0] = From_matrix[0].imag;
   }
 };
 
+/**
+ * @brief Extracts the imaginary part of a complex diagonal matrix and stores it
+ * in a real diagonal matrix.
+ *
+ * This function initiates the recursive extraction of the imaginary part of
+ * each element in a complex diagonal matrix and stores it in a corresponding
+ * position in a real diagonal matrix.
+ *
+ * @param From_matrix The complex diagonal matrix to extract from.
+ * @param To_matrix The resulting real diagonal matrix after extraction.
+ */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                     DiagMatrix<T, M> &To_matrix) {
@@ -1105,6 +2120,16 @@ inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
 
 } // namespace GetImagDiagMatrixFromComplex
 
+/**
+ * @brief Extracts the imaginary part of a complex diagonal matrix and stores it
+ * in a real diagonal matrix.
+ *
+ * This function creates a real diagonal matrix from a complex diagonal matrix
+ * A, where each element of A is converted to its imaginary part.
+ *
+ * @param From_matrix The complex diagonal matrix to extract from.
+ * @return DiagMatrix<T, M> The resulting real diagonal matrix after extraction.
+ */
 template <typename T, std::size_t M>
 inline auto get_imag_matrix_from_complex_matrix(
     const DiagMatrix<Complex<T>, M> &From_matrix) -> DiagMatrix<T, M> {
