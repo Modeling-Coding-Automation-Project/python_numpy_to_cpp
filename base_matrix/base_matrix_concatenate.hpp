@@ -1,3 +1,21 @@
+/**
+ * @file base_matrix_concatenate.hpp
+ * @brief Provides template functions and structures for concatenating matrices
+ * (dense, diagonal, and sparse) both vertically and horizontally.
+ *
+ * This header defines a comprehensive set of template-based utilities for
+ * concatenating matrices of various types (dense, diagonal, and compiled
+ * sparse) in both vertical and horizontal directions. The code supports
+ * compile-time matrix size and type deduction, and provides both loop-based and
+ * template-recursive implementations for efficient operations. It also includes
+ * helper structures for managing sparse matrix metadata during concatenation.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __BASE_MATRIX_CONCATENATE_HPP__
 #define __BASE_MATRIX_CONCATENATE_HPP__
 
@@ -21,6 +39,25 @@ namespace Matrix {
 template <typename T, std::size_t M, std::size_t P, std::size_t N,
           std::size_t Row>
 struct VerticalConcatenateLoop {
+
+  /**
+   * @brief Concatenates two matrices vertically and stores the result in a
+   * third matrix.
+   *
+   * This static function copies the rows of matrix A and matrix B into the
+   * output matrix Y, stacking A on top of B. The operation is performed
+   * recursively for each row index.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in matrix A.
+   * @tparam P The number of columns in matrix B.
+   * @tparam N The number of rows in matrices A and B.
+   * @tparam Row The current row index for recursion.
+   * @param A The first input matrix (top part of the result).
+   * @param B The second input matrix (bottom part of the result).
+   * @param Y The output matrix with M + P rows and N columns, containing the
+   * concatenated result.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Row], Y.data[Row]);
@@ -32,6 +69,21 @@ struct VerticalConcatenateLoop {
 // end of recursion
 template <typename T, std::size_t M, std::size_t P, std::size_t N>
 struct VerticalConcatenateLoop<T, M, P, N, 0> {
+  /**
+   * @brief Base case for the recursive vertical concatenation loop.
+   *
+   * This static function copies the first row of matrix A and matrix B into
+   * the output matrix Y, completing the vertical concatenation.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in matrix A.
+   * @tparam P The number of columns in matrix B.
+   * @tparam N The number of rows in matrices A and B.
+   * @param A The first input matrix (top part of the result).
+   * @param B The second input matrix (bottom part of the result).
+   * @param Y The output matrix with M + P rows and N columns, containing the
+   * concatenated result.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[0], Y.data[0]);
@@ -39,6 +91,23 @@ struct VerticalConcatenateLoop<T, M, P, N, 0> {
   }
 };
 
+/**
+ * @brief Concatenates two matrices vertically and stores the result in a third
+ * matrix.
+ *
+ * This function takes two matrices A and B, concatenates them vertically, and
+ * stores the result in matrix Y. The operation is performed using a template
+ * loop to handle the row-wise copying of elements.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @param Y The output matrix with M + P rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_VERTICAL_CONCATENATE(const Matrix<T, M, N> &A,
@@ -47,6 +116,21 @@ COMPILED_SPARSE_VERTICAL_CONCATENATE(const Matrix<T, M, N> &A,
   VerticalConcatenateLoop<T, M, P, N, N - 1>::compute(A, B, Y);
 }
 
+/**
+ * @brief Updates a vertically concatenated matrix with two input matrices.
+ *
+ * This function takes two matrices A and B, and updates the output matrix Y
+ * by concatenating A on top of B. The operation is performed using either a
+ * loop-based or template-based approach, depending on the compilation flags.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, M, N> &A,
@@ -66,6 +150,23 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates two matrices vertically and returns the result as a new
+ * matrix.
+ *
+ * This function takes two matrices A and B, concatenates them vertically, and
+ * returns a new matrix Y containing the result. The operation is performed
+ * using a template loop to handle the row-wise copying of elements.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline auto concatenate_vertically(const Matrix<T, M, N> &A,
                                    const Matrix<T, P, N> &B)
@@ -94,6 +195,21 @@ template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a dense matrix and a
+ * diagonal matrix.
+ *
+ * This function takes a dense matrix A and a diagonal matrix B, and updates the
+ * output matrix Y by concatenating A on top of B. The operation is performed
+ * using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void update_vertically_concatenated_matrix(
     typename ConcatenateVertically::DenseAndDiag<T, M, N>::Y_Type &Y,
@@ -108,6 +224,23 @@ inline void update_vertically_concatenated_matrix(
                                                           Y.values);
 }
 
+/**
+ * @brief Concatenates a dense matrix and a diagonal matrix vertically and
+ * returns the result as a new matrix.
+ *
+ * This function takes a dense matrix A and a diagonal matrix B, concatenates
+ * them vertically, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + N rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline auto concatenate_vertically(const Matrix<T, M, N> &A,
                                    const DiagMatrix<T, N> &B) ->
@@ -146,6 +279,22 @@ struct DenseAndSparse {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a dense matrix and a
+ * compiled sparse matrix.
+ *
+ * This function takes a dense matrix A and a compiled sparse matrix B, and
+ * updates the output matrix Y by concatenating A on top of B. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_B, typename RowPointers_B>
 inline void update_vertically_concatenated_matrix(
@@ -164,6 +313,24 @@ inline void update_vertically_concatenated_matrix(
                       ((M * N) + RowPointers_B::list[P])>(B.values, Y.values);
 }
 
+/**
+ * @brief Concatenates a dense matrix and a compiled sparse matrix vertically
+ * and returns the result as a new matrix.
+ *
+ * This function takes a dense matrix A and a compiled sparse matrix B,
+ * concatenates them vertically, and returns a new matrix Y containing the
+ * result. The operation is performed using compiled sparse operations to
+ * efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_B, typename RowPointers_B>
 inline auto concatenate_vertically(
@@ -202,6 +369,21 @@ template <typename T, std::size_t M, std::size_t P> struct DiagAndDense {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a diagonal matrix and a
+ * dense matrix.
+ *
+ * This function takes a diagonal matrix A and a dense matrix B, and updates the
+ * output matrix Y by concatenating A on top of B. The operation is performed
+ * using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t P>
 inline void update_vertically_concatenated_matrix(
     typename ConcatenateVertically::DiagAndDense<T, M, P>::Y_Type &Y,
@@ -215,6 +397,23 @@ inline void update_vertically_concatenated_matrix(
                                                                 Y.values);
 }
 
+/**
+ * @brief Concatenates a diagonal matrix and a dense matrix vertically and
+ * returns the result as a new matrix.
+ *
+ * This function takes a diagonal matrix A and a dense matrix B, concatenates
+ * them vertically, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t P>
 inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
                                    const Matrix<T, P, M> &B) ->
@@ -249,6 +448,19 @@ template <typename T, std::size_t M> struct DiagAndDiag {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with two diagonal matrices.
+ *
+ * This function takes two diagonal matrices A and B, and updates the output
+ * matrix Y by concatenating A on top of B. The operation is performed using
+ * compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M>
 inline void update_vertically_concatenated_matrix(
     typename ConcatenateVertically::DiagAndDiag<T, M>::Y_Type &Y,
@@ -261,6 +473,21 @@ inline void update_vertically_concatenated_matrix(
   Base::Utility::copy<T, 0, M, M, M, (2 * M)>(sparse_B.values, Y.values);
 }
 
+/**
+ * @brief Concatenates two diagonal matrices vertically and returns the result
+ * as a new matrix.
+ *
+ * This function takes two diagonal matrices A and B, concatenates them
+ * vertically, and returns a new matrix Y containing the result. The operation
+ * is performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with 2 * M rows and M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M>
 inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
                                    const DiagMatrix<T, M> &B) ->
@@ -299,6 +526,21 @@ struct DiagAndSparse {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a diagonal matrix and a
+ * compiled sparse matrix.
+ *
+ * This function takes a diagonal matrix A and a compiled sparse matrix B, and
+ * updates the output matrix Y by concatenating A on top of B. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
           typename RowPointers_B>
 inline void update_vertically_concatenated_matrix(
@@ -315,6 +557,23 @@ inline void update_vertically_concatenated_matrix(
                       (M + RowPointers_B::list[P])>(B.values, Y.values);
 }
 
+/**
+ * @brief Concatenates a diagonal matrix and a compiled sparse matrix
+ * vertically and returns the result as a new matrix.
+ *
+ * This function takes a diagonal matrix A and a compiled sparse matrix B,
+ * concatenates them vertically, and returns a new matrix Y containing the
+ * result. The operation is performed using compiled sparse operations to
+ * efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
           typename RowPointers_B>
 inline auto concatenate_vertically(
@@ -357,6 +616,22 @@ struct SparseAndDense {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a compiled sparse matrix
+ * and a dense matrix.
+ *
+ * This function takes a compiled sparse matrix A and a dense matrix B, and
+ * updates the output matrix Y by concatenating A on top of B. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t P>
 inline void update_vertically_concatenated_matrix(
@@ -374,6 +649,24 @@ inline void update_vertically_concatenated_matrix(
                                                           Y.values);
 }
 
+/**
+ * @brief Concatenates a compiled sparse matrix and a dense matrix vertically
+ * and returns the result as a new matrix.
+ *
+ * This function takes a compiled sparse matrix A and a dense matrix B,
+ * concatenates them vertically, and returns a new matrix Y containing the
+ * result. The operation is performed using compiled sparse operations to
+ * efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t P>
 inline auto concatenate_vertically(
@@ -416,6 +709,21 @@ struct SparseAndDiag {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with a compiled sparse matrix
+ * and a diagonal matrix.
+ *
+ * This function takes a compiled sparse matrix A and a diagonal matrix B, and
+ * updates the output matrix Y by concatenating A on top of B. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void update_vertically_concatenated_matrix(
@@ -432,6 +740,23 @@ inline void update_vertically_concatenated_matrix(
                       (RowPointers_A::list[M] + N)>(sparse_B.values, Y.values);
 }
 
+/**
+ * @brief Concatenates a compiled sparse matrix and a diagonal matrix vertically
+ * and returns the result as a new matrix.
+ *
+ * This function takes a compiled sparse matrix A and a diagonal matrix B,
+ * concatenates them vertically, and returns a new matrix Y containing the
+ * result. The operation is performed using compiled sparse operations to
+ * efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in both matrices A and B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + N rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline auto concatenate_vertically(
@@ -477,6 +802,22 @@ struct SparseAndSparse {
 
 } // namespace ConcatenateVertically
 
+/**
+ * @brief Updates a vertically concatenated matrix with two compiled sparse
+ * matrices.
+ *
+ * This function takes two compiled sparse matrices A and B, and updates the
+ * output matrix Y by concatenating A on top of B. The operation is performed
+ * using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
@@ -497,6 +838,23 @@ inline void update_vertically_concatenated_matrix(
       B.values, Y.values);
 }
 
+/**
+ * @brief Concatenates two compiled sparse matrices vertically and returns the
+ * result as a new matrix.
+ *
+ * This function takes two compiled sparse matrices A and B, concatenates them
+ * vertically, and returns a new matrix Y containing the result. The operation
+ * is performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in both matrices A and B.
+ * @tparam P The number of columns in matrix B.
+ * @param A The first input matrix (top part of the result).
+ * @param B The second input matrix (bottom part of the result).
+ * @return A new matrix Y with M + P rows and N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
@@ -517,9 +875,27 @@ inline auto concatenate_vertically(
 }
 
 /* Functions: Concatenate horizontally */
+
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Row>
 struct CopyRowsFirstLoop {
+  /**
+   * @brief Concatenates matrix A into the first N columns of matrix Y.
+   *
+   * This static function copies the contents of matrix A into the corresponding
+   * rows and columns of matrix Y, starting from the first column. The resulting
+   * matrix Y has additional columns (N + P) to accommodate further
+   * concatenation. The function uses a utility copy method for the current row
+   * and recursively processes the remaining rows.
+   *
+   * @tparam T   The data type of the matrix elements.
+   * @tparam M   The number of columns in the matrices.
+   * @tparam N   The number of rows in matrix A.
+   * @tparam P   The number of additional rows in matrix Y.
+   * @tparam Row The current row being processed (used for recursion).
+   * @param A    The input matrix to be concatenated.
+   * @param Y    The output matrix with concatenated columns.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(A(Row), Y(Row));
     CopyRowsFirstLoop<T, M, N, P, Row - 1>::compute(A, Y);
@@ -528,11 +904,39 @@ struct CopyRowsFirstLoop {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 struct CopyRowsFirstLoop<T, M, N, P, 0> {
+  /**
+   * @brief Base case for the recursive copy of rows from matrix A to matrix Y.
+   *
+   * This static function copies the contents of the first row of matrix A into
+   * the corresponding row of matrix Y. It serves as the base case for the
+   * recursive function that processes all rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the matrices.
+   * @tparam N The number of rows in matrix A.
+   * @tparam P The number of additional rows in matrix Y.
+   * @param A The input matrix to be concatenated.
+   * @param Y The output matrix with concatenated columns.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(A(0), Y(0));
   }
 };
 
+/**
+ * @brief Concatenates matrix A into the first N columns of matrix Y.
+ *
+ * This function copies the contents of matrix A into the corresponding rows and
+ * columns of matrix Y, starting from the first column. The resulting matrix Y
+ * has additional columns (N + P) to accommodate further concatenation.
+ *
+ * @tparam T   The data type of the matrix elements.
+ * @tparam M   The number of columns in the matrices.
+ * @tparam N   The number of rows in matrix A.
+ * @tparam P   The number of additional rows in matrix Y.
+ * @param A    The input matrix to be concatenated.
+ * @param Y    The output matrix with concatenated columns.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1(const Matrix<T, M, N> &A,
@@ -543,6 +947,23 @@ COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1(const Matrix<T, M, N> &A,
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Row>
 struct CopyRowsSecondLoop {
+  /**
+   * @brief Concatenates matrix B into the last P columns of matrix Y.
+   *
+   * This static function copies the contents of matrix B into the corresponding
+   * rows and columns of matrix Y, starting from the column index N. The
+   * resulting matrix Y has additional columns (N + P) to accommodate the
+   * concatenation. The function uses a utility copy method for the current row
+   * and recursively processes the remaining rows.
+   *
+   * @tparam T   The data type of the matrix elements.
+   * @tparam M   The number of columns in the matrices.
+   * @tparam N   The number of rows in matrix A.
+   * @tparam P   The number of additional rows in matrix Y.
+   * @tparam Row The current row being processed (used for recursion).
+   * @param B    The input matrix to be concatenated.
+   * @param Y    The output matrix with concatenated columns.
+   */
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(B(Row), Y(N + Row));
     CopyRowsSecondLoop<T, M, N, P, Row - 1>::compute(B, Y);
@@ -551,11 +972,39 @@ struct CopyRowsSecondLoop {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 struct CopyRowsSecondLoop<T, M, N, P, 0> {
+  /**
+   * @brief Base case for the recursive copy of rows from matrix B to matrix Y.
+   *
+   * This static function copies the contents of the first row of matrix B into
+   * the corresponding row of matrix Y, starting from column index N. It serves
+   * as the base case for the recursive function that processes all rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the matrices.
+   * @tparam N The number of rows in matrix A.
+   * @tparam P The number of additional rows in matrix Y.
+   * @param B The input matrix to be concatenated.
+   * @param Y The output matrix with concatenated columns.
+   */
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(B(0), Y(N));
   }
 };
 
+/**
+ * @brief Concatenates matrix B into the last P columns of matrix Y.
+ *
+ * This function copies the contents of matrix B into the corresponding rows and
+ * columns of matrix Y, starting from the column index N. The resulting matrix Y
+ * has additional columns (N + P) to accommodate the concatenation.
+ *
+ * @tparam T   The data type of the matrix elements.
+ * @tparam M   The number of columns in the matrices.
+ * @tparam N   The number of rows in matrix A.
+ * @tparam P   The number of additional rows in matrix Y.
+ * @param B    The input matrix to be concatenated.
+ * @param Y    The output matrix with concatenated columns.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2(const Matrix<T, M, P> &B,
@@ -563,6 +1012,21 @@ COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2(const Matrix<T, M, P> &B,
   CopyRowsSecondLoop<T, M, N, P, P - 1>::compute(B, Y);
 }
 
+/**
+ * @brief Updates a horizontally concatenated matrix with two matrices.
+ *
+ * This function takes two matrices A and B, and updates the output matrix Y by
+ * concatenating A on the left and B on the right. The operation is performed
+ * using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
                                                     const Matrix<T, M, N> &A,
@@ -588,6 +1052,23 @@ inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates two matrices horizontally and returns the result as a new
+ * matrix.
+ *
+ * This function takes two matrices A and B, concatenates them horizontally, and
+ * returns a new matrix Y containing the result. The operation is performed
+ * using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + P columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
 inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
                                      const Matrix<T, M, P> &B)
@@ -606,6 +1087,29 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromDenseColumn {
+  /**
+   * @brief Copies a dense matrix column into a horizontally concatenated sparse
+   * matrix.
+   *
+   * This static function copies the value from the dense matrix A at position
+   * (I, J_idx) into the corresponding position in the sparse matrix Y, taking
+   * into account the specified offsets for columns and rows. It then
+   * recursively processes the previous column (J_idx - 1).
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the dense matrix A.
+   * @tparam N The number of rows in the dense matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam I The current row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param Y The output sparse matrix to be updated with the value from A.
+   * @param A The input dense matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -626,6 +1130,26 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
 struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
                                       Row_Offset, RowIndices_Y, RowPointers_Y,
                                       I, 0> {
+  /**
+   * @brief Copies the first column of a dense matrix into a horizontally
+   * concatenated sparse matrix.
+   *
+   * This static function copies the value from the dense matrix A at position
+   * (I, 0) into the corresponding position in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the dense matrix A.
+   * @tparam N The number of rows in the dense matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @param Y The output sparse matrix to be updated with the value from A.
+   * @param A The input dense matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -640,6 +1164,28 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
           std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDenseRow {
+  /**
+   * @brief Copies a dense matrix row into a horizontally concatenated sparse
+   * matrix.
+   *
+   * This static function copies the values from the dense matrix A at row I_idx
+   * into the corresponding positions in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows. It then recursively
+   * processes the next row (I_idx - 1).
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the dense matrix A.
+   * @tparam N The number of rows in the dense matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam I_idx The current row index being processed.
+   * @param Y The output sparse matrix to be updated with values from A.
+   * @param A The input dense matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -658,6 +1204,26 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
           typename RowIndices_Y, typename RowPointers_Y>
 struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
                                    Row_Offset, RowIndices_Y, RowPointers_Y, 0> {
+  /**
+   * @brief Copies the first row of a dense matrix into a horizontally
+   * concatenated sparse matrix.
+   *
+   * This static function copies the values from the dense matrix A at row 0
+   * into the corresponding positions in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the dense matrix A.
+   * @tparam N The number of rows in the dense matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @param Y The output sparse matrix to be updated with values from A.
+   * @param A The input dense matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -673,6 +1239,27 @@ template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
           std::size_t Column_Offset, std::size_t Row_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDiagRow {
+  /**
+   * @brief Copies a diagonal matrix row into a horizontally concatenated sparse
+   * matrix.
+   *
+   * This static function copies the value from the diagonal matrix B at index
+   * I_idx into the corresponding position in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows. It then recursively
+   * processes the previous row (I_idx - 1).
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the diagonal matrix B.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam I_idx The current row index being processed.
+   * @param Y The output sparse matrix to be updated with the value from B.
+   * @param B The input diagonal matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
@@ -692,6 +1279,25 @@ template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
           typename RowIndices_Y, typename RowPointers_Y>
 struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
                                   RowIndices_Y, RowPointers_Y, 0> {
+  /**
+   * @brief Copies the first row of a diagonal matrix into a horizontally
+   * concatenated sparse matrix.
+   *
+   * This static function copies the value from the diagonal matrix B at index 0
+   * into the corresponding position in the sparse matrix Y, taking into account
+   * the specified offsets for columns and rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the diagonal matrix B.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @param Y The output sparse matrix to be updated with the value from B.
+   * @param B The input diagonal matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
@@ -722,6 +1328,22 @@ template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a dense matrix and a
+ * diagonal matrix.
+ *
+ * This function takes a dense matrix A and a diagonal matrix B, and updates the
+ * output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::Y_Type &Y,
@@ -765,6 +1387,23 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a dense matrix and a diagonal matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a dense matrix A and a diagonal matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
                                      const DiagMatrix<T, M> &B) ->
@@ -785,6 +1424,31 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromSparseColumn {
+  /**
+   * @brief Copies a sparse matrix column into a horizontally concatenated
+   * sparse matrix.
+   *
+   * This static function copies the value from the sparse matrix A at position
+   * (I, J_idx) into the corresponding position in the sparse matrix Y, taking
+   * into account the specified offsets for columns and rows. It then
+   * recursively processes the previous column (J_idx - 1).
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the sparse matrix A.
+   * @tparam N The number of rows in the sparse matrix A.
+   * @tparam RowIndices_A The row indices for the sparse matrix A.
+   * @tparam RowPointers_A The row pointers for the sparse matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam I The current row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param Y The output sparse matrix to be updated with the value from A.
+   * @param A The input sparse matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
@@ -807,6 +1471,26 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
                                        Y_Col, Y_Row, Column_Offset, Row_Offset,
                                        RowIndices_Y, RowPointers_Y, I, 0> {
+  /**
+   * @brief Copies the first column of a sparse matrix into a horizontally
+   * concatenated sparse matrix.
+   *
+   * This static function copies the value from the sparse matrix A at position
+   * (I, 0) into the corresponding position in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the sparse matrix A.
+   * @tparam N The number of rows in the sparse matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @param Y The output sparse matrix to be updated with the value from A.
+   * @param A The input sparse matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
@@ -822,6 +1506,30 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           std::size_t Column_Offset, std::size_t Row_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromSparseRow {
+  /**
+   * @brief Copies a sparse matrix row into a horizontally concatenated sparse
+   * matrix.
+   *
+   * This static function copies the values from the sparse matrix A at row
+   * I_idx into the corresponding positions in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows. It then recursively
+   * processes the next row (I_idx - 1).
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the sparse matrix A.
+   * @tparam N The number of rows in the sparse matrix A.
+   * @tparam RowIndices_A The row indices for the sparse matrix A.
+   * @tparam RowPointers_A The row pointers for the sparse matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam I_idx The current row index being processed.
+   * @param Y The output sparse matrix to be updated with values from A.
+   * @param A The input sparse matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
@@ -842,6 +1550,26 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
                                     Y_Row, Column_Offset, Row_Offset,
                                     RowIndices_Y, RowPointers_Y, 0> {
+  /**
+   * @brief Copies the first row of a sparse matrix into a horizontally
+   * concatenated sparse matrix.
+   *
+   * This static function copies the values from the sparse matrix A at row 0
+   * into the corresponding positions in the sparse matrix Y, taking into
+   * account the specified offsets for columns and rows.
+   *
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of columns in the sparse matrix A.
+   * @tparam N The number of rows in the sparse matrix A.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Column_Offset The offset for columns in the sparse matrix Y.
+   * @tparam Row_Offset The offset for rows in the sparse matrix Y.
+   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
+   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @param Y The output sparse matrix to be updated with values from A.
+   * @param A The input sparse matrix from which values are copied.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
@@ -877,6 +1605,23 @@ struct DenseAndSparse {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a dense matrix and a
+ * sparse matrix.
+ *
+ * This function takes a dense matrix A and a sparse matrix B, and updates the
+ * output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam L The number of rows in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
@@ -931,6 +1676,24 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a dense matrix and a sparse matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a dense matrix A and a sparse matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam L The number of rows in matrix B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + L columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_B, typename RowPointers_B>
 inline auto concatenate_horizontally(
@@ -969,6 +1732,22 @@ template <typename T, std::size_t M, std::size_t N> struct DiagAndDense {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a diagonal matrix and
+ * a dense matrix.
+ *
+ * This function takes a diagonal matrix A and a dense matrix B, and updates the
+ * output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DiagAndDense<T, M, N>::Y_Type &Y,
@@ -1011,6 +1790,23 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a diagonal matrix and a dense matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a diagonal matrix A and a dense matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
                                      const Matrix<T, M, N> &B) ->
@@ -1045,6 +1841,19 @@ template <typename T, std::size_t M> struct DiagAndDiag {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with two diagonal matrices.
+ *
+ * This function takes two diagonal matrices A and B, and updates the output
+ * matrix Y by concatenating A on the left and B on the right. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M>
 inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DiagAndDiag<T, M>::Y_Type &Y,
@@ -1088,6 +1897,21 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates two diagonal matrices horizontally and returns the result
+ * as a new matrix.
+ *
+ * This function takes two diagonal matrices A and B, concatenates them
+ * horizontally, and returns a new matrix Y containing the result. The operation
+ * is performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and 2 * M columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M>
 inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
                                      const DiagMatrix<T, M> &B) ->
@@ -1126,6 +1950,22 @@ struct DiagAndSparse {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a diagonal matrix and
+ * a sparse matrix.
+ *
+ * This function takes a diagonal matrix A and a sparse matrix B, and updates
+ * the output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 inline void update_horizontally_concatenated_matrix(
@@ -1181,6 +2021,23 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a diagonal matrix and a sparse matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a diagonal matrix A and a sparse matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and M + N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
 inline auto concatenate_horizontally(
@@ -1223,6 +2080,23 @@ struct SparseAndDense {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a sparse matrix and a
+ * dense matrix.
+ *
+ * This function takes a sparse matrix A and a dense matrix B, and updates the
+ * output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @tparam L The number of rows in matrix A.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
 inline void update_horizontally_concatenated_matrix(
@@ -1279,6 +2153,24 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a sparse matrix and a dense matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a sparse matrix A and a dense matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix B.
+ * @tparam L The number of rows in matrix A.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + L columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A>
 inline auto concatenate_horizontally(
@@ -1321,6 +2213,22 @@ struct SparseAndDiag {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with a sparse matrix and a
+ * diagonal matrix.
+ *
+ * This function takes a sparse matrix A and a diagonal matrix B, and updates
+ * the output matrix Y by concatenating A on the left and B on the right. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void update_horizontally_concatenated_matrix(
@@ -1380,6 +2288,23 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates a sparse matrix and a diagonal matrix horizontally and
+ * returns the result as a new matrix.
+ *
+ * This function takes a sparse matrix A and a diagonal matrix B, concatenates
+ * them horizontally, and returns a new matrix Y containing the result. The
+ * operation is performed using compiled sparse operations to efficiently copy
+ * the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and M + N columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline auto concatenate_horizontally(
@@ -1425,6 +2350,21 @@ struct SparseAndSparse {
 
 } // namespace ConcatenateHorizontally
 
+/**
+ * @brief Updates a horizontally concatenated matrix with two sparse matrices.
+ *
+ * This function takes two sparse matrices A and B, and updates the output
+ * matrix Y by concatenating A on the left and B on the right. The operation is
+ * performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam L The number of rows in matrix B.
+ * @param Y The output matrix to be updated with the concatenated result.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
@@ -1495,6 +2435,23 @@ inline void update_horizontally_concatenated_matrix(
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
 
+/**
+ * @brief Concatenates two sparse matrices horizontally and returns the result
+ * as a new matrix.
+ *
+ * This function takes two sparse matrices A and B, concatenates them
+ * horizontally, and returns a new matrix Y containing the result. The operation
+ * is performed using compiled sparse operations to efficiently copy the values.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in both matrices A and B.
+ * @tparam N The number of rows in matrix A.
+ * @tparam L The number of rows in matrix B.
+ * @param A The first input matrix (left part of the result).
+ * @param B The second input matrix (right part of the result).
+ * @return A new matrix Y with M rows and N + L columns, containing the
+ * concatenated result.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B>
