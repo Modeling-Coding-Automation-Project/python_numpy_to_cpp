@@ -1,3 +1,23 @@
+/**
+ * @file python_numpy_base_simplified_action.hpp
+ * @brief Provides a set of template-based utilities for matrix manipulation,
+ * inspired by Python's NumPy, for C++ static matrices.
+ *
+ * This header defines the PythonNumpy namespace, which contains a comprehensive
+ * suite of template meta-programming utilities for manipulating matrices at
+ * compile time. The utilities support dense, diagonal, and sparse matrices, and
+ * provide operations such as row extraction, row setting, matrix substitution,
+ * block concatenation, tiling, and reshaping. The design is highly generic and
+ * leverages C++ templates for static size and type safety, enabling efficient
+ * and flexible matrix operations similar to those found in Python's NumPy
+ * library, but at compile time.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 #define __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 
@@ -20,6 +40,24 @@ namespace GetDenseMatrixOperation {
 template <typename T, std::size_t M, std::size_t N, std::size_t ROW,
           std::size_t COL_Index>
 struct GetRow_Loop {
+  /**
+   * @brief Computes a specific operation on the input matrix and stores the
+   * result in the provided result vector.
+   *
+   * This static function extracts a particular column (indexed by COL_Index)
+   * from the input matrix and assigns it to the result vector. It then
+   * recursively processes the remaining columns by invoking GetRow_Loop with a
+   * decremented column index.
+   *
+   * @tparam T         The data type of the matrix elements.
+   * @tparam M         The number of columns in the matrix.
+   * @tparam N         The number of rows in the matrix.
+   * @tparam ROW       The row index to operate on.
+   * @tparam COL_Index The current column index being processed.
+   * @param matrix     The input dense matrix of type DenseMatrix_Type<T, M, N>.
+   * @param result     The output dense matrix (vector) of type
+   * DenseMatrix_Type<T, M, 1> to store the computed result.
+   */
   static void compute(const DenseMatrix_Type<T, M, N> &matrix,
                       DenseMatrix_Type<T, M, 1> &result) {
 
@@ -30,6 +68,22 @@ struct GetRow_Loop {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t ROW>
 struct GetRow_Loop<T, M, N, ROW, 0> {
+  /**
+   * @brief Computes a specific operation on the input matrix and stores the
+   * result in the provided result vector.
+   *
+   * This static function extracts the first column (index 0) from the input
+   * matrix and assigns it to the result vector. It serves as the base case for
+   * the recursive processing of columns.
+   *
+   * @tparam T   The data type of the matrix elements.
+   * @tparam M   The number of columns in the matrix.
+   * @tparam N   The number of rows in the matrix.
+   * @tparam ROW The row index to operate on.
+   * @param matrix The input dense matrix of type DenseMatrix_Type<T, M, N>.
+   * @param result The output dense matrix (vector) of type
+   * DenseMatrix_Type<T, M, 1> to store the computed result.
+   */
   static void compute(const DenseMatrix_Type<T, M, N> &matrix,
                       DenseMatrix_Type<T, M, 1> &result) {
 
@@ -42,6 +96,20 @@ using GetRow = GetRow_Loop<T, M, N, ROW, M - 1>;
 
 } // namespace GetDenseMatrixOperation
 
+/**
+ * @brief Extracts a specific row from a dense matrix.
+ *
+ * This function template retrieves a specified row from a dense matrix and
+ * returns it as a new dense matrix (vector) of size M x 1.
+ *
+ * @tparam ROW The index of the row to extract.
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the matrix.
+ * @tparam N The number of rows in the matrix.
+ * @param matrix The input dense matrix from which to extract the row.
+ * @return DenseMatrix_Type<T, M, 1> A dense matrix (vector) containing the
+ * extracted row.
+ */
 template <std::size_t ROW, typename T, std::size_t M, std::size_t N>
 inline auto get_row(const DenseMatrix_Type<T, M, N> &matrix)
     -> DenseMatrix_Type<T, M, 1> {
@@ -55,14 +123,53 @@ inline auto get_row(const DenseMatrix_Type<T, M, N> &matrix)
 
 namespace GetDiagMatrixOperation {
 
+/**
+ * @brief Retrieves a specific row from a diagonal matrix.
+ *
+ * This function template extracts a specified row from a diagonal matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam M The number of columns in the diagonal matrix.
+ * @tparam Index The index of the row to extract.
+ * @return SparseAvailableGetRow<M, DiagAvailable<M>, Index> A sparse matrix
+ * (vector) containing the extracted row.
+ */
 template <std::size_t M, std::size_t Index>
 using DiagAvailableRow = SparseAvailableGetRow<M, DiagAvailable<M>, Index>;
 
+/**
+ * @brief Defines the type of a sparse matrix that can hold a specific row from
+ * a diagonal matrix.
+ *
+ * This type alias creates a sparse matrix type that can hold a specific row
+ * from a diagonal matrix, indexed by Index.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the diagonal matrix.
+ * @tparam Index The index of the row to extract.
+ */
 template <typename T, std::size_t M, std::size_t Index>
 using DiagAvailableRow_Type = SparseMatrix_Type<T, DiagAvailableRow<M, Index>>;
 
 template <typename T, std::size_t M, std::size_t ROW, std::size_t COL_Index>
 struct GetRow_Loop {
+  /**
+   * @brief Computes a specific operation on the input diagonal matrix and
+   * stores the result in the provided result vector.
+   *
+   * This static function extracts a particular column (indexed by COL_Index)
+   * from the input diagonal matrix and assigns it to the result vector. It then
+   * recursively processes the remaining columns by invoking GetRow_Loop with a
+   * decremented column index.
+   *
+   * @tparam T         The data type of the matrix elements.
+   * @tparam M         The number of columns in the matrix.
+   * @tparam ROW       The row index to operate on.
+   * @tparam COL_Index The current column index being processed.
+   * @param matrix     The input diagonal matrix of type DiagMatrix_Type<T, M>.
+   * @param result     The output diagonal matrix (vector) of type
+   * DiagAvailableRow_Type<T, M, ROW> to store the computed result.
+   */
   static void compute(const DiagMatrix_Type<T, M> &matrix,
                       DiagAvailableRow_Type<T, M, ROW> &result) {
 
@@ -73,6 +180,21 @@ struct GetRow_Loop {
 
 template <typename T, std::size_t M, std::size_t ROW>
 struct GetRow_Loop<T, M, ROW, 0> {
+  /**
+   * @brief Computes a specific operation on the input diagonal matrix and
+   * stores the result in the provided result vector.
+   *
+   * This static function extracts the first column (index 0) from the input
+   * diagonal matrix and assigns it to the result vector. It serves as the base
+   * case for the recursive processing of columns.
+   *
+   * @tparam T   The data type of the matrix elements.
+   * @tparam M   The number of columns in the matrix.
+   * @tparam ROW The row index to operate on.
+   * @param matrix The input diagonal matrix of type DiagMatrix_Type<T, M>.
+   * @param result The output diagonal matrix (vector) of type
+   * DiagAvailableRow_Type<T, M, ROW> to store the computed result.
+   */
   static void compute(const DiagMatrix_Type<T, M> &matrix,
                       DiagAvailableRow_Type<T, M, ROW> &result) {
 
@@ -80,11 +202,36 @@ struct GetRow_Loop<T, M, ROW, 0> {
   }
 };
 
+/**
+ * @brief Retrieves a specific row from a diagonal matrix.
+ *
+ * This function template extracts a specified row from a diagonal matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the diagonal matrix.
+ * @tparam ROW The index of the row to extract.
+ * @return DiagAvailableRow_Type<T, M, ROW> A sparse matrix (vector) containing
+ * the extracted row.
+ */
 template <typename T, std::size_t M, std::size_t ROW>
 using GetRow = GetRow_Loop<T, M, ROW, M - 1>;
 
 } // namespace GetDiagMatrixOperation
 
+/**
+ * @brief Extracts a specific row from a diagonal matrix.
+ *
+ * This function template retrieves a specified row from a diagonal matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam ROW The index of the row to extract.
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the diagonal matrix.
+ * @param matrix The input diagonal matrix from which to extract the row.
+ * @return GetDiagMatrixOperation::DiagAvailableRow_Type<T, M, ROW> A sparse
+ * matrix (vector) containing the extracted row.
+ */
 template <std::size_t ROW, typename T, std::size_t M>
 inline auto get_row(const DiagMatrix_Type<T, M> &matrix)
     -> GetDiagMatrixOperation::DiagAvailableRow_Type<T, M, ROW> {
@@ -98,9 +245,32 @@ inline auto get_row(const DiagMatrix_Type<T, M> &matrix)
 
 namespace GetSparseMatrixOperation {
 
+/**
+ * @brief Retrieves a specific row from a sparse matrix.
+ *
+ * This function template extracts a specified row from a sparse matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam Index The index of the row to extract.
+ * @return SparseAvailableGetRow<M, SparseAvailable, Index> A sparse matrix
+ * (vector) containing the extracted row.
+ */
 template <std::size_t M, std::size_t Index, typename SparseAvailable>
 using SparseAvailableRow = SparseAvailableGetRow<M, SparseAvailable, Index>;
 
+/**
+ * @brief Defines the type of a sparse matrix that can hold a specific row from
+ * a sparse matrix.
+ *
+ * This type alias creates a sparse matrix type that can hold a specific row
+ * from a sparse matrix, indexed by Index.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam Index The index of the row to extract.
+ * @tparam SparseAvailable The sparse matrix availability type.
+ */
 template <typename T, std::size_t M, std::size_t Index,
           typename SparseAvailable>
 using SparseRow_Type =
@@ -109,6 +279,26 @@ using SparseRow_Type =
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t ROW, std::size_t COL_Index>
 struct GetRow_Loop {
+  /**
+   * @brief Computes a specific operation on the input sparse matrix and stores
+   * the result in the provided result vector.
+   *
+   * This static function extracts a particular column (indexed by COL_Index)
+   * from the input sparse matrix and assigns it to the result vector. It then
+   * recursively processes the remaining columns by invoking GetRow_Loop with a
+   * decremented column index.
+   *
+   * @tparam T         The data type of the matrix elements.
+   * @tparam M         The number of columns in the matrix.
+   * @tparam N         The number of rows in the matrix.
+   * @tparam SparseAvailable The sparse matrix availability type.
+   * @tparam ROW       The row index to operate on.
+   * @tparam COL_Index The current column index being processed.
+   * @param matrix     The input sparse matrix of type Matrix<DefSparse, T, M,
+   * N, SparseAvailable>.
+   * @param result     The output sparse matrix (vector) of type
+   * SparseRow_Type<T, M, ROW, SparseAvailable> to store the computed result.
+   */
   static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
                       SparseRow_Type<T, M, ROW, SparseAvailable> &result) {
 
@@ -121,6 +311,24 @@ struct GetRow_Loop {
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t ROW>
 struct GetRow_Loop<T, M, N, SparseAvailable, ROW, 0> {
+  /**
+   * @brief Computes a specific operation on the input sparse matrix and stores
+   * the result in the provided result vector.
+   *
+   * This static function extracts the first column (index 0) from the input
+   * sparse matrix and assigns it to the result vector. It serves as the base
+   * case for the recursive processing of columns.
+   *
+   * @tparam T   The data type of the matrix elements.
+   * @tparam M   The number of columns in the matrix.
+   * @tparam N   The number of rows in the matrix.
+   * @tparam SparseAvailable The sparse matrix availability type.
+   * @tparam ROW The row index to operate on.
+   * @param matrix The input sparse matrix of type Matrix<DefSparse, T, M, N,
+   * SparseAvailable>.
+   * @param result The output sparse matrix (vector) of type
+   * SparseRow_Type<T, M, ROW, SparseAvailable> to store the computed result.
+   */
   static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
                       SparseRow_Type<T, M, ROW, SparseAvailable> &result) {
 
@@ -128,12 +336,41 @@ struct GetRow_Loop<T, M, N, SparseAvailable, ROW, 0> {
   }
 };
 
+/**
+ * @brief Retrieves a specific row from a sparse matrix.
+ *
+ * This function template extracts a specified row from a sparse matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix.
+ * @tparam SparseAvailable The sparse matrix availability type.
+ * @tparam ROW The index of the row to extract.
+ * @return SparseRow_Type<T, M, ROW, SparseAvailable> A sparse matrix (vector)
+ * containing the extracted row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t ROW>
 using GetRow = GetRow_Loop<T, M, N, SparseAvailable, ROW, M - 1>;
 
 } // namespace GetSparseMatrixOperation
 
+/**
+ * @brief Extracts a specific row from a sparse matrix.
+ *
+ * This function template retrieves a specified row from a sparse matrix and
+ * returns it as a new sparse matrix (vector) of size M x 1.
+ *
+ * @tparam ROW The index of the row to extract.
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix.
+ * @tparam SparseAvailable The sparse matrix availability type.
+ * @param matrix The input sparse matrix from which to extract the row.
+ * @return GetSparseMatrixOperation::SparseRow_Type<T, M, ROW,
+ * SparseAvailable> A sparse matrix (vector) containing the extracted row.
+ */
 template <std::size_t ROW, typename T, std::size_t M, std::size_t N,
           typename SparseAvailable>
 inline auto get_row(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
@@ -153,6 +390,22 @@ namespace SetMatrixOperation {
 template <typename Matrix_Type, typename RowVector_Type, std::size_t ROW,
           std::size_t COL_Index>
 struct SetRow_Loop {
+  /**
+   * @brief Computes a specific operation on the input matrix and sets the
+   * corresponding row vector values.
+   *
+   * This static function assigns a particular column (indexed by COL_Index) of
+   * the row vector to the specified row of the matrix. It then recursively
+   * processes the remaining columns by invoking SetRow_Loop with a decremented
+   * column index.
+   *
+   * @tparam Matrix_Type The type of the matrix to set values in.
+   * @tparam RowVector_Type The type of the row vector containing values to set.
+   * @tparam ROW The row index to operate on.
+   * @tparam COL_Index The current column index being processed.
+   * @param matrix The input matrix of type Matrix_Type.
+   * @param row_vector The row vector containing values to set in the matrix.
+   */
   static void compute(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 
     matrix.template set<COL_Index, ROW>(
@@ -164,18 +417,55 @@ struct SetRow_Loop {
 
 template <typename Matrix_Type, typename RowVector_Type, std::size_t ROW>
 struct SetRow_Loop<Matrix_Type, RowVector_Type, ROW, 0> {
+  /**
+   * @brief Computes a specific operation on the input matrix and sets the
+   * corresponding row vector values.
+   *
+   * This static function assigns the first column (index 0) of the row vector
+   * to the specified row of the matrix. It serves as the base case for the
+   * recursive processing of columns.
+   *
+   * @tparam Matrix_Type The type of the matrix to set values in.
+   * @tparam RowVector_Type The type of the row vector containing values to set.
+   * @tparam ROW The row index to operate on.
+   * @param matrix The input matrix of type Matrix_Type.
+   * @param row_vector The row vector containing values to set in the matrix.
+   */
   static void compute(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 
     matrix.template set<0, ROW>(row_vector.template get<0, 0>());
   }
 };
 
+/**
+ * @brief Sets a specific row in a matrix with values from a row vector.
+ *
+ * This type alias defines a loop structure that sets the specified row of the
+ * matrix with values from the provided row vector. It processes all columns
+ * of the row vector.
+ *
+ * @tparam Matrix_Type The type of the matrix to set values in.
+ * @tparam RowVector_Type The type of the row vector containing values to set.
+ * @tparam ROW The row index to operate on.
+ */
 template <typename Matrix_Type, typename RowVector_Type, std::size_t ROW>
 using SetRow =
     SetRow_Loop<Matrix_Type, RowVector_Type, ROW, (Matrix_Type::COLS - 1)>;
 
 } // namespace SetMatrixOperation
 
+/**
+ * @brief Sets a specific row in a matrix with values from a row vector.
+ *
+ * This function template assigns the values from a row vector to a specified
+ * row in the matrix. It processes all columns of the row vector.
+ *
+ * @tparam ROW The index of the row to set in the matrix.
+ * @tparam Matrix_Type The type of the matrix to set values in.
+ * @tparam RowVector_Type The type of the row vector containing values to set.
+ * @param matrix The input matrix where the row will be set.
+ * @param row_vector The row vector containing values to set in the matrix.
+ */
 template <std::size_t ROW, typename Matrix_Type, typename RowVector_Type>
 inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 
@@ -191,6 +481,26 @@ template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
 struct SubstituteColumn {
+  /**
+   * @brief Computes a specific operation on the input part matrix and
+   * substitutes its values into the corresponding position in the All matrix.
+   *
+   * This static function assigns a particular value from the part matrix
+   * (indexed by I and J_idx) to the All matrix at the position (Col_Offset + I,
+   * Row_Offset + J_idx). It then recursively processes the remaining columns by
+   * invoking SubstituteColumn with a decremented column index.
+   *
+   * @tparam Col_Offset The column offset for substitution.
+   * @tparam Row_Offset The row offset for substitution.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam Part_Type The type of the part matrix.
+   * @tparam M The number of columns in the part matrix.
+   * @tparam N The number of rows in the part matrix.
+   * @tparam I The current row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param All The All matrix where values are substituted.
+   * @param Part The part matrix containing values to substitute.
+   */
   static void compute(All_Type &All, const Part_Type &Part) {
 
     All.template set<(Col_Offset + I), (Row_Offset + J_idx)>(
@@ -206,6 +516,23 @@ template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I>
 struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
                         0> {
+  /**
+   * @brief Computes a specific operation on the input part matrix and
+   * substitutes its values into the corresponding position in the All matrix.
+   *
+   * This static function assigns the first column (index 0) from the part
+   * matrix to the All matrix at the position (Col_Offset + I, Row_Offset).
+   *
+   * @tparam Col_Offset The column offset for substitution.
+   * @tparam Row_Offset The row offset for substitution.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam Part_Type The type of the part matrix.
+   * @tparam M The number of columns in the part matrix.
+   * @tparam N The number of rows in the part matrix.
+   * @tparam I The current row index being processed.
+   * @param All The All matrix where values are substituted.
+   * @param Part The part matrix containing values to substitute.
+   */
   static void compute(All_Type &All, const Part_Type &Part) {
 
     All.template set<(Col_Offset + I), Row_Offset>(Part.template get<I, 0>());
@@ -216,6 +543,25 @@ struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
 template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I_idx>
 struct SubstituteRow {
+  /**
+   * @brief Computes a specific operation on the input part matrix and
+   * substitutes its values into the corresponding position in the All matrix.
+   *
+   * This static function assigns a particular value from the part matrix
+   * (indexed by I_idx and J_idx) to the All matrix at the position (Col_Offset,
+   * Row_Offset + I_idx). It then recursively processes the remaining rows by
+   * invoking SubstituteRow with a decremented row index.
+   *
+   * @tparam Col_Offset The column offset for substitution.
+   * @tparam Row_Offset The row offset for substitution.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam Part_Type The type of the part matrix.
+   * @tparam M The number of columns in the part matrix.
+   * @tparam N The number of rows in the part matrix.
+   * @tparam I_idx The current row index being processed.
+   * @param All The All matrix where values are substituted.
+   * @param Part The part matrix containing values to substitute.
+   */
   static void compute(All_Type &All, const Part_Type &Part) {
 
     SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I_idx,
@@ -229,6 +575,22 @@ struct SubstituteRow {
 template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N>
 struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
+  /**
+   * @brief Computes a specific operation on the input part matrix and
+   * substitutes its values into the corresponding position in the All matrix.
+   *
+   * This static function assigns the first row (index 0) from the part matrix
+   * to the All matrix at the position (Col_Offset, Row_Offset).
+   *
+   * @tparam Col_Offset The column offset for substitution.
+   * @tparam Row_Offset The row offset for substitution.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam Part_Type The type of the part matrix.
+   * @tparam M The number of columns in the part matrix.
+   * @tparam N The number of rows in the part matrix.
+   * @param All The All matrix where values are substituted.
+   * @param Part The part matrix containing values to substitute.
+   */
   static void compute(All_Type &All, const Part_Type &Part) {
 
     SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0,
@@ -236,6 +598,20 @@ struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
   }
 };
 
+/**
+ * @brief Substitutes a part matrix into a larger matrix at specified offsets.
+ *
+ * This function template substitutes the values from a part matrix into a
+ * larger matrix (All) at specified column and row offsets. It ensures that the
+ * All matrix has enough space to accommodate the part matrix.
+ *
+ * @tparam Col_Offset The column offset for substitution.
+ * @tparam Row_Offset The row offset for substitution.
+ * @tparam All_Type The type of the All matrix.
+ * @tparam Part_Type The type of the part matrix.
+ * @param All The All matrix where values are substituted.
+ * @param Part The part matrix containing values to substitute.
+ */
 template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
           typename Part_Type>
 inline void substitute_each(All_Type &All, const Part_Type &Part) {
@@ -256,6 +632,25 @@ template <std::size_t M, std::size_t N, typename All_Type,
           std::size_t TupleCol_Offset, std::size_t TupleRow_Offset,
           std::size_t TupleRow_Index>
 struct TupleColumn {
+  /**
+   * @brief Substitutes a specific column of a tuple into the All matrix.
+   *
+   * This static function substitutes the values from a specific column of the
+   * tuple (indexed by THIS_TUPLE_INDEX) into the All matrix at the specified
+   * offsets. It then recursively processes the remaining rows by invoking
+   * substitute with a decremented row index.
+   *
+   * @tparam M The number of columns in the matrix.
+   * @tparam N The number of rows in the matrix.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+   * @tparam TupleCol_Count The number of columns in the tuple.
+   * @tparam TupleCol_Offset The column offset for substitution.
+   * @tparam TupleRow_Offset The row offset for substitution.
+   * @tparam TupleRow_Index The current row index being processed.
+   * @param All The All matrix where values are substituted.
+   * @param args The tuple containing arguments to substitute.
+   */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
     constexpr std::size_t THIS_TUPLE_INDEX =
@@ -280,6 +675,23 @@ template <std::size_t M, std::size_t N, typename All_Type,
           std::size_t TupleCol_Offset, std::size_t TupleRow_Offset>
 struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
                    TupleCol_Offset, TupleRow_Offset, 0> {
+  /**
+   * @brief Substitutes a specific column of a tuple into the All matrix.
+   *
+   * This static function does nothing when the row index is 0, serving as the
+   * base case for the recursive processing of rows.
+   *
+   * @tparam M The number of columns in the matrix.
+   * @tparam N The number of rows in the matrix.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+   * @tparam TupleCol_Count The number of columns in the tuple.
+   * @tparam TupleCol_Offset The column offset for substitution.
+   * @tparam TupleRow_Offset The row offset for substitution.
+   * @param All The All matrix where values would be substituted (not used
+   * here).
+   * @param args The tuple containing arguments to substitute (not used here).
+   */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -291,6 +703,23 @@ template <std::size_t M, std::size_t N, typename All_Type,
           typename ArgsTuple_Type, std::size_t TupleCol_Offset,
           std::size_t TupleCol_Index>
 struct TupleRow {
+  /**
+   * @brief Substitutes a specific row of a tuple into the All matrix.
+   *
+   * This static function substitutes the values from a specific row of the
+   * tuple (indexed by THIS_TUPLE_INDEX) into the All matrix at the specified
+   * offsets. It then recursively processes the remaining columns by invoking
+   * substitute with a decremented column index.
+   *
+   * @tparam M The number of columns in the matrix.
+   * @tparam N The number of rows in the matrix.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+   * @tparam TupleCol_Offset The column offset for substitution.
+   * @tparam TupleCol_Index The current column index being processed.
+   * @param All The All matrix where values are substituted.
+   * @param args The tuple containing arguments to substitute.
+   */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
     constexpr std::size_t TUPLECOL_COUNT = M - TupleCol_Index;
@@ -314,6 +743,21 @@ struct TupleRow {
 template <std::size_t M, std::size_t N, typename All_Type,
           typename ArgsTuple_Type, std::size_t TupleCol_Offset>
 struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
+  /**
+   * @brief Substitutes a specific row of a tuple into the All matrix.
+   *
+   * This static function does nothing when the column index is 0, serving as
+   * the base case for the recursive processing of columns.
+   *
+   * @tparam M The number of columns in the matrix.
+   * @tparam N The number of rows in the matrix.
+   * @tparam All_Type The type of the All matrix.
+   * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+   * @tparam TupleCol_Offset The column offset for substitution.
+   * @param All The All matrix where values would be substituted (not used
+   * here).
+   * @param args The tuple containing arguments to substitute (not used here).
+   */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
     // Do Nothing
     static_cast<void>(All);
@@ -324,6 +768,20 @@ struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
 } // namespace PartMatrixOperation
 
 /* Substitute same size Matrix */
+
+/**
+ * @brief Substitutes a source matrix into a destination matrix of the same
+ * size.
+ *
+ * This function template substitutes the values from a source matrix into a
+ * destination matrix, ensuring that both matrices have the same number of
+ * elements.
+ *
+ * @tparam From_Type The type of the source matrix.
+ * @tparam To_Type The type of the destination matrix.
+ * @param to_matrix The destination matrix where values are substituted.
+ * @param from_matrix The source matrix containing values to substitute.
+ */
 template <typename From_Type, typename To_Type>
 inline void substitute_matrix(To_Type &to_matrix,
                               const From_Type &from_matrix) {
@@ -337,6 +795,21 @@ inline void substitute_matrix(To_Type &to_matrix,
 }
 
 /* Substitute small size Matrix to large size Matrix */
+
+/**
+ * @brief Substitutes a small matrix into a larger matrix at specified offsets.
+ *
+ * This function template substitutes the values from a small matrix into a
+ * larger matrix at specified column and row offsets. It ensures that the large
+ * matrix has enough space to accommodate the small matrix.
+ *
+ * @tparam Col_Offset The column offset for substitution.
+ * @tparam Row_Offset The row offset for substitution.
+ * @tparam Large_Type The type of the large matrix.
+ * @tparam Small_Type The type of the small matrix.
+ * @param Large The large matrix where values are substituted.
+ * @param Small The small matrix containing values to substitute.
+ */
 template <std::size_t Col_Offset, std::size_t Row_Offset, typename Large_Type,
           typename Small_Type>
 inline void substitute_part_matrix(Large_Type &Large, const Small_Type &Small) {
@@ -407,9 +880,34 @@ struct ConcatenateArgsType {
                               std::make_tuple(std::declval<Args>()...)))>::type;
 };
 
+/**
+ * @brief Type alias for the concatenated arguments type.
+ *
+ * This type alias defines the type of the concatenated arguments based on the
+ * specified M, N, Tuple, and Args.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Tuple The tuple containing previous arguments.
+ * @tparam Args The additional arguments to concatenate.
+ */
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
 using ArgsType_t = typename ConcatenateArgsType<M, N, Tuple, Args...>::type;
 
+/**
+ * @brief Concatenates arguments into a block matrix.
+ *
+ * This function template concatenates the provided arguments into a block
+ * matrix of size M x N, ensuring that the total number of arguments matches M
+ * * N.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Concatenate_Type The type of the concatenated matrix.
+ * @tparam Tuple The tuple containing previous arguments.
+ * @param Concatenated The concatenated matrix to update.
+ * @param previousArgs The tuple containing previously concatenated arguments.
+ */
 template <std::size_t M, std::size_t N, typename Concatenate_Type,
           typename Tuple, typename Last>
 inline void concatenate_args(Concatenate_Type &Concatenated,
@@ -431,6 +929,20 @@ inline void concatenate_args(Concatenate_Type &Concatenated,
                                 0, M>::substitute(Concatenated, all_args);
 }
 
+/**
+ * @brief Concatenates multiple arguments into a block matrix.
+ *
+ * This function template recursively concatenates the provided arguments into
+ * a block matrix of size M x N, ensuring that the total number of arguments
+ * matches M * N.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Concatenate_Type The type of the concatenated matrix.
+ * @tparam Tuple The tuple containing previous arguments.
+ * @tparam First The first argument to concatenate.
+ * @tparam Rest The remaining arguments to concatenate.
+ */
 template <std::size_t M, std::size_t N, typename Concatenate_Type,
           typename Tuple, typename First, typename... Rest>
 inline void concatenate_args(Concatenate_Type &Concatenated,
@@ -442,6 +954,18 @@ inline void concatenate_args(Concatenate_Type &Concatenated,
   return concatenate_args<M, N>(Concatenated, updatedArgs, rest...);
 }
 
+/**
+ * @brief Calculates the concatenated block matrix from the provided arguments.
+ *
+ * This function template initializes the concatenated block matrix and
+ * recursively concatenates the provided arguments into it.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Args The types of the arguments to concatenate.
+ * @param Concatenated The concatenated matrix to update.
+ * @param args The arguments to concatenate into the block matrix.
+ */
 template <std::size_t M, std::size_t N, typename... Args>
 inline void calculate(ArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
                       Args... args) {
@@ -453,6 +977,20 @@ inline void calculate(ArgsType_t<M, N, std::tuple<>, Args...> &Concatenated,
 
 } // namespace ConcatenateBlockOperation
 
+/**
+ * @brief Updates a concatenated block matrix with new arguments.
+ *
+ * This function template updates the provided concatenated block matrix with
+ * the specified arguments, ensuring that the total number of arguments matches
+ * M * N.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Concatenate_Type The type of the concatenated matrix.
+ * @tparam Args The types of the arguments to concatenate.
+ * @param Concatenated The concatenated matrix to update.
+ * @param args The arguments to concatenate into the block matrix.
+ */
 template <std::size_t M, std::size_t N, typename Concatenate_Type,
           typename... Args>
 inline void update_block_concatenated_matrix(Concatenate_Type &Concatenated,
@@ -464,6 +1002,19 @@ inline void update_block_concatenated_matrix(Concatenate_Type &Concatenated,
   ConcatenateBlockOperation::calculate<M, N>(Concatenated, args...);
 }
 
+/**
+ * @brief Concatenates multiple arguments into a block matrix.
+ *
+ * This function template concatenates the provided arguments into a block
+ * matrix of size M x N, ensuring that the total number of arguments matches M
+ * * N.
+ *
+ * @tparam M The number of columns in the block.
+ * @tparam N The number of rows in the block.
+ * @tparam Args The types of the arguments to concatenate.
+ * @return ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...>
+ * A concatenated block matrix containing the provided arguments.
+ */
 template <std::size_t M, std::size_t N, typename... Args>
 inline auto concatenate_block(Args... args)
     -> ConcatenateBlockOperation::ArgsType_t<M, N, std::tuple<>, Args...> {
@@ -498,38 +1049,116 @@ struct GenerateTileTypes<M, N, 0, MATRIX_Type, Args...> {
 
 } // namespace TileOperation
 
+/**
+ * @brief Type alias for a tile type with specified dimensions and matrix type.
+ *
+ * This type alias defines a tile type based on the specified M, N, and
+ * MATRIX_Type. It uses the TileOperation::GenerateTileTypes to generate the
+ * appropriate tile type.
+ *
+ * @tparam M The number of columns in the tile.
+ * @tparam N The number of rows in the tile.
+ * @tparam MATRIX_Type The type of the matrix used in the tile.
+ */
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
 using Tile_Type =
     typename TileOperation::GenerateTileTypes<M, N, M * N, MATRIX_Type>::type;
 
 namespace TileOperation {
 
+/**
+ * @brief Index sequence for tile operations.
+ *
+ * This struct defines an index sequence for tile operations, allowing for
+ * compile-time generation of indices for tile elements.
+ *
+ * @tparam Indices The indices for the tile elements.
+ */
 template <std::size_t... Indices> struct index_sequence_for_tile {};
 
+/**
+ * @brief Helper struct to generate an index sequence for tile operations.
+ *
+ * This struct recursively generates an index sequence for tile operations,
+ * allowing for compile-time generation of indices based on the specified size
+ * N.
+ *
+ * @tparam N The size of the index sequence to generate.
+ * @tparam Indices The indices for the tile elements (used in recursion).
+ */
 template <std::size_t N, std::size_t... Indices>
 struct make_index_sequence_for_tile_impl
     : make_index_sequence_for_tile_impl<N - 1, N - 1, Indices...> {};
 
+/**
+ * @brief Specialization of make_index_sequence_for_tile_impl for the base case.
+ *
+ * This specialization defines the index sequence when N is 0, providing the
+ * final type for the index sequence.
+ *
+ * @tparam Indices The indices for the tile elements (used in recursion).
+ */
 template <std::size_t... Indices>
 struct make_index_sequence_for_tile_impl<0, Indices...> {
   using type = index_sequence_for_tile<Indices...>;
 };
 
+/**
+ * @brief Generates an index sequence for tile operations.
+ *
+ * This type alias generates an index sequence for tile operations based on the
+ * specified size N. It uses the make_index_sequence_for_tile_impl to create
+ * the appropriate index sequence type.
+ *
+ * @tparam N The size of the index sequence to generate.
+ */
 template <std::size_t N>
 using make_index_sequence_for_tile =
     typename make_index_sequence_for_tile_impl<N>::type;
 
+/**
+ * @brief Repeats a matrix type a specified number of times.
+ *
+ * This struct recursively generates a type that represents a tuple of the
+ * specified matrix type repeated a given number of times.
+ *
+ * @tparam Count The number of times to repeat the matrix type.
+ * @tparam MATRIX_Type The type of the matrix to repeat.
+ * @tparam Args The types of the arguments to include in the tuple.
+ */
 template <std::size_t Count, typename MATRIX_Type, typename... Args>
 struct RepeatMatrix {
   using type =
       typename RepeatMatrix<Count - 1, MATRIX_Type, MATRIX_Type, Args...>::type;
 };
 
+/**
+ * @brief Specialization of RepeatMatrix for the base case.
+ *
+ * This specialization defines the type when Count is 0, providing a tuple of
+ * the specified argument types.
+ *
+ * @tparam MATRIX_Type The type of the matrix to repeat (not used here).
+ * @tparam Args The types of the arguments to include in the tuple.
+ */
 template <typename MATRIX_Type, typename... Args>
 struct RepeatMatrix<0, MATRIX_Type, Args...> {
   using type = std::tuple<Args...>;
 };
 
+/**
+ * @brief Updates a concatenated matrix with multiple matrices.
+ *
+ * This function template updates the provided concatenated matrix with the
+ * specified matrices, ensuring that the total number of matrices matches M * N.
+ *
+ * @tparam M The number of columns in the tile.
+ * @tparam N The number of rows in the tile.
+ * @tparam MATRIX_Type The type of the matrices to concatenate.
+ * @tparam Indices The indices for the tile elements (used in recursion).
+ * @param Concatenated The concatenated matrix to update.
+ * @param matrix The matrices to concatenate into the block matrix.
+ */
 template <std::size_t M, std::size_t N, typename MATRIX_Type,
           std::size_t... Indices>
 inline void calculate(Tile_Type<M, N, MATRIX_Type> &Concatenated,
@@ -542,6 +1171,18 @@ inline void calculate(Tile_Type<M, N, MATRIX_Type> &Concatenated,
 
 } // namespace TileOperation
 
+/**
+ * @brief Updates a concatenated matrix with a single matrix.
+ *
+ * This function template updates the provided concatenated matrix with the
+ * specified matrix, ensuring that the total number of elements matches M * N.
+ *
+ * @tparam M The number of columns in the tile.
+ * @tparam N The number of rows in the tile.
+ * @tparam MATRIX_Type The type of the matrix to concatenate.
+ * @param Concatenated The concatenated matrix to update.
+ * @param matrix The matrix to concatenate into the block matrix.
+ */
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
 inline void
 update_tile_concatenated_matrix(Tile_Type<M, N, MATRIX_Type> &Concatenated,
@@ -557,6 +1198,19 @@ update_tile_concatenated_matrix(Tile_Type<M, N, MATRIX_Type> &Concatenated,
       TileOperation::make_index_sequence_for_tile<TotalCount>{});
 }
 
+/**
+ * @brief Concatenates a matrix into a tile of specified dimensions.
+ *
+ * This function template concatenates the provided matrix into a tile of size
+ * M x N, ensuring that the total number of elements matches M * N.
+ *
+ * @tparam M The number of columns in the tile.
+ * @tparam N The number of rows in the tile.
+ * @tparam MATRIX_Type The type of the matrix to concatenate.
+ * @param matrix The matrix to concatenate into the tile.
+ * @return Tile_Type<M, N, MATRIX_Type> A tile containing the concatenated
+ * matrix.
+ */
 template <std::size_t M, std::size_t N, typename MATRIX_Type>
 inline auto concatenate_tile(const MATRIX_Type &matrix)
     -> Tile_Type<M, N, MATRIX_Type> {
@@ -574,6 +1228,21 @@ namespace ReshapeOperation {
 template <typename To_Type, typename From_Type, std::size_t I,
           std::size_t J_idx>
 struct Column {
+  /**
+   * @brief Substitutes a specific column of the from_matrix into the to_matrix.
+   *
+   * This static function substitutes the values from a specific column of the
+   * from_matrix (indexed by I and J_idx) into the to_matrix at the
+   * corresponding position. It then recursively processes the remaining columns
+   * by invoking substitute with a decremented column index.
+   *
+   * @tparam To_Type The type of the destination matrix.
+   * @tparam From_Type The type of the source matrix.
+   * @tparam I The current row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * From_Type::ROWS + J_idx;
@@ -609,6 +1278,17 @@ struct Column {
 // column recursion termination
 template <typename To_Type, typename From_Type, std::size_t I>
 struct Column<To_Type, From_Type, I, 0> {
+  /**
+   * @brief Substitutes the first column of the from_matrix into the to_matrix.
+   *
+   * This static function substitutes the values from the first column (index 0)
+   * of the from_matrix into the to_matrix at the corresponding position.
+   *
+   * @tparam To_Type The type of the destination matrix.
+   * @tparam From_Type The type of the source matrix.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
     constexpr std::size_t NUMBER_OF_ELEMENT = I * From_Type::ROWS;
@@ -643,6 +1323,22 @@ struct Column<To_Type, From_Type, I, 0> {
 template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
           std::size_t I_idx>
 struct Row {
+  /**
+   * @brief Substitutes a specific row of the from_matrix into the to_matrix.
+   *
+   * This static function substitutes the values from a specific row of the
+   * from_matrix (indexed by I_idx) into the to_matrix at the corresponding
+   * position. It then recursively processes the remaining rows by invoking
+   * substitute with a decremented row index.
+   *
+   * @tparam To_Type The type of the destination matrix.
+   * @tparam From_Type The type of the source matrix.
+   * @tparam M The number of columns in the matrices.
+   * @tparam N The number of rows in the matrices.
+   * @tparam I_idx The current row index being processed.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     Column<To_Type, From_Type, I_idx, N - 1>::substitute(to_matrix,
                                                          from_matrix);
@@ -654,11 +1350,34 @@ struct Row {
 // row recursion termination
 template <typename To_Type, typename From_Type, std::size_t M, std::size_t N>
 struct Row<To_Type, From_Type, M, N, 0> {
+  /**
+   * @brief Substitutes the first row of the from_matrix into the to_matrix.
+   *
+   * This static function substitutes the values from the first row (index 0) of
+   * the from_matrix into the to_matrix at the corresponding position.
+   *
+   * @tparam To_Type The type of the destination matrix.
+   * @tparam From_Type The type of the source matrix.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     Column<To_Type, From_Type, 0, N - 1>::substitute(to_matrix, from_matrix);
   }
 };
 
+/**
+ * @brief Substitutes values from a source matrix into a destination matrix.
+ *
+ * This function template substitutes the values from a source matrix into a
+ * destination matrix, ensuring that both matrices have the same number of
+ * elements.
+ *
+ * @tparam To_Type The type of the destination matrix.
+ * @tparam From_Type The type of the source matrix.
+ * @param to_matrix The destination matrix where values are substituted.
+ * @param from_matrix The source matrix containing values to substitute.
+ */
 template <typename To_Type, typename From_Type>
 inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
   Row<To_Type, From_Type, From_Type::COLS, From_Type::ROWS,
@@ -667,6 +1386,18 @@ inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
 
 } // namespace ReshapeOperation
 
+/**
+ * @brief Updates a reshaped matrix with values from a source matrix.
+ *
+ * This function template updates the provided reshaped matrix with the values
+ * from a source matrix, ensuring that both matrices have the same number of
+ * elements.
+ *
+ * @tparam To_Type The type of the destination matrix.
+ * @tparam From_Type The type of the source matrix.
+ * @param to_matrix The destination matrix where values are substituted.
+ * @param from_matrix The source matrix containing values to substitute.
+ */
 template <typename To_Type, typename From_Type>
 inline void update_reshaped_matrix(To_Type &to_matrix,
                                    const From_Type &from_matrix) {
@@ -680,6 +1411,21 @@ inline void update_reshaped_matrix(To_Type &to_matrix,
 }
 
 /* Reshape (So far, it can only outputs Dense Matrix.) */
+
+/**
+ * @brief Reshapes a source matrix into a destination matrix of specified size.
+ *
+ * This function template reshapes the provided source matrix into a new
+ * destination matrix of size M x N, ensuring that the total number of elements
+ * matches between the source and destination matrices.
+ *
+ * @tparam M The number of columns in the destination matrix.
+ * @tparam N The number of rows in the destination matrix.
+ * @tparam From_Type The type of the source matrix.
+ * @param from_matrix The source matrix to reshape.
+ * @return DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N>
+ * A reshaped matrix containing the values from the source matrix.
+ */
 template <std::size_t M, std::size_t N, typename From_Type>
 inline auto reshape(const From_Type &from_matrix)
     -> DenseMatrix_Type<typename From_Type::Value_Complex_Type, M, N> {
