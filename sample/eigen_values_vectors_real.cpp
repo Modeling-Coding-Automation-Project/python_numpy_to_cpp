@@ -1,3 +1,15 @@
+/**
+ * @file eigen_values_vectors_real.cpp
+ * @brief Example demonstrating the computation of eigenvalues and eigenvectors
+ * of a real matrix using the PythonNumpy library.
+ *
+ * This code constructs a 3x3 real matrix, computes its eigenvalues and
+ * eigenvectors using the LinalgSolverEigReal class from the PythonNumpy
+ * library, and prints the results. It also verifies the eigen decomposition by
+ * evaluating the difference between A*V and V*D, where A is the original
+ * matrix, V is the matrix of eigenvectors, and D is the diagonal matrix of
+ * eigenvalues.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

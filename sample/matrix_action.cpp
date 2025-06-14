@@ -1,3 +1,15 @@
+/**
+ * @file matrix_action.cpp
+ * @brief Demonstrates various matrix operations including reshaping, updating,
+ * and substitution using dense and sparse matrices.
+ *
+ * This program showcases the following functionalities:
+ * - Creation and reshaping of dense matrices.
+ * - Updating a reshaped matrix with new values.
+ * - Substituting values from a dense matrix into a sparse matrix.
+ * - Creating a dense matrix from a sparse matrix.
+ * - Substituting a smaller matrix into a larger matrix at a specified position.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

@@ -1,3 +1,15 @@
+/**
+ * @file cholesky.cpp
+ * @brief Demonstrates the usage of Cholesky decomposition and linear algebra
+ * solvers on various matrix types.
+ *
+ * This program creates several types of matrices (dense, diagonal, and sparse)
+ * and applies a Cholesky-based linear algebra solver. It showcases the process
+ * of solving a matrix using Cholesky decomposition, converting the result to a
+ * dense matrix, and performing further matrix operations such as multiplying
+ * the transpose of the solution with itself. The results are printed to the
+ * standard output.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

@@ -1,3 +1,15 @@
+/**
+ * @file concatenation.cpp
+ * @brief Demonstrates matrix creation, concatenation, and update operations
+ * using various matrix types.
+ *
+ * This file contains a sample main function that showcases the creation and
+ * manipulation of different matrix types, including dense, diagonal, and sparse
+ * matrices. It demonstrates vertical and horizontal concatenation, block and
+ * tile concatenation, as well as updating concatenated matrices. The code also
+ * illustrates how to convert concatenated matrices to dense format for output
+ * and how to use type aliases for concatenated matrix types.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

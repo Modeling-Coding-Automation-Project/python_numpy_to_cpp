@@ -1,3 +1,15 @@
+/**
+ * @file inverse.cpp
+ * @brief Demonstrates the usage of various matrix types and a linear algebra
+ * solver for matrix inversion.
+ *
+ * This file contains a sample C++ program that showcases the creation and
+ * manipulation of different matrix types, including dense, diagonal, and sparse
+ * matrices, using factory functions such as make_DenseMatrix, make_DiagMatrix,
+ * and make_SparseMatrix. It also demonstrates how to use a linear algebra
+ * solver (LinalgSolverInv) to compute the inverse of a dense matrix and output
+ * the result.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"
