@@ -1,4 +1,13 @@
+"""
+This script demonstrates various NumPy array concatenation and tiling operations.
+It creates several 3x3 matrices and performs the following operations:
+- Vertical concatenation of two matrices using `np.concatenate` along axis 0.
+- Horizontal concatenation of two matrices using `np.concatenate` along axis 1.
+- Block matrix construction using `np.block` to combine four matrices into a larger matrix.
+- Tiling of a matrix using `np.tile` to repeat the matrix in a grid pattern.
+"""
 import numpy as np
+
 
 A = np.array([[1., 2., 3.], [5., 4., 6.], [9., 8., 7.]])
 B = np.diag([1., 2., 3.])

@@ -1,3 +1,9 @@
+"""
+This script demonstrates how to compute the eigenvalues and eigenvectors of a real square matrix using NumPy.
+It calculates the eigenvalues and eigenvectors of a predefined 3x3 matrix, prints them, and verifies the result
+by checking the equation A * v = v * D, where A is the original matrix, v is the matrix of eigenvectors, and D
+is the diagonal matrix of eigenvalues.
+"""
 import numpy as np
 
 A_c = np.array([[1., 2., 3.], [3., 1., 2.], [2., 3., 1.]])
