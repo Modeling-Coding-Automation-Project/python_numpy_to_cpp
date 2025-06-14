@@ -1,3 +1,23 @@
+/**
+ * @file base_matrix_sparse.hpp
+ * @brief Sparse matrix implementation and related operations for fixed-size and
+ * vector-based storage.
+ *
+ * This header provides a templated SparseMatrix class supporting both
+ * std::array and std::vector storage for efficient representation of sparse
+ * matrices. It includes constructors for various initialization methods,
+ * conversion to dense matrices, and arithmetic operations with dense matrices,
+ * diagonal matrices, vectors, and other sparse matrices. The file also provides
+ * a set of free functions for creating sparse matrices from dense or diagonal
+ * matrices, and for performing matrix-matrix and matrix-vector multiplications
+ * involving sparse matrices.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __BASE_MATRIX_SPARSE_HPP__
 #define __BASE_MATRIX_SPARSE_HPP__
 
@@ -19,6 +39,19 @@ namespace Matrix {
 
 const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
 
+/**
+ * @brief SparseMatrix class for fixed-size and vector-based storage.
+ *
+ * This class implements a sparse matrix using either std::array or std::vector
+ * for storage. It supports various operations such as addition, subtraction,
+ * multiplication with dense matrices, diagonal matrices, and other sparse
+ * matrices, as well as conversion to dense format.
+ *
+ * @tparam T The type of elements in the matrix.
+ * @tparam M The number of columns in the matrix.
+ * @tparam N The number of rows in the matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 class SparseMatrix {
 public:
@@ -162,7 +195,17 @@ public:
     return *this;
   }
 
+public:
   /* Function */
+
+  /**
+   * @brief Creates a dense matrix from the sparse matrix.
+   *
+   * This function iterates through the non-zero elements of the sparse matrix
+   * and fills a dense matrix with the corresponding values.
+   *
+   * @return A dense matrix representation of the sparse matrix.
+   */
   inline Matrix<T, M, N> create_dense() const {
     Matrix<T, M, N> result;
 
@@ -176,22 +219,73 @@ public:
     return result;
   }
 
+  /**
+   * @brief Creates a diagonal matrix from the sparse matrix.
+   *
+   * This function extracts the diagonal elements from the sparse matrix and
+   * creates a diagonal matrix with those values.
+   *
+   * @return A diagonal matrix representation of the sparse matrix.
+   */
   T value(std::size_t i) { return this->values[i]; }
 
+  /**
+   * @brief Returns the value at the specified index in the sparse matrix.
+   *
+   * This function retrieves the value at the given index in the sparse matrix.
+   *
+   * @param i The index of the value to retrieve.
+   * @return The value at the specified index.
+   */
   const T value(std::size_t i) const { return this->values[i]; }
 
+  /**
+   * @brief Returns the index of the row corresponding to the specified index.
+   *
+   * This function retrieves the row index for the given index in the sparse
+   * matrix.
+   *
+   * @param i The index of the value to retrieve the row index for.
+   * @return The row index corresponding to the specified index.
+   */
   std::size_t row_index(std::size_t i) { return this->row_indices[i]; }
 
   const std::size_t row_index(std::size_t i) const {
     return this->row_indices[i];
   }
 
+  /**
+   * @brief Returns the pointer to the start of the specified row.
+   *
+   * This function retrieves the starting index of the specified row in the
+   * sparse matrix.
+   *
+   * @param i The index of the row to retrieve the pointer for.
+   * @return The starting index of the specified row.
+   */
   std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
 
+  /**
+   * @brief Returns the pointer to the start of the specified row.
+   *
+   * This function retrieves the starting index of the specified row in the
+   * sparse matrix.
+   *
+   * @param i The index of the row to retrieve the pointer for.
+   * @return The starting index of the specified row.
+   */
   const std::size_t row_pointer(std::size_t i) const {
     return this->row_pointers[i];
   }
 
+  /**
+   * @brief Returns the number of non-zero values in the sparse matrix.
+   *
+   * This function returns the total number of non-zero values stored in the
+   * sparse matrix.
+   *
+   * @return The number of non-zero values in the sparse matrix.
+   */
   inline Matrix<T, N, M> transpose(void) const {
     Matrix<T, N, M> Y;
 
@@ -205,6 +299,14 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Returns the number of non-zero values in the sparse matrix.
+   *
+   * This function returns the total number of non-zero values stored in the
+   * sparse matrix.
+   *
+   * @return The number of non-zero values in the sparse matrix.
+   */
   inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B) const {
     Matrix<T, M, N> Y = B;
 
@@ -218,6 +320,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Adds a diagonal matrix to the sparse matrix.
+   *
+   * This function creates a dense matrix from the diagonal matrix and adds it
+   * to the sparse matrix.
+   *
+   * @param B The diagonal matrix to add.
+   * @return A dense matrix resulting from the addition.
+   */
   inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B) const {
     Matrix<T, M, M> Y = B.create_dense();
 
@@ -231,6 +342,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Adds a sparse matrix to the sparse matrix.
+   *
+   * This function creates a dense matrix from the sparse matrix and adds it to
+   * the current sparse matrix.
+   *
+   * @param mat The sparse matrix to add.
+   * @return A dense matrix resulting from the addition.
+   */
   inline Matrix<T, M, N> operator+(const SparseMatrix<T, M, N, V> &mat) const {
     Matrix<T, M, N> Y = this->create_dense();
 
@@ -244,6 +364,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Subtracts a dense matrix from the sparse matrix.
+   *
+   * This function creates a dense matrix from the sparse matrix and subtracts
+   * the given dense matrix from it.
+   *
+   * @param B The dense matrix to subtract.
+   * @return A dense matrix resulting from the subtraction.
+   */
   inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B) const {
     Matrix<T, M, N> Y = -B;
 
@@ -257,6 +386,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Subtracts a diagonal matrix from the sparse matrix.
+   *
+   * This function creates a dense matrix from the diagonal matrix and subtracts
+   * it from the sparse matrix.
+   *
+   * @param B The diagonal matrix to subtract.
+   * @return A dense matrix resulting from the subtraction.
+   */
   inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B) const {
     Matrix<T, M, M> Y = -(B.create_dense());
 
@@ -270,6 +408,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Subtracts a sparse matrix from the sparse matrix.
+   *
+   * This function creates a dense matrix from the sparse matrix and subtracts
+   * the given sparse matrix from it.
+   *
+   * @param mat The sparse matrix to subtract.
+   * @return A dense matrix resulting from the subtraction.
+   */
   inline Matrix<T, M, N> operator-(const SparseMatrix<T, M, N, V> &mat) const {
     Matrix<T, M, N> Y = this->create_dense();
 
@@ -283,6 +430,15 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Multiplies the sparse matrix by a dense matrix.
+   *
+   * This function performs matrix multiplication between the sparse matrix and
+   * the given dense matrix.
+   *
+   * @param B The dense matrix to multiply with.
+   * @return A dense matrix resulting from the multiplication.
+   */
   inline SparseMatrix<T, M, N, V> operator*(const T &scalar) const {
     SparseMatrix<T, M, N, V> Y = *this;
 
@@ -293,8 +449,22 @@ public:
     return Y;
   }
 
+  /**
+   * @brief Returns the number of rows in the sparse matrix.
+   *
+   * This function returns the number of rows in the sparse matrix.
+   *
+   * @return The number of rows in the sparse matrix.
+   */
   constexpr std::size_t rows() const { return N; }
 
+  /**
+   * @brief Returns the number of columns in the sparse matrix.
+   *
+   * This function returns the number of columns in the sparse matrix.
+   *
+   * @return The number of columns in the sparse matrix.
+   */
   constexpr std::size_t cols() const { return M; }
 
 /* Variable */
@@ -309,6 +479,17 @@ public:
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
+/** * @brief Creates a sparse matrix from a dense matrix.
+ *
+ * This function converts a dense matrix into a sparse matrix by extracting
+ * non-zero elements and their corresponding row indices.
+ *
+ * @tparam T The type of elements in the matrix.
+ * @tparam M The number of columns in the matrix.
+ * @tparam N The number of rows in the matrix.
+ * @param A The dense matrix to convert.
+ * @return A sparse matrix representation of the dense matrix.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
   std::size_t consecutive_index = 0;
@@ -338,6 +519,18 @@ inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
 }
 
 /* Create */
+
+/**
+ * @brief Creates a sparse matrix from a diagonal matrix.
+ *
+ * This function converts a diagonal matrix into a sparse matrix by extracting
+ * the diagonal elements and their corresponding row indices.
+ *
+ * @tparam T The type of elements in the matrix.
+ * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @param A The diagonal matrix to convert.
+ * @return A sparse matrix representation of the diagonal matrix.
+ */
 template <typename T, std::size_t M>
 inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
   std::size_t consecutive_index = 0;
@@ -365,6 +558,20 @@ inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
 }
 
 /* Operator */
+
+/**
+ * @brief Adds a dense matrix to a sparse matrix.
+ *
+ * This function creates a dense matrix from the sparse matrix and adds the
+ * given dense matrix to it.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the matrices.
+ * @tparam N The number of rows in the matrices.
+ * @param B The dense matrix to add.
+ * @param A The sparse matrix to add to.
+ * @return A dense matrix resulting from the addition.
+ */
 template <typename T, std::size_t M, std::size_t V>
 inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
                                  const SparseMatrix<T, M, M, V> &A) {
@@ -379,6 +586,19 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
   return Y;
 }
 
+/**
+ * @brief Subtracts a sparse matrix from a diagonal matrix.
+ *
+ * This function creates a dense matrix from the diagonal matrix and subtracts
+ * the given sparse matrix from it.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param B The diagonal matrix to subtract from.
+ * @param A The sparse matrix to subtract.
+ * @return A dense matrix resulting from the subtraction.
+ */
 template <typename T, std::size_t M, std::size_t V>
 inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
                                  const SparseMatrix<T, M, M, V> &A) {
@@ -394,6 +614,20 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
 }
 
 /* Scalar * SparseMatrix */
+
+/**
+ * @brief Multiplies a scalar with a sparse matrix.
+ *
+ * This function scales all values in the sparse matrix by the given scalar.
+ *
+ * @tparam T The type of elements in the matrix.
+ * @tparam M The number of columns in the matrix.
+ * @tparam N The number of rows in the matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param scalar The scalar value to multiply with.
+ * @param A The sparse matrix to scale.
+ * @return A new sparse matrix with scaled values.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 inline SparseMatrix<T, M, N, V> operator*(const T &scalar,
                                           const SparseMatrix<T, M, N, V> &A) {
@@ -407,6 +641,22 @@ inline SparseMatrix<T, M, N, V> operator*(const T &scalar,
 }
 
 /* SparseMatrix * Vector */
+
+/**
+ * @brief Multiplies a sparse matrix with a vector.
+ *
+ * This function performs matrix-vector multiplication between the sparse matrix
+ * and the given vector, returning a new vector as the result.
+ *
+ * @tparam T The type of elements in the matrix and vector.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix (and size of the
+ * vector).
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply.
+ * @param b The vector to multiply with.
+ * @return A new vector resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
                               const Vector<T, N> &b) {
@@ -423,6 +673,21 @@ inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
   return y;
 }
 
+/**
+ * @brief Multiplies a vector with a sparse matrix.
+ *
+ * This function performs vector-matrix multiplication between the given vector
+ * and the sparse matrix, returning a new vector as the result.
+ *
+ * @tparam T The type of elements in the matrix and vector.
+ * @tparam N The number of columns in the sparse matrix (and size of the
+ * vector).
+ * @tparam K The number of rows in the sparse matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param a The vector to multiply with.
+ * @param B The sparse matrix to multiply.
+ * @return A new vector resulting from the multiplication.
+ */
 template <typename T, std::size_t N, std::size_t K, std::size_t V>
 inline ColVector<T, K>
 colVector_a_mul_SparseB(const ColVector<T, N> &a,
@@ -439,6 +704,23 @@ colVector_a_mul_SparseB(const ColVector<T, N> &a,
 }
 
 /* SparseMatrix * Matrix */
+
+/**
+ * @brief Multiplies a sparse matrix with a dense matrix.
+ *
+ * This function performs matrix multiplication between the sparse matrix and
+ * the given dense matrix, returning a new dense matrix as the result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * matrix).
+ * @tparam K The number of columns in the dense matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply.
+ * @param B The dense matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
@@ -458,6 +740,23 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies a dense matrix with a sparse matrix.
+ *
+ * This function performs matrix multiplication between the given dense matrix
+ * and the sparse matrix, returning a new dense matrix as the result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the dense matrix (and columns in the
+ * sparse matrix).
+ * @tparam N The number of rows in the dense matrix (and rows in the sparse
+ * matrix).
+ * @tparam K The number of rows in the sparse matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The dense matrix to multiply.
+ * @param B The sparse matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
@@ -475,6 +774,23 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies a sparse matrix with the transpose of a dense matrix.
+ *
+ * This function performs matrix multiplication between the sparse matrix and
+ * the transpose of the given dense matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * matrix).
+ * @tparam K The number of rows in the dense matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply.
+ * @param B The dense matrix to multiply with (transposed).
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 inline Matrix<T, M, K>
@@ -496,6 +812,23 @@ matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
 }
 
 /* SparseMatrix * SparseMatrix */
+
+/**
+ * @brief Multiplies two sparse matrices.
+ *
+ * This function performs matrix multiplication between two sparse matrices,
+ * returning a new dense matrix as the result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the first sparse matrix.
+ * @tparam N The number of rows in the first sparse matrix (and columns in the
+ * second sparse matrix).
+ * @tparam K The number of rows in the second sparse matrix.
+ * @tparam V The maximum number of non-zero values in the first sparse matrix.
+ * @param A The first sparse matrix to multiply.
+ * @param B The second sparse matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
 inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
@@ -514,6 +847,24 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies a sparse matrix with the transpose of another sparse
+ * matrix.
+ *
+ * This function performs matrix multiplication between a sparse matrix and the
+ * transpose of another sparse matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the first sparse matrix.
+ * @tparam N The number of rows in the first sparse matrix (and rows in the
+ * second sparse matrix).
+ * @tparam K The number of columns in the second sparse matrix.
+ * @tparam V The maximum number of non-zero values in the first sparse matrix.
+ * @param A The first sparse matrix to multiply.
+ * @param B The second sparse matrix to multiply with (transposed).
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
 inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
@@ -535,6 +886,25 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
   return Y;
 }
 
+/**
+ * @brief Multiplies the transpose of a sparse matrix with another sparse
+ * matrix.
+ *
+ * This function performs matrix multiplication between the transpose of a
+ * sparse matrix and another sparse matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the first sparse matrix (and columns in
+ * the second sparse matrix).
+ * @tparam N The number of rows in the first sparse matrix (and rows in the
+ * second sparse matrix).
+ * @tparam K The number of columns in the second sparse matrix.
+ * @tparam V The maximum number of non-zero values in the first sparse matrix.
+ * @param A The first sparse matrix to multiply (transposed).
+ * @param B The second sparse matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V, std::size_t W>
 inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
@@ -553,6 +923,22 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
 }
 
 /* DiagMatrix */
+
+/**
+ * @brief Multiplies a sparse matrix with a diagonal matrix.
+ *
+ * This function performs matrix multiplication between the sparse matrix and
+ * the diagonal matrix, returning a new dense matrix as the result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the sparse matrix.
+ * @tparam N The number of rows in the sparse matrix (and size of the diagonal
+ * matrix).
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply.
+ * @param B The diagonal matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
                                  const DiagMatrix<T, N> &B) {
@@ -573,6 +959,20 @@ inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies a diagonal matrix with a sparse matrix.
+ *
+ * This function performs matrix multiplication between the diagonal matrix and
+ * the sparse matrix, returning a new dense matrix as the result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam K The number of columns in the sparse matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The diagonal matrix to multiply.
+ * @param B The sparse matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
 inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
                                  const SparseMatrix<T, M, K, V> &B) {
@@ -591,6 +991,21 @@ inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies a diagonal matrix with the transpose of a sparse matrix.
+ *
+ * This function performs matrix multiplication between the diagonal matrix and
+ * the transpose of the sparse matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam K The number of rows in the sparse matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The diagonal matrix to multiply.
+ * @param B The sparse matrix to multiply with (transposed).
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t V>
 inline Matrix<T, K, M>
 matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
@@ -611,6 +1026,21 @@ matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
 }
 
 /* Plus, Minus */
+
+/**
+ * @brief Adds a sparse matrix to a dense matrix.
+ *
+ * This function creates a dense matrix from the sparse matrix and adds the
+ * given dense matrix to it.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the matrices.
+ * @tparam N The number of rows in the matrices.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param B The dense matrix to add.
+ * @param SA The sparse matrix to add to.
+ * @return A dense matrix resulting from the addition.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
                                  const SparseMatrix<T, M, N, V> SA) {
@@ -625,6 +1055,20 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
   return Y;
 }
 
+/**
+ * @brief Subtracts a sparse matrix from a dense matrix.
+ *
+ * This function creates a dense matrix from the sparse matrix and subtracts
+ * the given dense matrix from it.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the matrices.
+ * @tparam N The number of rows in the matrices.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param B The dense matrix to subtract.
+ * @param SA The sparse matrix to subtract from.
+ * @return A dense matrix resulting from the subtraction.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
                                  const SparseMatrix<T, M, N, V> SA) {
@@ -640,6 +1084,25 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
 }
 
 /* Transpose */
+
+/**
+ * @brief Multiplies a dense matrix with the transpose of a sparse matrix.
+ *
+ * This function performs matrix multiplication between the dense matrix and
+ * the transpose of the sparse matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam M The number of columns in the dense matrix (and rows in the sparse
+ * matrix).
+ * @tparam N The number of rows in the dense matrix (and columns in the sparse
+ * matrix).
+ * @tparam K The number of rows in the sparse matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The dense matrix to multiply.
+ * @param SB The sparse matrix to multiply with (transposed).
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           std::size_t V>
 inline Matrix<T, N, K>
@@ -660,6 +1123,24 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies the transpose of a sparse matrix with a dense matrix.
+ *
+ * This function performs matrix multiplication between the transpose of the
+ * sparse matrix and the dense matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * matrix).
+ * @tparam M The number of columns in the sparse matrix (and rows in the dense
+ * matrix).
+ * @tparam K The number of columns in the dense matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply (transposed).
+ * @param B The dense matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
 inline Matrix<T, M, K>
@@ -678,6 +1159,24 @@ matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
   return Y;
 }
 
+/**
+ * @brief Multiplies the transpose of a sparse matrix with a dense matrix.
+ *
+ * This function performs matrix multiplication between the transpose of the
+ * sparse matrix and the dense matrix, returning a new dense matrix as the
+ * result.
+ *
+ * @tparam T The type of elements in the matrices.
+ * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * matrix).
+ * @tparam M The number of columns in the sparse matrix (and rows in the dense
+ * matrix).
+ * @tparam K The number of columns in the dense matrix.
+ * @tparam V The maximum number of non-zero values in the sparse matrix.
+ * @param A The sparse matrix to multiply (transposed).
+ * @param B The dense matrix to multiply with.
+ * @return A new dense matrix resulting from the multiplication.
+ */
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           std::size_t V>
 inline Matrix<T, M, K>

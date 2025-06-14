@@ -1,4 +1,10 @@
+"""
+This script demonstrates basic matrix operations using NumPy, including matrix multiplication, transposition, and zero matrix creation.
+It also utilizes the `NumpyDeploy` class from the `python_numpy.numpy_deploy` module to generate C++ header files that define the matrices in C++ code.
+The script prints the results of various matrix operations and outputs the filenames of the generated C++ code for each matrix.
+"""
 import os
+
 import sys
 sys.path.append(os.getcwd())
 

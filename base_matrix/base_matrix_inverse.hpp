@@ -1,3 +1,21 @@
+/**
+ * @file base_matrix_inverse.hpp
+ * @brief GMRES-based matrix inverse and linear solver utilities for dense,
+ * sparse, and complex matrices.
+ *
+ * This header provides a collection of template functions for solving linear
+ * systems and computing matrix inverses using the GMRES (Generalized Minimal
+ * Residual) iterative method. It supports dense matrices, sparse matrices
+ * (CSR-like), and complex-valued matrices, as well as diagonal matrix
+ * inversion. The implementation is generic and works with fixed-size matrices
+ * and vectors, supporting both real and complex types.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __BASE_MATRIX_INVERSE_HPP__
 #define __BASE_MATRIX_INVERSE_HPP__
 
@@ -19,6 +37,25 @@ namespace Matrix {
 
 namespace InverseOperation {
 
+/**
+ * @brief Core function for GMRES K method for dense matrices.
+ *
+ * This function implements the GMRES K algorithm to solve the linear system
+ * Ax = b, where A is a square matrix, b is a vector, and x_1 is an initial
+ * guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The input matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M).
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M > 1), Vector<T, M>>::type
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
@@ -138,6 +175,25 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   return x;
 }
 
+/**
+ * @brief Core function for GMRES K method for 1x1 matrices.
+ *
+ * This specialization handles the case where the matrix size is 1x1, which is a
+ * trivial case. It simply computes the inverse of the single element in the
+ * matrix.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M), must be 1 in this case.
+ * @param A The input matrix A, which is expected to be 1x1.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M), must be 1 in this case.
+ * @return The computed solution vector x, which will also be a 1x1 vector.
+ */
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
@@ -163,6 +219,24 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 
 } // namespace InverseOperation
 
+/**
+ * @brief GMRES K method for dense matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a square matrix, b is a vector, and x_1 is an initial guess.
+ * It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The input matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M>
 inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                             const Vector<T, M> &x_1, const T &decay_rate,
@@ -173,6 +247,25 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                                               division_min, rho, rep_num, M);
 }
 
+/**
+ * @brief GMRES K method for partitioned matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a square matrix, b is a vector, and x_1 is an initial guess.
+ * It supports partitioning of the matrix and returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The input matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M).
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M>
 inline Vector<T, M>
 gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
@@ -185,6 +278,26 @@ gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 }
 
 /* GMRES K for Matrix */
+
+/**
+ * @brief GMRES K method for matrices.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a square matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param A The input matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each column.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each column.
+ */
 template <typename T, std::size_t M, std::size_t K>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
                            Matrix<T, M, K> &X_1, const T &decay_rate,
@@ -199,6 +312,24 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
   }
 }
 
+/**
+ * @brief GMRES K method for matrices with diagonal matrix B.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a square matrix, B is a diagonal matrix, and X_1 is an initial
+ * guess. It returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The input matrix A.
+ * @param B The diagonal matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M>
 inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
                            Matrix<T, M, M> &X_1, const T &decay_rate,
@@ -213,6 +344,26 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
   }
 }
 
+/**
+ * @brief GMRES K method for partitioned matrices.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a square matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It supports partitioning of the matrix
+ * and returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param A The input matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each column.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each column.
+ */
 template <typename T, std::size_t M, std::size_t K>
 inline void gmres_k_partition_matrix(
     const Matrix<T, M, M> &A, const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1,
@@ -234,6 +385,25 @@ inline void gmres_k_partition_matrix(
   }
 }
 
+/**
+ * @brief GMRES K method for partitioned matrices with diagonal matrix B.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a square matrix, B is a diagonal matrix, and X_1 is an initial
+ * guess. It supports partitioning of the matrix and returns the solution
+ * matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The input matrix A.
+ * @param B The diagonal matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M>
 inline void gmres_k_partition_matrix(
     const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B, Matrix<T, M, M> &X_1,
@@ -249,6 +419,26 @@ inline void gmres_k_partition_matrix(
 }
 
 /* GMRES K for rectangular matrix */
+
+/**
+ * @brief GMRES K method for rectangular matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a rectangular matrix (M x N), b is a vector, and x_1 is an
+ * initial guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The number of rows in the matrix A.
+ * @tparam N The number of columns in the matrix A.
+ * @param In_A The input matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
                                  const Vector<T, M> &b, const Vector<T, N> &x_1,
@@ -371,6 +561,28 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
   return x;
 }
 
+/**
+ * @brief GMRES K method for rectangular matrices with multiple right-hand side
+ * vectors.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a rectangular matrix (M x N), B is a matrix with multiple right-
+ * hand side vectors, and X_1 is an initial guess. It returns the solution
+ * matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The number of columns in the matrix A.
+ * @tparam N The number of rows in the matrix A.
+ * @tparam K The number of rows of matrix B.
+ * @param A The input matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
 inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
                                 const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1,
@@ -402,6 +614,25 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
 }
 
 /* GMRES K for matrix inverse */
+
+/**
+ * @brief GMRES K method for matrix inverse.
+ *
+ * This function computes the inverse of a square matrix A using the GMRES K
+ * method, where A is a square matrix, and X_1 is an initial guess. It returns
+ * the inverse matrix X.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param In_A The input matrix A.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @return The computed inverse matrix X.
+ */
 template <typename T, std::size_t M>
 inline Matrix<T, M, M>
 gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
@@ -425,6 +656,27 @@ gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
 /* Sparse GMRES K */
 namespace InverseOperation {
 
+/**
+ * @brief Core function for GMRES K method for sparse matrices.
+ *
+ * This function implements the core logic of the GMRES K method for sparse
+ * matrices, handling the case where the matrix size is larger than 1x1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam RowIndices_A The type representing row indices of the sparse matrix.
+ * @tparam RowPointers_A The type representing row pointers of the sparse
+ * matrix.
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M).
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
@@ -558,6 +810,24 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
   return x;
 }
 
+/**
+ * @brief Core function for GMRES K method for sparse matrices with size 1x1.
+ *
+ * This function implements the core logic of the GMRES K method for sparse
+ * matrices, handling the case where the matrix size is exactly 1x1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M).
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
@@ -585,6 +855,24 @@ sparse_gmres_k_core(
 
 } // namespace InverseOperation
 
+/**
+ * @brief GMRES K method for sparse matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a sparse matrix, b is a vector, and x_1 is an initial guess.
+ * It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Vector<T, M> sparse_gmres_k(
@@ -596,6 +884,25 @@ inline Vector<T, M> sparse_gmres_k(
       SA, b, x_1, decay_rate, division_min, rho, rep_num, M);
 }
 
+/**
+ * @brief GMRES K method for sparse matrices with partitioning.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a sparse matrix, b is a vector, and x_1 is an initial guess.
+ * It supports partitioning of the matrix and returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @param matrix_size The size of the matrix (M).
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Vector<T, M> sparse_gmres_k_partition(
@@ -608,6 +915,26 @@ inline Vector<T, M> sparse_gmres_k_partition(
       SA, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
 }
 
+/**
+ * @brief GMRES K method for sparse matrices with multiple right-hand side
+ * vectors.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a sparse matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param SA The compiled sparse matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_matrix(
@@ -624,6 +951,28 @@ inline void sparse_gmres_k_matrix(
   }
 }
 
+/**
+ * @brief GMRES K method for sparse matrices with multiple right-hand side
+ * vectors and partitioning.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a sparse matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It supports partitioning of the matrix
+ * and returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param SA The compiled sparse matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ * @param matrix_size The size of the matrix (M).
+ */
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_partition_matrix(
@@ -648,6 +997,26 @@ inline void sparse_gmres_k_partition_matrix(
 }
 
 /* Sparse GMRES K for rectangular matrix */
+
+/**
+ * @brief GMRES K method for rectangular matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a rectangular matrix (M x N), b is a vector, and x_1 is an
+ * initial guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The number of rows in the matrix A.
+ * @tparam N The number of columns in the matrix A.
+ * @param In_SA The compiled sparse matrix A.
+ * @param b The right-hand side vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline Vector<T, N> sparse_gmres_k_rect(
@@ -769,6 +1138,28 @@ inline Vector<T, N> sparse_gmres_k_rect(
   return x;
 }
 
+/**
+ * @brief GMRES K method for rectangular matrices with multiple right-hand side
+ * vectors.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a rectangular matrix (M x N), B is a matrix with multiple right-
+ * hand side vectors, and X_1 is an initial guess. It returns the solution
+ * matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The number of columns in the matrix A.
+ * @tparam N The number of rows in the matrix A.
+ * @tparam K The number of rows of matrix B.
+ * @param In_SA The compiled sparse matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
 inline void sparse_gmres_k_rect_matrix(
@@ -785,6 +1176,30 @@ inline void sparse_gmres_k_rect_matrix(
   }
 }
 
+/**
+ * @brief GMRES K method for rectangular matrices with multiple right-hand side
+ * vectors and partitioning.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a rectangular matrix (M x N), B is a matrix with multiple right-
+ * hand side vectors, and X_1 is an initial guess. It supports partitioning of
+ * the matrix and returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The number of columns in the matrix A.
+ * @tparam N The number of rows in the matrix A.
+ * @tparam RowIndices_A The type representing row indices of the sparse matrix.
+ * @tparam RowPointers_A The type representing row pointers of the sparse
+ * matrix.
+ * @param In_SA The compiled sparse matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 inline void sparse_gmres_k_rect_matrix(
@@ -802,6 +1217,30 @@ inline void sparse_gmres_k_rect_matrix(
 }
 
 /* Sparse GMRES K for matrix inverse */
+
+/**
+ * @brief GMRES K method for sparse matrix inverse.
+ *
+ * This function computes the inverse of a sparse matrix using the GMRES K
+ * method, where A is a sparse matrix, decay_rate is the convergence criterion,
+ * division_min is a small value to avoid division by zero, rho stores the
+ * residual norms, rep_num stores the number of iterations performed, and X_1 is
+ * an initial guess for the solution matrix.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam RowIndices_A The type representing row indices of the sparse matrix.
+ * @tparam RowPointers_A The type representing row pointers of the sparse
+ * matrix.
+ * @param In_A The compiled sparse matrix A.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @return The computed inverse matrix X.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
@@ -824,6 +1263,25 @@ inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
 }
 
 /* Complex GMRES K */
+
+/**
+ * @brief GMRES K method for complex matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a complex matrix, b is a complex vector, and x_1 is an initial
+ * guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The complex matrix A.
+ * @param b The right-hand side complex vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
 complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
@@ -944,6 +1402,24 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   return x;
 }
 
+/**
+ * @brief GMRES K method for complex matrices with size 1x1.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a complex matrix of size 1x1, b is a complex vector, and x_1 is
+ * an initial guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The complex matrix A.
+ * @param b The right-hand side complex vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M>
 inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
 complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
@@ -965,6 +1441,26 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   return x;
 }
 
+/**
+ * @brief GMRES K method for complex matrices with multiple right-hand side
+ * vectors.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a complex matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param A The complex matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M, std::size_t K>
 inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const Matrix<Complex<T>, M, K> &B,
@@ -981,6 +1477,26 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
   }
 }
 
+/**
+ * @brief GMRES K method for complex matrices with multiple right-hand side
+ * vectors and partitioning.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a complex matrix, B is a matrix with multiple right-hand side
+ * vectors, and X_1 is an initial guess. It supports partitioning of the matrix
+ * and returns the solution matrix X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param A The complex matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ */
 template <typename T, std::size_t M>
 inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
                                    const DiagMatrix<Complex<T>, M> &B,
@@ -997,6 +1513,24 @@ inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
   }
 }
 
+/**
+ * @brief GMRES K method for complex sparse matrices.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a complex sparse matrix, b is a complex vector, and x_1 is an
+ * initial guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side complex vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
@@ -1107,6 +1641,24 @@ complex_sparse_gmres_k(
   return x;
 }
 
+/**
+ * @brief GMRES K method for complex sparse matrices with size 1x1.
+ *
+ * This function solves the linear system Ax = b using the GMRES K method,
+ * where A is a complex sparse matrix of size 1x1, b is a complex vector, and
+ * x_1 is an initial guess. It returns the solution vector x.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param SA The compiled sparse matrix A.
+ * @param b The right-hand side complex vector b.
+ * @param x_1 The initial guess for the solution vector x.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norm.
+ * @param rep_num Output parameter to store the number of iterations performed.
+ * @return The computed solution vector x.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
@@ -1130,6 +1682,24 @@ complex_sparse_gmres_k(
   return x;
 }
 
+/**
+ * @brief GMRES K method for complex sparse matrices with multiple right-hand
+ * side vectors.
+ *
+ * This function solves the linear system Ax = B using the GMRES K method,
+ * where A is a complex sparse matrix, B is a matrix with multiple right-hand
+ * side vectors, and X_1 is an initial guess. It returns the solution matrix
+ * X_1.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam K The number of rows of matrix B.
+ * @param In_A The compiled sparse matrix A.
+ * @param B The right-hand side matrix B.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
@@ -1154,6 +1724,26 @@ inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
   return X;
 }
 
+/**
+ * @brief GMRES K method for complex matrix inverse.
+ *
+ * This function computes the inverse of a complex matrix using the GMRES K
+ * method, where A is a complex matrix, decay_rate is the convergence criterion,
+ * division_min is a small value to avoid division by zero, rho stores the
+ * residual norms, rep_num stores the number of iterations performed, and X_1 is
+ * an initial guess for the solution matrix.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param In_A The complex matrix A.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @return The computed inverse matrix X.
+ */
 template <typename T, std::size_t M>
 inline Matrix<Complex<T>, M, M> complex_gmres_k_matrix_inv(
     const Matrix<Complex<T>, M, M> In_A, const T &decay_rate,
@@ -1174,6 +1764,26 @@ inline Matrix<Complex<T>, M, M> complex_gmres_k_matrix_inv(
   return X;
 }
 
+/**
+ * @brief GMRES K method for complex sparse matrix inverse.
+ *
+ * This function computes the inverse of a complex sparse matrix using the GMRES
+ * K method, where A is a complex sparse matrix, decay_rate is the convergence
+ * criterion, division_min is a small value to avoid division by zero, rho
+ * stores the residual norms, rep_num stores the number of iterations performed,
+ * and X_1 is an initial guess for the solution matrix.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @param In_A The compiled sparse matrix A.
+ * @param decay_rate The convergence criterion for the GMRES method.
+ * @param division_min A small value to avoid division by zero.
+ * @param rho Output parameter to store the residual norms for each row.
+ * @param rep_num Output parameter to store the number of iterations performed
+ * for each row.
+ * @param X_1 The initial guess for the solution matrix X_1.
+ * @return The computed inverse matrix X.
+ */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
 inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
@@ -1197,6 +1807,19 @@ inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
 }
 
 /* Diag Matrix inverse */
+
+/**
+ * @brief Inverse of a diagonal matrix.
+ *
+ * This function computes the inverse of a diagonal matrix, where each element
+ * is divided by a small value to avoid division by zero.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The size of the diagonal matrix (M x M).
+ * @param input The input diagonal matrix to be inverted.
+ * @param division_min A small value to avoid division by zero.
+ * @return The inverted diagonal matrix.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<T, M> inverse_diag_matrix(const DiagMatrix<T, M> &input,
                                             const T &division_min) {
@@ -1210,6 +1833,18 @@ inline DiagMatrix<T, M> inverse_diag_matrix(const DiagMatrix<T, M> &input,
   return result;
 }
 
+/**
+ * @brief Inverse of a complex diagonal matrix.
+ *
+ * This function computes the inverse of a complex diagonal matrix, where each
+ * element is divided by a small value to avoid division by zero.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The size of the diagonal matrix (M x M).
+ * @param input The input complex diagonal matrix to be inverted.
+ * @param division_min A small value to avoid division by zero.
+ * @return The inverted complex diagonal matrix.
+ */
 template <typename T, std::size_t M>
 inline DiagMatrix<Complex<T>, M>
 inverse_complex_diag_matrix(const DiagMatrix<Complex<T>, M> &input,

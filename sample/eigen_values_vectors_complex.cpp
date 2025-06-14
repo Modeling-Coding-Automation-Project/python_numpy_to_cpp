@@ -1,3 +1,15 @@
+/**
+ * @file eigen_values_vectors_complex.cpp
+ * @brief Demonstrates the computation of eigenvalues and eigenvectors for a 3x3
+ * real matrix using custom linear algebra classes.
+ *
+ * This program constructs a 3x3 dense matrix, computes its eigenvalues and
+ * eigenvectors using a linear algebra solver, and prints the results in a
+ * format that displays both real and imaginary parts. It also verifies the
+ * eigen decomposition by checking the equation A * V = V * D, where A is the
+ * original matrix, V is the matrix of eigenvectors, and D is the diagonal
+ * matrix of eigenvalues.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

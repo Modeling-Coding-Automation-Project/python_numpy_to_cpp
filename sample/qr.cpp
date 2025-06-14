@@ -1,3 +1,12 @@
+/**
+ * @file qr.cpp
+ * @brief Demonstrates QR decomposition using custom matrix and solver classes.
+ *
+ * This example constructs several types of matrices (dense, diagonal, and
+ * sparse) and performs QR decomposition on a dense matrix using a linear
+ * algebra solver. The code prints the resulting Q and R matrices, as well as
+ * their product, to verify the decomposition.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

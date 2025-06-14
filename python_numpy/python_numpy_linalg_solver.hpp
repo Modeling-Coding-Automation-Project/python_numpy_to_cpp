@@ -1,3 +1,21 @@
+/**
+ * @file python_numpy_linalg_solver.hpp
+ * @brief Linear algebra solver utilities for Python-like Numpy matrix
+ * operations in C++.
+ *
+ * This header provides a set of template classes and factory functions to
+ * perform linear algebra operations such as solving linear systems, matrix
+ * inversion, partitioned solving, and least-squares solutions. The solvers
+ * support dense, diagonal, and sparse matrix types, and are designed to mimic
+ * the behavior of Python's Numpy linalg module, but in a statically-typed,
+ * template-based C++ environment.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __PYTHON_NUMPY_LINALG_SOLVER_HPP__
 #define __PYTHON_NUMPY_LINALG_SOLVER_HPP__
 
@@ -21,6 +39,33 @@ struct InverseDense {};
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t K>
 struct InverseDense<T, Complex_T, M, K, true> {
+  /**
+   * @brief Computes the inverse of a complex matrix using a custom GMRES-based
+   * solver.
+   *
+   * This static function applies a GMRES-based matrix inversion algorithm to
+   * the input matrix `A`. It utilizes decay rate and division minimum
+   * parameters to control the solver's behavior. The function updates the
+   * provided `X_1` matrix with the computed result and returns it as a new
+   * matrix object.
+   *
+   * @tparam DefDense   The matrix storage type.
+   * @tparam Complex_T  The complex number type.
+   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam T          The floating-point type for decay and division
+   * parameters.
+   * @tparam K          The size of the `rho` and `rep_num` arrays.
+   *
+   * @param A           The input square matrix to invert (of size MxM).
+   * @param decay_rate  The decay rate parameter for the GMRES solver.
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param rho         Array of parameters influencing the solver (size K).
+   * @param rep_num     Array of repetition numbers for the solver (size K).
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxK).
+   *
+   * @return Matrix<DefDense, Complex_T, M, M> The computed inverse matrix.
+   */
   static auto compute(const Matrix<DefDense, Complex_T, M, M> &A,
                       const T &decay_rate, const T &division_min,
                       std::array<T, K> &rho,
@@ -37,6 +82,32 @@ struct InverseDense<T, Complex_T, M, K, true> {
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t K>
 struct InverseDense<T, Complex_T, M, K, false> {
+  /**
+   * @brief Computes the inverse of a real matrix using a custom GMRES-based
+   * solver.
+   *
+   * This static function applies a GMRES-based matrix inversion algorithm to
+   * the input matrix `A`. It utilizes decay rate and division minimum
+   * parameters to control the solver's behavior. The function updates the
+   * provided `X_1` matrix with the computed result and returns it as a new
+   * matrix object.
+   *
+   * @tparam DefDense   The matrix storage type.
+   * @tparam T          The floating-point type for decay and division
+   * parameters.
+   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam K          The size of the `rho` and `rep_num` arrays.
+   *
+   * @param A           The input square matrix to invert (of size MxM).
+   * @param decay_rate  The decay rate parameter for the GMRES solver.
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param rho         Array of parameters influencing the solver (size K).
+   * @param rep_num     Array of repetition numbers for the solver (size K).
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxK).
+   *
+   * @return Matrix<DefDense, T, M, M> The computed inverse matrix.
+   */
   static auto compute(const Matrix<DefDense, T, M, M> &A, const T &decay_rate,
                       const T &division_min, std::array<T, K> &rho,
                       std::array<std::size_t, K> &rep_num,
@@ -55,6 +126,26 @@ struct InverseDiag {};
 
 template <typename T, typename Complex_T, std::size_t M>
 struct InverseDiag<T, Complex_T, M, true> {
+  /**
+   * @brief Computes the inverse of a complex diagonal matrix.
+   *
+   * This static function computes the inverse of a diagonal matrix `A` using
+   * a custom method that handles complex numbers. It updates the provided
+   * `X_1` matrix with the computed result and returns it as a new matrix
+   * object.
+   *
+   * @tparam DefDiag    The matrix storage type for diagonal matrices.
+   * @tparam Complex_T  The complex number type.
+   * @tparam M          The size of the square diagonal matrix.
+   * @tparam T          The floating-point type for division parameters.
+   *
+   * @param A           The input diagonal matrix to invert (of size MxM).
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxM).
+   *
+   * @return Matrix<DefDiag, Complex_T, M> The computed inverse diagonal matrix.
+   */
   static auto compute(const Matrix<DefDiag, Complex_T, M> &A,
                       const T &division_min,
                       Base::Matrix::DiagMatrix<Complex_T, M> &X_1)
@@ -68,6 +159,24 @@ struct InverseDiag<T, Complex_T, M, true> {
 
 template <typename T, typename Complex_T, std::size_t M>
 struct InverseDiag<T, Complex_T, M, false> {
+  /**
+   * @brief Computes the inverse of a real diagonal matrix.
+   *
+   * This static function computes the inverse of a diagonal matrix `A` using
+   * a custom method that handles real numbers. It updates the provided `X_1`
+   * matrix with the computed result and returns it as a new matrix object.
+   *
+   * @tparam DefDiag    The matrix storage type for diagonal matrices.
+   * @tparam T          The floating-point type for division parameters.
+   * @tparam M          The size of the square diagonal matrix.
+   *
+   * @param A           The input diagonal matrix to invert (of size MxM).
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxM).
+   *
+   * @return Matrix<DefDiag, T, M> The computed inverse diagonal matrix.
+   */
   static auto compute(const Matrix<DefDiag, T, M> &A, const T &division_min,
                       Base::Matrix::DiagMatrix<T, M> &X_1)
       -> Matrix<DefDiag, T, M> {
@@ -85,6 +194,33 @@ struct InverseSparse {};
 template <typename T, typename Complex_T, std::size_t M, std::size_t K,
           typename SparseAvailable>
 struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
+  /**
+   * @brief Computes the inverse of a complex sparse matrix using a custom GMRES
+   * solver.
+   *
+   * This static function applies a GMRES-based matrix inversion algorithm to
+   * the input sparse matrix `A`. It utilizes decay rate and division minimum
+   * parameters to control the solver's behavior. The function updates the
+   * provided `X_1` matrix with the computed result and returns it as a new
+   * matrix object.
+   *
+   * @tparam DefSparse  The matrix storage type for sparse matrices.
+   * @tparam Complex_T  The complex number type.
+   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam T          The floating-point type for decay and division
+   * parameters.
+   * @tparam K          The size of the `rho` and `rep_num` arrays.
+   *
+   * @param A           The input square sparse matrix to invert (of size MxM).
+   * @param decay_rate  The decay rate parameter for the GMRES solver.
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param rho         Array of parameters influencing the solver (size K).
+   * @param rep_num     Array of repetition numbers for the solver (size K).
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxK).
+   *
+   * @return Matrix<DefDense, Complex_T, M, M> The computed inverse matrix.
+   */
   static auto
   compute(const Matrix<DefSparse, Complex_T, M, M, SparseAvailable> &A,
           const T &decay_rate, const T &division_min, std::array<T, K> &rho,
@@ -102,6 +238,32 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
 template <typename T, typename Complex_T, std::size_t M, std::size_t K,
           typename SparseAvailable>
 struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
+  /**
+   * @brief Computes the inverse of a real sparse matrix using a custom GMRES
+   * solver.
+   *
+   * This static function applies a GMRES-based matrix inversion algorithm to
+   * the input sparse matrix `A`. It utilizes decay rate and division minimum
+   * parameters to control the solver's behavior. The function updates the
+   * provided `X_1` matrix with the computed result and returns it as a new
+   * matrix object.
+   *
+   * @tparam DefSparse  The matrix storage type for sparse matrices.
+   * @tparam T          The floating-point type for decay and division
+   * parameters.
+   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam K          The size of the `rho` and `rep_num` arrays.
+   *
+   * @param A           The input square sparse matrix to invert (of size MxM).
+   * @param decay_rate  The decay rate parameter for the GMRES solver.
+   * @param division_min The minimum division threshold for numerical stability.
+   * @param rho         Array of parameters influencing the solver (size K).
+   * @param rep_num     Array of repetition numbers for the solver (size K).
+   * @param X_1         Matrix to store the intermediate and final results (size
+   * MxK).
+   *
+   * @return Matrix<DefDense, Complex_T, M, M> The computed inverse matrix.
+   */
   static auto compute(const Matrix<DefSparse, T, M, M, SparseAvailable> &A,
                       const T &decay_rate, const T &division_min,
                       std::array<T, K> &rho,
@@ -119,6 +281,20 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
 } // namespace InverseOperation
 
 /* Linalg Solver */
+
+/**
+ * @brief Linalg solver for various matrix types.
+ *
+ * This class provides methods to solve linear systems, compute inverses, and
+ * perform other linear algebra operations on dense, diagonal, and sparse
+ * matrices. It supports both real and complex number types (float or double).
+ *
+ * @tparam T The data type of the matrix elements (e.g., float, double).
+ * @tparam M The number of rows and columns in the square matrix.
+ * @tparam K The number of columns in the right-hand side matrix.
+ * @tparam SparseAvailable_A Indicates if the first matrix is sparse.
+ * @tparam SparseAvailable_B Indicates if the second matrix is sparse.
+ */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
 class LinalgSolver {
@@ -177,7 +353,20 @@ public:
     return *this;
   }
 
+public:
   /* Solve function */
+
+  /**
+   * @brief Solves the linear system Ax = B using GMRES method.
+   *
+   * This function applies the GMRES method to solve the linear system
+   * represented by the matrix A and the right-hand side matrix B. It updates
+   * the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient matrix (of size MxM).
+   * @param B The right-hand side matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -189,6 +378,18 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B using GMRES method for diagonal
+   * matrices.
+   *
+   * This function applies the GMRES method to solve the linear system
+   * represented by the diagonal matrix A and the right-hand side matrix B.
+   * It updates the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size M).
+   * @return Matrix<DefDense, T, M, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
@@ -200,6 +401,18 @@ public:
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B using GMRES method for sparse
+   * matrices.
+   *
+   * This function applies the GMRES method to solve the linear system
+   * represented by the sparse matrix A and the right-hand side matrix B.
+   * It updates the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -214,6 +427,18 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B using GMRES method for diagonal
+   * matrices.
+   *
+   * This function applies the GMRES method to solve the linear system
+   * represented by the diagonal matrix A and the right-hand side matrix B.
+   * It updates the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -224,6 +449,17 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the diagonal matrix B. It updates the internal
+   * state of the solver with the computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size M).
+   * @return Matrix<DefDiag, T, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefDiag, T, M> &B) -> Matrix<DefDiag, T, M> {
 
@@ -235,6 +471,17 @@ public:
     return Matrix<DefDiag, T, M>(std::move(result));
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the dense matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -251,6 +498,17 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the sparse matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -262,6 +520,17 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the diagonal matrix B. It updates the internal
+   * state of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size M).
+   * @return Matrix<DefDense, T, M, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
@@ -276,6 +545,17 @@ public:
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the sparse matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
@@ -291,6 +571,17 @@ public:
   }
 
   /* Inv function */
+
+  /**
+   * @brief Computes the inverse of a dense matrix.
+   *
+   * This function computes the inverse of a dense square matrix A using a
+   * custom GMRES-based solver. It updates the internal state with the computed
+   * inverse and returns it as a new matrix object.
+   *
+   * @param A The input square matrix to invert (of size MxM).
+   * @return Matrix<DefDense, T, M, M> The computed inverse matrix.
+   */
   inline auto inv(const Matrix<DefDense, T, M, M> &A)
       -> Matrix<DefDense, T, M, M> {
 
@@ -300,6 +591,16 @@ public:
                                                   this->rep_num, this->X_1);
   }
 
+  /**
+   * @brief Computes the inverse of a sparse matrix.
+   *
+   * This function computes the inverse of a sparse square matrix A using a
+   * custom GMRES-based solver. It updates the internal state with the computed
+   * inverse and returns it as a new matrix object.
+   *
+   * @param A The input square sparse matrix to invert (of size MxM).
+   * @return Matrix<DefDense, T, M, M> The computed inverse matrix.
+   */
   inline auto inv(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A)
       -> Matrix<DefDense, T, M, M> {
 
@@ -309,14 +610,39 @@ public:
                              this->rep_num, X_1);
   }
 
+  /**
+   * @brief Computes the inverse of a diagonal matrix.
+   *
+   * This function computes the inverse of a diagonal matrix A using a custom
+   * method that handles both real and complex numbers. It updates the internal
+   * state with the computed inverse and returns it as a new matrix object.
+   *
+   * @param A The input diagonal matrix to invert (of size MxM).
+   * @return Matrix<DefDiag, T, M> The computed inverse diagonal matrix.
+   */
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Sets the decay rate for the GMRES solver.
+   *
+   * This function sets the decay rate parameter used in the GMRES solver.
+   *
+   * @param decay_rate_in The decay rate value to set.
+   */
   inline void set_decay_rate(const Value_Type &decay_rate_in) {
     this->decay_rate = decay_rate_in;
   }
 
+  /**
+   * @brief Sets the minimum division threshold for numerical stability.
+   *
+   * This function sets the minimum division threshold used in the solver to
+   * prevent numerical instability during matrix inversion.
+   *
+   * @param division_min_in The minimum division value to set.
+   */
   inline void set_division_min(const Value_Type &division_min_in) {
     this->division_min = division_min_in;
   }
@@ -338,6 +664,14 @@ public:
   std::array<std::size_t, K> rep_num;
 };
 
+/** * @brief Linalg solver for inverse diagonal matrices.
+ *
+ * This class provides methods to compute the inverse of diagonal matrices.
+ * It supports both real and complex number types (float or double).
+ *
+ * @tparam T The data type of the matrix elements (e.g., float, double).
+ * @tparam M The number of rows and columns in the square matrix.
+ */
 template <typename T, std::size_t M> class LinalgInvDiag {
 public:
   /* Type */
@@ -379,16 +713,43 @@ public:
 
 public:
   /* Function */
+
+  /**
+   * @brief Computes the inverse of a diagonal matrix.
+   *
+   * This function computes the inverse of a diagonal matrix A using a custom
+   * method that handles both real and complex numbers. It updates the internal
+   * state with the computed inverse and returns it as a new matrix object.
+   *
+   * @param A The input diagonal matrix to invert (of size MxM).
+   * @return Matrix<DefDiag, T, M> The computed inverse diagonal matrix.
+   */
   inline auto inv(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
 
     return InverseOperation::InverseDiag<Value_Type, T, M, IS_COMPLEX>::compute(
         A, this->division_min, X_1);
   }
 
+  /**
+   * @brief Returns the computed inverse diagonal matrix.
+   *
+   * This function returns the internal state of the solver, which contains the
+   * computed inverse diagonal matrix.
+   *
+   * @return Matrix<DefDiag, T, M> The computed inverse diagonal matrix.
+   */
   inline auto get_answer(void) -> Matrix<DefDiag, T, M> {
     return Matrix<DefDiag, T, M>(this->X_1);
   }
 
+  /**
+   * @brief Sets the minimum division threshold for numerical stability.
+   *
+   * This function sets the minimum division threshold used in the solver to
+   * prevent numerical instability during matrix inversion.
+   *
+   * @param division_min_in The minimum division value to set.
+   */
   inline void set_division_min(const T &division_min_in) {
     this->division_min = division_min_in;
   }
@@ -408,6 +769,19 @@ public:
 };
 
 /* make LinalgSolver for inv */
+
+/**
+ * @brief Creates a LinalgSolver for matrix inversion.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * matrix inversion based on the type of the input matrix A. It supports dense,
+ * diagonal, and sparse matrices.
+ *
+ * @tparam A_Type The type of the input matrix (e.g., DenseMatrix, DiagMatrix,
+ * SparseMatrix).
+ * @return LinalgSolverInv_Type<A_Type> An instance of LinalgSolver for matrix
+ * inversion.
+ */
 template <
     typename A_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
@@ -421,6 +795,16 @@ inline auto make_LinalgSolverInv(void)
                       typename A_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for diagonal matrix inversion.
+ *
+ * This function template creates an instance of LinalgInvDiag specialized for
+ * diagonal matrices. It supports both real and complex number types.
+ *
+ * @tparam A_Type The type of the input diagonal matrix (e.g., DiagMatrix).
+ * @return LinalgInvDiag<Type, COLS> An instance of LinalgInvDiag for diagonal
+ * matrix inversion.
+ */
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverInv(void)
@@ -429,6 +813,16 @@ inline auto make_LinalgSolverInv(void)
   return LinalgInvDiag<typename A_Type::Value_Complex_Type, A_Type::COLS>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for sparse matrix inversion.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * sparse matrix inversion. It supports both real and complex number types.
+ *
+ * @tparam A_Type The type of the input sparse matrix (e.g., SparseMatrix).
+ * @return LinalgSolverInv_Type<A_Type> An instance of LinalgSolver for sparse
+ * matrix inversion.
+ */
 template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
@@ -447,6 +841,21 @@ template <typename A_Type>
 using LinalgSolverInv_Type = decltype(make_LinalgSolverInv<A_Type>());
 
 /* make LinalgSolver */
+
+/**
+ * @brief Creates a LinalgSolver for solving linear systems.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems based on the types of the input matrices A and B. It
+ * supports dense, diagonal, and sparse matrices.
+ *
+ * @tparam A_Type The type of the coefficient matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -465,6 +874,21 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with diagonal
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is diagonal. It supports
+ * both real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with diagonal matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -483,6 +907,21 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with sparse
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is sparse. It supports
+ * both real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix (e.g.,
+ * SparseMatrix).
+ * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with sparse matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -501,6 +940,21 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with diagonal
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is diagonal. It supports
+ * both real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with diagonal matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -519,6 +973,21 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with diagonal
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where both the coefficient matrix and the right-hand
+ * side matrix are diagonal. It supports both real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @tparam B_Type The type of the right-hand side diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with diagonal matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -537,6 +1006,22 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with diagonal and
+ * sparse matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is diagonal and the
+ * right-hand side matrix is sparse. It supports both real and complex number
+ * types.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @tparam B_Type The type of the right-hand side sparse matrix (e.g.,
+ * SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with diagonal and sparse matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -555,6 +1040,22 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with sparse
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is sparse and the
+ * right-hand side matrix can be dense, diagonal, or sparse. It supports both
+ * real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix (e.g.,
+ * SparseMatrix).
+ * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
+ * DiagMatrix, SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with sparse matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -573,6 +1074,22 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with sparse and
+ * diagonal matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where the coefficient matrix is sparse and the
+ * right-hand side matrix is diagonal. It supports both real and complex number
+ * types.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix (e.g.,
+ * SparseMatrix).
+ * @tparam B_Type The type of the right-hand side diagonal matrix (e.g.,
+ * DiagMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with sparse and diagonal matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -591,6 +1108,21 @@ inline auto make_LinalgSolver(void)
                       typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Creates a LinalgSolver for solving linear systems with sparse
+ * matrices.
+ *
+ * This function template creates an instance of LinalgSolver specialized for
+ * solving linear systems where both the coefficient matrix and the right-hand
+ * side matrix are sparse. It supports both real and complex number types.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix (e.g.,
+ * SparseMatrix).
+ * @tparam B_Type The type of the right-hand side sparse matrix (e.g.,
+ * SparseMatrix).
+ * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * solving linear systems with sparse matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -614,6 +1146,20 @@ template <typename A_Type, typename B_Type>
 using LinalgSolver_Type = decltype(make_LinalgSolver<A_Type, B_Type>());
 
 /* Linalg Partition Solver */
+
+/** @brief Linalg solver for partitioned matrices.
+ *
+ * This class provides methods to solve linear systems using partitioned
+ * matrices. It supports both dense and sparse matrices, and allows for
+ * partitioning based on the number of rows and columns.
+ *
+ * @tparam T The data type of the matrix elements (e.g., float, double).
+ * @tparam M The number of columns in the square matrix.
+ * @tparam K The number of rows in the right-hand side matrix.
+ * @tparam SparseAvailable_A Indicates if the coefficient matrix A is sparse.
+ * @tparam SparseAvailable_B Indicates if the right-hand side matrix B is
+ * sparse.
+ */
 template <typename T, std::size_t M, std::size_t K, typename SparseAvailable_A,
           typename SparseAvailable_B>
 class LinalgPartitionSolver {
@@ -674,6 +1220,19 @@ public:
   }
 
   /* Solve function */
+
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the dense matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
@@ -689,6 +1248,19 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices with cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the dense matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
                          const Matrix<DefDense, T, M, K> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -706,6 +1278,18 @@ public:
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices with sparse B.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the sparse matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
@@ -721,6 +1305,20 @@ public:
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices with sparse B
+   * and cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the sparse matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
                          const Matrix<DefDiag, T, M> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, M> {
@@ -738,6 +1336,18 @@ public:
     return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices with sparse B.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the sparse matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -756,6 +1366,20 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for dense matrices with sparse B
+   * and cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the dense matrix A and the sparse matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefDense, T, M, M> &A,
                          const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -776,6 +1400,18 @@ public:
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the dense matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
@@ -790,6 +1426,20 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices with cold
+   * start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the dense matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefDiag, T, M> &A,
                          const Matrix<DefDense, T, M, K> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -805,6 +1455,18 @@ public:
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the diagonal matrix B. It updates the internal
+   * state of the solver with the computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDiag, T, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDiag, T, M> {
@@ -820,6 +1482,20 @@ public:
     return Matrix<DefDiag, T, M>(std::move(result));
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices with cold
+   * start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the diagonal matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDiag, T, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDiag, T, M> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -835,6 +1511,20 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for diagonal matrices with cold
+   * start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the diagonal matrix A and the sparse matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient diagonal matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefDiag, T, M> &A,
                          const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -854,6 +1544,18 @@ public:
         Base::Matrix::output_dense_matrix(X_1_temporary));
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the dense matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDense, T, M, K> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, K> {
@@ -869,6 +1571,19 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices with cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the dense matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                          const Matrix<DefDense, T, M, K> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -886,6 +1601,18 @@ public:
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices with diagonal B.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the diagonal matrix B. It updates the internal
+   * state of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefDiag, T, M> &B, std::size_t matrix_size)
       -> Matrix<DefDense, T, M, M> {
@@ -904,6 +1631,20 @@ public:
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices with diagonal B
+   * and cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the diagonal matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, M> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                          const Matrix<DefDiag, T, M> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, M> {
@@ -924,6 +1665,18 @@ public:
     return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices with sparse B.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the sparse matrix B. It updates the internal state
+   * of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                     std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -942,6 +1695,20 @@ public:
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Solves the linear system Ax = B for sparse matrices with sparse B
+   * and cold start.
+   *
+   * This function computes the solution of the linear system represented by
+   * the sparse matrix A and the sparse matrix B without using any previous
+   * solution as a starting point. It returns a new matrix object with the
+   * computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxM).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @param matrix_size The size of the matrices to be processed.
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto cold_solve(const Matrix<DefSparse, T, M, M, SparseAvailable_A> &A,
                          const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
@@ -962,14 +1729,39 @@ public:
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
 
+  /**
+   * @brief Returns the computed solution matrix.
+   *
+   * This function returns the computed solution matrix stored in the solver.
+   * It is typically called after a successful solve operation.
+   *
+   * @return Matrix<DefDense, T, M, K> The computed solution matrix.
+   */
   inline auto get_answer(void) -> Matrix<DefDense, T, M, K> {
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
 
+  /**
+   * @brief Sets the decay rate for the solver.
+   *
+   * This function sets the decay rate used in the solver's computations.
+   * The decay rate influences the convergence behavior of the solver.
+   *
+   * @param decay_rate_in The decay rate to be set.
+   */
   inline void set_decay_rate(const Value_Type &decay_rate_in) {
     this->decay_rate = decay_rate_in;
   }
 
+  /**
+   * @brief Sets the minimum division value for the solver.
+   *
+   * This function sets the minimum division value used in the solver's
+   * computations. It prevents division by zero and controls numerical
+   * stability.
+   *
+   * @param division_min_in The minimum division value to be set.
+   */
   inline void set_division_min(const Value_Type &division_min_in) {
     this->division_min = division_min_in;
   }
@@ -992,6 +1784,19 @@ public:
 };
 
 /* make LinalgPartitionSolver */
+
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance.
+ *
+ * This function creates an instance of LinalgPartitionSolver based on the
+ * types of the input matrices A and B. It ensures that the value types of A and
+ * B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient matrix A.
+ * @tparam B_Type The type of the right-hand side matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1012,6 +1817,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * diagonal matrices.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * diagonal matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1032,6 +1850,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * sparse matrices.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * sparse matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side sparse matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1052,6 +1883,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * diagonal matrices with sparse B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * diagonal matrix A and sparse matrix B. It ensures that the value types of A
+ * and B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side sparse matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -1072,6 +1916,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * diagonal matrices with diagonal B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * diagonal matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -1092,6 +1949,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * diagonal matrices with sparse B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * diagonal matrix A and sparse matrix B. It ensures that the value types of A
+ * and B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side sparse matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
@@ -1112,6 +1982,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * sparse matrices with dense B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * sparse matrix A and dense matrix B. It ensures that the value types of A and
+ * B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side dense matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -1132,6 +2015,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * sparse matrices with diagonal B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * sparse matrix A and diagonal matrix B. It ensures that the value types of A
+ * and B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -1152,6 +2048,19 @@ inline auto make_LinalgPartitionSolver(void)
                                typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgPartitionSolver instance for
+ * sparse matrices with diagonal B.
+ *
+ * This function creates an instance of LinalgPartitionSolver configured for
+ * sparse matrix A and diagonal matrix B. It ensures that the value types of A
+ * and B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgPartitionSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -1178,6 +2087,22 @@ using LinalgPartitionSolver_Type =
     decltype(make_LinalgPartitionSolver<A_Type, B_Type>());
 
 /* least-squares solution to a linear matrix equation */
+
+/**
+ * @brief Class for solving least-squares problems using GMRES.
+ *
+ * This class provides methods to solve least-squares problems of the form
+ * Ax = B, where A is a matrix and B is a matrix or vector. It supports dense,
+ * diagonal, and sparse matrices, and can handle both cold starts and warm
+ * starts.
+ *
+ * @tparam T The value type of the matrices (float or double).
+ * @tparam M The number of columns in matrix A.
+ * @tparam N The number of rows in matrix A (and rows in matrix B).
+ * @tparam K The number of rows in matrix B.
+ * @tparam SparseAvailable_A Indicates if sparse matrices are available for A.
+ * @tparam SparseAvailable_B Indicates if sparse matrices are available for B.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename SparseAvailable_A, typename SparseAvailable_B>
 class LinalgLstsqSolver {
@@ -1239,7 +2164,20 @@ public:
     return *this;
   }
 
+public:
   /* Solve method */
+
+  /**
+   * @brief Solves the least-squares problem Ax = B for dense matrices.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the dense matrix A and the dense matrix B. It updates the
+   * internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxN).
+   * @param B The right-hand side dense matrix (of size MxK).
+   * @return Matrix<DefDense, T, N, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, N> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, N, K> {
@@ -1253,6 +2191,18 @@ public:
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for dense matrices with
+   * diagonal B.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the dense matrix A and the diagonal matrix B. It updates
+   * the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxN).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @return Matrix<DefDense, T, N, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, N> &A,
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, N, M> {
@@ -1266,6 +2216,18 @@ public:
     return Matrix<DefDense, T, N, M>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for dense matrices with
+   * sparse B.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the dense matrix A and the sparse matrix B. It updates the
+   * internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxN).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, N, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefDense, T, M, N> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, N, K> {
@@ -1282,6 +2244,19 @@ public:
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for dense matrices with
+   * sparse B and cold start.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the dense matrix A and the sparse matrix B without using
+   * any previous solution as a starting point. It returns a new matrix object
+   * with the computed solution.
+   *
+   * @param A The coefficient dense matrix (of size MxN).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, N, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, N, K> {
@@ -1295,6 +2270,18 @@ public:
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for sparse matrices with
+   * diagonal B.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the sparse matrix A and the diagonal matrix B. It updates
+   * the internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxN).
+   * @param B The right-hand side diagonal matrix (of size MxM).
+   * @return Matrix<DefDense, T, N, M> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, N, M> {
@@ -1308,6 +2295,18 @@ public:
     return Matrix<DefDense, T, N, M>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for sparse matrices with
+   * sparse B.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the sparse matrix A and the sparse matrix B. It updates the
+   * internal state of the solver with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxN).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, N, K> The computed solution matrix.
+   */
   inline auto solve(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, N, K> {
@@ -1324,14 +2323,44 @@ public:
     return Matrix<DefDense, T, N, K>(X_1);
   }
 
+  /**
+   * @brief Solves the least-squares problem Ax = B for sparse matrices with
+   * sparse B and cold start.
+   *
+   * This function computes the least-squares solution of the linear system
+   * represented by the sparse matrix A and the sparse matrix B without using
+   * any previous solution as a starting point. It returns a new matrix object
+   * with the computed solution.
+   *
+   * @param A The coefficient sparse matrix (of size MxN).
+   * @param B The right-hand side sparse matrix (of size MxK).
+   * @return Matrix<DefDense, T, N, K> The computed solution matrix.
+   */
   inline auto get_answer(void) -> Matrix<DefDense, T, N, K> {
     return Matrix<DefDense, T, N, K>(this->X_1);
   }
 
+  /**
+   * @brief Sets the decay rate for the solver.
+   *
+   * This function sets the decay rate used in the solver's computations.
+   * The decay rate influences the convergence behavior of the solver.
+   *
+   * @param decay_rate_in The decay rate to be set.
+   */
   inline void set_decay_rate(const Value_Type &decay_rate_in) {
     this->decay_rate = decay_rate_in;
   }
 
+  /**
+   * @brief Sets the minimum division value for the solver.
+   *
+   * This function sets the minimum division value used in the solver's
+   * computations. It prevents division by zero and controls numerical
+   * stability.
+   *
+   * @param division_min_in The minimum division value to be set.
+   */
   inline void set_division_min(const Value_Type &division_min_in) {
     this->division_min = division_min_in;
   }
@@ -1355,6 +2384,19 @@ public:
 };
 
 /* make LinalgLstsqSolver */
+
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance.
+ *
+ * This function creates an instance of LinalgLstsqSolver based on the types of
+ * the input matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient matrix A.
+ * @tparam B_Type The type of the right-hand side matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1375,6 +2417,19 @@ inline auto make_LinalgLstsqSolver(void)
                            typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance for diagonal
+ * matrices.
+ *
+ * This function creates an instance of LinalgLstsqSolver configured for
+ * diagonal matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1395,6 +2450,19 @@ inline auto make_LinalgLstsqSolver(void)
                            typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance for sparse
+ * matrices.
+ *
+ * This function creates an instance of LinalgLstsqSolver configured for sparse
+ * matrices A and B. It ensures that the value types of A and B are compatible
+ * and returns a solver configured for the specific matrix dimensions and
+ * sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side sparse matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
@@ -1415,6 +2483,19 @@ inline auto make_LinalgLstsqSolver(void)
                            typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance for diagonal
+ * matrices with sparse B.
+ *
+ * This function creates an instance of LinalgLstsqSolver configured for
+ * diagonal matrix A and sparse matrix B. It ensures that the value types of A
+ * and B are compatible and returns a solver configured for the specific matrix
+ * dimensions and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side sparse matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -1435,6 +2516,19 @@ inline auto make_LinalgLstsqSolver(void)
                            typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance for diagonal
+ * matrices with diagonal B.
+ *
+ * This function creates an instance of LinalgLstsqSolver configured for
+ * diagonal matrices A and B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient diagonal matrix A.
+ * @tparam B_Type The type of the right-hand side diagonal matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
@@ -1455,6 +2549,19 @@ inline auto make_LinalgLstsqSolver(void)
                            typename B_Type::SparseAvailable_Type>();
 }
 
+/**
+ * @brief Factory function to create a LinalgLstsqSolver instance for sparse
+ * matrices with dense B.
+ *
+ * This function creates an instance of LinalgLstsqSolver configured for sparse
+ * matrix A and dense matrix B. It ensures that the value types of A and B are
+ * compatible and returns a solver configured for the specific matrix dimensions
+ * and sparsity.
+ *
+ * @tparam A_Type The type of the coefficient sparse matrix A.
+ * @tparam B_Type The type of the right-hand side dense matrix B.
+ * @return LinalgLstsqSolver instance configured for the given matrices.
+ */
 template <
     typename A_Type, typename B_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&

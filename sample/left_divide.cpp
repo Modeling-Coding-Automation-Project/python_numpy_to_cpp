@@ -1,3 +1,12 @@
+/**
+ * @file left_divide.cpp
+ * @brief Demonstrates solving a linear system using custom matrix and solver
+ * classes.
+ *
+ * This example creates several types of matrices (dense, diagonal, sparse)
+ * using the PythonNumpy library, and solves a linear system of equations using
+ * a linear algebra solver. The result is printed to the console.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

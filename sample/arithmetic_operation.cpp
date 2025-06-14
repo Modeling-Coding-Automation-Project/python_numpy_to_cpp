@@ -1,3 +1,15 @@
+/**
+ * @file arithmetic_operation.cpp
+ * @brief Demonstrates various matrix operations using custom matrix types in
+ * C++.
+ *
+ * This file contains a sample program that showcases the creation and
+ * manipulation of different types of matrices, including dense, diagonal, and
+ * sparse matrices. It demonstrates matrix initialization, arithmetic
+ * operations, transposition, conversion between matrix types, and the creation
+ * of matrices filled with zeros, ones, or a specific value. The program also
+ * illustrates how to print the contents of these matrices.
+ */
 #include <iostream>
 
 #include "python_numpy.hpp"

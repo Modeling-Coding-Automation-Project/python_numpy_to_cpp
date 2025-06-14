@@ -1,3 +1,36 @@
+/**
+ * @file python_numpy_templates.hpp
+ * @brief Template aliases for Python-like Numpy matrix and sparse matrix
+ * operations in C++.
+ *
+ * This header provides a collection of template aliases within the PythonNumpy
+ * namespace, designed to facilitate matrix and sparse matrix operations similar
+ * to those found in Python's Numpy library. The templates wrap and expose
+ * various matrix utilities and structures from the Base::Matrix namespace,
+ * enabling type-safe and efficient manipulation of dense, sparse, and
+ * triangular matrices at compile time.
+ *
+ * The provided template aliases cover:
+ * - Complex type detection.
+ * - Construction and manipulation of sparse matrix structures (row indices, row
+ * pointers, column availability).
+ * - Dense and diagonal matrix availability.
+ * - Creation and transformation of sparse matrix representations.
+ * - Concatenation, addition, subtraction, and multiplication of sparse
+ * matrices.
+ * - Extraction of matrix rows and transposition.
+ * - Validation and utility operations for matrix structures.
+ *
+ * All templates are intended to be used as building blocks for
+ * high-performance, type-safe matrix computations in C++ projects that require
+ * Numpy-like functionality.
+ *
+ * @note
+ * tparam M is the number of columns in the matrix.
+ * tparam N is the number of rows in the matrix.
+ * Somehow Programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef __PYTHON_NUMPY_TEMPLATES_HPP__
 #define __PYTHON_NUMPY_TEMPLATES_HPP__
 

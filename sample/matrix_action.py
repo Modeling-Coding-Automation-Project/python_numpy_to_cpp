@@ -1,4 +1,10 @@
+"""
+This script demonstrates basic matrix manipulations using NumPy. It includes:
+- Reshaping a 4x4 matrix into an 8x2 matrix using column-major (Fortran-style) order.
+- Substituting a 3x3 matrix into a submatrix of a 4x4 zero matrix.
+"""
 import numpy as np
+
 
 # reshape
 A = np.array([[16, 2, 3, 13],
