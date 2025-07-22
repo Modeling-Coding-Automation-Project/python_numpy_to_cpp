@@ -1,3 +1,10 @@
+"""
+File: numpy_deploy.py
+
+This module provides utilities to convert NumPy matrices into C++ header files
+with type-safe matrix representations. It supports dense, diagonal, sparse, and
+empty sparse matrices, mapping NumPy data types to their C++ equivalents.
+"""
 import os
 import sys
 import numpy as np
@@ -26,11 +33,28 @@ class MatrixType(Enum):
 
 
 class NumpyDeploy:
+    """
+    NumpyDeploy
+    A utility class for converting NumPy matrices to C++ header files with type-safe matrix representations.
+    Supports dense, diagonal, sparse, and empty sparse matrices, and generates C++ code for static initialization.
+    Methods
+
+    Notes
+    -----
+    - Requires the presence of `python_to_cpp_types` and `MatrixType` mappings/enums.
+    - Uses the `inspect` and `os` modules to infer variable and file names for code generation.
+    - The generated C++ code assumes the existence of a "python_numpy.hpp" header and related matrix type templates.
+    """
+
     def __init__(self):
         pass
 
     @staticmethod
-    def check_dtype(matrix):
+    def check_dtype(matrix: np.ndarray):
+        """
+        Checks the data type of a given NumPy array and returns the corresponding C++ type.
+        """
+
         if matrix.dtype.name not in python_to_cpp_types:
             raise ValueError("Unsupported data type: " +
                              str(matrix.dtype.name))
@@ -38,7 +62,17 @@ class NumpyDeploy:
         return python_to_cpp_types[matrix.dtype.name]
 
     @staticmethod
-    def judge_matrix_type(matrix):
+    def judge_matrix_type(matrix: np.ndarray):
+        """
+        Determines the type of a given matrix.
+
+        The function inspects the input matrix and classifies it into one of several types:
+        - MatrixType.SPARSE_EMPTY: All elements are zero.
+        - MatrixType.DENSE: All elements are non-zero.
+        - MatrixType.DIAG: All non-diagonal elements are zero, and diagonal elements are non-zero.
+        - MatrixType.SPARSE: Contains both zero and non-zero elements, but is not diagonal or dense.
+        """
+
         diag_flag = True
         sparse_flag = False
         sparse_empty_flag = True
@@ -76,11 +110,23 @@ class NumpyDeploy:
             return MatrixType.DENSE
 
     @staticmethod
-    def value_to_string_with_type(value, type_name):
+    def value_to_string_with_type(value, type_name: str):
+        """
+        Converts a given value to its string representation as a C++ static_cast expression.
+        Args:
+            value: The value to be converted.
+            type_name (str): The C++ type name to cast the value to.
+        Returns:
+            str: A string representing the C++ static_cast expression for the value and type.
+        """
         return "static_cast<" + type_name + ">(" + str(value) + ")"
 
     @staticmethod
-    def generate_matrix_cpp_code(matrix_in, file_name=None):
+    def generate_matrix_cpp_code(
+            matrix_in: np.ndarray,
+            SparseAvailable: np.ndarray = None,
+            file_name=None):
+
         matrix = matrix_in
 
         if len(matrix_in.shape) >= 3:
@@ -88,7 +134,10 @@ class NumpyDeploy:
         elif len(matrix_in.shape) == 1:
             matrix = matrix_in.reshape(matrix_in.shape[0], 1)
 
-        matrix_type = NumpyDeploy.judge_matrix_type(matrix)
+        if SparseAvailable is None:
+            matrix_type = NumpyDeploy.judge_matrix_type(matrix)
+        else:
+            matrix_type = MatrixType.SPARSE
 
         # %% inspect arguments
         # Get the caller's frame
@@ -149,7 +198,15 @@ class NumpyDeploy:
             for i in range(matrix.shape[0]):
                 code_text += "    ColumnAvailable<"
                 for j in range(matrix.shape[1]):
-                    if matrix[i, j] != 0:
+                    is_not_zero = False
+                    if SparseAvailable is None:
+                        if matrix[i, j] != 0:
+                            is_not_zero = True
+                    else:
+                        if True == SparseAvailable[i, j]:
+                            is_not_zero = True
+
+                    if is_not_zero:
                         code_text += "true"
                     else:
                         code_text += "false"
@@ -213,7 +270,15 @@ class NumpyDeploy:
             sparse_count = 0
             for i in range(matrix.shape[0]):
                 for j in range(matrix.shape[1]):
-                    if matrix[i, j] != 0:
+                    is_not_zero = False
+                    if SparseAvailable is None:
+                        if matrix[i, j] != 0:
+                            is_not_zero = True
+                    else:
+                        if True == SparseAvailable[i, j]:
+                            is_not_zero = True
+
+                    if is_not_zero:
                         if sparse_count == 0:
                             code_text += "    " + NumpyDeploy.value_to_string_with_type(
                                 matrix[i, j], type_name)
