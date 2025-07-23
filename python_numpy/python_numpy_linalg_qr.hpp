@@ -33,27 +33,185 @@ const double DEFAULT_DIVISION_MIN_LINALG_QR = 1.0e-10;
 
 namespace LinalgQR_Operation {
 
+// inner loop: j loop
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T, std::size_t Row_Index, std::size_t I, std::size_t J,
+          int End_Index>
+struct BackwardSubstitution_J_Loop {
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      typename Matrix_Type::Value_Type &sum,
+                      const T &division_min) {
+
+    sum -= R(I, J) * matrix_out(J, Row_Index);
+    BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T, I,
+                                (J + 1), Row_Index,
+                                (End_Index - 1)>::compute(R, matrix_in,
+                                                          matrix_out, sum,
+                                                          division_min);
+  }
+};
+
+// terminate j loop
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T, std::size_t Row_Index, std::size_t I, std::size_t J>
+struct BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                   Row_Index, I, J, 0> {
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      typename Matrix_Type::Value_Type &sum,
+                      const T &division_min) {
+    // Do nothing
+    static_cast<void>(R);
+    static_cast<void>(matrix_in);
+    static_cast<void>(matrix_out);
+    static_cast<void>(sum);
+    static_cast<void>(division_min);
+  }
+};
+
+// inner loop: i loop
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T, std::size_t Row_Index_Count, std::size_t I>
+struct BackwardSubstitution_I_Loop {
+
+  template <>
+  std::enable_if<false, void>
+  compute_value(const Upper_Triangular_Matrix_Type &R,
+                const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                const T &division_min) {
+    // Do nothing
+    static_cast<void>(R);
+    static_cast<void>(matrix_in);
+    static_cast<void>(matrix_out);
+    static_cast<void>(division_min);
+  }
+
+  template <>
+  std::enable_if<true, void>
+  compute_value(const Upper_Triangular_Matrix_Type &R,
+                const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                const T &division_min) {
+
+    constexpr int End_Index = Matrix_Type::ROWS - (I + 1);
+
+    constexpr std::size_t Row_Index = Matrix_Type::ROWS - Row_Index_Count;
+
+    typename Matrix_Type::Value_Type sum = matrix_in(I, Row_Index);
+
+    BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T, I,
+                                (I + 1), Row_Index,
+                                End_Index>::compute(R, matrix_in, matrix_out,
+                                                    sum, division_min);
+
+    matrix_out(I, Row_Index) =
+        sum / Base::Utility::avoid_zero_divide(R(I, I), division_min);
+
+    BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                Row_Index_Count,
+                                (I - 1)>::compute(R, matrix_in, matrix_out,
+                                                  division_min);
+  }
+
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      const T &division_min) {
+
+    constexpr int End_Index = Matrix_Type::ROWS - (I + 1);
+
+    compute_value<(End_Index >= 1)>(R, matrix_in, matrix_out, division_min);
+  }
+};
+
+// terminate i loop
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T, std::size_t Row_Index_Count>
+struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                   Row_Index_Count, 0> {
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      const T &division_min) {
+    // Do nothing
+    static_cast<void>(R);
+    static_cast<void>(matrix_in);
+    static_cast<void>(matrix_out);
+    static_cast<void>(division_min);
+  }
+};
+
+// row_index loop
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T, std::size_t Row_Index_Count>
+struct BackwardSubstitution_RowLoop {
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      const T &division_min) {
+
+    BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                (Row_Index_Count - 1),
+                                (Matrix_Type::COLS - 1)>::compute(R, matrix_in,
+                                                                  matrix_out,
+                                                                  division_min);
+
+    BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                 (Row_Index_Count - 1)>::compute(R, matrix_in,
+                                                                 matrix_out,
+                                                                 division_min);
+  }
+};
+
+// row_index loop terminate
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T>
+struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type,
+                                    T, 0> {
+  static void compute(const Upper_Triangular_Matrix_Type &R,
+                      const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
+                      const T &division_min) {
+    // Do nothing
+    static_cast<void>(R);
+    static_cast<void>(matrix_in);
+    static_cast<void>(matrix_out);
+    static_cast<void>(division_min);
+  }
+};
+
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
           typename T>
 inline auto backward_substitution(const Upper_Triangular_Matrix_Type &R,
                                   const Matrix_Type &matrix_in,
                                   const T &division_min) {
+  static_assert(Upper_Triangular_Matrix_Type::COLS == Matrix_Type::COLS,
+                "The number of columns in the upper triangular matrix R must "
+                "match the number of columns in the input matrix.");
+  static_assert(Upper_Triangular_Matrix_Type::COLS ==
+                    Upper_Triangular_Matrix_Type::ROWS,
+                "The upper triangular matrix R must be square.");
 
   Matrix_Type matrix_out;
 
-  for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index) {
+  /*
+    for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index)
+    {
 
-    for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
+      for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
 
-      typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
+        typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
 
-      for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
-        sum -= R(i, j) * matrix_out(j, row_index);
+        for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
+          sum -= R(i, j) * matrix_out(j, row_index);
+        }
+        matrix_out(i, row_index) =
+            sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
       }
-      matrix_out(i, row_index) =
-          sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
     }
-  }
+  */
+
+  BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                               Matrix_Type::ROWS>::compute(R, matrix_in,
+                                                           matrix_out,
+                                                           division_min);
+
   return matrix_out;
 }
 
