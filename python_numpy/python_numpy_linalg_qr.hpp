@@ -78,6 +78,17 @@ struct BackwardSubstitution_I_Loop {
 
     constexpr std::size_t I = (Matrix_Type::COLS - 1) - I_Count;
 
+    compute_conditional(
+        R, matrix_in, matrix_out, division_min,
+        std::integral_constant<bool, (I + 1) < Matrix_Type::ROWS>{});
+  }
+
+private:
+  static void compute_conditional(const Upper_Triangular_Matrix_Type &R,
+                                  const Matrix_Type &matrix_in,
+                                  Matrix_Type &matrix_out,
+                                  const T &division_min, std::true_type) {
+    constexpr std::size_t I = (Matrix_Type::COLS - 1) - I_Count;
     constexpr int End_Index = Matrix_Type::ROWS - (I + 1);
 
     T sum = matrix_in(I, Row_Index);
@@ -95,6 +106,17 @@ struct BackwardSubstitution_I_Loop {
                                 (I_Count - 1)>::compute(R, matrix_in,
                                                         matrix_out,
                                                         division_min);
+  }
+
+  static void compute_conditional(const Upper_Triangular_Matrix_Type &R,
+                                  const Matrix_Type &matrix_in,
+                                  Matrix_Type &matrix_out,
+                                  const T &division_min, std::false_type) {
+    // do nothing
+    static_cast<void>(R);
+    static_cast<void>(matrix_in);
+    static_cast<void>(matrix_out);
+    static_cast<void>(division_min);
   }
 };
 
