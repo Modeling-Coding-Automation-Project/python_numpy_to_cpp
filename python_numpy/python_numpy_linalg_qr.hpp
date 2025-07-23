@@ -76,7 +76,7 @@ struct BackwardSubstitution_I_Loop {
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    constexpr std::size_t I = (Matrix_Type::COLS - 1) - I_Count;
+    constexpr std::size_t I = I_Count;
 
     compute_conditional(
         R, matrix_in, matrix_out, division_min,
@@ -88,7 +88,7 @@ private:
                                   const Matrix_Type &matrix_in,
                                   Matrix_Type &matrix_out,
                                   const T &division_min, std::true_type) {
-    constexpr std::size_t I = (Matrix_Type::COLS - 1) - I_Count;
+    constexpr std::size_t I = I_Count;
     constexpr int End_Index = Matrix_Type::ROWS - (I + 1);
 
     T sum = matrix_in(I, Row_Index);
@@ -112,11 +112,12 @@ private:
                                   const Matrix_Type &matrix_in,
                                   Matrix_Type &matrix_out,
                                   const T &division_min, std::false_type) {
-    // do nothing
-    static_cast<void>(R);
-    static_cast<void>(matrix_in);
-    static_cast<void>(matrix_out);
-    static_cast<void>(division_min);
+
+    BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
+                                Row_Index,
+                                (I_Count - 1)>::compute(R, matrix_in,
+                                                        matrix_out,
+                                                        division_min);
   }
 };
 
@@ -168,7 +169,7 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    constexpr std::size_t Row_Index = Matrix_Type::ROWS - 1;
+    constexpr std::size_t Row_Index = (Matrix_Type::ROWS - 1) - Row_Index_Count;
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                 Row_Index,
@@ -192,22 +193,19 @@ inline auto backward_substitution(const Upper_Triangular_Matrix_Type &R,
 
   Matrix_Type matrix_out;
 
-  /*
-    for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index)
-    {
+  for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index) {
 
-      for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
+    for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
 
-        typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
+      typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
 
-        for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
-          sum -= R(i, j) * matrix_out(j, row_index);
-        }
-        matrix_out(i, row_index) =
-            sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
+      for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
+        sum -= R(i, j) * matrix_out(j, row_index);
       }
+      matrix_out(i, row_index) =
+          sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
     }
-  */
+  }
 
   BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                (Matrix_Type::ROWS - 1)>::compute(R, matrix_in,
