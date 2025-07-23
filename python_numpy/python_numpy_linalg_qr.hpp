@@ -19,6 +19,8 @@
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
+#include "python_numpy_base_simplification.hpp"
+#include "python_numpy_base_simplified_action.hpp"
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
@@ -28,6 +30,34 @@
 namespace PythonNumpy {
 
 const double DEFAULT_DIVISION_MIN_LINALG_QR = 1.0e-10;
+
+namespace LinalgQR_Operation {
+
+template <typename Upper_Triangular_Matrix_Type, typename Matrix_Type,
+          typename T>
+inline auto backward_substitution(const Upper_Triangular_Matrix_Type &R,
+                                  const Matrix_Type &matrix_in,
+                                  const T &division_min) {
+
+  Matrix_Type matrix_out;
+
+  for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index) {
+
+    for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
+
+      typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
+
+      for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
+        sum -= R(i, j) * matrix_out(j, row_index);
+      }
+      matrix_out(i, row_index) =
+          sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
+    }
+  }
+  return matrix_out;
+}
+
+} // namespace LinalgQR_Operation
 
 /**
  * @brief LinalgSolverQR class for QR decomposition and solving linear systems.
