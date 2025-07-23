@@ -169,7 +169,7 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    constexpr std::size_t Row_Index = (Matrix_Type::ROWS - 1) - Row_Index_Count;
+    constexpr std::size_t Row_Index = Matrix_Type::ROWS - 1;
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                 Row_Index,
