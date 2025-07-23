@@ -90,7 +90,7 @@ private:
                                   Matrix_Type &matrix_out,
                                   const T &division_min, std::true_type) {
     constexpr std::size_t I = I_Count;
-    constexpr int End_Index_Value = Matrix_Type::ROWS - (I + 1);
+    constexpr int End_Index_Value = Matrix_Type::ROWS - I;
 
     T sum = matrix_in(I, Row_Index);
 
@@ -131,11 +131,19 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
-    // Do nothing
-    static_cast<void>(R);
-    static_cast<void>(matrix_in);
-    static_cast<void>(matrix_out);
-    static_cast<void>(division_min);
+
+    constexpr int End_Index_Value = Matrix_Type::ROWS;
+
+    T sum = matrix_in(0, Row_Index);
+
+    BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T, 0,
+                                1, Row_Index,
+                                End_Index_Value>::compute(R, matrix_in,
+                                                          matrix_out, sum,
+                                                          division_min);
+
+    matrix_out(0, Row_Index) =
+        sum / Base::Utility::avoid_zero_divide(R(0, 0), division_min);
   }
 };
 
