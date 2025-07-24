@@ -21,6 +21,7 @@
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
 #include "python_numpy_base_simplified_action.hpp"
+#include "python_numpy_linalg_solver.hpp"
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
@@ -447,6 +448,24 @@ public:
 
 public:
   /* Function */
+
+  template <typename Matrix_In_Type>
+  inline auto backward_substitution(const Matrix_In_Type &matrix_in)
+      -> DenseMatrix_Type<T, M, M> {
+    static_assert(Matrix_In_Type::COLS == M,
+                  "The number of columns in the input matrix must match the "
+                  "number of columns in the diagonal matrix.");
+
+    using Backward_Substitution_Out_Type = DenseMatrix_Type<T, M, M>;
+
+    Backward_Substitution_Out_Type matrix_out;
+
+    auto solver = make_LinalgSolver<decltype(this->_R), Matrix_In_Type>();
+
+    matrix_out = solver.solve(this->_R, matrix_in);
+
+    return matrix_out;
+  }
 
   /**
    * @brief Solves the QR decomposition for the given diagonal matrix A.

@@ -3190,6 +3190,28 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(R_1_A_bs.matrix.data, R_1_A_bs_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR backward_substitution Dense with LinalgSolverQR.");
 
+    auto R_1_B = QR_solver_diag.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_B_answer({
+        {1.0F, 2.0F, 3.0F},
+        {2.5F, 2.0F, 3.0F},
+        {3.0F, 2.66666667F, 2.33333333F}
+        });
+
+    tester.expect_near(R_1_B.matrix.data, R_1_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Diag.");
+
+    auto R_1_C = QR_solver_sparse.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_C_answer({
+        {8.22192192F, 6.95701085F, 5.69209979F },
+        { 4.61512474F, 4.32455532F, 2.53398591F },
+        { -3.55756237F, -3.16227766F, -2.76699295F }
+    });
+
+    tester.expect_near(R_1_C.matrix.data, R_1_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }
