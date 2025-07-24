@@ -198,6 +198,10 @@ public:
     return full;
   }
 
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = N;
+
   /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;

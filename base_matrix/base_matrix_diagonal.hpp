@@ -49,6 +49,11 @@ namespace Matrix {
  */
 template <typename T, std::size_t M> class DiagMatrix {
 public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
   DiagMatrix() : data(M, static_cast<T>(0)) {}
