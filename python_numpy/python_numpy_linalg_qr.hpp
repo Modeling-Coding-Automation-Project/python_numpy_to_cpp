@@ -212,21 +212,6 @@ inline auto backward_substitution(const Upper_Triangular_Matrix_Type &R,
 
   Matrix_Type matrix_out;
 
-  // for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index)
-  // {
-
-  //   for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
-
-  //     T sum = matrix_in(i, row_index);
-
-  //     for (std::size_t j = i + 1; j < Matrix_Type::COLS; ++j) {
-  //       sum -= R(i, j) * matrix_out(j, row_index);
-  //     }
-  //     matrix_out(i, row_index) =
-  //         sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
-  //   }
-  // }
-
   BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                (Matrix_Type::ROWS - 1)>::compute(R, matrix_in,
                                                                  matrix_out,
