@@ -3164,9 +3164,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         {9, 8, 7, 12}
     });
 
-    Matrix<DefDense, T, 3, 4> R_1_A_2;
-    LinalgQR_Operation::backward_substitution(
-        R_answer, A_2, R_1_A_2, division_min);
+    Matrix<DefDense, T, 3, 4> R_1_A_2 = QR_solver_dense.backward_substitution(A_2);
 
     Matrix<DefDense, T, 3, 4> R_1_A_2_answer({
         {-4.26873404F, -3.57425466F, -5.09101295F, -9.72349365F},
@@ -3176,6 +3174,21 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
     tester.expect_near(R_1_A_2.matrix.data, R_1_A_2_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgQR backward_substitution Dense.");
+
+    LinalgSolverQR_Type<decltype(A)> QR_solver_bs;
+    QR_solver_bs.set_division_min(division_min);
+    QR_solver_bs.solve(A);
+
+    auto R_1_A_bs = QR_solver_bs.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_A_bs_answer({
+        {-4.26873404F, -3.57425466F, -5.09101295F},
+        {8.52639051F, 7.20611792F, 8.40289246F},
+        {-3.6986484F, -3.28768747F, -2.87672653F}
+        });
+
+    tester.expect_near(R_1_A_bs.matrix.data, R_1_A_bs_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Dense with LinalgSolverQR.");
 
 
     tester.throw_error_if_test_failed();

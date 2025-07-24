@@ -43,7 +43,8 @@ struct BackwardSubstitution_J_Loop {
                       Matrix_Out_Type &matrix_out, T &sum,
                       const T &division_min) {
 
-    sum -= R(I, J) * matrix_out(J, Row_Index);
+    sum -= Base::Matrix::get_sparse_matrix_value<I, J>(R) *
+           matrix_out.template get<J, Row_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                 Matrix_Out_Type, T, Row_Index, I, (J + 1),
@@ -98,7 +99,7 @@ private:
     constexpr std::size_t I = I_Count;
     constexpr int End_Index_Value = Matrix_Out_Type::COLS - (I + 1);
 
-    T sum = matrix_in(I, Row_Index);
+    T sum = matrix_in.template get<I, Row_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                 Matrix_Out_Type, T, Row_Index, I, (I + 1),
@@ -106,8 +107,10 @@ private:
                                                           matrix_out, sum,
                                                           division_min);
 
-    matrix_out(I, Row_Index) =
-        sum / Base::Utility::avoid_zero_divide(R(I, I), division_min);
+    matrix_out.template set<I, Row_Index>(
+        sum /
+        Base::Utility::avoid_zero_divide(
+            Base::Matrix::get_sparse_matrix_value<I, I>(R), division_min));
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                 Matrix_Out_Type, T, Row_Index,
@@ -123,10 +126,12 @@ private:
 
     constexpr std::size_t I = I_Count;
 
-    T sum = matrix_in(I, Row_Index);
+    T sum = matrix_in.template get<I, Row_Index>();
 
-    matrix_out(I, Row_Index) =
-        sum / Base::Utility::avoid_zero_divide(R(I, I), division_min);
+    matrix_out.template set<I, Row_Index>(
+        sum /
+        Base::Utility::avoid_zero_divide(
+            Base::Matrix::get_sparse_matrix_value<I, I>(R), division_min));
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                 Matrix_Out_Type, T, Row_Index,
@@ -147,7 +152,7 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 
     constexpr int End_Index_Value = Matrix_Out_Type::COLS - 1;
 
-    T sum = matrix_in(0, Row_Index);
+    T sum = matrix_in.template get<0, Row_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                 Matrix_Out_Type, T, Row_Index, 0, 1,
@@ -155,8 +160,10 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                                           matrix_out, sum,
                                                           division_min);
 
-    matrix_out(0, Row_Index) =
-        sum / Base::Utility::avoid_zero_divide(R(0, 0), division_min);
+    matrix_out.template set<0, Row_Index>(
+        sum /
+        Base::Utility::avoid_zero_divide(
+            Base::Matrix::get_sparse_matrix_value<0, 0>(R), division_min));
   }
 };
 
@@ -210,12 +217,28 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
                                   const Matrix_In_Type &matrix_in,
                                   Matrix_Out_Type &matrix_out,
                                   const T &division_min) {
+
+  static_assert(
+      std::is_same<typename Upper_Triangular_Matrix_Type::MatrixType,
+                   Base::Matrix::Is_CompiledSparseMatrix>::value,
+      "Upper_Triangular_Matrix_Type must be a compiled sparse matrix type.");
+
   static_assert(Upper_Triangular_Matrix_Type::COLS == Matrix_Out_Type::COLS,
                 "The number of columns in the upper triangular matrix R must "
                 "match the number of columns in the input matrix.");
   static_assert(Upper_Triangular_Matrix_Type::COLS ==
                     Upper_Triangular_Matrix_Type::ROWS,
                 "The upper triangular matrix R must be square.");
+
+  static_assert(Is_Dense_Matrix<Matrix_In_Type>::value ||
+                    Is_Diag_Matrix<Matrix_In_Type>::value ||
+                    Is_Sparse_Matrix<Matrix_In_Type>::value,
+                "The input matrix must be either dense or sparse.");
+
+  static_assert(Is_Dense_Matrix<Matrix_Out_Type>::value ||
+                    Is_Diag_Matrix<Matrix_Out_Type>::value ||
+                    Is_Sparse_Matrix<Matrix_Out_Type>::value,
+                "The output matrix must be either dense or sparse.");
 
   BackwardSubstitution_RowLoop<
       Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
@@ -284,18 +307,41 @@ public:
   }
 
 public:
-  /* Solve function */
+  /* Function */
+  template <typename Matrix_In_Type>
+  inline auto backward_substitution(const Matrix_In_Type &matrix_in)
+      -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
+    static_assert(
+        Matrix_In_Type::COLS == M,
+        "The number of columns in the input matrix must match the number of "
+        "columns in the diagonal matrix.");
+
+    using Backward_Substitution_Out_Type =
+        DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS>;
+
+    Backward_Substitution_Out_Type matrix_out;
+
+    LinalgQR_Operation::backward_substitution(
+        this->_R_triangular, matrix_in, matrix_out,
+        this->_QR_decomposer.division_min);
+
+    return matrix_out;
+  }
 
   /**
-   * @brief Solves the QR decomposition for the given matrix A.
+   * @brief Solves the linear system Ax = b using QR decomposition.
    *
-   * This function sets the internal R matrix to the provided matrix A
-   * and performs QR decomposition by calling the internal _decompose method.
+   * This function performs QR decomposition on the matrix A and solves the
+   * linear system Ax = b, where A is the input matrix and b is the right-hand
+   * side vector. The solution is stored in the internal R triangular matrix.
    *
-   * @param A The input matrix to decompose.
+   * @param A The input matrix to decompose and solve.
    */
   inline void solve(const Matrix<DefDense, T, M, N> &A) {
     this->_QR_decomposer.solve(A.matrix);
+
+    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+        this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
   /* Get Q, R */
@@ -305,7 +351,7 @@ public:
    *
    * This function returns the upper triangular matrix R that was computed
    * during the QR decomposition process. The matrix is represented as a sparse
-   * matrix with pre-defined row indices and pointers.
+   * matrix.
    *
    * @return A sparse matrix representing the upper triangular part of R.
    */
@@ -313,9 +359,6 @@ public:
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
           N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
-
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
-        this->_R_triangular, this->_QR_decomposer.get_R());
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
@@ -504,6 +547,25 @@ public:
 
 public:
   /* Function */
+  template <typename Matrix_In_Type>
+  inline auto backward_substitution(const Matrix_In_Type &matrix_in)
+      -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
+    static_assert(
+        Matrix_In_Type::COLS == M,
+        "The number of columns in the input matrix must match the number of "
+        "columns in the diagonal matrix.");
+
+    using Backward_Substitution_Out_Type =
+        DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS>;
+
+    Backward_Substitution_Out_Type matrix_out;
+
+    LinalgQR_Operation::backward_substitution(
+        this->_R_triangular, matrix_in, matrix_out,
+        this->_QR_decomposer.division_min);
+
+    return matrix_out;
+  }
 
   /**
    * @brief Solves the QR decomposition for the given sparse matrix A.
