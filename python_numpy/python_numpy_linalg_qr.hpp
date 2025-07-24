@@ -39,6 +39,20 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Row_Index,
           std::size_t I, std::size_t J, int End_Index_Value>
 struct BackwardSubstitution_J_Loop {
+  /*
+   * @brief Computes the backward substitution for the j loop in the QR
+   * decomposition.
+   *
+   * This function computes the backward substitution for the j loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   *
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param sum The accumulated sum for the current row.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, T &sum,
@@ -61,6 +75,20 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           std::size_t I, std::size_t J>
 struct BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                    Matrix_Out_Type, T, Row_Index, I, J, 0> {
+  /*
+   * @brief Computes the backward substitution for the j loop in the QR
+   * decomposition.
+   *
+   * This function computes the backward substitution for the j loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   *
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param sum The accumulated sum for the current row.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, T &sum,
@@ -80,6 +108,19 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Row_Index,
           std::size_t I_Count>
 struct BackwardSubstitution_I_Loop {
+  /*
+   * @brief Computes the backward substitution for the i loop in the QR
+   * decomposition.
+   *
+   * This function computes the backward substitution for the i loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   *
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
@@ -92,6 +133,18 @@ struct BackwardSubstitution_I_Loop {
   }
 
 private:
+  /**
+   * @brief Computes the backward substitution conditionally based on the index.
+   *
+   * This function computes the backward substitution conditionally, either
+   * performing the full computation or a simplified version based on the index.
+   *
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   * @param is_full Whether to perform the full computation or a simplified one.
+   */
   static void compute_conditional(const Upper_Triangular_Matrix_Type &R,
                                   const Matrix_In_Type &matrix_in,
                                   Matrix_Out_Type &matrix_out,
@@ -120,6 +173,18 @@ private:
                                                         division_min);
   }
 
+  /**
+   * @brief Computes the backward substitution conditionally based on the index.
+   *
+   * This function computes the backward substitution conditionally, either
+   * performing the full computation or a simplified version based on the index.
+   *
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   * @param is_full Whether to perform the full computation or a simplified one.
+   */
   static void compute_conditional(const Upper_Triangular_Matrix_Type &R,
                                   const Matrix_In_Type &matrix_in,
                                   Matrix_Out_Type &matrix_out,
@@ -147,6 +212,17 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Row_Index>
 struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                    Matrix_Out_Type, T, Row_Index, 0> {
+  /**
+   * @brief Computes the backward substitution for the i loop in the QR
+   * decomposition.
+   * This function computes the backward substitution for the i loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
@@ -172,6 +248,17 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Row_Index_Count>
 struct BackwardSubstitution_RowLoop {
+  /**
+   * @brief Computes the backward substitution for the row loop in the QR
+   * decomposition.
+   * This function computes the backward substitution for the row loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
@@ -198,6 +285,18 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T>
 struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
                                     Matrix_In_Type, Matrix_Out_Type, T, 0> {
+
+  /**
+   * @brief Computes the backward substitution for the row loop in the QR
+   * decomposition.
+   * This function computes the backward substitution for the row loop, updating
+   * the output matrix with the computed values based on the upper triangular
+   * matrix R and the input matrix.
+   * @param R The upper triangular matrix from QR decomposition.
+   * @param matrix_in The input matrix used for substitution.
+   * @param matrix_out The output matrix to store results.
+   * @param division_min The minimum value to avoid division by zero.
+   */
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
@@ -212,6 +311,25 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
   }
 };
 
+/**
+ * @brief Performs backward substitution on an upper triangular matrix.
+ *
+ * This function performs backward substitution on an upper triangular matrix
+ * R, using the input matrix and storing the results in the output matrix.
+ * It handles both dense and sparse matrices, ensuring that the dimensions
+ * match appropriately.
+ *
+ * @tparam Upper_Triangular_Matrix_Type The type of the upper triangular matrix
+ * R.
+ * @tparam Matrix_In_Type The type of the input matrix.
+ * @tparam Matrix_Out_Type The type of the output matrix.
+ * @tparam T The data type of the matrix elements (e.g., float, double).
+ *
+ * @param R The upper triangular matrix from QR decomposition.
+ * @param matrix_in The input matrix used for substitution.
+ * @param matrix_out The output matrix to store results.
+ * @param division_min The minimum value to avoid division by zero.
+ */
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T>
 inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
@@ -309,6 +427,18 @@ public:
 
 public:
   /* Function */
+
+  /**
+   * @brief Performs backward substitution on the upper triangular matrix R.
+   *
+   * This function performs backward substitution on the upper triangular matrix
+   * R, using the input matrix and storing the results in the output matrix.
+   * It handles both dense and sparse matrices, ensuring that the dimensions
+   * match appropriately.
+   *
+   * @param matrix_in The input matrix used for substitution.
+   * @return A dense matrix containing the results of the backward substitution.
+   */
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
       -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
@@ -449,6 +579,16 @@ public:
 public:
   /* Function */
 
+  /**
+   * @brief Performs backward substitution on the diagonal matrix R.
+   *
+   * This function performs backward substitution on the diagonal matrix R,
+   * using the input matrix and storing the results in the output matrix.
+   * It ensures that the dimensions match appropriately.
+   *
+   * @param matrix_in The input matrix used for substitution.
+   * @return A dense matrix containing the results of the backward substitution.
+   */
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
       -> DenseMatrix_Type<T, M, M> {
@@ -566,6 +706,17 @@ public:
 
 public:
   /* Function */
+
+  /**
+   * @brief Performs backward substitution on the diagonal matrix R.
+   *
+   * This function performs backward substitution on the diagonal matrix R,
+   * using the input matrix and storing the results in the output matrix.
+   * It ensures that the dimensions match appropriately.
+   *
+   * @param matrix_in The input matrix used for substitution.
+   * @return A dense matrix containing the results of the backward substitution.
+   */
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
       -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
