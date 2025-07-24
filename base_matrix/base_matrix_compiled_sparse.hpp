@@ -59,6 +59,8 @@
 namespace Base {
 namespace Matrix {
 
+class Is_CompiledSparseMatrix {};
+
 /*
  * @class CompiledSparseMatrix
  * @brief A fixed-size, template-based sparse matrix class for efficient storage
@@ -92,6 +94,10 @@ namespace Matrix {
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
 class CompiledSparseMatrix {
+public:
+  /* Type */
+  using MatrixType = Is_CompiledSparseMatrix;
+
 public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
 
@@ -197,6 +203,10 @@ public:
 
     return full;
   }
+
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = N;
 
   /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__

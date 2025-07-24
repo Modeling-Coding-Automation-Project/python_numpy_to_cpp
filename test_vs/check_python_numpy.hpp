@@ -3155,6 +3155,63 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(C_QR.matrix.data, C_QR_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR Q multiply R.");
 
+    T division_min = static_cast<T>(1.0e-10);
+
+    /* 後退代入 */
+    Matrix<DefDense, T, 3, 4> A_2({
+        {1, 2, 3, 10},
+        {5, 4, 6, 11},
+        {9, 8, 7, 12}
+    });
+
+    Matrix<DefDense, T, 3, 4> R_1_A_2 = QR_solver_dense.backward_substitution(A_2);
+
+    Matrix<DefDense, T, 3, 4> R_1_A_2_answer({
+        {-4.26873404F, -3.57425466F, -5.09101295F, -9.72349365F},
+        {8.52639051F, 7.20611792F, 8.40289246F, 15.00425545F},
+        {-3.6986484F, -3.28768747F, -2.87672653F, -4.9315312F}
+    });
+
+    tester.expect_near(R_1_A_2.matrix.data, R_1_A_2_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgQR backward_substitution Dense.");
+
+    LinalgSolverQR_Type<decltype(A)> QR_solver_bs;
+    QR_solver_bs.set_division_min(division_min);
+    QR_solver_bs.solve(A);
+
+    auto R_1_A_bs = QR_solver_bs.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_A_bs_answer({
+        {-4.26873404F, -3.57425466F, -5.09101295F},
+        {8.52639051F, 7.20611792F, 8.40289246F},
+        {-3.6986484F, -3.28768747F, -2.87672653F}
+        });
+
+    tester.expect_near(R_1_A_bs.matrix.data, R_1_A_bs_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Dense with LinalgSolverQR.");
+
+    auto R_1_B = QR_solver_diag.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_B_answer({
+        {1.0F, 2.0F, 3.0F},
+        {2.5F, 2.0F, 3.0F},
+        {3.0F, 2.66666667F, 2.33333333F}
+        });
+
+    tester.expect_near(R_1_B.matrix.data, R_1_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Diag.");
+
+    auto R_1_C = QR_solver_sparse.backward_substitution(A);
+
+    Matrix<DefDense, T, 3, 3> R_1_C_answer({
+        {8.22192192F, 6.95701085F, 5.69209979F },
+        { 4.61512474F, 4.32455532F, 2.53398591F },
+        { -3.55756237F, -3.16227766F, -2.76699295F }
+    });
+
+    tester.expect_near(R_1_C.matrix.data, R_1_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR backward_substitution Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }

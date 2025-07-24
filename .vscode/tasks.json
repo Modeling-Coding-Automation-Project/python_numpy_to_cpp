@@ -1,10 +1,10 @@
-/* This settings are for debugging C++ code 
+/* This settings are for debugging C++ code
  * in Visual Studio Code in Linux environment. */
 {
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Active File",
+      "label": "Build Active C++ File",
       "type": "shell",
       "command": "/usr/bin/g++",
       "args": [
@@ -24,7 +24,7 @@
         "isDefault": true
       },
       "problemMatcher": ["$gcc"],
-      "detail": "Build the active C++ file"
+      "detail": "Build Active C++ File"
     }
   ]
 }

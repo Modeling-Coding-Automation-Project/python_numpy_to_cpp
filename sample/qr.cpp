@@ -63,5 +63,16 @@ int main() {
   }
   std::cout << std::endl;
 
+  auto R_1_A = solver_t.backward_substitution(A);
+
+  std::cout << "R^-1 * A = " << std::endl;
+  for (size_t j = 0; j < R_1_A.cols(); ++j) {
+    for (size_t i = 0; i < R_1_A.rows(); ++i) {
+      std::cout << R_1_A(j, i) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }
