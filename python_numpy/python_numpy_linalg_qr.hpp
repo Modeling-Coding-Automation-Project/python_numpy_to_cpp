@@ -577,6 +577,9 @@ public:
    */
   inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->_QR_decomposer.solve(A.matrix);
+
+    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+        this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
   /**
@@ -592,9 +595,6 @@ public:
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
           N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
-
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
-        this->_R_triangular, this->_QR_decomposer.get_R());
 
     return Base::Matrix::CompiledSparseMatrix<
         T, M, N, Base::Matrix::UpperTriangularRowIndices<M, M>,
