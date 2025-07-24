@@ -46,6 +46,9 @@ struct BackwardSubstitution_J_Loop {
            End_Index_Value);
 
     sum -= R(I, J) * matrix_out(J, Row_Index);
+    printf("BackwardSubstitution_J_Loop, sum: %f, I: %zu, J: %zu, Row_Index: "
+           "%zu\n",
+           sum, I, J, Row_Index);
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                 Row_Index, I, (J + 1),
@@ -83,8 +86,6 @@ struct BackwardSubstitution_I_Loop {
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    printf("BackwardSubstitution_I_Loop, I_Count: %zu\n", I_Count);
-
     constexpr std::size_t I = I_Count;
 
     compute_conditional(
@@ -97,9 +98,6 @@ private:
                                   const Matrix_Type &matrix_in,
                                   Matrix_Type &matrix_out,
                                   const T &division_min, std::true_type) {
-
-    printf("BackwardSubstitution_I_Loop, "
-           "compute_conditional, true\n");
 
     constexpr std::size_t I = I_Count;
     constexpr int End_Index_Value = Matrix_Type::ROWS - (I + 1);
@@ -127,8 +125,12 @@ private:
                                   Matrix_Type &matrix_out,
                                   const T &division_min, std::false_type) {
 
-    printf("BackwardSubstitution_I_Loop, "
-           "compute_conditional, false\n");
+    constexpr std::size_t I = I_Count;
+
+    T sum = matrix_in(I, Row_Index);
+
+    matrix_out(I, Row_Index) =
+        sum / Base::Utility::avoid_zero_divide(R(I, I), division_min);
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                 Row_Index,
@@ -147,8 +149,6 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    printf("BackwardSubstitution_I_Loop, I: %zu\n", 0);
-
     constexpr int End_Index_Value = Matrix_Type::ROWS - 1;
 
     T sum = matrix_in(0, Row_Index);
@@ -161,8 +161,6 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
 
     matrix_out(0, Row_Index) =
         sum / Base::Utility::avoid_zero_divide(R(0, 0), division_min);
-
-    printf("BackwardSubstitution_I_Loop, terminate end:\n");
   }
 };
 
@@ -173,10 +171,6 @@ struct BackwardSubstitution_RowLoop {
   static void compute(const Upper_Triangular_Matrix_Type &R,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
-
-    printf("BackwardSubstitution_RowLoop, Row_Index_Count: "
-           "%zu\n",
-           Row_Index_Count);
 
     constexpr std::size_t Row_Index = (Matrix_Type::ROWS - 1) - Row_Index_Count;
 
@@ -202,9 +196,6 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type,
                       const Matrix_Type &matrix_in, Matrix_Type &matrix_out,
                       const T &division_min) {
 
-    printf("BackwardSubstitution_RowLoop, Row_Index_Count: "
-           "0\n");
-
     constexpr std::size_t Row_Index = Matrix_Type::ROWS - 1;
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
@@ -228,21 +219,6 @@ inline auto backward_substitution(const Upper_Triangular_Matrix_Type &R,
                 "The upper triangular matrix R must be square.");
 
   Matrix_Type matrix_out;
-
-  // for (std::size_t row_index = 0; row_index < Matrix_Type::ROWS; ++row_index)
-  // {
-
-  //   for (std::size_t i = Matrix_Type::COLS; i-- > 0;) {
-
-  //     typename Matrix_Type::Value_Type sum = matrix_in(i, row_index);
-
-  //     for (std::size_t j = i + 1; j < Matrix_Type::ROWS; ++j) {
-  //       sum -= R(i, j) * matrix_out(j, row_index);
-  //     }
-  //     matrix_out(i, row_index) =
-  //         sum / Base::Utility::avoid_zero_divide(R(i, i), division_min);
-  //   }
-  // }
 
   BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_Type, T,
                                (Matrix_Type::ROWS - 1)>::compute(R, matrix_in,
