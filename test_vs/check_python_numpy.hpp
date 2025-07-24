@@ -3157,15 +3157,22 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
 
     T division_min = static_cast<T>(1.0e-10);
 
-    auto R_1_A = LinalgQR_Operation::backward_substitution(R_answer, A, division_min);
-
-    Matrix<DefDense, T, 3, 3> R_1_A_answer({
-        {-4.26873404F, -3.57425466F, -5.09101295F},
-        {8.52639051F, 7.20611792F, 8.40289246F},
-        {-3.6986484F, -3.28768747F, -2.87672653F}
+    /* 後退代入 */
+    Matrix<DefDense, T, 3, 4> A_2({
+        {1, 2, 3, 10},
+        {5, 4, 6, 11},
+        {9, 8, 7, 12}
     });
 
-    tester.expect_near(R_1_A.matrix.data, R_1_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+    auto R_1_A_2 = LinalgQR_Operation::backward_substitution(R_answer, A_2, division_min);
+
+    Matrix<DefDense, T, 3, 4> R_1_A_2_answer({
+        {-4.26873404F, -3.57425466F, -5.09101295F, -9.72349365F},
+        {8.52639051F, 7.20611792F, 8.40289246F, 15.00425545F},
+        {-3.6986484F, -3.28768747F, -2.87672653F, -4.9315312F}
+    });
+
+    tester.expect_near(R_1_A_2.matrix.data, R_1_A_2_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgQR backward_substitution Dense.");
 
 
