@@ -3164,7 +3164,9 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         {9, 8, 7, 12}
     });
 
-    auto R_1_A_2 = LinalgQR_Operation::backward_substitution(R_answer, A_2, division_min);
+    Matrix<DefDense, T, 3, 4> R_1_A_2;
+    LinalgQR_Operation::backward_substitution(
+        R_answer, A_2, R_1_A_2, division_min);
 
     Matrix<DefDense, T, 3, 4> R_1_A_2_answer({
         {-4.26873404F, -3.57425466F, -5.09101295F, -9.72349365F},
