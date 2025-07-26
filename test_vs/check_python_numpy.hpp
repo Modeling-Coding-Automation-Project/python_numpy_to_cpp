@@ -3212,6 +3212,12 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(R_1_C.matrix.data, R_1_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR backward_substitution Sparse.");
 
+    /* QR分解 矩形行列 */
+    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
+
+    LinalgSolverQR_Type<decltype(AL)> QR_solver_rect = make_LinalgSolverQR<decltype(AL)>();
+
+
 
     tester.throw_error_if_test_failed();
 }

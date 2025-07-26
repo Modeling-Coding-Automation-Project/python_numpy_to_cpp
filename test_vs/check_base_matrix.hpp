@@ -1790,6 +1790,10 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
     tester.expect_near(Test_lower.data, Test_lower_answer.data, NEAR_LIMIT_STRICT,
         "check TriangularSparse create lower.");
 
+    /* 三角スパース行列 矩形行列 */
+    Matrix<T, 4, 3> Dense_43({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11}, {13, 14, 15} });
+    //auto Dense_43_Triangular = TriangularSparse<T, 4, 3>::create_upper(Dense_43);
+
 
     tester.throw_error_if_test_failed();
 }
