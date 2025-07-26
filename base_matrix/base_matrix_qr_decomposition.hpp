@@ -112,10 +112,14 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
  */
 template <typename T, std::size_t M, std::size_t N> class QRDecomposition {
 public:
+  /* Check Compatibility */
+  static_assert(M >= N, "Incompatible matrix dimensions");
+
+public:
   /* Constructor */
   QRDecomposition()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(Matrix<T, M, M>::identity()) {}
+        _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix() {}
 
   /* Copy Constructor */
   QRDecomposition(const QRDecomposition<T, M, N> &other)
@@ -247,7 +251,7 @@ public:
   /* Constructor */
   QRDecompositionDiag()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(DiagMatrix<T, M>::identity()) {}
+        _Q_matrix(DiagMatrix<T, M>::identity()), _R_matrix() {}
 
   /* Copy Constructor */
   QRDecompositionDiag(const QRDecompositionDiag<T, M> &other)
@@ -336,10 +340,14 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
 class QRDecompositionSparse {
 public:
+  /* Check Compatibility */
+  static_assert(M >= N, "Incompatible matrix dimensions");
+
+public:
   /* Constructor */
   QRDecompositionSparse()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(Matrix<T, M, M>::identity()) {}
+        _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix() {}
 
   /* Copy Constructor */
   QRDecompositionSparse(
