@@ -401,8 +401,8 @@ public:
   /* Constructor */
   LinalgSolverQR()
       : _QR_decomposer(),
-        _R_triangular(Base::Matrix::TriangularSparse<T, M, N>::create_upper()) {
-  }
+        _R_triangular(
+            Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>()) {}
 
   /* Copy Constructor */
   LinalgSolverQR(const LinalgSolverQR<T, M, N> &other)
@@ -476,7 +476,7 @@ public:
   inline void solve(const Matrix<DefDense, T, M, N> &A) {
     this->_QR_decomposer.solve(A.matrix);
 
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
         this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
@@ -753,7 +753,7 @@ public:
   inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->_QR_decomposer.solve(A.matrix);
 
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
         this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
@@ -818,7 +818,8 @@ protected:
 
   Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
                                      _R_TriangluarRowPointers>
-      _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
+      _R_triangular =
+          Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>();
 };
 
 /* make LinalgSolverQR */

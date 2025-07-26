@@ -317,218 +317,151 @@ compute(CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
 
 } // namespace SetValuesForLowerTriangularSparseMatrix
 
-/**
- * @brief Class for handling triangular sparse matrices.
- *
- * This class provides static methods to create and manipulate upper and lower
- * triangular sparse matrices. It supports compile-time optimizations for
- * matrix dimensions and provides methods to set values from a regular matrix.
- *
- * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
- */
-template <typename T, std::size_t M, std::size_t N> class TriangularSparse {
-public:
-  /* Constructor */
-  TriangularSparse() {}
+template <typename T, std::size_t M, std::size_t N>
+inline auto create_UpperTriangularSparseMatrix(void)
+    -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                            UpperTriangularRowPointers<M, N>> {
+  // Currently, only support M >= N.
+  static_assert(M >= N, "M must be greater than or equal to N");
 
-  /* Upper */
+  CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                       UpperTriangularRowPointers<M, N>>
+      Y;
 
-  /**
-   * @brief Creates an upper triangular sparse matrix.
-   *
-   * This function initializes a CompiledSparseMatrix with the appropriate row
-   * indices and row pointers for an upper triangular matrix.
-   *
-   * @return A CompiledSparseMatrix representing an upper triangular matrix.
-   */
-  static inline auto create_upper(void)
-      -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                              UpperTriangularRowPointers<M, N>> {
-    // Currently, only support M >= N.
-    static_assert(M >= N, "M must be greater than or equal to N");
+  return Y;
+}
 
+template <typename T, std::size_t M, std::size_t N>
+inline auto create_UpperTriangularSparseMatrix(const Matrix<T, M, N> &A)
+    -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                            UpperTriangularRowPointers<M, N>> {
+  // Currently, only support M >= N.
+  static_assert(M >= N, "M must be greater than or equal to N");
+
+  CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
+                       UpperTriangularRowPointers<M, N>>
+      Y;
+
+#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  std::size_t consecutive_index = 0;
+
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = i; j < N; j++) {
+      Y.values[consecutive_index] = A(i, j);
+
+      consecutive_index++;
+    }
+  }
+
+#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(Y, A);
+
+#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+
+  return Y;
+}
+
+template <typename T, std::size_t M, std::size_t N>
+inline void set_values_UpperTriangularSparseMatrix(
     CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                         UpperTriangularRowPointers<M, N>>
-        Y;
-
-    return Y;
-  }
-
-  /**
-   * @brief Creates an upper triangular sparse matrix from a regular matrix.
-   *
-   * This function initializes a CompiledSparseMatrix with values from the
-   * provided Matrix, specifically for the upper triangular part.
-   *
-   * @param A The source Matrix from which values are taken.
-   * @return A CompiledSparseMatrix representing an upper triangular matrix.
-   */
-  static inline auto create_upper(const Matrix<T, M, N> &A)
-      -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                              UpperTriangularRowPointers<M, N>> {
-    // Currently, only support M >= N.
-    static_assert(M >= N, "M must be greater than or equal to N");
-
-    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                         UpperTriangularRowPointers<M, N>>
-        Y;
+                         UpperTriangularRowPointers<M, N>> &A,
+    const Matrix<T, M, N> &B) {
+  // Currently, only support M >= N.
+  static_assert(M >= N, "M must be greater than or equal to N");
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    std::size_t consecutive_index = 0;
+  std::size_t consecutive_index = 0;
 
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = i; j < N; j++) {
-        Y.values[consecutive_index] = A(i, j);
-
-        consecutive_index++;
-      }
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = i; j < N; j++) {
+      A.values[consecutive_index] = B(i, j);
+      consecutive_index++;
     }
+  }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(Y, A);
+  SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(A, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+}
 
-    return Y;
-  }
+/* Lower */
 
-  /**
-   * @brief Sets values in an upper triangular sparse matrix from a regular
-   * matrix.
-   *
-   * This function populates the CompiledSparseMatrix with values from the
-   * provided Matrix, specifically for the upper triangular part.
-   *
-   * @param A The CompiledSparseMatrix where values are set.
-   * @param B The source Matrix from which values are taken.
-   */
-  static inline void set_values_upper(
-      CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                           UpperTriangularRowPointers<M, N>> &A,
-      const Matrix<T, M, N> &B) {
-    // Currently, only support M >= N.
-    static_assert(M >= N, "M must be greater than or equal to N");
+template <typename T, std::size_t M, std::size_t N>
+inline auto create_LowerTriangularSparseMatrix(void)
+    -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                            LowerTriangularRowPointers<M, N>> {
+  // Currently, only support M <= N.
+  static_assert(M <= N, "M must be smaller than or equal to N");
+
+  CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                       LowerTriangularRowPointers<M, N>>
+      Y;
+
+  return Y;
+}
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto create_LowerTriangularSparseMatrix(const Matrix<T, M, N> &A)
+    -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                            LowerTriangularRowPointers<M, N>> {
+  // Currently, only support M <= N.
+  static_assert(M <= N, "M must be smaller than or equal to N");
+
+  CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
+                       LowerTriangularRowPointers<M, N>>
+      Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    std::size_t consecutive_index = 0;
+  std::size_t consecutive_index = 0;
 
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = i; j < N; j++) {
-        A.values[consecutive_index] = B(i, j);
-        consecutive_index++;
-      }
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = 0; j < i + 1; j++) {
+      Y.values[consecutive_index] = A(i, j);
+
+      consecutive_index++;
     }
+  }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    SetValuesForUpperTriangularSparseMatrix::compute<T, M, N>(A, B);
+  SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(Y, A);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-  }
 
-  /* Lower */
+  return Y;
+}
 
-  /**
-   * @brief Creates a lower triangular sparse matrix.
-   *
-   * This function initializes a CompiledSparseMatrix with the appropriate row
-   * indices and row pointers for a lower triangular matrix.
-   *
-   * @return A CompiledSparseMatrix representing a lower triangular matrix.
-   */
-  static inline auto create_lower(void)
-      -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                              LowerTriangularRowPointers<M, N>> {
-    // Currently, only support M <= N.
-    static_assert(M <= N, "M must be smaller than or equal to N");
-
+template <typename T, std::size_t M, std::size_t N>
+inline void set_values_LowerTriangularSparseMatrix(
     CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                         LowerTriangularRowPointers<M, N>>
-        Y;
-
-    return Y;
-  }
-
-  /**
-   * @brief Creates a lower triangular sparse matrix from a regular matrix.
-   *
-   * This function initializes a CompiledSparseMatrix with values from the
-   * provided Matrix, specifically for the lower triangular part.
-   *
-   * @param A The source Matrix from which values are taken.
-   * @return A CompiledSparseMatrix representing a lower triangular matrix.
-   */
-  static inline auto create_lower(const Matrix<T, M, N> &A)
-      -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                              LowerTriangularRowPointers<M, N>> {
-    // Currently, only support M <= N.
-    static_assert(M <= N, "M must be smaller than or equal to N");
-
-    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                         LowerTriangularRowPointers<M, N>>
-        Y;
+                         LowerTriangularRowPointers<M, N>> &A,
+    const Matrix<T, M, N> &B) {
+  // Currently, only support M <= N.
+  static_assert(M <= N, "M must be smaller than or equal to N");
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    std::size_t consecutive_index = 0;
+  std::size_t consecutive_index = 0;
 
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = 0; j < i + 1; j++) {
-        Y.values[consecutive_index] = A(i, j);
-
-        consecutive_index++;
-      }
+  for (std::size_t i = 0; i < M; i++) {
+    for (std::size_t j = 0; j < i + 1; j++) {
+      A.values[consecutive_index] = B(i, j);
+      consecutive_index++;
     }
+  }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-    SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(Y, A);
+  SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(A, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-    return Y;
-  }
-
-  /**
-   * @brief Sets values in a lower triangular sparse matrix from a regular
-   * matrix.
-   *
-   * This function populates the CompiledSparseMatrix with values from the
-   * provided Matrix, specifically for the lower triangular part.
-   *
-   * @param A The CompiledSparseMatrix where values are set.
-   * @param B The source Matrix from which values are taken.
-   */
-  static inline void set_values_lower(
-      CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                           LowerTriangularRowPointers<M, N>> &A,
-      const Matrix<T, M, N> &B) {
-    // Currently, only support M <= N.
-    static_assert(M <= N, "M must be smaller than or equal to N");
-
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-    std::size_t consecutive_index = 0;
-
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t j = 0; j < i + 1; j++) {
-        A.values[consecutive_index] = B(i, j);
-        consecutive_index++;
-      }
-    }
-
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-
-    SetValuesForLowerTriangularSparseMatrix::compute<T, M, N>(A, B);
-
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
-  }
-};
+}
 
 } // namespace Matrix
 } // namespace Base

@@ -1752,10 +1752,10 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
 
     /* 三角スパース行列 */
     Matrix<T, 3, 3> Dense_33({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11} });
-    auto Dense_33_Triangular = TriangularSparse<T, 3, 3>::create_upper(Dense_33);
+    auto Dense_33_Triangular = create_UpperTriangularSparseMatrix<T, 3, 3>(Dense_33);
 
     set_sparse_matrix_value<1, 1>(Dense_33_Triangular, static_cast<T>(0));
-    TriangularSparse<T, 3, 3>::set_values_upper(Dense_33_Triangular, Dense_33);
+    set_values_UpperTriangularSparseMatrix<T, 3, 3>(Dense_33_Triangular, Dense_33);
 
     Matrix<T, 3, 3> Dense_33_mul_33 = Dense_33_Triangular * Dense_33;
 
@@ -1768,9 +1768,9 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
     tester.expect_near(Dense_33_mul_33.data, Dense_33_mul_33_answer.data, NEAR_LIMIT_STRICT,
         "check Upper TriangularSparse multiply DenseMatrix.");
 
-    auto TS = TriangularSparse<T, 4, 4>::create_lower();
+    auto TS = create_LowerTriangularSparseMatrix<T, 4, 4>();
     Matrix<T, 4, 4> Test_ts({ {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16} });
-    TriangularSparse<T, 4, 4>::set_values_lower(TS, Test_ts);
+    set_values_LowerTriangularSparseMatrix<T, 4, 4>(TS, Test_ts);
 
     Matrix<T, 4, 4> Test_lower = Base::Matrix::output_dense_matrix(TS);
     //for (size_t j = 0; j < Test_lower.cols(); ++j) {
@@ -1792,7 +1792,7 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
 
     /* 三角スパース行列 矩形行列 */
     Matrix<T, 4, 3> Dense_43({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11}, {13, 14, 15} });
-    //auto Dense_43_Triangular = TriangularSparse<T, 4, 3>::create_upper(Dense_43);
+    //auto Dense_43_Triangular = TriangularSparse<T, 4, 3>::create_UpperTriangularSparseMatrix(Dense_43);
 
 
     tester.throw_error_if_test_failed();
