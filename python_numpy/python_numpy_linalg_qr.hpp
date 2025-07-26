@@ -387,6 +387,10 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
+  /* Check Compatibility */
+  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+                        "for QR decomposition.");
+
 protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
