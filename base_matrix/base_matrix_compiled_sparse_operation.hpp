@@ -910,6 +910,84 @@ operator*(const Matrix<T, M, N> &A,
   return Y;
 }
 
+/* Substitute Dense Matrix to Sparse Matrix  */
+namespace DenseMatrixSubstituteSparseMatrix {
+
+// Core loop for addition
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K,
+          std::size_t Start, std::size_t End>
+struct Loop {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, M, N> &B) {
+
+    A.values[Start] = B.template get<J, RowIndices_A::list[Start]>();
+
+    Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, Start + 1, End>::compute(
+        A, B);
+  }
+};
+
+// End of core loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, M, N> &B) {
+    static_cast<void>(A);
+    static_cast<void>(B);
+    // End of loop, do nothing
+  }
+};
+
+// Row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A, std::size_t J>
+struct Row {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, M, N> &B) {
+
+    Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
+         RowPointers_A::list[J + 1]>::compute(A, B);
+    Row<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B);
+  }
+};
+
+// End of row loop
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+          const Matrix<T, M, N> &B) {
+
+    Loop<T, M, N, RowIndices_A, RowPointers_A, 0, 0, RowPointers_A::list[0],
+         RowPointers_A::list[1]>::compute(A, B);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+inline void
+compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+        const Matrix<T, M, N> &B) {
+  Row<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B);
+}
+
+} // namespace DenseMatrixSubstituteSparseMatrix
+
+template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
+          typename RowPointers_A>
+inline void substitute_dense_to_sparse(
+    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const Matrix<T, M, N> &B) {
+  DenseMatrixSubstituteSparseMatrix::compute<T, M, N, RowIndices_A,
+                                             RowPointers_A>(A, B);
+}
+
 /* Sparse Matrix add Dense Matrix */
 namespace SparseMatrixAddDenseMatrix {
 
