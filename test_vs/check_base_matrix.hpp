@@ -1805,6 +1805,18 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
     tester.expect_near(Dense_43_Upper_dense.data, Dense_43_answer.data, NEAR_LIMIT_STRICT,
         "check Upper TriangularSparse create from DenseMatrix, Rect.");
 
+    Matrix <T, 3, 4> Dense_34({ {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12} });
+    auto Dense_34_Lower = create_LowerTriangularSparseMatrix<T, 3, 4>(Dense_34);
+    auto Dense_34_Lower_dense = Base::Matrix::output_dense_matrix(Dense_34_Lower);
+
+    Matrix <T, 3, 4> Dense_34_answer({
+        {1, 0, 0, 0},
+        {5, 6, 0, 0},
+        {9, 10, 11, 0}
+        });
+
+    tester.expect_near(Dense_34_Lower_dense.data, Dense_34_answer.data, NEAR_LIMIT_STRICT,
+        "check Lower TriangularSparse create from DenseMatrix, Rect.");
 
 
     tester.throw_error_if_test_failed();
