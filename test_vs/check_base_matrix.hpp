@@ -1653,6 +1653,45 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
     tester.expect_near(R_d.data, R_d_answer.data, NEAR_LIMIT_STRICT,
         "check QR Decomposition Diag R.");
 
+    /* QR分解 矩形行列 */
+    Matrix<T, 4, 3> A_rect({
+        {1, 2, 3},
+        {5, 4, 6},
+        {9 ,8, 7},
+        {10, 11, 12}
+    });
+
+    QRDecomposition<T, 4, 3> qr_rect;
+    qr_rect.solve(A_rect);
+
+    Matrix<T, 4, 4> Q_rect = qr_rect.get_Q();
+    Matrix<T, 4, 3> R_rect = qr_rect.get_R();
+
+    Matrix<T, 4, 4> Q_rect_answer({
+        {-0.0695048F, -0.51002583F, -0.26266152F, 0.81611988F},
+        {-0.34752402F, 0.46630933F, -0.81350025F, 0.0F},
+        {-0.62554324F, 0.43716499F, 0.51781843F, 0.38658310F},
+        {-0.69504805F, -0.57560058F, -0.03302031F, -0.42953678F}
+    });
+
+    tester.expect_near(Q_rect.data, Q_rect_answer.data, NEAR_LIMIT_STRICT,
+        "check QR Decomposition Rect Q.");
+
+    Matrix<T, 4, 3> R_rect_answer({
+        {-14.38749457F, -14.17898016F, -15.01303781F},
+        {0.0F, -1.98910074F, -2.57927348F},
+        {0.0F, 0.0F, -2.44050076F},
+        {0.0F, 0.0F, 0.0F}
+        });
+
+    tester.expect_near(R_rect.data, R_rect_answer.data, NEAR_LIMIT_STRICT,
+        "check QR Decomposition Rect R.");
+
+    Matrix<T, 4, 3> A_rect_result = Q_rect * R_rect;
+
+    tester.expect_near(A_rect_result.data, A_rect.data, NEAR_LIMIT_STRICT,
+        "check QR Decomposition Rect result.");
+
 
     tester.throw_error_if_test_failed();
 }
