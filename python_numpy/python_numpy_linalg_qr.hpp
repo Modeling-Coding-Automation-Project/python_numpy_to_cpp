@@ -345,9 +345,10 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
   static_assert(Upper_Triangular_Matrix_Type::COLS == Matrix_Out_Type::COLS,
                 "The number of columns in the upper triangular matrix R must "
                 "match the number of columns in the input matrix.");
-  static_assert(Upper_Triangular_Matrix_Type::COLS ==
+  static_assert(Upper_Triangular_Matrix_Type::COLS >=
                     Upper_Triangular_Matrix_Type::ROWS,
-                "The upper triangular matrix R must be square.");
+                "The upper triangular matrix R must have at least as many "
+                "columns as rows.");
 
   static_assert(Is_Dense_Matrix<Matrix_In_Type>::value ||
                     Is_Diag_Matrix<Matrix_In_Type>::value ||
