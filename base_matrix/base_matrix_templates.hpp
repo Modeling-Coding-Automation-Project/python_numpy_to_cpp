@@ -2322,6 +2322,20 @@ struct AccumulateTriangularElementNumberStruct {
                                                        M>::type;
 };
 
+/**
+ * @brief A template struct to extend the
+ * AccumulateTriangularElementNumberStruct for a specific range.
+ *
+ * This struct provides a type alias 'type' that is the result of generating an
+ * extended sequence of triangular element numbers for a given range, taking
+ * into account the difference between M and N.
+ *
+ * @tparam TriangularCountNumbers The TriangularCountNumbers type containing the
+ * counts of elements in each row.
+ * @tparam M The starting index of the sequence.
+ * @tparam N The ending index of the sequence.
+ * @tparam Dif The difference between M and N.
+ */
 template <typename TriangularCountNumbers, std::size_t M, std::size_t N,
           std::size_t Dif>
 struct AccumulateTriangularElementNumberStructExtend {
@@ -2335,6 +2349,20 @@ struct AccumulateTriangularElementNumberStructExtend {
                      Dif, IndexSequence<_Sequence::list[N]>>::type>::type;
 };
 
+/**
+ * @brief Specialization of AccumulateTriangularElementNumberStructExtend for
+ * the case when Dif is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * AccumulateTriangularElementNumberStruct for the TriangularCountNumbers type
+ * and M, effectively generating an extended sequence of triangular element
+ * numbers for the specified range when Dif is 0.
+ *
+ * @tparam TriangularCountNumbers The TriangularCountNumbers type containing the
+ * counts of elements in each row.
+ * @tparam M The starting index of the sequence.
+ * @tparam N The ending index of the sequence.
+ */
 template <typename TriangularCountNumbers, std::size_t M, std::size_t N>
 struct AccumulateTriangularElementNumberStructExtend<TriangularCountNumbers, M,
                                                      N, 0> {
