@@ -2322,6 +2322,28 @@ struct AccumulateTriangularElementNumberStruct {
                                                        M>::type;
 };
 
+template <typename TriangularCountNumbers, std::size_t M, std::size_t N,
+          std::size_t Dif>
+struct AccumulateTriangularElementNumberStructExtend {
+  using _Sequence =
+      typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
+          typename TemplatesOperation::TriangularCountNumbers<N, N>::type,
+          N>::type;
+
+  using type = typename Concatenate<
+      _Sequence, typename RepeatConcatenateIndexSequence<
+                     Dif, IndexSequence<_Sequence::list[N]>>::type>::type;
+};
+
+template <typename TriangularCountNumbers, std::size_t M, std::size_t N>
+struct AccumulateTriangularElementNumberStructExtend<TriangularCountNumbers, M,
+                                                     N, 0> {
+  using type =
+      typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
+          typename TemplatesOperation::TriangularCountNumbers<M, N>::type,
+          M>::type;
+};
+
 } // namespace TemplatesOperation
 
 /* Create Upper Triangular Sparse Matrix Row Indices and Pointers */
@@ -2360,9 +2382,9 @@ using UpperTriangularRowIndices = typename TemplatesOperation::ToRowIndices<
  */
 template <std::size_t M, std::size_t N>
 using UpperTriangularRowPointers = typename TemplatesOperation::ToRowPointers<
-    typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
-        typename TemplatesOperation::TriangularCountNumbers<M, N>::type,
-        M>::type>::type;
+    typename TemplatesOperation::AccumulateTriangularElementNumberStructExtend<
+        typename TemplatesOperation::TriangularCountNumbers<M, N>::type, M, N,
+        (M <= N ? 0 : M - N)>::type>::type;
 
 namespace TemplatesOperation {
 
