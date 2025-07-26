@@ -669,6 +669,10 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
+  /* Check Compatibility */
+  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+                        "for QR decomposition.");
+
 protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
@@ -771,9 +775,10 @@ public:
       CreateSparseAvailableFromIndicesAndPointers<
           N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
 
-    return Base::Matrix::CompiledSparseMatrix<
-        T, M, N, Base::Matrix::UpperTriangularRowIndices<M, M>,
-        _R_TriangluarRowPointers>(this->_R_triangular);
+    return Matrix<DefSparse, T, M, N,
+                  CreateSparseAvailableFromIndicesAndPointers<
+                      N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>>(
+        this->_R_triangular);
   }
 
   /**
