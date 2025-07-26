@@ -2450,6 +2450,8 @@ struct LowerTriangularSequenceList {
  */
 template <std::size_t M, std::size_t N>
 struct ConcatenateLowerTriangularRowNumbers {
+  static_assert(M <= N, "So far, M must be less than or equal to N");
+
   using type = typename Concatenate<
       typename LowerTriangularSequenceList<M, N>::type,
       typename ConcatenateLowerTriangularRowNumbers<(M - 1), N>::type>::type;
