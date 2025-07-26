@@ -1792,7 +1792,19 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
 
     /* 三角スパース行列 矩形行列 */
     Matrix<T, 4, 3> Dense_43({ {1, 2, 3}, {5, 6, 7}, {9, 10, 11}, {13, 14, 15} });
-    //auto Dense_43_Triangular = TriangularSparse<T, 4, 3>::create_UpperTriangularSparseMatrix(Dense_43);
+    auto Dense_43_Upper = create_UpperTriangularSparseMatrix<T, 4, 3>(Dense_43);
+    auto Dense_43_Upper_dense = Base::Matrix::output_dense_matrix(Dense_43_Upper);
+
+    Matrix<T, 4, 3> Dense_43_answer({
+        {1, 2, 3},
+        {0, 6, 7},
+        {0, 0, 11},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(Dense_43_Upper_dense.data, Dense_43_answer.data, NEAR_LIMIT_STRICT,
+        "check Upper TriangularSparse create from DenseMatrix, Rect.");
+
 
 
     tester.throw_error_if_test_failed();

@@ -3216,6 +3216,13 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
 
     //LinalgSolverQR_Type<decltype(AL)> QR_solver_rect = make_LinalgSolverQR<decltype(AL)>();
+    //QR_solver_rect.set_division_min(static_cast<T>(1.0e-10));
+    //QR_solver_rect.solve(AL);
+
+    //auto AL_QR = QR_solver_rect.get_Q() * QR_solver_rect.get_R();
+
+    //tester.expect_near(AL_QR.matrix.data, AL.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check LinalgSolverQR Rect Dense.");
 
 
 
