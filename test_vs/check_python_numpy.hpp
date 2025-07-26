@@ -3212,6 +3212,43 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
     tester.expect_near(R_1_C.matrix.data, R_1_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR backward_substitution Sparse.");
 
+    /* QR分解 矩形行列 */
+    Matrix<DefDense, T, 4, 3> AL({ {1, 2, 3}, {5, 4, 6}, {9, 8, 7}, {2, 2, 3} });
+
+    LinalgSolverQR_Type<decltype(AL)> QR_solver_rect = make_LinalgSolverQR<decltype(AL)>();
+    QR_solver_rect.set_division_min(static_cast<T>(1.0e-10));
+    QR_solver_rect.solve(AL);
+
+    auto AL_QR = QR_solver_rect.get_Q() * QR_solver_rect.get_R();
+
+    tester.expect_near(AL_QR.matrix.data, AL.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR Rect Dense.");
+
+    Matrix<DefSparse, T, 4, 3,
+        SparseAvailable<
+        ColumnAvailable<true, true, false>,
+        ColumnAvailable<false, false, true>,
+        ColumnAvailable<false, true, true>,
+        ColumnAvailable<true, true, true>>
+        >
+        CL({ 1, 3, 2, 8, 4, 10, 1, 15 });
+
+    LinalgSolverQR_Type<decltype(CL)> QR_solver_rect_sparse = make_LinalgSolverQR<decltype(CL)>();
+    QR_solver_rect_sparse.set_division_min(static_cast<T>(1.0e-10));
+    QR_solver_rect_sparse.solve(CL);
+
+    auto CL_QR = QR_solver_rect_sparse.get_Q() * QR_solver_rect_sparse.get_R();
+
+    Matrix<DefDense, T, 4, 3> CL_QR_answer({
+        {1.0F, 3.0F, 0.0F},
+        {0.0F, 0.0F, 2.0F},
+        {0.0F, 8.0F, 4.0F},
+        {10.0F, 1.0F, 15.0F}
+        });
+
+    tester.expect_near(CL_QR.matrix.data, CL_QR_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check LinalgSolverQR Rect Sparse.");
+
 
     tester.throw_error_if_test_failed();
 }

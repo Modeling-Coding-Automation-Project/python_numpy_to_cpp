@@ -345,9 +345,10 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
   static_assert(Upper_Triangular_Matrix_Type::COLS == Matrix_Out_Type::COLS,
                 "The number of columns in the upper triangular matrix R must "
                 "match the number of columns in the input matrix.");
-  static_assert(Upper_Triangular_Matrix_Type::COLS ==
+  static_assert(Upper_Triangular_Matrix_Type::COLS >=
                     Upper_Triangular_Matrix_Type::ROWS,
-                "The upper triangular matrix R must be square.");
+                "The upper triangular matrix R must have at least as many "
+                "columns as rows.");
 
   static_assert(Is_Dense_Matrix<Matrix_In_Type>::value ||
                     Is_Diag_Matrix<Matrix_In_Type>::value ||
@@ -386,6 +387,10 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
+  /* Check Compatibility */
+  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+                        "for QR decomposition.");
+
 protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
@@ -396,8 +401,8 @@ public:
   /* Constructor */
   LinalgSolverQR()
       : _QR_decomposer(),
-        _R_triangular(Base::Matrix::TriangularSparse<T, M, N>::create_upper()) {
-  }
+        _R_triangular(
+            Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>()) {}
 
   /* Copy Constructor */
   LinalgSolverQR(const LinalgSolverQR<T, M, N> &other)
@@ -471,7 +476,7 @@ public:
   inline void solve(const Matrix<DefDense, T, M, N> &A) {
     this->_QR_decomposer.solve(A.matrix);
 
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
         this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
@@ -664,6 +669,10 @@ public:
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "Value data type must be float or double.");
 
+  /* Check Compatibility */
+  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+                        "for QR decomposition.");
+
 protected:
   /* Type */
   using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
@@ -748,7 +757,7 @@ public:
   inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
     this->_QR_decomposer.solve(A.matrix);
 
-    Base::Matrix::TriangularSparse<T, M, N>::set_values_upper(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
         this->_R_triangular, this->_QR_decomposer.get_R());
   }
 
@@ -766,9 +775,10 @@ public:
       CreateSparseAvailableFromIndicesAndPointers<
           N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
 
-    return Base::Matrix::CompiledSparseMatrix<
-        T, M, N, Base::Matrix::UpperTriangularRowIndices<M, M>,
-        _R_TriangluarRowPointers>(this->_R_triangular);
+    return Matrix<DefSparse, T, M, N,
+                  CreateSparseAvailableFromIndicesAndPointers<
+                      N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>>(
+        this->_R_triangular);
   }
 
   /**
@@ -813,7 +823,8 @@ protected:
 
   Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
                                      _R_TriangluarRowPointers>
-      _R_triangular = Base::Matrix::TriangularSparse<T, M, N>::create_upper();
+      _R_triangular =
+          Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>();
 };
 
 /* make LinalgSolverQR */

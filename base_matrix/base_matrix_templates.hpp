@@ -2322,6 +2322,56 @@ struct AccumulateTriangularElementNumberStruct {
                                                        M>::type;
 };
 
+/**
+ * @brief A template struct to extend the
+ * AccumulateTriangularElementNumberStruct for a specific range.
+ *
+ * This struct provides a type alias 'type' that is the result of generating an
+ * extended sequence of triangular element numbers for a given range, taking
+ * into account the difference between M and N.
+ *
+ * @tparam TriangularCountNumbers The TriangularCountNumbers type containing the
+ * counts of elements in each row.
+ * @tparam M The starting index of the sequence.
+ * @tparam N The ending index of the sequence.
+ * @tparam Dif The difference between M and N.
+ */
+template <typename TriangularCountNumbers, std::size_t M, std::size_t N,
+          std::size_t Dif>
+struct AccumulateTriangularElementNumberStructExtend {
+  using _Sequence =
+      typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
+          typename TemplatesOperation::TriangularCountNumbers<N, N>::type,
+          N>::type;
+
+  using type = typename Concatenate<
+      _Sequence, typename RepeatConcatenateIndexSequence<
+                     Dif, IndexSequence<_Sequence::list[N]>>::type>::type;
+};
+
+/**
+ * @brief Specialization of AccumulateTriangularElementNumberStructExtend for
+ * the case when Dif is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * AccumulateTriangularElementNumberStruct for the TriangularCountNumbers type
+ * and M, effectively generating an extended sequence of triangular element
+ * numbers for the specified range when Dif is 0.
+ *
+ * @tparam TriangularCountNumbers The TriangularCountNumbers type containing the
+ * counts of elements in each row.
+ * @tparam M The starting index of the sequence.
+ * @tparam N The ending index of the sequence.
+ */
+template <typename TriangularCountNumbers, std::size_t M, std::size_t N>
+struct AccumulateTriangularElementNumberStructExtend<TriangularCountNumbers, M,
+                                                     N, 0> {
+  using type =
+      typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
+          typename TemplatesOperation::TriangularCountNumbers<M, N>::type,
+          M>::type;
+};
+
 } // namespace TemplatesOperation
 
 /* Create Upper Triangular Sparse Matrix Row Indices and Pointers */
@@ -2360,9 +2410,9 @@ using UpperTriangularRowIndices = typename TemplatesOperation::ToRowIndices<
  */
 template <std::size_t M, std::size_t N>
 using UpperTriangularRowPointers = typename TemplatesOperation::ToRowPointers<
-    typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
-        typename TemplatesOperation::TriangularCountNumbers<M, N>::type,
-        M>::type>::type;
+    typename TemplatesOperation::AccumulateTriangularElementNumberStructExtend<
+        typename TemplatesOperation::TriangularCountNumbers<M, N>::type, M, N,
+        (M <= N ? 0 : M - N)>::type>::type;
 
 namespace TemplatesOperation {
 
@@ -2428,6 +2478,8 @@ struct LowerTriangularSequenceList {
  */
 template <std::size_t M, std::size_t N>
 struct ConcatenateLowerTriangularRowNumbers {
+  static_assert(M <= N, "So far, M must be less than or equal to N");
+
   using type = typename Concatenate<
       typename LowerTriangularSequenceList<M, N>::type,
       typename ConcatenateLowerTriangularRowNumbers<(M - 1), N>::type>::type;

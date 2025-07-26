@@ -80,8 +80,8 @@ public:
   LinalgSolverCholesky()
       : _cholesky_decomposed_matrix(),
         _cholesky_decomposed_triangular(
-            Base::Matrix::TriangularSparse<_T, A_Type::COLS,
-                                           A_Type::COLS>::create_upper()),
+            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::COLS,
+                                                             A_Type::COLS>()),
         _zero_div_flag(false) {}
 
   /* Copy Constructor */
@@ -154,9 +154,10 @@ public:
             A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
             this->_zero_div_flag);
 
-    Base::Matrix::TriangularSparse<_T, A_Type::COLS, A_Type::COLS>::
-        set_values_upper(this->_cholesky_decomposed_triangular,
-                         this->_cholesky_decomposed_matrix);
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
+                                                         A_Type::COLS>(
+        this->_cholesky_decomposed_triangular,
+        this->_cholesky_decomposed_matrix);
 
     return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                   UpperTriangular_SparseAvailable_Type>(
@@ -220,9 +221,10 @@ public:
             A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
             this->_zero_div_flag);
 
-    Base::Matrix::TriangularSparse<_T, A_Type::COLS, A_Type::COLS>::
-        set_values_upper(this->_cholesky_decomposed_triangular,
-                         this->_cholesky_decomposed_matrix);
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
+                                                         A_Type::COLS>(
+        this->_cholesky_decomposed_triangular,
+        this->_cholesky_decomposed_matrix);
 
     return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                   UpperTriangular_SparseAvailable_Type>(
