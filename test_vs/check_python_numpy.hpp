@@ -3067,15 +3067,26 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose_operation(void) {
 
     Matrix<DefDense, T, 3, 1> Bk({ {1}, {2}, {3} });
 
-    auto Ak_T_Bk = ATranspose_mul_B(Ak_sparse, Bk);
+    auto Ak_T_mul_Bk = ATranspose_mul_B(Ak_sparse, Bk);
 
-    Matrix<DefDense, T, 2, 1> Ak_T_Bk_answer({
+    Matrix<DefDense, T, 2, 1> Ak_T_mul_Bk_answer({
         {32},
         {115}
         });
 
-    tester.expect_near(Ak_T_Bk.matrix.data, Ak_T_Bk_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check ATranspose_mul_B Sparse and Dense, rectangular.");
+    tester.expect_near(Ak_T_mul_Bk.matrix.data, Ak_T_mul_Bk_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Sparse and Dense, 3 x 2 rectangular.");
+
+    Matrix<DefDense, T, 1, 2> Bl({ { 1, 2 } });
+
+    auto Bl_mul_Ak_T = A_mul_BTranspose(Bl, Ak_sparse);
+
+    Matrix<DefDense, T, 1, 3> Bl_mul_Ak_T_answer({
+        {24, 41, 52}
+        });
+
+    tester.expect_near(Bl_mul_Ak_T.matrix.data, Bl_mul_Ak_T_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check A_mul_BTranspose Dense and Sparse, 3 x 2 rectangular.");
 
 
     tester.throw_error_if_test_failed();
