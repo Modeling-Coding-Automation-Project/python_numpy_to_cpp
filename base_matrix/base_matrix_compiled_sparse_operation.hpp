@@ -6708,7 +6708,7 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
          k++) {
-      for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t i = 0; i < K; i++) {
         Y(RowIndices_A::list[k], i) += A.values[k] * B(j, i);
       }
     }

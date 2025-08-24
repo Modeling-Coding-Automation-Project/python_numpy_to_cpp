@@ -3061,6 +3061,22 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose_operation(void) {
     tester.expect_near(Ct_C_dense.matrix.data, Ct_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check ATranspose_mul_B Sparse and Sparse.");
 
+    /* 転置積 矩形行列 */
+    using Ak_S = DenseAvailable<3, 2>;
+    Matrix<DefSparse, T, 3, 2, Ak_S> Ak_sparse({ 4, 10, 5, 18, 6, 23 });
+
+    Matrix<DefDense, T, 3, 1> Bk({ {1}, {2}, {3} });
+
+    auto Ak_T_Bk = ATranspose_mul_B(Ak_sparse, Bk);
+
+    Matrix<DefDense, T, 2, 1> Ak_T_Bk_answer({
+        {32},
+        {115}
+        });
+
+    tester.expect_near(Ak_T_Bk.matrix.data, Ak_T_Bk_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check ATranspose_mul_B Sparse and Dense, rectangular.");
+
 
     tester.throw_error_if_test_failed();
 }
