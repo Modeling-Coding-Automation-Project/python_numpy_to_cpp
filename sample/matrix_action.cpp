@@ -80,5 +80,9 @@ int main() {
   }
   std::cout << std::endl;
 
+  /* Norm */
+  auto C_norm = norm(C);
+  std::cout << "Norm of C = " << C_norm << std::endl;
+
   return 0;
 }

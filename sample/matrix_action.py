@@ -23,3 +23,7 @@ C = np.array([[10, 0, 0],
 
 A[1:4, 1:4] = C
 print(A)
+
+# norm
+C_norm = np.linalg.norm(C)
+print(C_norm)
