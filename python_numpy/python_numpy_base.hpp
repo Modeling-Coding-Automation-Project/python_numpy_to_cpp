@@ -208,6 +208,10 @@ public:
     return this->matrix(row)[col];
   }
 
+  inline const T &access(const std::size_t &col, const std::size_t &row) const {
+    return this->matrix(row)[col];
+  }
+
   /**
    * @brief Accesses the element at the specified column and row indices.
    *
@@ -548,6 +552,12 @@ public:
     return this->matrix[index];
   }
 
+  inline const T &access(const std::size_t &index) const {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[index];
+  }
+
   /**
    * @brief Accesses the element at the specified index in the diagonal matrix.
    *
@@ -880,6 +890,12 @@ public:
    * out of bounds.
    */
   inline T &access(const std::size_t &value_index) {
+    // This is fast but may cause segmentation fault.
+
+    return this->matrix[value_index];
+  }
+
+  inline const T &access(const std::size_t &value_index) const {
     // This is fast but may cause segmentation fault.
 
     return this->matrix[value_index];

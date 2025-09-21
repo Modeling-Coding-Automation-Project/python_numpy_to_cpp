@@ -1494,8 +1494,12 @@ template <typename Matrix_Type>
 inline auto norm(const Matrix_Type &matrix) ->
     typename Matrix_Type::Value_Type {
 
-  using _Is_Complex_Type =
+  using IsComplexTrait =
       Base::Matrix::Is_Complex_Type<typename Matrix_Type::Value_Complex_Type>;
+
+  using _Is_Complex_Type =
+      typename std::conditional<IsComplexTrait::value, std::true_type,
+                                std::false_type>::type;
 
   return NormalizationOperation::Normalizer<Matrix_Type, _Is_Complex_Type>()
       .norm(matrix);

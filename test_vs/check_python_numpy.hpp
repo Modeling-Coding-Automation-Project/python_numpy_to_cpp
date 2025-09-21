@@ -1008,6 +1008,13 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(A_P.matrix.data, A_P_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check substitute_part_matrix, 4, 4 to 2, 2 at 1, 1");
 
+    /* norm */
+    auto A_norm = norm(Dense);
+    T A_norm_answer = static_cast<T>(16.881943016134134);
+
+    tester.expect_near(A_norm, A_norm_answer, NEAR_LIMIT_STRICT,
+        "check A norm.");
+
 
     tester.throw_error_if_test_failed();
 }
