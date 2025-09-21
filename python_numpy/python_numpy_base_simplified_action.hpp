@@ -21,6 +21,7 @@
 #ifndef __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 #define __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 
+#include "python_math.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
 #include "python_numpy_complex.hpp"
@@ -1442,6 +1443,206 @@ inline auto reshape(const From_Type &from_matrix)
   ReshapeOperation::substitute(to_matrix, from_matrix);
 
   return to_matrix;
+}
+
+namespace NormalizationOperation {
+
+/* Real value operation */
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J,
+          bool Value_Exists>
+struct RealSumSquaresTemplate {};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct RealSumSquaresTemplate<T, Matrix_Type, I, J, false> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    static_cast<void>(sum_of_squares);
+    static_cast<void>(matrix);
+    // Do nothing.
+  }
+};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct RealSumSquaresTemplate<T, Matrix_Type, I, J, true> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    T value = matrix.template get<I, J>();
+    sum_of_squares += value * value;
+  }
+};
+
+// when J_idx < N
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
+struct RealColumn {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealSumSquaresTemplate<T, Matrix_Type, I, J_idx,
+                           Matrix_Type::SparseAvailable_Type::lists[I][J_idx]>::
+        sum_squares(sum_of_squares, matrix);
+
+    RealColumn<T, Matrix_Type, I, J_idx - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, typename Matrix_Type, std::size_t I>
+struct RealColumn<T, Matrix_Type, I, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealSumSquaresTemplate<T, Matrix_Type, I, 0,
+                           Matrix_Type::SparseAvailable_Type::lists[I][0]>::
+        sum_squares(sum_of_squares, matrix);
+  }
+};
+
+// when I_idx < M
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
+          std::size_t I_idx>
+struct RealRow {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealColumn<T, Matrix_Type, I_idx, N - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+    RealRow<T, Matrix_Type, M, N, I_idx - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N>
+struct RealRow<T, Matrix_Type, M, N, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealColumn<T, Matrix_Type, 0, N - 1>::sum_squares(sum_of_squares, matrix);
+  }
+};
+
+/* Complex value operation */
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J,
+          bool Value_Exists>
+struct ComplexSumSquaresTemplate {};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, false> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    static_cast<void>(sum_of_squares);
+    static_cast<void>(matrix);
+    // Do nothing.
+  }
+};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, true> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    using Value_Complex_Type = typename Matrix_Type::Value_Complex_Type;
+
+    Value_Complex_Type value = matrix.template get<I, J>();
+    sum_of_squares += value.real * value.real + value.imag * value.imag;
+  }
+};
+
+// when J_idx < N
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
+struct ComplexColumn {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    ComplexSumSquaresTemplate<T, Matrix_Type, I, J_idx,
+                              Matrix_Type::SparseAvailable_Type::lists
+                                  [I][J_idx]>::sum_squares(sum_of_squares,
+                                                           matrix);
+
+    ComplexColumn<T, Matrix_Type, I, J_idx - 1>::sum_squares(sum_of_squares,
+                                                             matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, typename Matrix_Type, std::size_t I>
+struct ComplexColumn<T, Matrix_Type, I, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    ComplexSumSquaresTemplate<T, Matrix_Type, I, 0,
+                              Matrix_Type::SparseAvailable_Type::lists[I][0]>::
+        sum_squares(sum_of_squares, matrix);
+  }
+};
+
+// when I_idx < M
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
+          std::size_t I_idx>
+struct ComplexRow {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    ComplexColumn<T, Matrix_Type, I_idx, N - 1>::sum_squares(sum_of_squares,
+                                                             matrix);
+    ComplexRow<T, Matrix_Type, M, N, I_idx - 1>::sum_squares(sum_of_squares,
+                                                             matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N>
+struct ComplexRow<T, Matrix_Type, M, N, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    ComplexColumn<T, Matrix_Type, 0, N - 1>::sum_squares(sum_of_squares,
+                                                         matrix);
+  }
+};
+
+template <typename Matrix_Type, typename isComplex> struct Normalizer {};
+
+template <typename Matrix_Type>
+struct Normalizer<Matrix_Type, std::false_type> {
+  static auto norm(const Matrix_Type &matrix) ->
+      typename Matrix_Type::Value_Type {
+
+    using ValueType = typename Matrix_Type::Value_Type;
+
+    ValueType sum_of_squares = static_cast<ValueType>(0);
+
+    RealRow<ValueType, Matrix_Type, Matrix_Type::COLS, Matrix_Type::ROWS,
+            (Matrix_Type::COLS - 1)>::sum_squares(sum_of_squares, matrix);
+
+    return PythonMath::sqrt(sum_of_squares);
+  }
+};
+
+template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
+  static auto norm(const Matrix_Type &matrix) ->
+      typename Matrix_Type::Value_Type {
+
+    using ValueType = typename Matrix_Type::Value_Type;
+
+    ValueType sum_of_squares = static_cast<ValueType>(0);
+
+    ComplexRow<ValueType, Matrix_Type, Matrix_Type::COLS, Matrix_Type::ROWS,
+               (Matrix_Type::COLS - 1)>::sum_squares(sum_of_squares, matrix);
+
+    return PythonMath::sqrt(sum_of_squares);
+  }
+};
+
+} // namespace NormalizationOperation
+
+template <typename Matrix_Type>
+inline auto norm(const Matrix_Type &matrix) ->
+    typename Matrix_Type::Value_Type {
+
+  using IsComplexTrait =
+      Base::Matrix::Is_Complex_Type<typename Matrix_Type::Value_Complex_Type>;
+
+  using _Is_Complex_Type =
+      typename std::conditional<IsComplexTrait::value, std::true_type,
+                                std::false_type>::type;
+
+  return NormalizationOperation::Normalizer<Matrix_Type, _Is_Complex_Type>()
+      .norm(matrix);
 }
 
 } // namespace PythonNumpy

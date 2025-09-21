@@ -1008,6 +1008,56 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(A_P.matrix.data, A_P_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check substitute_part_matrix, 4, 4 to 2, 2 at 1, 1");
 
+    /* norm */
+    auto A_norm = norm(Dense);
+    T A_norm_answer = static_cast<T>(16.881943016134134);
+
+    tester.expect_near(A_norm, A_norm_answer, NEAR_LIMIT_STRICT,
+        "check A norm.");
+
+    auto Diag_2 = make_DiagMatrix<3>(
+        static_cast<T>(1),
+        static_cast<T>(2),
+        static_cast<T>(3));
+
+    auto B_norm = norm(Diag_2);
+    T B_norm_answer = static_cast<T>(3.7416573867739413);
+
+    tester.expect_near(B_norm, B_norm_answer, NEAR_LIMIT_STRICT,
+        "check B norm.");
+
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_2({ 1, 3, 8, 2, 4 });
+
+    auto C_norm = norm(C_2);
+    T C_norm_answer = static_cast<T>(9.695359714832659);
+
+    tester.expect_near(C_norm, C_norm_answer, NEAR_LIMIT_STRICT,
+        "check C norm.");
+
+    Matrix<DefSparse, Complex<T>, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_complex({
+        Complex<T>(1, 2),
+        Complex<T>(3, 4),
+        Complex<T>(5, 6),
+        Complex<T>(7, 8),
+        Complex<T>(9, 10)
+        });
+
+    auto C_complex_norm = norm(C_complex);
+    T C_complex_norm_answer = static_cast<T>(19.621416870348583);
+
+    tester.expect_near(C_complex_norm, C_complex_norm_answer, NEAR_LIMIT_STRICT,
+        "check C_complex norm.");
+
 
     tester.throw_error_if_test_failed();
 }
