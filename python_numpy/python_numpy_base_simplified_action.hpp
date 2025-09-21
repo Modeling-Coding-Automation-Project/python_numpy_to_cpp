@@ -1617,7 +1617,6 @@ template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
   static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Type {
 
-    using ComplexValueType = typename Matrix_Type::Value_Complex_Type;
     using ValueType = typename Matrix_Type::Value_Type;
 
     ValueType sum_of_squares = static_cast<ValueType>(0);
