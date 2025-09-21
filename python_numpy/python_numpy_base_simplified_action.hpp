@@ -1449,10 +1449,10 @@ namespace NormalizationOperation {
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J,
           bool Value_Exists>
-struct SumSquaresTemplate {};
+struct RealSumSquaresTemplate {};
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
-struct SumSquaresTemplate<T, Matrix_Type, I, J, false> {
+struct RealSumSquaresTemplate<T, Matrix_Type, I, J, false> {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     static_cast<void>(sum_of_squares);
@@ -1462,7 +1462,7 @@ struct SumSquaresTemplate<T, Matrix_Type, I, J, false> {
 };
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
-struct SumSquaresTemplate<T, Matrix_Type, I, J, true> {
+struct RealSumSquaresTemplate<T, Matrix_Type, I, J, true> {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     T value = matrix.template get<I, J>();
@@ -1475,8 +1475,8 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
 struct RealColumn {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
-    SumSquaresTemplate<T, Matrix_Type, I, J_idx,
-                       Matrix_Type::SparseAvailable_Type::lists[I][J_idx]>::
+    RealSumSquaresTemplate<T, Matrix_Type, I, J_idx,
+                           Matrix_Type::SparseAvailable_Type::lists[I][J_idx]>::
         sum_squares(sum_of_squares, matrix);
 
     RealColumn<T, Matrix_Type, I, J_idx - 1>::sum_squares(sum_of_squares,
