@@ -1015,6 +1015,18 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(A_norm, A_norm_answer, NEAR_LIMIT_STRICT,
         "check A norm.");
 
+    auto Diag_2 = make_DiagMatrix<3>(
+        static_cast<T>(1),
+        static_cast<T>(2),
+        static_cast<T>(3));
+
+    auto B_norm = norm(Diag_2);
+    T B_norm_answer = static_cast<T>(3.7416573867739413);
+
+    tester.expect_near(B_norm, B_norm_answer, NEAR_LIMIT_STRICT,
+        "check B norm.");
+
+
 
     tester.throw_error_if_test_failed();
 }

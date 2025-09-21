@@ -1447,29 +1447,76 @@ inline auto reshape(const From_Type &from_matrix)
 
 namespace NormalizationOperation {
 
+// when J_idx < N
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
+struct RealColumn {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    T value = matrix.template get<I, J_idx>();
+    sum_of_squares += value * value;
+
+    RealColumn<T, Matrix_Type, I, J_idx - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+  }
+};
+
+// column recursion termination
+template <typename T, typename Matrix_Type, std::size_t I>
+struct RealColumn<T, Matrix_Type, I, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    T value = matrix.template get<I, 0>();
+    sum_of_squares += value * value;
+  }
+};
+
+// when I_idx < M
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
+          std::size_t I_idx>
+struct RealRow {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealColumn<T, Matrix_Type, I_idx, N - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+    RealRow<T, Matrix_Type, M, N, I_idx - 1>::sum_squares(sum_of_squares,
+                                                          matrix);
+  }
+};
+
+// row recursion termination
+template <typename T, typename Matrix_Type, std::size_t M, std::size_t N>
+struct RealRow<T, Matrix_Type, M, N, 0> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    RealColumn<T, Matrix_Type, 0, N - 1>::sum_squares(sum_of_squares, matrix);
+  }
+};
+
 template <typename Matrix_Type, typename isComplex> struct Normalizer {};
 
 template <typename Matrix_Type>
 struct Normalizer<Matrix_Type, std::false_type> {
-  inline auto norm(const Matrix_Type &matrix) ->
+  static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Type {
     using ValueType = typename Matrix_Type::Value_Type;
 
     ValueType sum_of_squares = static_cast<ValueType>(0);
 
-    for (std::size_t col = 0; col < Matrix_Type::COLS; ++col) {
-      for (std::size_t row = 0; row < Matrix_Type::ROWS; ++row) {
-        ValueType value = matrix.access(col, row);
-        sum_of_squares += value * value;
-      }
-    }
+    // for (std::size_t col = 0; col < Matrix_Type::COLS; ++col) {
+    //   for (std::size_t row = 0; row < Matrix_Type::ROWS; ++row) {
+    //     ValueType value = matrix.access(col, row);
+    //     sum_of_squares += value * value;
+    //   }
+    // }
+    RealRow<ValueType, Matrix_Type, Matrix_Type::COLS, Matrix_Type::ROWS,
+            (Matrix_Type::COLS - 1)>::sum_squares(sum_of_squares, matrix);
 
     return PythonMath::sqrt(sum_of_squares);
   }
 };
 
 template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
-  inline auto norm(const Matrix_Type &matrix) ->
+  static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Complex_Type {
     using ComplexValueType = typename Matrix_Type::Value_Complex_Type;
     using ValueType = typename UnderlyingType<ComplexValueType>::type;
