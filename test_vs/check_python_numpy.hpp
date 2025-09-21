@@ -1039,6 +1039,25 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(C_norm, C_norm_answer, NEAR_LIMIT_STRICT,
         "check C norm.");
 
+    Matrix<DefSparse, Complex<T>, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_complex({
+        Complex<T>(1, 2),
+        Complex<T>(3, 4),
+        Complex<T>(5, 6),
+        Complex<T>(7, 8),
+        Complex<T>(9, 10)
+        });
+
+    auto C_complex_norm = norm(C_complex);
+    T C_complex_norm_answer = static_cast<T>(19.621416870348583);
+
+    tester.expect_near(C_complex_norm, C_complex_norm_answer, NEAR_LIMIT_STRICT,
+        "check C_complex norm.");
+
 
     tester.throw_error_if_test_failed();
 }

@@ -1491,8 +1491,9 @@ template <typename T, typename Matrix_Type, std::size_t I>
 struct RealColumn<T, Matrix_Type, I, 0> {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
-    T value = matrix.template get<I, 0>();
-    sum_of_squares += value * value;
+    RealSumSquaresTemplate<T, Matrix_Type, I, 0,
+                           Matrix_Type::SparseAvailable_Type::lists[I][0]>::
+        sum_squares(sum_of_squares, matrix);
   }
 };
 
@@ -1538,11 +1539,10 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
 struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, true> {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
-    using ComplexValueType = typename Matrix_Type::ComplexValueType;
+    using Value_Complex_Type = typename Matrix_Type::Value_Complex_Type;
 
-    ComplexValueType value = matrix.template get<I, J>();
-    sum_of_squares +=
-        value * Base::Matrix::complex_conjugate<ComplexValueType>(value);
+    Value_Complex_Type value = matrix.template get<I, J>();
+    sum_of_squares += value.real * value.real + value.imag * value.imag;
   }
 };
 
@@ -1566,8 +1566,9 @@ template <typename T, typename Matrix_Type, std::size_t I>
 struct ComplexColumn<T, Matrix_Type, I, 0> {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
-    T value = matrix.template get<I, 0>();
-    sum_of_squares += value * value;
+    ComplexSumSquaresTemplate<T, Matrix_Type, I, 0,
+                              Matrix_Type::SparseAvailable_Type::lists[I][0]>::
+        sum_squares(sum_of_squares, matrix);
   }
 };
 
@@ -1600,6 +1601,7 @@ template <typename Matrix_Type>
 struct Normalizer<Matrix_Type, std::false_type> {
   static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Type {
+
     using ValueType = typename Matrix_Type::Value_Type;
 
     ValueType sum_of_squares = static_cast<ValueType>(0);
@@ -1613,14 +1615,14 @@ struct Normalizer<Matrix_Type, std::false_type> {
 
 template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
   static auto norm(const Matrix_Type &matrix) ->
-      typename Matrix_Type::Value_Complex_Type {
+      typename Matrix_Type::Value_Type {
+
     using ComplexValueType = typename Matrix_Type::Value_Complex_Type;
-    using ValueType = typename UnderlyingType<ComplexValueType>::type;
+    using ValueType = typename Matrix_Type::Value_Type;
 
     ValueType sum_of_squares = static_cast<ValueType>(0);
 
-    ComplexRow<ComplexValueType, Matrix_Type, Matrix_Type::COLS,
-               Matrix_Type::ROWS,
+    ComplexRow<ValueType, Matrix_Type, Matrix_Type::COLS, Matrix_Type::ROWS,
                (Matrix_Type::COLS - 1)>::sum_squares(sum_of_squares, matrix);
 
     return PythonMath::sqrt(sum_of_squares);
