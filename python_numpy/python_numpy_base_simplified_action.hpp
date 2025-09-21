@@ -21,6 +21,7 @@
 #ifndef __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 #define __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
 
+#include "python_math.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
 #include "python_numpy_complex.hpp"
@@ -1442,6 +1443,62 @@ inline auto reshape(const From_Type &from_matrix)
   ReshapeOperation::substitute(to_matrix, from_matrix);
 
   return to_matrix;
+}
+
+namespace NormalizationOperation {
+
+template <typename Matrix_Type, typename isComplex> struct Normalizer {};
+
+template <typename Matrix_Type>
+struct Normalizer<Matrix_Type, std::false_type> {
+  inline auto norm(const Matrix_Type &matrix) ->
+      typename Matrix_Type::Value_Type {
+    using ValueType = typename Matrix_Type::Value_Type;
+
+    ValueType sum_of_squares = static_cast<ValueType>(0);
+
+    for (std::size_t col = 0; col < Matrix_Type::COLS; ++col) {
+      for (std::size_t row = 0; row < Matrix_Type::ROWS; ++row) {
+        ValueType value = matrix.access(col, row);
+        sum_of_squares += value * value;
+      }
+    }
+
+    return PythonMath::sqrt(sum_of_squares);
+  }
+};
+
+template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
+  inline auto norm(const Matrix_Type &matrix) ->
+      typename Matrix_Type::Value_Complex_Type {
+    using ComplexValueType = typename Matrix_Type::Value_Complex_Type;
+    using ValueType = typename UnderlyingType<ComplexValueType>::type;
+
+    ValueType sum_of_squares = static_cast<ValueType>(0);
+
+    for (std::size_t col = 0; col < Matrix_Type::COLS; ++col) {
+      for (std::size_t row = 0; row < Matrix_Type::ROWS; ++row) {
+        ComplexValueType value = matrix.access(col, row);
+        sum_of_squares +=
+            value * Base::Matrix::complex_conjugate<ComplexValueType>(value);
+      }
+    }
+
+    return PythonMath::sqrt(sum_of_squares);
+  }
+};
+
+} // namespace NormalizationOperation
+
+template <typename Matrix_Type>
+inline auto norm(const Matrix_Type &matrix) ->
+    typename Matrix_Type::Value_Type {
+
+  using _Is_Complex_Type =
+      Base::Matrix::Is_Complex_Type<typename Matrix_Type::Value_Complex_Type>;
+
+  return NormalizationOperation::Normalizer<Matrix_Type, _Is_Complex_Type>()
+      .norm(matrix);
 }
 
 } // namespace PythonNumpy
