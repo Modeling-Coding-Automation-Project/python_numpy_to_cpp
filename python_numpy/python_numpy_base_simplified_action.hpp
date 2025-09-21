@@ -1447,13 +1447,37 @@ inline auto reshape(const From_Type &from_matrix)
 
 namespace NormalizationOperation {
 
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J,
+          bool Value_Exists>
+struct SumSquaresTemplate {};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct SumSquaresTemplate<T, Matrix_Type, I, J, false> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    static_cast<void>(sum_of_squares);
+    static_cast<void>(matrix);
+    // Do nothing.
+  }
+};
+
+template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
+struct SumSquaresTemplate<T, Matrix_Type, I, J, true> {
+  static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
+
+    T value = matrix.template get<I, J>();
+    sum_of_squares += value * value;
+  }
+};
+
 // when J_idx < N
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
 struct RealColumn {
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
-    T value = matrix.template get<I, J_idx>();
-    sum_of_squares += value * value;
+    SumSquaresTemplate<T, Matrix_Type, I, J_idx,
+                       Matrix_Type::SparseAvailable_Type::lists[I][J_idx]>::
+        sum_squares(sum_of_squares, matrix);
 
     RealColumn<T, Matrix_Type, I, J_idx - 1>::sum_squares(sum_of_squares,
                                                           matrix);
