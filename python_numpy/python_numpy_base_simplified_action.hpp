@@ -1502,12 +1502,6 @@ struct Normalizer<Matrix_Type, std::false_type> {
 
     ValueType sum_of_squares = static_cast<ValueType>(0);
 
-    // for (std::size_t col = 0; col < Matrix_Type::COLS; ++col) {
-    //   for (std::size_t row = 0; row < Matrix_Type::ROWS; ++row) {
-    //     ValueType value = matrix.access(col, row);
-    //     sum_of_squares += value * value;
-    //   }
-    // }
     RealRow<ValueType, Matrix_Type, Matrix_Type::COLS, Matrix_Type::ROWS,
             (Matrix_Type::COLS - 1)>::sum_squares(sum_of_squares, matrix);
 

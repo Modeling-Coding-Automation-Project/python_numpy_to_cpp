@@ -1026,6 +1026,18 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(B_norm, B_norm_answer, NEAR_LIMIT_STRICT,
         "check B norm.");
 
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>
+        > C_2({ 1, 3, 8, 2, 4 });
+
+    auto C_norm = norm(C_2);
+    T C_norm_answer = static_cast<T>(9.695359714832659);
+
+    tester.expect_near(C_norm, C_norm_answer, NEAR_LIMIT_STRICT,
+        "check C norm.");
 
 
     tester.throw_error_if_test_failed();
