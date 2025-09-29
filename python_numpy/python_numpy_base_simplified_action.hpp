@@ -42,6 +42,26 @@ namespace ElementWiseMultiplyOperation {
 template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t I, std::size_t J_idx>
 struct Column {
+  /**
+   * @brief Computes the product of corresponding elements from input matrices A
+   * and B at position (I, J_idx), and sets the result in the output matrix Out
+   * at the same position.
+   *
+   * This function recursively processes columns by calling the compute method
+   * of the Column class for the previous column index (J_idx - 1).
+   *
+   * @tparam Out_Type Type of the output matrix.
+   * @tparam In_A_Type Type of the first input matrix.
+   * @tparam In_B_Type Type of the second input matrix.
+   * @tparam M Number of rows in the matrices.
+   * @tparam N Number of columns in the matrices.
+   * @tparam I Current row index.
+   * @tparam J_idx Current column index.
+   *
+   * @param Out Reference to the output matrix.
+   * @param A Reference to the first input matrix.
+   * @param B Reference to the second input matrix.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     const auto a = A.template get<I, J_idx>();
     const auto b = B.template get<I, J_idx>();
@@ -54,6 +74,22 @@ struct Column {
 
 template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t I>
+/**
+ * @brief Specialization of the Column struct for the case when J (the last
+ * template parameter) is 0.
+ *
+ * This struct provides a static compute function that multiplies elements from
+ * two input types (A and B) at position <I, 0> and stores the result in the
+ * output type (Out) at the same position.
+ *
+ * @tparam Out_Type Type of the output container.
+ * @tparam In_A_Type Type of the first input container.
+ * @tparam In_B_Type Type of the second input container.
+ * @tparam M Number of rows (unused in this specialization).
+ * @tparam N Number of columns (unused in this specialization).
+ * @tparam I Row index for the operation.
+ * @tparam 0 Column index (specialized to 0).
+ */
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, I, 0> {
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     const auto a = A.template get<I, 0>();
@@ -65,6 +101,25 @@ struct Column<Out_Type, In_A_Type, In_B_Type, M, N, I, 0> {
 template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t I_idx>
 struct Row {
+  /**
+   * @brief Performs computation by invoking the compute methods of Column and
+   * Row classes.
+   *
+   * This static function calls the compute method of the Column class with
+   * template parameters (Out_Type, In_A_Type, In_B_Type, M, N, I_idx, N - 1)
+   * and the compute method of the Row class with template parameters (Out_Type,
+   * In_A_Type, In_B_Type, M, N, I_idx - 1).
+   *
+   * @tparam Out_Type Type of the output.
+   * @tparam In_A_Type Type of the first input.
+   * @tparam In_B_Type Type of the second input.
+   * @tparam M Number of rows.
+   * @tparam N Number of columns.
+   * @tparam I_idx Current index for computation.
+   * @param Out Reference to the output object.
+   * @param A Reference to the first input object.
+   * @param B Reference to the second input object.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     Column<Out_Type, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(Out,
                                                                           A, B);
@@ -81,6 +136,25 @@ struct Row<Out_Type, In_A_Type, In_B_Type, M, N, 0> {
   }
 };
 
+/**
+ * @brief Computes the output by processing two input types element-wise.
+ *
+ * This function template performs a computation on two input objects, `A` and
+ * `B`, and stores the result in `Out`. It ensures at compile-time that both
+ * input types have the same number of rows and columns using static assertions.
+ *
+ * @tparam Out_Type Type of the output object.
+ * @tparam In_A_Type Type of the first input object.
+ * @tparam In_B_Type Type of the second input object.
+ * @param[out] Out Reference to the output object where the result will be
+ * stored.
+ * @param[in] A Constant reference to the first input object.
+ * @param[in] B Constant reference to the second input object.
+ *
+ * @note The function relies on a helper template `Row` to perform the actual
+ * computation. The dimensions (rows and columns) are determined at compile-time
+ * from `In_A_Type`. Both input types must have matching dimensions.
+ */
 template <typename Out_Type, typename In_A_Type, typename In_B_Type>
 inline void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
   static_assert(In_A_Type::COLS == In_B_Type::COLS,
@@ -96,6 +170,26 @@ inline void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
 
 } // namespace ElementWiseMultiplyOperation
 
+/**
+ * @brief Performs element-wise multiplication of two matrices or arrays.
+ *
+ * This function multiplies each corresponding element of input matrices or
+ * arrays `A` and `B`, storing the result in `Out`. The input types must have
+ * the same number of rows and columns, enforced at compile time via static
+ * assertions.
+ *
+ * @tparam Out_Type Type of the output matrix or array.
+ * @tparam In_A_Type Type of the first input matrix or array.
+ * @tparam In_B_Type Type of the second input matrix or array.
+ * @param Out Reference to the output matrix or array where the result is
+ * stored.
+ * @param A Constant reference to the first input matrix or array.
+ * @param B Constant reference to the second input matrix or array.
+ *
+ * @note The actual computation is delegated to
+ * ElementWiseMultiplyOperation::compute.
+ * @throws static_assert if the dimensions of A and B do not match.
+ */
 template <typename Out_Type, typename In_A_Type, typename In_B_Type>
 inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
                                   const In_B_Type &B) {
