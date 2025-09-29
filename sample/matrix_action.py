@@ -13,6 +13,7 @@ A = np.array([[16, 2, 3, 13],
               [4, 14, 15, 1]])
 
 B = A.reshape(8, 2, order='F')
+print("B:")
 print(B)
 
 # substitute
@@ -22,8 +23,18 @@ C = np.array([[10, 0, 0],
               [0, 80, 70]])
 
 A[1:4, 1:4] = C
+print("A after substitution:")
 print(A)
 
 # norm
 C_norm = np.linalg.norm(C)
+print("Frobenius norm of C:")
 print(C_norm)
+
+# element-wise multiplication
+D = np.array([[1, 2, 3],
+              [4, 5, 6],
+              [7, 8, 9]])
+E = C * D
+print("Element-wise multiplication of C and D:")
+print(E)

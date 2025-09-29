@@ -35,6 +35,79 @@
 
 namespace PythonNumpy {
 
+/* Element wise multiply */
+
+namespace ElementWiseMultiplyOperation {
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type,
+          std::size_t M, std::size_t N, std::size_t I, std::size_t J_idx>
+struct Column {
+  static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
+    const auto a = A.template get<I, J_idx>();
+    const auto b = B.template get<I, J_idx>();
+    Out.template set<I, J_idx>(a * b);
+
+    Column<Out_Type, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(Out,
+                                                                          A, B);
+  }
+};
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type,
+          std::size_t M, std::size_t N, std::size_t I>
+struct Column<Out_Type, In_A_Type, In_B_Type, M, N, I, 0> {
+  static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
+    const auto a = A.template get<I, 0>();
+    const auto b = B.template get<I, 0>();
+    Out.template set<I, 0>(a * b);
+  }
+};
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type,
+          std::size_t M, std::size_t N, std::size_t I_idx>
+struct Row {
+  static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
+    Column<Out_Type, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(Out,
+                                                                          A, B);
+    Row<Out_Type, In_A_Type, In_B_Type, M, N, (I_idx - 1)>::compute(Out, A, B);
+  }
+};
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type,
+          std::size_t M, std::size_t N>
+struct Row<Out_Type, In_A_Type, In_B_Type, M, N, 0> {
+  static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
+    Column<Out_Type, In_A_Type, In_B_Type, M, N, 0, (N - 1)>::compute(Out, A,
+                                                                      B);
+  }
+};
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type>
+inline void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
+  static_assert(In_A_Type::COLS == In_B_Type::COLS,
+                "In_A_Type::COLS != In_B_Type::COLS");
+  static_assert(In_A_Type::ROWS == In_B_Type::ROWS,
+                "In_A_Type::ROWS != In_B_Type::ROWS");
+
+  constexpr std::size_t M = In_A_Type::COLS;
+  constexpr std::size_t N = In_A_Type::ROWS;
+
+  Row<Out_Type, In_A_Type, In_B_Type, M, N, (M - 1)>::compute(Out, A, B);
+}
+
+} // namespace ElementWiseMultiplyOperation
+
+template <typename Out_Type, typename In_A_Type, typename In_B_Type>
+inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
+                                  const In_B_Type &B) {
+
+  static_assert(In_A_Type::COLS == In_B_Type::COLS,
+                "In_A_Type::COLS != In_B_Type::COLS");
+  static_assert(In_A_Type::ROWS == In_B_Type::ROWS,
+                "In_A_Type::ROWS != In_B_Type::ROWS");
+
+  ElementWiseMultiplyOperation::compute(Out, A, B);
+}
+
 /* Get */
 namespace GetDenseMatrixOperation {
 

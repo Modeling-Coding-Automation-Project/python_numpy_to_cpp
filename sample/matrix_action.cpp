@@ -84,5 +84,20 @@ int main() {
   auto C_norm = norm(C);
   std::cout << "Norm of C = " << C_norm << std::endl;
 
+  /* element-wise multiplication */
+  auto D = make_DenseMatrix<3, 3>(1, 2, 3, 4, 5, 6, 7, 8, 9);
+  auto E = make_DenseMatrixZeros<double, 3, 3>();
+
+  element_wise_multiply(E, C_dense, D);
+
+  std::cout << "E = " << std::endl;
+  for (size_t i = 0; i < E.cols(); ++i) {
+    for (size_t j = 0; j < E.rows(); ++j) {
+      std::cout << E(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }
