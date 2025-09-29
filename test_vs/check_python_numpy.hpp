@@ -1058,6 +1058,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(C_complex_norm, C_complex_norm_answer, NEAR_LIMIT_STRICT,
         "check C_complex norm.");
 
+    /* 要素積 */
+    auto Out = make_DenseMatrixZeros<T, 3, 3>();
+
+    element_wise_multiply(Out, Dense, C_2);
+
+    Matrix<DefDense, T, 3, 3> Out_answer({
+        {1, 0, 0},
+        {15, 0, 48},
+        {0, 16, 28}
+        });
+
+    tester.expect_near(Out.matrix.data, Out_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check element_wise_multiply.");
+
 
     tester.throw_error_if_test_failed();
 }

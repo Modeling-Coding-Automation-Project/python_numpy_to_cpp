@@ -106,8 +106,6 @@ inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
                 "In_A_Type::ROWS != In_B_Type::ROWS");
 
   ElementWiseMultiplyOperation::compute(Out, A, B);
-
-  return Out;
 }
 
 /* Get */
