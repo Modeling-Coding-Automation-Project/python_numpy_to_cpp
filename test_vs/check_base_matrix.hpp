@@ -576,6 +576,18 @@ void CheckBaseMatrix<T>::check_diag_matrix(void) {
     tester.expect_near(D_dense.data, D_dense_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix create dense.");
 
+    Matrix<T, 3, 1> Diagonal_vector = output_diagonal_vector(D);
+
+    Matrix<T, 3, 1> Diagonal_vector_answer({
+        {1},
+        {2},
+        {3}
+        });
+
+    tester.expect_near(Diagonal_vector.data, Diagonal_vector_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix create diagonal vector.");
+
+
 
     tester.throw_error_if_test_failed();
 }

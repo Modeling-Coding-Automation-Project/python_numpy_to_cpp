@@ -233,6 +233,18 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     static_assert(std::is_same<typename Matrix<DefSparse, T, 3, 3, DenseAvailable<3, 3>>::Value_Type, T>::value,
         "check Sparse Matrix get value type.");
 
+    /* 取り出し */
+    auto B_diagonal_vector = B.diagonal_vector();
+
+    Matrix<DefDense, T, 3, 1> B_diagonal_vector_answer({
+        {1.0F},
+        {2.0F},
+        {3.0F}
+    });
+
+    tester.expect_near(B_diagonal_vector.matrix.data, B_diagonal_vector_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix diagonal vector.");
+
 
     /* 演算 */
     Matrix<DefDense, T, 3, 3> A_minus = -A;
