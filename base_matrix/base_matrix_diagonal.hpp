@@ -258,6 +258,24 @@ public:
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
+/**
+ * @brief Converts a diagonal matrix to a column vector.
+ *
+ * This function takes a diagonal matrix as input and returns a column vector
+ * containing the diagonal elements of the matrix.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @param matrix The diagonal matrix to be converted.
+ * @return Matrix<T, M, 1> A column vector containing the diagonal elements of
+ * the input matrix.
+ */
+template <typename T, std::size_t M>
+inline Matrix<T, M, 1> output_diagonal_vector(const DiagMatrix<T, M> &matrix) {
+
+  return Matrix<T, M, 1>(matrix.data);
+}
+
 /* Matrix Addition */
 namespace DiagMatrixAddDiagMatrix {
 
