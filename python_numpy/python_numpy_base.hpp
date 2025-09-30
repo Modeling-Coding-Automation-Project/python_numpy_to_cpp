@@ -612,10 +612,10 @@ public:
    */
   inline auto transpose(void) const -> Matrix<DefDiag, T, M> { return *this; }
 
-  // inline auto diagonal_vector(void) const -> Matrix<DefDense, T, M, 1> {
-  //   return Matrix<DefDense, T, M, 1>(
-  //       Base::Matrix::output_diagonal_vector(this->matrix));
-  // }
+  inline auto diagonal_vector(void) const -> Matrix<DefDense, T, M, 1> {
+    return Matrix<DefDense, T, M, 1>(
+        Base::Matrix::output_diagonal_vector(this->matrix));
+  }
 
   /**
    * @brief Creates a complex diagonal matrix from the current diagonal matrix.
