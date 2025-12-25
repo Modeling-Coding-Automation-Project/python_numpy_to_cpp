@@ -30,8 +30,6 @@
 #include <utility>
 #include <vector>
 
-#include <cmath>
-
 namespace Base {
 namespace Matrix {
 
