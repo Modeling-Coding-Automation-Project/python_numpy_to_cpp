@@ -4,6 +4,14 @@ It calculates the eigenvalues and eigenvectors of a predefined 3x3 matrix, print
 by checking the equation A * v = v * D, where A is the original matrix, v is the matrix of eigenvectors, and D
 is the diagonal matrix of eigenvalues.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 A_c = np.array([[1., 2., 3.], [3., 1., 2.], [2., 3., 1.]])

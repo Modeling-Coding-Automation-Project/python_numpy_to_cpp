@@ -2,6 +2,14 @@
 This script demonstrates the calculation of the inverse of a square matrix using NumPy.
 It defines several sample matrices, computes the inverse of one of them, and prints the result.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 

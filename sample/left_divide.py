@@ -3,6 +3,14 @@ This script demonstrates solving a system of linear equations using NumPy.
 It defines three matrices: A, B, and C. The script then solves the matrix equation A * X = C for X using numpy.linalg.solve,
 and prints the resulting matrix. The script also initializes a zero matrix for demonstration purposes.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 

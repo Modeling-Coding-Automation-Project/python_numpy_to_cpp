@@ -4,6 +4,14 @@ It defines a 3x3 real matrix, calculates its eigenvalues and eigenvectors, and p
 Additionally, it verifies the eigen decomposition by computing the difference between A @ V and V @ D,
 where A is the original matrix, V is the matrix of eigenvectors, and D is the diagonal matrix of eigenvalues.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 

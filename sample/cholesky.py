@@ -4,6 +4,14 @@ It defines three matrices (A, B, and C), computes the Cholesky factorization of 
 multiplying the Cholesky factor with its transpose to reconstruct the original matrix. The script prints both the
 Cholesky factor and the reconstructed matrix for validation.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 
