@@ -6,6 +6,14 @@ It creates several 3x3 matrices and performs the following operations:
 - Block matrix construction using `np.block` to combine four matrices into a larger matrix.
 - Tiling of a matrix using `np.tile` to repeat the matrix in a grid pattern.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 

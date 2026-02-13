@@ -4,6 +4,14 @@ It defines three matrices (A, B, and C), computes the QR decomposition of matrix
 and prints the resulting orthogonal matrix Q and upper triangular matrix R.
 Finally, it verifies the decomposition by multiplying Q and R to reconstruct the original matrix A.
 """
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 
 
