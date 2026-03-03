@@ -63,9 +63,9 @@ struct Column {
    * @param B Reference to the second input matrix.
    */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    const auto a = A.template get<I, J_idx>();
-    const auto b = B.template get<I, J_idx>();
-    Out.template set<I, J_idx>(a * b);
+
+    Out.template set<I, J_idx>(A.template get<I, J_idx>() *
+                               B.template get<I, J_idx>());
 
     Column<Out_Type, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(Out,
                                                                           A, B);
@@ -92,9 +92,8 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
  */
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, I, 0> {
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    const auto a = A.template get<I, 0>();
-    const auto b = B.template get<I, 0>();
-    Out.template set<I, 0>(a * b);
+
+    Out.template set<I, 0>(A.template get<I, 0>() * B.template get<I, 0>());
   }
 };
 
