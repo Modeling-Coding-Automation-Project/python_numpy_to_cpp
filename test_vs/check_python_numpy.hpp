@@ -1084,6 +1084,14 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(Out.matrix.data, Out_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check element_wise_multiply.");
 
+    /* 内積 */
+    auto Out_inner = inner_product(Dense, C_2);
+
+    T Out_inner_answer = static_cast<T>(108);
+
+    tester.expect_near(Out_inner, Out_inner_answer, NEAR_LIMIT_STRICT,
+        "check inner_product.");
+
 
     tester.throw_error_if_test_failed();
 }

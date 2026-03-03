@@ -63,9 +63,9 @@ struct Column {
    * @param B Reference to the second input matrix.
    */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    const auto a = A.template get<I, J_idx>();
-    const auto b = B.template get<I, J_idx>();
-    Out.template set<I, J_idx>(a * b);
+
+    Out.template set<I, J_idx>(A.template get<I, J_idx>() *
+                               B.template get<I, J_idx>());
 
     Column<Out_Type, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(Out,
                                                                           A, B);
@@ -92,9 +92,8 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
  */
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, I, 0> {
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    const auto a = A.template get<I, 0>();
-    const auto b = B.template get<I, 0>();
-    Out.template set<I, 0>(a * b);
+
+    Out.template set<I, 0>(A.template get<I, 0>() * B.template get<I, 0>());
   }
 };
 
@@ -200,6 +199,168 @@ inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
                 "In_A_Type::ROWS != In_B_Type::ROWS");
 
   ElementWiseMultiplyOperation::compute(Out, A, B);
+}
+
+/* Inner product */
+
+namespace InnerProductOperation {
+
+template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
+          std::size_t N, std::size_t I, std::size_t J_idx>
+struct Column {
+  /**
+   * @brief Accumulates the product of corresponding elements from input
+   * matrices A and B at position (I, J_idx) into the result, then recursively
+   * processes the previous column index (J_idx - 1).
+   *
+   * @tparam T The scalar type for accumulation.
+   * @tparam In_A_Type Type of the first input matrix.
+   * @tparam In_B_Type Type of the second input matrix.
+   * @tparam M Number of columns in the matrices.
+   * @tparam N Number of rows in the matrices.
+   * @tparam I Current column index.
+   * @tparam J_idx Current row index.
+   *
+   * @param result Reference to the accumulated result.
+   * @param A Reference to the first input matrix.
+   * @param B Reference to the second input matrix.
+   */
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+
+    result += A.template get<I, J_idx>() * B.template get<I, J_idx>();
+
+    Column<T, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(result, A,
+                                                                   B);
+  }
+};
+
+template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
+          std::size_t N, std::size_t I>
+/**
+ * @brief Specialization of the Column struct for the case when J_idx is 0.
+ *
+ * This struct provides a static compute function that accumulates the product
+ * of elements from two input matrices (A and B) at position <I, 0> into the
+ * result.
+ *
+ * @tparam T The scalar type for accumulation.
+ * @tparam In_A_Type Type of the first input container.
+ * @tparam In_B_Type Type of the second input container.
+ * @tparam M Number of columns (unused in this specialization).
+ * @tparam N Number of rows (unused in this specialization).
+ * @tparam I Column index for the operation.
+ * @tparam 0 Row index (specialized to 0).
+ */
+struct Column<T, In_A_Type, In_B_Type, M, N, I, 0> {
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+
+    result += A.template get<I, 0>() * B.template get<I, 0>();
+  }
+};
+
+template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
+          std::size_t N, std::size_t I_idx>
+struct Row {
+  /**
+   * @brief Performs accumulation by invoking the compute methods of Column and
+   * Row classes.
+   *
+   * This static function calls the compute method of the Column class with
+   * template parameters (T, In_A_Type, In_B_Type, M, N, I_idx, N - 1) and the
+   * compute method of the Row class with template parameters (T, In_A_Type,
+   * In_B_Type, M, N, I_idx - 1).
+   *
+   * @tparam T The scalar type for accumulation.
+   * @tparam In_A_Type Type of the first input.
+   * @tparam In_B_Type Type of the second input.
+   * @tparam M Number of columns.
+   * @tparam N Number of rows.
+   * @tparam I_idx Current column index for computation.
+   * @param result Reference to the accumulated result.
+   * @param A Reference to the first input object.
+   * @param B Reference to the second input object.
+   */
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+    Column<T, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(result, A,
+                                                                   B);
+    Row<T, In_A_Type, In_B_Type, M, N, (I_idx - 1)>::compute(result, A, B);
+  }
+};
+
+template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
+          std::size_t N>
+struct Row<T, In_A_Type, In_B_Type, M, N, 0> {
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+    Column<T, In_A_Type, In_B_Type, M, N, 0, (N - 1)>::compute(result, A, B);
+  }
+};
+
+/**
+ * @brief Computes the inner product of two input matrices element-wise.
+ *
+ * This function template performs an inner product computation on two input
+ * objects, `A` and `B`, accumulating the sum of element-wise products. It
+ * ensures at compile-time that both input types have the same number of rows
+ * and columns using static assertions.
+ *
+ * @tparam T The scalar type for the result.
+ * @tparam In_A_Type Type of the first input object.
+ * @tparam In_B_Type Type of the second input object.
+ * @param[in] A Constant reference to the first input object.
+ * @param[in] B Constant reference to the second input object.
+ * @return The inner product of A and B as a scalar of type T.
+ *
+ * @note The function relies on helper templates `Row` and `Column` to perform
+ * the actual computation. The dimensions (columns and rows) are determined at
+ * compile-time from `In_A_Type`. Both input types must have matching
+ * dimensions.
+ */
+template <typename T, typename In_A_Type, typename In_B_Type>
+inline T compute(const In_A_Type &A, const In_B_Type &B) {
+  static_assert(In_A_Type::COLS == In_B_Type::COLS,
+                "In_A_Type::COLS != In_B_Type::COLS");
+  static_assert(In_A_Type::ROWS == In_B_Type::ROWS,
+                "In_A_Type::ROWS != In_B_Type::ROWS");
+
+  constexpr std::size_t M = In_A_Type::COLS;
+  constexpr std::size_t N = In_A_Type::ROWS;
+
+  T result = static_cast<T>(0);
+
+  Row<T, In_A_Type, In_B_Type, M, N, (M - 1)>::compute(result, A, B);
+
+  return result;
+}
+
+} // namespace InnerProductOperation
+
+/**
+ * @brief Computes the inner product (dot product) of two matrices or arrays.
+ *
+ * This function calculates the inner product of two input matrices or arrays
+ * `A` and `B` by summing the products of their corresponding elements. The
+ * input types must have the same number of rows and columns, which is enforced
+ * at compile time via static assertions.
+ */
+template <typename In_A_Type, typename In_B_Type>
+inline auto inner_product(const In_A_Type &A, const In_B_Type &B) ->
+    typename In_A_Type::Value_Type {
+
+  static_assert(
+      Base::Matrix::Is_Complex_Type<typename In_A_Type::Value_Type>::value ==
+          false,
+      "Complex types are not supported");
+  static_assert(
+      Base::Matrix::Is_Complex_Type<typename In_B_Type::Value_Type>::value ==
+          false,
+      "Complex types are not supported");
+
+  static_assert(In_A_Type::COLS == In_B_Type::COLS,
+                "In_A_Type::COLS != In_B_Type::COLS");
+  static_assert(In_A_Type::ROWS == In_B_Type::ROWS,
+                "In_A_Type::ROWS != In_B_Type::ROWS");
+
+  return InnerProductOperation::compute<typename In_A_Type::Value_Type>(A, B);
 }
 
 /* Get */
