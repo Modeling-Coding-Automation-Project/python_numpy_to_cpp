@@ -29,6 +29,7 @@
 #include "base_matrix_vector.hpp"
 
 #include <cstddef>
+#include <tuple>
 
 namespace Base {
 namespace Matrix {
@@ -57,11 +58,11 @@ namespace InverseOperation {
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M>
-inline typename std::enable_if<(M > 1), Vector<T, M>>::type
+inline typename std::enable_if<(M > 1),
+                               std::tuple<Vector<T, M>, T, std::size_t>>::type
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
-             const T &division_min, T &rho, std::size_t &rep_num,
-             const std::size_t &matrix_size) {
+             const T &division_min, const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -74,6 +75,8 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   Vector<T, M> y;
   Vector<T, M> x_dif;
   T ZERO = static_cast<T>(0);
+  T rho = static_cast<T>(0);
+  std::size_t rep_num = 0;
 
   // b - Ax
   Vector<T, M> b_ax;
@@ -172,7 +175,7 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
     x[i] = x_1[i] + x_dif[i];
   }
 
-  return x;
+  return std::make_tuple(x, rho, rep_num);
 }
 
 /**
@@ -195,18 +198,16 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
  * @return The computed solution vector x, which will also be a 1x1 vector.
  */
 template <typename T, std::size_t M>
-inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+inline typename std::enable_if<(M <= 1),
+                               std::tuple<Vector<T, M>, T, std::size_t>>::type
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
-             const T &division_min, T &rho, std::size_t &rep_num,
-             const std::size_t &matrix_size) {
+             const T &division_min, const std::size_t &matrix_size) {
   static_assert(M == 1,
                 "Matrix size must be exactly 1x1 for this specialization.");
   static_cast<void>(decay_rate);
   static_cast<void>(division_min);
-  static_cast<void>(rep_num);
   static_cast<void>(x_1);
-  static_cast<void>(rho);
   static_cast<void>(matrix_size);
 
   Vector<T, M> x;
@@ -214,7 +215,7 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
   x[0] = b[0] /
          Base::Utility::avoid_zero_divide(A.template get<0, 0>(), division_min);
 
-  return x;
+  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
 }
 
 } // namespace InverseOperation
@@ -238,13 +239,12 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M>
-inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
-                            const Vector<T, M> &x_1, const T &decay_rate,
-                            const T &division_min, T &rho,
-                            std::size_t &rep_num) {
+inline std::tuple<Vector<T, M>, T, std::size_t>
+gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+        const Vector<T, M> &x_1, const T &decay_rate, const T &division_min) {
 
   return InverseOperation::gmres_k_core<T, M>(A, b, x_1, decay_rate,
-                                              division_min, rho, rep_num, M);
+                                              division_min, M);
 }
 
 /**
@@ -267,14 +267,13 @@ inline Vector<T, M> gmres_k(const Matrix<T, M, M> &A, const Vector<T, M> &b,
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M>
-inline Vector<T, M>
+inline std::tuple<Vector<T, M>, T, std::size_t>
 gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                   const Vector<T, M> &x_1, const T &decay_rate,
-                  const T &division_min, T &rho, std::size_t &rep_num,
-                  const std::size_t &matrix_size) {
+                  const T &division_min, const std::size_t &matrix_size) {
 
-  return InverseOperation::gmres_k_core<T, M>(
-      A, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
+  return InverseOperation::gmres_k_core<T, M>(A, b, x_1, decay_rate,
+                                              division_min, matrix_size);
 }
 
 /* GMRES K for Matrix */
@@ -299,17 +298,24 @@ gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
  * for each column.
  */
 template <typename T, std::size_t M, std::size_t K>
-inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
-                           Matrix<T, M, K> &X_1, const T &decay_rate,
-                           const T &division_min, std::array<T, K> &rho,
-                           std::array<std::size_t, K> &rep_num) {
+inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
+gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
+               const Matrix<T, M, K> &X_1, const T &decay_rate,
+               const T &division_min) {
+
+  Matrix<T, M, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, M> x =
-        Base::Matrix::gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                              division_min, rho[i], rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k(A, B.get_row(i), X.get_row(i),
+                                        decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /**
@@ -331,17 +337,24 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
  * for each row.
  */
 template <typename T, std::size_t M>
-inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
-                           Matrix<T, M, M> &X_1, const T &decay_rate,
-                           const T &division_min, std::array<T, M> &rho,
-                           std::array<std::size_t, M> &rep_num) {
+inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
+gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
+               const Matrix<T, M, M> &X_1, const T &decay_rate,
+               const T &division_min) {
+
+  Matrix<T, M, M> X = X_1;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, M> x =
-        Base::Matrix::gmres_k(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                              division_min, rho[i], rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k(A, B.get_row(i), X.get_row(i),
+                                        decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /**
@@ -365,10 +378,15 @@ inline void gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
  * for each column.
  */
 template <typename T, std::size_t M, std::size_t K>
-inline void gmres_k_partition_matrix(
-    const Matrix<T, M, M> &A, const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1,
-    const T &decay_rate, const T &division_min, std::array<T, K> &rho,
-    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
+gmres_k_partition_matrix(const Matrix<T, M, M> &A, const Matrix<T, M, K> &B,
+                         const Matrix<T, M, K> &X_1, const T &decay_rate,
+                         const T &division_min,
+                         const std::size_t &matrix_size) {
+
+  Matrix<T, M, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   std::size_t repeat_number;
   if (matrix_size < K) {
@@ -378,11 +396,14 @@ inline void gmres_k_partition_matrix(
   }
 
   for (std::size_t i = 0; i < repeat_number; i++) {
-    Vector<T, M> x = Base::Matrix::gmres_k_partition(
-        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i], matrix_size);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X.get_row(i), decay_rate, division_min, matrix_size);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /**
@@ -405,17 +426,25 @@ inline void gmres_k_partition_matrix(
  * for each row.
  */
 template <typename T, std::size_t M>
-inline void gmres_k_partition_matrix(
-    const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B, Matrix<T, M, M> &X_1,
-    const T &decay_rate, const T &division_min, std::array<T, M> &rho,
-    std::array<std::size_t, M> &rep_num, const std::size_t &matrix_size) {
+inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
+gmres_k_partition_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
+                         const Matrix<T, M, M> &X_1, const T &decay_rate,
+                         const T &division_min,
+                         const std::size_t &matrix_size) {
+
+  Matrix<T, M, M> X = X_1;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < matrix_size; i++) {
-    Vector<T, M> x = Base::Matrix::gmres_k_partition(
-        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i], matrix_size);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k_partition(
+        A, B.get_row(i), X.get_row(i), decay_rate, division_min, matrix_size);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* GMRES K for rectangular matrix */
@@ -440,10 +469,9 @@ inline void gmres_k_partition_matrix(
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M, std::size_t N>
-inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
-                                 const Vector<T, M> &b, const Vector<T, N> &x_1,
-                                 T decay_rate, const T &division_min, T &rho,
-                                 std::size_t &rep_num) {
+inline std::tuple<Vector<T, N>, T, std::size_t>
+gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
+             const Vector<T, N> &x_1, T decay_rate, const T &division_min) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
@@ -457,6 +485,8 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
   Vector<T, N> y;
   Vector<T, N> x_dif;
   T ZERO = static_cast<T>(0);
+  T rho = static_cast<T>(0);
+  std::size_t rep_num = 0;
 
   // b - Ax
   Vector<T, M> b_ax_temp;
@@ -558,7 +588,7 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
     x[i] = x_1[i] + x_dif[i];
   }
 
-  return x;
+  return std::make_tuple(x, rho, rep_num);
 }
 
 /**
@@ -584,33 +614,45 @@ inline Vector<T, N> gmres_k_rect(const Matrix<T, M, N> &In_A,
  * for each row.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K>
-inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
-                                const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1,
-                                T decay_rate, const T &division_min,
-                                std::array<T, K> &rho,
-                                std::array<std::size_t, K> &rep_num) {
+inline std::tuple<Matrix<T, N, K>, std::array<T, K>, std::array<std::size_t, K>>
+gmres_k_rect_matrix(const Matrix<T, M, N> &A, const Matrix<T, M, K> &B,
+                    const Matrix<T, N, K> &X_1, T decay_rate,
+                    const T &division_min) {
+
+  Matrix<T, N, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, N> x =
-        Base::Matrix::gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                                   division_min, rho[i], rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k_rect(A, B.get_row(i), X.get_row(i),
+                                             decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 template <typename T, std::size_t M, std::size_t N>
-inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
-                                const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1,
-                                T decay_rate, const T &division_min,
-                                std::array<T, M> &rho,
-                                std::array<std::size_t, M> &rep_num) {
+inline std::tuple<Matrix<T, N, M>, std::array<T, M>, std::array<std::size_t, M>>
+gmres_k_rect_matrix(const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B,
+                    const Matrix<T, N, M> &X_1, T decay_rate,
+                    const T &division_min) {
+
+  Matrix<T, N, M> X = X_1;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, N> x =
-        Base::Matrix::gmres_k_rect(A, B.get_row(i), X_1.get_row(i), decay_rate,
-                                   division_min, rho[i], rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::gmres_k_rect(A, B.get_row(i), X.get_row(i),
+                                             decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* GMRES K for matrix inverse */
@@ -634,23 +676,23 @@ inline void gmres_k_rect_matrix(const Matrix<T, M, N> &A,
  * @return The computed inverse matrix X.
  */
 template <typename T, std::size_t M>
-inline Matrix<T, M, M>
+inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
 gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
-                   const T &division_min, std::array<T, M> &rho,
-                   std::array<std::size_t, M> &rep_num,
-                   const Matrix<T, M, M> X_1) {
+                   const T &division_min, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, M> x;
-
-    x = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i), decay_rate,
-                              division_min, rho[i], rep_num[i]);
-    X.set_row(i, x);
+    auto result = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i),
+                                        decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
 
-  return X;
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* Sparse GMRES K */
@@ -679,11 +721,12 @@ namespace InverseOperation {
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
+inline typename std::enable_if<(M > 1),
+                               std::tuple<Vector<T, M>, T, std::size_t>>::type
+sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num,
-    const std::size_t &matrix_size) {
+    const T &division_min, const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<T, M, M> r;
@@ -696,6 +739,8 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
   Vector<T, M> y;
   Vector<T, M> x_dif;
   T ZERO = static_cast<T>(0);
+  T rho = static_cast<T>(0);
+  std::size_t rep_num = 0;
 
   // b - Ax
   Vector<T, M> b_ax;
@@ -807,7 +852,7 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
     x[i] = x_1[i] + x_dif[i];
   }
 
-  return x;
+  return std::make_tuple(x, rho, rep_num);
 }
 
 /**
@@ -830,19 +875,17 @@ inline typename std::enable_if<(M > 1), Vector<T, M>>::type sparse_gmres_k_core(
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline typename std::enable_if<(M <= 1), Vector<T, M>>::type
+inline typename std::enable_if<(M <= 1),
+                               std::tuple<Vector<T, M>, T, std::size_t>>::type
 sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num,
-    const std::size_t &matrix_size) {
+    const T &division_min, const std::size_t &matrix_size) {
   static_assert(M == 1,
                 "Matrix size must be exactly 1x1 for this specialization.");
   static_cast<void>(decay_rate);
   static_cast<void>(division_min);
-  static_cast<void>(rep_num);
   static_cast<void>(x_1);
-  static_cast<void>(rho);
   static_cast<void>(matrix_size);
 
   Vector<T, M> x;
@@ -850,7 +893,7 @@ sparse_gmres_k_core(
   x[0] = b[0] / Base::Utility::avoid_zero_divide(
                     get_sparse_matrix_value<0, 0>(SA), division_min);
 
-  return x;
+  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
 }
 
 } // namespace InverseOperation
@@ -875,13 +918,13 @@ sparse_gmres_k_core(
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Vector<T, M> sparse_gmres_k(
+inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min) {
 
-  return InverseOperation::sparse_gmres_k_core<T, M>(
-      SA, b, x_1, decay_rate, division_min, rho, rep_num, M);
+  return InverseOperation::sparse_gmres_k_core<T, M>(SA, b, x_1, decay_rate,
+                                                     division_min, M);
 }
 
 /**
@@ -905,14 +948,13 @@ inline Vector<T, M> sparse_gmres_k(
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Vector<T, M> sparse_gmres_k_partition(
+inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k_partition(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num,
-    const std::size_t &matrix_size) {
+    const T &division_min, const std::size_t &matrix_size) {
 
-  return InverseOperation::sparse_gmres_k_core<T, M>(
-      SA, b, x_1, decay_rate, division_min, rho, rep_num, matrix_size);
+  return InverseOperation::sparse_gmres_k_core<T, M>(SA, b, x_1, decay_rate,
+                                                     division_min, matrix_size);
 }
 
 /**
@@ -937,18 +979,25 @@ inline Vector<T, M> sparse_gmres_k_partition(
  */
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
-inline void sparse_gmres_k_matrix(
+inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
+sparse_gmres_k_matrix(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
-    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
-    const T &division_min, std::array<T, K> &rho,
-    std::array<std::size_t, K> &rep_num) {
+    const Matrix<T, M, K> &B, const Matrix<T, M, K> &X_1, const T &decay_rate,
+    const T &division_min) {
+
+  Matrix<T, M, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, M> x = Base::Matrix::sparse_gmres_k(
-        SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::sparse_gmres_k(SA, B.get_row(i), X.get_row(i),
+                                               decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /**
@@ -975,11 +1024,15 @@ inline void sparse_gmres_k_matrix(
  */
 template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
           typename RowPointers_A>
-inline void sparse_gmres_k_partition_matrix(
+inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
+sparse_gmres_k_partition_matrix(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
-    const Matrix<T, M, K> &B, Matrix<T, M, K> &X_1, const T &decay_rate,
-    const T &division_min, std::array<T, K> &rho,
-    std::array<std::size_t, K> &rep_num, const std::size_t &matrix_size) {
+    const Matrix<T, M, K> &B, const Matrix<T, M, K> &X_1, const T &decay_rate,
+    const T &division_min, const std::size_t &matrix_size) {
+
+  Matrix<T, M, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   std::size_t repeat_number;
   if (matrix_size < K) {
@@ -989,11 +1042,14 @@ inline void sparse_gmres_k_partition_matrix(
   }
 
   for (std::size_t i = 0; i < repeat_number; i++) {
-    Vector<T, M> x = Base::Matrix::sparse_gmres_k_partition(
-        SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i], matrix_size);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::sparse_gmres_k_partition(
+        SA, B.get_row(i), X.get_row(i), decay_rate, division_min, matrix_size);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* Sparse GMRES K for rectangular matrix */
@@ -1019,10 +1075,10 @@ inline void sparse_gmres_k_partition_matrix(
  */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-inline Vector<T, N> sparse_gmres_k_rect(
+inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
-    const T &division_min, T &rho, std::size_t &rep_num) {
+    const T &division_min) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
   static_assert(M > N, "Column number must be larger than row number.");
 
@@ -1036,6 +1092,8 @@ inline Vector<T, N> sparse_gmres_k_rect(
   Vector<T, N> y;
   Vector<T, N> x_dif;
   T ZERO = static_cast<T>(0);
+  T rho = static_cast<T>(0);
+  std::size_t rep_num = 0;
 
   // b - Ax
   Vector<T, M> b_ax_temp = b - (In_SA * x_1);
@@ -1135,7 +1193,7 @@ inline Vector<T, N> sparse_gmres_k_rect(
     x[i] = x_1[i] + x_dif[i];
   }
 
-  return x;
+  return std::make_tuple(x, rho, rep_num);
 }
 
 /**
