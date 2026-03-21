@@ -33,6 +33,7 @@
 
 #include <array>
 #include <cstddef>
+#include <tuple>
 #include <vector>
 
 namespace Base {
@@ -373,14 +374,17 @@ protected:
   }
 
   /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A The input square matrix whose eigenvalues are to be computed.
+   * @brief Performs QR decomposition of a square matrix.
+   * This function computes the QR decomposition of the input matrix A using
+   * Householder reflections.
+   * @param A The input square matrix to be decomposed.
+   * @return std::tuple<Matrix<T, M, M>, Matrix<T, M, M>> A tuple containing
+   * the orthogonal matrix Q and the upper triangular matrix R.
    */
-  inline void _qr_decomposition(Matrix<T, M, M> &Q, Matrix<T, M, M> &R,
-                                const Matrix<T, M, M> &A) {
-    R = A;
+  inline std::tuple<Matrix<T, M, M>, Matrix<T, M, M>>
+  _qr_decomposition(const Matrix<T, M, M> &A) {
+    Matrix<T, M, M> Q = Matrix<T, M, M>::identity();
+    Matrix<T, M, M> R = A;
     std::array<T, M> u;
 
     for (std::size_t k = 0; k < M - 1; ++k) {
@@ -441,6 +445,8 @@ protected:
       R = this->_House * R;
       Q = Q * this->_House;
     }
+
+    return std::make_tuple(Q, R);
   }
 
   /**
@@ -489,9 +495,9 @@ protected:
           A(i, i) -= mu;
         }
 
-        Matrix<T, M, M> Q = Matrix<T, M, M>::identity();
+        Matrix<T, M, M> Q;
         Matrix<T, M, M> R;
-        this->_qr_decomposition(Q, R, A);
+        std::tie(Q, R) = this->_qr_decomposition(A);
         A = Base::Matrix::matrix_multiply_Upper_triangular_A_mul_B(R, Q);
 
         for (std::size_t i = 0; i < k; ++i) {
