@@ -74,8 +74,8 @@ struct InverseDense<T, Complex_T, M, K, true> {
                       Base::Matrix::Matrix<Complex_T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::complex_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::complex_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
@@ -115,8 +115,8 @@ struct InverseDense<T, Complex_T, M, K, false> {
                       Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate, division_min,
-                                           rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
@@ -229,8 +229,9 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
           Base::Matrix::Matrix<Complex_T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::complex_sparse_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) =
+        Base::Matrix::complex_sparse_gmres_k_matrix_inv(A.matrix, decay_rate,
+                                                        division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
@@ -272,8 +273,8 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
                       Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
