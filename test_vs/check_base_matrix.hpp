@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <iostream>
+#include <tuple>
 
 #include "MCAP_tester.hpp"
 
@@ -1516,7 +1517,7 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
 
     Matrix<T, 3, 3> K_ch;
     bool flag = false;
-    K_ch = cholesky_decomposition(K, K_ch, division_min, flag);
+    std::tie(K_ch, flag) = cholesky_decomposition(K, K_ch, division_min);
 
     //std::cout << "K_ch = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
@@ -1545,7 +1546,9 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     tester.expect_near(K_ch_2.data, K_ch_2_answer.data, NEAR_LIMIT_STRICT,
         "check Cholesky decomposition.");
 
-    DiagMatrix<T, 3> K_diag = cholesky_decomposition_diag(D, D, flag);
+    DiagMatrix<T, 3> K_diag;
+    std::tie(K_diag, flag) = cholesky_decomposition_diag(D, D);
+
     //std::cout << "K_diag = ";
     //for (size_t i = 0; i < K_diag.rows(); ++i) {
     //    std::cout << K_diag[i] << " ";
@@ -1559,7 +1562,9 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 1, 2, 1, 2 >,
         RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
-    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, division_min, flag);
+
+    Matrix<T, 3, 3> K_ch_sparse;
+    std::tie(K_ch_sparse, flag) = cholesky_decomposition_sparse(K_s, K_ch_sparse, division_min);
 
     Matrix<T, 3, 3> K_ch_sparse_2 = matrix_multiply_AT_mul_B(K_ch_sparse, K_ch_sparse);
 
