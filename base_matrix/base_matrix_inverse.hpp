@@ -1220,18 +1220,25 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
-inline void sparse_gmres_k_rect_matrix(
+inline std::tuple<Matrix<T, N, K>, std::array<T, K>, std::array<std::size_t, K>>
+sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
-    const Matrix<T, M, K> &B, Matrix<T, N, K> &X_1, const T &decay_rate,
-    const T &division_min, std::array<T, K> &rho,
-    std::array<std::size_t, K> &rep_num) {
+    const Matrix<T, M, K> &B, const Matrix<T, N, K> &X_1, const T &decay_rate,
+    const T &division_min) {
+
+  Matrix<T, N, K> X = X_1;
+  std::array<T, K> rho = {};
+  std::array<std::size_t, K> rep_num = {};
 
   for (std::size_t i = 0; i < K; i++) {
-    Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-        In_SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::sparse_gmres_k_rect(
+        In_SA, B.get_row(i), X.get_row(i), decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /**
@@ -1260,18 +1267,25 @@ inline void sparse_gmres_k_rect_matrix(
  */
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-inline void sparse_gmres_k_rect_matrix(
+inline std::tuple<Matrix<T, N, M>, std::array<T, M>, std::array<std::size_t, M>>
+sparse_gmres_k_rect_matrix(
     const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
-    const DiagMatrix<T, M> &B, Matrix<T, N, M> &X_1, const T &decay_rate,
-    const T &division_min, std::array<T, M> &rho,
-    std::array<std::size_t, M> &rep_num) {
+    const DiagMatrix<T, M> &B, const Matrix<T, N, M> &X_1, const T &decay_rate,
+    const T &division_min) {
+
+  Matrix<T, N, M> X = X_1;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, N> x = Base::Matrix::sparse_gmres_k_rect(
-        In_SA, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i]);
-    X_1.set_row(i, x);
+    auto result = Base::Matrix::sparse_gmres_k_rect(
+        In_SA, B.get_row(i), X.get_row(i), decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
+
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* Sparse GMRES K for matrix inverse */
@@ -1301,23 +1315,24 @@ inline void sparse_gmres_k_rect_matrix(
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
-inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
+inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
+sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> In_A,
-    T decay_rate, const T &division_min, std::array<T, M> &rho,
-    std::array<std::size_t, M> &rep_num, const Matrix<T, M, M> X_1) {
+    T decay_rate, const T &division_min, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
+  std::array<T, M> rho = {};
+  std::array<std::size_t, M> rep_num = {};
 
   for (std::size_t i = 0; i < M; i++) {
-    Vector<T, M> x;
-
-    x = Base::Matrix::sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                     decay_rate, division_min, rho[i],
-                                     rep_num[i]);
-    X.set_row(i, x);
+    auto result = Base::Matrix::sparse_gmres_k(
+        In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
+    X.set_row(i, std::get<0>(result));
+    rho[i] = std::get<1>(result);
+    rep_num[i] = std::get<2>(result);
   }
 
-  return X;
+  return std::make_tuple(X, rho, rep_num);
 }
 
 /* Complex GMRES K */
@@ -1341,11 +1356,12 @@ inline Matrix<T, M, M> sparse_gmres_k_matrix_inv(
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M>
-inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
+inline typename std::enable_if<
+    (M > 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
 complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, T decay_rate,
-                const T &division_min, T &rho, std::size_t &rep_num) {
+                const T &division_min) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
   Matrix<Complex<T>, M, M> r;
@@ -1358,6 +1374,8 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
   Vector<Complex<T>, M> y;
   Vector<Complex<T>, M> x_dif;
   Complex<T> ZERO = static_cast<T>(0);
+  T rho = static_cast<T>(0);
+  std::size_t rep_num = 0;
 
   // b - Ax
   Vector<Complex<T>, M> b_ax;
@@ -1457,11 +1475,8 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
     x[i] = x_1[i] + x_dif[i];
   }
 
-  return x;
+  return std::make_tuple(x, rho, rep_num);
 }
-
-/**
- * @brief GMRES K method for complex matrices with size 1x1.
  *
  * This function solves the linear system Ax = b using the GMRES K method,
  * where A is a complex matrix of size 1x1, b is a complex vector, and x_1 is
@@ -1479,445 +1494,468 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
  * @return The computed solution vector x.
  */
 template <typename T, std::size_t M>
-inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
+inline typename std::enable_if<
+    (M <= 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
 complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, T decay_rate,
-                const T &division_min, T &rho, std::size_t &rep_num) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(rep_num);
-  static_cast<void>(x_1);
+                const T &division_min) {
+   static_assert(M == 1,
+                 "Matrix size must be exactly 1x1 for this specialization.");
+   static_cast<void>(decay_rate);
+   static_cast<void>(division_min);
+   static_cast<void>(x_1);
 
-  Vector<Complex<T>, M> x;
+   Vector<Complex<T>, M> x;
 
-  x[0] =
-      Base::Matrix::complex_divide(b[0], A.template get<0, 0>(), division_min);
+   x[0] =
+       Base::Matrix::complex_divide(b[0], A.template get<0, 0>(), division_min);
 
-  return x;
-}
+   return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+ }
 
-/**
- * @brief GMRES K method for complex matrices with multiple right-hand side
- * vectors.
- *
- * This function solves the linear system Ax = B using the GMRES K method,
- * where A is a complex matrix, B is a matrix with multiple right-hand side
- * vectors, and X_1 is an initial guess. It returns the solution matrix X_1.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
- * @param A The complex matrix A.
- * @param B The right-hand side matrix B.
- * @param X_1 The initial guess for the solution matrix X_1.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norms for each row.
- * @param rep_num Output parameter to store the number of iterations performed
- * for each row.
- */
-template <typename T, std::size_t M, std::size_t K>
-inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
-                                   const Matrix<Complex<T>, M, K> &B,
-                                   Matrix<Complex<T>, M, K> &X_1,
-                                   const T &decay_rate, const T &division_min,
-                                   std::array<T, K> &rho,
-                                   std::array<std::size_t, K> &rep_num) {
+ /**
+  * @brief GMRES K method for complex matrices with multiple right-hand side
+  * vectors.
+  *
+  * This function solves the linear system Ax = B using the GMRES K method,
+  * where A is a complex matrix, B is a matrix with multiple right-hand side
+  * vectors, and X_1 is an initial guess. It returns the solution matrix X_1.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @tparam K The number of rows of matrix B.
+  * @param A The complex matrix A.
+  * @param B The right-hand side matrix B.
+  * @param X_1 The initial guess for the solution matrix X_1.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norms for each row.
+  * @param rep_num Output parameter to store the number of iterations performed
+  * for each row.
+  */
+ template <typename T, std::size_t M, std::size_t K>
+ inline std::tuple<Matrix<Complex<T>, M, K>, std::array<T, K>,
+                   std::array<std::size_t, K>>
+ complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
+                        const Matrix<Complex<T>, M, K> &B,
+                        const Matrix<Complex<T>, M, K> &X_1,
+                        const T &decay_rate, const T &division_min) {
 
-  for (std::size_t i = 0; i < K; i++) {
-    Vector<Complex<T>, M> x = Base::Matrix::complex_gmres_k(
-        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i]);
-    X_1.set_row(i, x);
-  }
-}
+   Matrix<Complex<T>, M, K> X = X_1;
+   std::array<T, K> rho = {};
+   std::array<std::size_t, K> rep_num = {};
 
-/**
- * @brief GMRES K method for complex matrices with multiple right-hand side
- * vectors and partitioning.
- *
- * This function solves the linear system Ax = B using the GMRES K method,
- * where A is a complex matrix, B is a matrix with multiple right-hand side
- * vectors, and X_1 is an initial guess. It supports partitioning of the matrix
- * and returns the solution matrix X_1.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @param A The complex matrix A.
- * @param B The right-hand side matrix B.
- * @param X_1 The initial guess for the solution matrix X_1.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norms for each row.
- * @param rep_num Output parameter to store the number of iterations performed
- * for each row.
- */
-template <typename T, std::size_t M>
-inline void complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
-                                   const DiagMatrix<Complex<T>, M> &B,
-                                   Matrix<Complex<T>, M, M> &X_1,
-                                   const T &decay_rate, const T &division_min,
-                                   std::array<T, M> &rho,
-                                   std::array<std::size_t, M> &rep_num) {
+   for (std::size_t i = 0; i < K; i++) {
+     auto result = Base::Matrix::complex_gmres_k(A, B.get_row(i), X.get_row(i),
+                                                 decay_rate, division_min);
+     X.set_row(i, std::get<0>(result));
+     rho[i] = std::get<1>(result);
+     rep_num[i] = std::get<2>(result);
+   }
 
-  for (std::size_t i = 0; i < M; i++) {
-    Vector<Complex<T>, M> x = Base::Matrix::complex_gmres_k(
-        A, B.get_row(i), X_1.get_row(i), decay_rate, division_min, rho[i],
-        rep_num[i]);
-    X_1.set_row(i, x);
-  }
-}
+   return std::make_tuple(X, rho, rep_num);
+ }
 
-/**
- * @brief GMRES K method for complex sparse matrices.
- *
- * This function solves the linear system Ax = b using the GMRES K method,
- * where A is a complex sparse matrix, b is a complex vector, and x_1 is an
- * initial guess. It returns the solution vector x.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @param SA The compiled sparse matrix A.
- * @param b The right-hand side complex vector b.
- * @param x_1 The initial guess for the solution vector x.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norm.
- * @param rep_num Output parameter to store the number of iterations performed.
- * @return The computed solution vector x.
- */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
-inline typename std::enable_if<(M > 1), Vector<Complex<T>, M>>::type
-complex_sparse_gmres_k(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
-        &SA,
-    const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
-    T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
+ /**
+  * @brief GMRES K method for complex matrices with multiple right-hand side
+  * vectors and partitioning.
+  *
+  * This function solves the linear system Ax = B using the GMRES K method,
+  * where A is a complex matrix, B is a matrix with multiple right-hand side
+  * vectors, and X_1 is an initial guess. It supports partitioning of the matrix
+  * and returns the solution matrix X_1.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @param A The complex matrix A.
+  * @param B The right-hand side matrix B.
+  * @param X_1 The initial guess for the solution matrix X_1.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norms for each row.
+  * @param rep_num Output parameter to store the number of iterations performed
+  * for each row.
+  */
+ template <typename T, std::size_t M>
+ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
+                   std::array<std::size_t, M>>
+ complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
+                        const DiagMatrix<Complex<T>, M> &B,
+                        const Matrix<Complex<T>, M, M> &X_1,
+                        const T &decay_rate, const T &division_min) {
 
-  Matrix<Complex<T>, M, M> r;
-  Vector<Complex<T>, M + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<Complex<T>, M, M + 1> q;
-  Matrix<Complex<T>, M + 1, M> h;
-  Vector<Complex<T>, M> c;
-  Vector<Complex<T>, M> s;
-  Vector<Complex<T>, M> y;
-  Vector<Complex<T>, M> x_dif;
-  Complex<T> ZERO;
+   Matrix<Complex<T>, M, M> X = X_1;
+   std::array<T, M> rho = {};
+   std::array<std::size_t, M> rep_num = {};
 
-  // b - Ax
-  Vector<Complex<T>, M> b_ax = b - (SA * x_1);
+   for (std::size_t i = 0; i < M; i++) {
+     auto result = Base::Matrix::complex_gmres_k(A, B.get_row(i), X.get_row(i),
+                                                 decay_rate, division_min);
+     X.set_row(i, std::get<0>(result));
+     rho[i] = std::get<1>(result);
+     rep_num[i] = std::get<2>(result);
+   }
 
-  // Normalize b_Ax
-  T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
-  for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
+   return std::make_tuple(X, rho, rep_num);
+ }
 
-  for (std::size_t n = 1; n <= M; n++) {
-    // Generate orthogonal basis
-    Vector<Complex<T>, M> v = SA * q.create_row_vector(n - 1);
+ /**
+  * @brief GMRES K method for complex sparse matrices.
+  *
+  * This function solves the linear system Ax = b using the GMRES K method,
+  * where A is a complex sparse matrix, b is a complex vector, and x_1 is an
+  * initial guess. It returns the solution vector x.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @param SA The compiled sparse matrix A.
+  * @param b The right-hand side complex vector b.
+  * @param x_1 The initial guess for the solution vector x.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norm.
+  * @param rep_num Output parameter to store the number of iterations performed.
+  * @return The computed solution vector x.
+  */
+ template <typename T, std::size_t M, typename RowIndices_A,
+           typename RowPointers_A>
+ inline typename std::enable_if<
+     (M > 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
+ complex_sparse_gmres_k(
+     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+         &SA,
+     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
+     T decay_rate, const T &division_min) {
+   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
 
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
-        h(j, n - 1) += Base::Matrix::complex_conjugate(q(i, j)) * v[i];
-      }
-      for (std::size_t i = 0; i < M; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
+   Matrix<Complex<T>, M, M> r;
+   Vector<Complex<T>, M + 1> b_hat;
+   b_hat[0] = static_cast<T>(1);
+   Matrix<Complex<T>, M, M + 1> q;
+   Matrix<Complex<T>, M + 1, M> h;
+   Vector<Complex<T>, M> c;
+   Vector<Complex<T>, M> s;
+   Vector<Complex<T>, M> y;
+   Vector<Complex<T>, M> x_dif;
+   Complex<T> ZERO;
+   T rho = static_cast<T>(0);
+   std::size_t rep_num = 0;
 
-    if (n < M) {
-      h(n, n - 1) = Base::Matrix::complex_vector_norm(v, division_min);
-      for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = Base::Matrix::complex_divide(v[i], h(n, n - 1), division_min);
-      }
-    }
+   // b - Ax
+   Vector<Complex<T>, M> b_ax = b - (SA * x_1);
 
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        Complex<T> gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) =
-            -Base::Matrix::complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
-            c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
+   // Normalize b_Ax
+   T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
+   for (std::size_t i = 0; i < M; ++i) {
+     q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
+   }
+   b_hat[0] = b_norm;
 
-    T delta_inv =
-        Base::Math::rsqrt<T>(Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
-                                 Base::Matrix::complex_abs_sq(h(n, n - 1)),
-                             division_min);
+   for (std::size_t n = 1; n <= M; n++) {
+     // Generate orthogonal basis
+     Vector<Complex<T>, M> v = SA * q.create_row_vector(n - 1);
 
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
+     for (std::size_t j = 0; j < n; ++j) {
+       h(j, n - 1) = 0;
+       for (std::size_t i = 0; i < M; ++i) {
+         h(j, n - 1) += Base::Matrix::complex_conjugate(q(i, j)) * v[i];
+       }
+       for (std::size_t i = 0; i < M; ++i) {
+         v[i] -= h(j, n - 1) * q(i, j);
+       }
+     }
 
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -Base::Matrix::complex_conjugate(s[n - 1]) * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Matrix::complex_abs_sq(b_hat[n]);
+     if (n < M) {
+       h(n, n - 1) = Base::Matrix::complex_vector_norm(v, division_min);
+       for (std::size_t i = 0; i < M; ++i) {
+         q(i, n) =
+             Base::Matrix::complex_divide(v[i], h(n, n - 1), division_min);
+       }
+     }
 
-    rep_num = n;
+     // Givens rotation for QR decomposition
+     r(0, n - 1) = h(0, n - 1);
+     if (n >= 2) {
+       for (std::size_t j = 1; j < n; ++j) {
+         Complex<T> gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
+         r(j, n - 1) =
+             -Base::Matrix::complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
+             c[j - 1] * h(j, n - 1);
+         r(j - 1, n - 1) = gamma;
+       }
+     }
 
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
+     T delta_inv =
+         Base::Math::rsqrt<T>(Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
+                                  Base::Matrix::complex_abs_sq(h(n, n - 1)),
+                              division_min);
 
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    Complex<T> temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = Base::Matrix::complex_divide(b_hat[j] - temp, r(j, j), division_min);
-  }
+     c[n - 1] = r(n - 1, n - 1) * delta_inv;
+     s[n - 1] = h(n, n - 1) * delta_inv;
 
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
+     // Update b_hat
+     r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
+     b_hat[n] = -Base::Matrix::complex_conjugate(s[n - 1]) * b_hat[n - 1];
+     b_hat[n - 1] *= c[n - 1];
+     rho = Base::Matrix::complex_abs_sq(b_hat[n]);
 
-  Vector<Complex<T>, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
+     rep_num = n;
 
-  return x;
-}
+     // Check for convergence
+     if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
+         decay_rate) {
+       break;
+     }
+   }
 
-/**
- * @brief GMRES K method for complex sparse matrices with size 1x1.
- *
- * This function solves the linear system Ax = b using the GMRES K method,
- * where A is a complex sparse matrix of size 1x1, b is a complex vector, and
- * x_1 is an initial guess. It returns the solution vector x.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @param SA The compiled sparse matrix A.
- * @param b The right-hand side complex vector b.
- * @param x_1 The initial guess for the solution vector x.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norm.
- * @param rep_num Output parameter to store the number of iterations performed.
- * @return The computed solution vector x.
- */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
-inline typename std::enable_if<(M <= 1), Vector<Complex<T>, M>>::type
-complex_sparse_gmres_k(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
-        &SA,
-    const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
-    T decay_rate, const T &division_min, T &rho, std::size_t &rep_num) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(rep_num);
-  static_cast<void>(x_1);
+   // Back substitution to solve
+   for (std::size_t j = rep_num; j-- > 0;) {
+     Complex<T> temp = ZERO;
+     for (std::size_t m = j + 1; m < rep_num; ++m) {
+       temp += r(j, m) * y[m];
+     }
+     y[j] =
+         Base::Matrix::complex_divide(b_hat[j] - temp, r(j, j), division_min);
+   }
 
-  Vector<Complex<T>, M> x;
+   for (std::size_t i = 0; i < rep_num; ++i) {
+     for (std::size_t j = 0; j < M; ++j) {
+       x_dif[j] += y[i] * q(j, i);
+     }
+   }
 
-  x[0] =
-      Base::Matrix::complex_divide(b[0], SA.template get<0, 0>(), division_min);
+   Vector<Complex<T>, M> x;
+   for (std::size_t i = 0; i < M; ++i) {
+     x[i] = x_1[i] + x_dif[i];
+   }
 
-  return x;
-}
+   return std::make_tuple(x, rho, rep_num);
+ }
 
-/**
- * @brief GMRES K method for complex sparse matrices with multiple right-hand
- * side vectors.
- *
- * This function solves the linear system Ax = B using the GMRES K method,
- * where A is a complex sparse matrix, B is a matrix with multiple right-hand
- * side vectors, and X_1 is an initial guess. It returns the solution matrix
- * X_1.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
- * @param In_A The compiled sparse matrix A.
- * @param B The right-hand side matrix B.
- * @param X_1 The initial guess for the solution matrix X_1.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
-inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
-        In_A,
-    T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
-  Matrix<Complex<T>, M, M> X;
-  Vector<T, M> rho_vec;
-  Vector<std::size_t, M> rep_num_vec;
+ /**
+  * @brief GMRES K method for complex sparse matrices with size 1x1.
+  *
+  * This function solves the linear system Ax = b using the GMRES K method,
+  * where A is a complex sparse matrix of size 1x1, b is a complex vector, and
+  * x_1 is an initial guess. It returns the solution vector x.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @param SA The compiled sparse matrix A.
+  * @param b The right-hand side complex vector b.
+  * @param x_1 The initial guess for the solution vector x.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norm.
+  * @param rep_num Output parameter to store the number of iterations performed.
+  * @return The computed solution vector x.
+  */
+ template <typename T, std::size_t M, typename RowIndices_A,
+           typename RowPointers_A>
+ inline typename std::enable_if<
+     (M <= 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
+ complex_sparse_gmres_k(
+     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+         &SA,
+     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
+     T decay_rate, const T &division_min) {
+   static_assert(M == 1,
+                 "Matrix size must be exactly 1x1 for this specialization.");
+   static_cast<void>(decay_rate);
+   static_cast<void>(division_min);
+   static_cast<void>(x_1);
 
-  for (std::size_t i = 0; i < M; i++) {
-    Vector<Complex<T>, M> x;
+   Vector<Complex<T>, M> x;
 
-    x = Base::Matrix::complex_sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                             decay_rate, division_min,
-                                             rho_vec[i], rep_num_vec[i]);
+   x[0] = Base::Matrix::complex_divide(b[0], SA.template get<0, 0>(),
+                                       division_min);
 
-    X.set_row(i, x);
-  }
+   return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+ }
 
-  return X;
-}
+ /**
+  * @brief GMRES K method for complex sparse matrices with multiple right-hand
+  * side vectors.
+  *
+  * This function solves the linear system Ax = B using the GMRES K method,
+  * where A is a complex sparse matrix, B is a matrix with multiple right-hand
+  * side vectors, and X_1 is an initial guess. It returns the solution matrix
+  * X_1.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @tparam K The number of rows of matrix B.
+  * @param In_A The compiled sparse matrix A.
+  * @param B The right-hand side matrix B.
+  * @param X_1 The initial guess for the solution matrix X_1.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  */
+ template <typename T, std::size_t M, typename RowIndices_A,
+           typename RowPointers_A>
+ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
+                   std::array<std::size_t, M>>
+ complex_sparse_gmres_k_matrix(
+     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+         In_A,
+     T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> X_1) {
+   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+   Matrix<Complex<T>, M, M> X;
+   std::array<T, M> rho = {};
+   std::array<std::size_t, M> rep_num = {};
 
-/**
- * @brief GMRES K method for complex matrix inverse.
- *
- * This function computes the inverse of a complex matrix using the GMRES K
- * method, where A is a complex matrix, decay_rate is the convergence criterion,
- * division_min is a small value to avoid division by zero, rho stores the
- * residual norms, rep_num stores the number of iterations performed, and X_1 is
- * an initial guess for the solution matrix.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @param In_A The complex matrix A.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norms for each row.
- * @param rep_num Output parameter to store the number of iterations performed
- * for each row.
- * @param X_1 The initial guess for the solution matrix X_1.
- * @return The computed inverse matrix X.
- */
-template <typename T, std::size_t M>
-inline Matrix<Complex<T>, M, M> complex_gmres_k_matrix_inv(
-    const Matrix<Complex<T>, M, M> In_A, const T &decay_rate,
-    const T &division_min, std::array<T, M> &rho,
-    std::array<std::size_t, M> &rep_num, const Matrix<Complex<T>, M, M> X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
-  Matrix<Complex<T>, M, M> X;
+   for (std::size_t i = 0; i < M; i++) {
+     auto result = Base::Matrix::complex_sparse_gmres_k(
+         In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
+     X.set_row(i, std::get<0>(result));
+     rho[i] = std::get<1>(result);
+     rep_num[i] = std::get<2>(result);
+   }
 
-  for (std::size_t i = 0; i < M; i++) {
-    Vector<Complex<T>, M> x;
+   return std::make_tuple(X, rho, rep_num);
+ }
 
-    x = Base::Matrix::complex_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                      decay_rate, division_min, rho[i],
-                                      rep_num[i]);
-    X.set_row(i, x);
-  }
+ /**
+  * @brief GMRES K method for complex matrix inverse.
+  *
+  * This function computes the inverse of a complex matrix using the GMRES K
+  * method, where A is a complex matrix, decay_rate is the convergence
+  * criterion, division_min is a small value to avoid division by zero, rho
+  * stores the residual norms, rep_num stores the number of iterations
+  * performed, and X_1 is an initial guess for the solution matrix.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @param In_A The complex matrix A.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norms for each row.
+  * @param rep_num Output parameter to store the number of iterations performed
+  * for each row.
+  * @param X_1 The initial guess for the solution matrix X_1.
+  * @return The computed inverse matrix X.
+  */
+ template <typename T, std::size_t M>
+ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
+                   std::array<std::size_t, M>>
+ complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> In_A,
+                            const T &decay_rate, const T &division_min,
+                            const Matrix<Complex<T>, M, M> X_1) {
+   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+   Matrix<Complex<T>, M, M> X;
+   std::array<T, M> rho = {};
+   std::array<std::size_t, M> rep_num = {};
 
-  return X;
-}
+   for (std::size_t i = 0; i < M; i++) {
+     auto result = Base::Matrix::complex_gmres_k(
+         In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
+     X.set_row(i, std::get<0>(result));
+     rho[i] = std::get<1>(result);
+     rep_num[i] = std::get<2>(result);
+   }
 
-/**
- * @brief GMRES K method for complex sparse matrix inverse.
- *
- * This function computes the inverse of a complex sparse matrix using the GMRES
- * K method, where A is a complex sparse matrix, decay_rate is the convergence
- * criterion, division_min is a small value to avoid division by zero, rho
- * stores the residual norms, rep_num stores the number of iterations performed,
- * and X_1 is an initial guess for the solution matrix.
- *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The size of the square matrix (M x M).
- * @param In_A The compiled sparse matrix A.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @param rho Output parameter to store the residual norms for each row.
- * @param rep_num Output parameter to store the number of iterations performed
- * for each row.
- * @param X_1 The initial guess for the solution matrix X_1.
- * @return The computed inverse matrix X.
- */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
-inline Matrix<Complex<T>, M, M> complex_sparse_gmres_k_matrix_inv(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
-        In_A,
-    T decay_rate, const T &division_min, std::array<T, M> &rho,
-    std::array<std::size_t, M> &rep_num, const Matrix<Complex<T>, M, M> X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
-  Matrix<Complex<T>, M, M> X;
+   return std::make_tuple(X, rho, rep_num);
+ }
 
-  for (std::size_t i = 0; i < M; i++) {
-    Vector<Complex<T>, M> x;
+ /**
+  * @brief GMRES K method for complex sparse matrix inverse.
+  *
+  * This function computes the inverse of a complex sparse matrix using the
+  * GMRES K method, where A is a complex sparse matrix, decay_rate is the
+  * convergence criterion, division_min is a small value to avoid division by
+  * zero, rho stores the residual norms, rep_num stores the number of iterations
+  * performed, and X_1 is an initial guess for the solution matrix.
+  *
+  * @tparam T The data type of the matrix and vector elements.
+  * @tparam M The size of the square matrix (M x M).
+  * @param In_A The compiled sparse matrix A.
+  * @param decay_rate The convergence criterion for the GMRES method.
+  * @param division_min A small value to avoid division by zero.
+  * @param rho Output parameter to store the residual norms for each row.
+  * @param rep_num Output parameter to store the number of iterations performed
+  * for each row.
+  * @param X_1 The initial guess for the solution matrix X_1.
+  * @return The computed inverse matrix X.
+  */
+ template <typename T, std::size_t M, typename RowIndices_A,
+           typename RowPointers_A>
+ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
+                   std::array<std::size_t, M>>
+ complex_sparse_gmres_k_matrix_inv(
+     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+         In_A,
+     T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> X_1) {
+   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+   Matrix<Complex<T>, M, M> X;
+   std::array<T, M> rho = {};
+   std::array<std::size_t, M> rep_num = {};
 
-    x = Base::Matrix::complex_sparse_gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                             decay_rate, division_min, rho[i],
-                                             rep_num[i]);
-    X.set_row(i, x);
-  }
+   for (std::size_t i = 0; i < M; i++) {
+     auto result = Base::Matrix::complex_sparse_gmres_k(
+         In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
+     X.set_row(i, std::get<0>(result));
+     rho[i] = std::get<1>(result);
+     rep_num[i] = std::get<2>(result);
+   }
 
-  return X;
-}
+   return std::make_tuple(X, rho, rep_num);
+ }
 
-/* Diag Matrix inverse */
+ /* Diag Matrix inverse */
 
-/**
- * @brief Inverse of a diagonal matrix.
- *
- * This function computes the inverse of a diagonal matrix, where each element
- * is divided by a small value to avoid division by zero.
- *
- * @tparam T The data type of the matrix elements.
- * @tparam M The size of the diagonal matrix (M x M).
- * @param input The input diagonal matrix to be inverted.
- * @param division_min A small value to avoid division by zero.
- * @return The inverted diagonal matrix.
- */
-template <typename T, std::size_t M>
-inline DiagMatrix<T, M> inverse_diag_matrix(const DiagMatrix<T, M> &input,
-                                            const T &division_min) {
-  DiagMatrix<T, M> result;
+ /**
+  * @brief Inverse of a diagonal matrix.
+  *
+  * This function computes the inverse of a diagonal matrix, where each element
+  * is divided by a small value to avoid division by zero.
+  *
+  * @tparam T The data type of the matrix elements.
+  * @tparam M The size of the diagonal matrix (M x M).
+  * @param input The input diagonal matrix to be inverted.
+  * @param division_min A small value to avoid division by zero.
+  * @return The inverted diagonal matrix.
+  */
+ template <typename T, std::size_t M>
+ inline DiagMatrix<T, M> inverse_diag_matrix(const DiagMatrix<T, M> &input,
+                                             const T &division_min) {
+   DiagMatrix<T, M> result;
 
-  for (std::size_t i = 0; i < M; i++) {
-    result[i] = static_cast<T>(1) /
-                Base::Utility::avoid_zero_divide(input.data[i], division_min);
-  }
+   for (std::size_t i = 0; i < M; i++) {
+     result[i] = static_cast<T>(1) /
+                 Base::Utility::avoid_zero_divide(input.data[i], division_min);
+   }
 
-  return result;
-}
+   return result;
+ }
 
-/**
- * @brief Inverse of a complex diagonal matrix.
- *
- * This function computes the inverse of a complex diagonal matrix, where each
- * element is divided by a small value to avoid division by zero.
- *
- * @tparam T The data type of the matrix elements.
- * @tparam M The size of the diagonal matrix (M x M).
- * @param input The input complex diagonal matrix to be inverted.
- * @param division_min A small value to avoid division by zero.
- * @return The inverted complex diagonal matrix.
- */
-template <typename T, std::size_t M>
-inline DiagMatrix<Complex<T>, M>
-inverse_complex_diag_matrix(const DiagMatrix<Complex<T>, M> &input,
-                            const T &division_min) {
-  DiagMatrix<Complex<T>, M> result;
+ /**
+  * @brief Inverse of a complex diagonal matrix.
+  *
+  * This function computes the inverse of a complex diagonal matrix, where each
+  * element is divided by a small value to avoid division by zero.
+  *
+  * @tparam T The data type of the matrix elements.
+  * @tparam M The size of the diagonal matrix (M x M).
+  * @param input The input complex diagonal matrix to be inverted.
+  * @param division_min A small value to avoid division by zero.
+  * @return The inverted complex diagonal matrix.
+  */
+ template <typename T, std::size_t M>
+ inline DiagMatrix<Complex<T>, M>
+ inverse_complex_diag_matrix(const DiagMatrix<Complex<T>, M> &input,
+                             const T &division_min) {
+   DiagMatrix<Complex<T>, M> result;
 
-  for (std::size_t i = 0; i < M; i++) {
-    result[i] = Base::Matrix::complex_divide(static_cast<T>(1), input.data[i],
-                                             division_min);
-  }
+   for (std::size_t i = 0; i < M; i++) {
+     result[i] = Base::Matrix::complex_divide(static_cast<T>(1), input.data[i],
+                                              division_min);
+   }
 
-  return result;
-}
+   return result;
+ }
 
-} // namespace Matrix
-} // namespace Base
+ } // namespace Matrix
+ } // namespace Base
 
 #endif // __BASE_MATRIX_INVERSE_HPP__

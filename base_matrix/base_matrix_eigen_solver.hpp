@@ -1130,9 +1130,11 @@ protected:
            ++iter) {
         Vector<Complex<T>, M> x_old = x;
 
-        x = Base::Matrix::complex_gmres_k(
-            A, x_old, x, this->gmres_k_decay_rate, this->division_min,
-            this->_gmres_k_rho, this->_gmres_k_rep_num);
+        auto gmres_result = Base::Matrix::complex_gmres_k(
+            A, x_old, x, this->gmres_k_decay_rate, this->division_min);
+        x = std::get<0>(gmres_result);
+        this->_gmres_k_rho = std::get<1>(gmres_result);
+        this->_gmres_k_rep_num = std::get<2>(gmres_result);
 
         Base::Matrix::complex_vector_normalize(x, this->division_min);
 
