@@ -555,9 +555,9 @@ protected:
       for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
         Vector<T, M> x_old = x;
 
-        x = Base::Matrix::gmres_k(A, x_old, x, this->gmres_k_decay_rate,
-                                  this->division_min, this->_gmres_k_rho,
-                                  this->_gmres_k_rep_num);
+        std::tie(x, this->_gmres_k_rho, this->_gmres_k_rep_num) =
+            Base::Matrix::gmres_k(A, x_old, x, this->gmres_k_decay_rate,
+                                  this->division_min);
 
         Base::Matrix::vector_normalize(x, this->division_min);
 
