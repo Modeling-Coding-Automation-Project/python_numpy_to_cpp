@@ -24,6 +24,7 @@
 #include "base_matrix_sparse.hpp"
 
 #include <cstddef>
+#include <tuple>
 
 namespace Base {
 namespace Matrix {
@@ -45,23 +46,22 @@ namespace Matrix {
  * @param Y_b The fallback matrix to return if decomposition fails.
  * @param division_min Minimum value to avoid division by zero or very small
  * numbers.
- * @param[out] zero_div_flag Set to true if a zero or negative value is
- * encountered during decomposition.
- * @return Matrix<T, M, M> The upper-triangular matrix resulting from the
- * Cholesky decomposition, or Y_b on failure.
+ * @return std::tuple<Matrix<T, M, M>, bool> A tuple of the upper-triangular
+ * matrix resulting from the Cholesky decomposition (or Y_b on failure) and a
+ * boolean flag that is true if a zero or negative value is encountered during
+ * decomposition.
  */
 template <typename T, std::size_t M>
-inline Matrix<T, M, M>
+inline std::tuple<Matrix<T, M, M>, bool>
 cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
-                       const T &division_min, bool &zero_div_flag) {
+                       const T &division_min) {
   Matrix<T, M, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
     if (i == 0) {
       T temp = U(i, i);
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
 
       T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
@@ -77,8 +77,7 @@ cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
       }
       temp = U(i, i) - temp;
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
 
       T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
@@ -98,14 +97,13 @@ cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
       }
       temp = U(i, i) - temp;
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
       Y(i, i) = Base::Math::sqrt<T>(temp);
     }
   }
 
-  return Y;
+  return std::make_tuple(Y, false);
 }
 
 /**
@@ -125,28 +123,26 @@ cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
  * @param U The input diagonal matrix to decompose.
  * @param Y_b The fallback diagonal matrix to use if a negative value is
  * encountered.
- * @param zero_div_flag Reference to a boolean flag that is set to true if a
- * negative diagonal element is found in `U`.
- * @return The resulting diagonal matrix from the Cholesky decomposition, or
- * `Y_b` if a negative value is encountered.
+ * @return std::tuple<DiagMatrix<T, M>, bool> A tuple of the resulting diagonal
+ * matrix from the Cholesky decomposition (or `Y_b` if a negative value is
+ * encountered) and a boolean flag that is true if a negative diagonal element
+ * is found in `U`.
  */
 template <typename T, std::size_t M>
-inline DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
-                                                    const DiagMatrix<T, M> &Y_b,
-                                                    bool &zero_div_flag) {
+inline std::tuple<DiagMatrix<T, M>, bool>
+cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
+                            const DiagMatrix<T, M> &Y_b) {
   DiagMatrix<T, M> Y;
 
   for (std::size_t i = 0; i < M; ++i) {
     if (U[i] >= static_cast<T>(0)) {
       Y[i] = Base::Math::sqrt<T>(U[i]);
     } else {
-      zero_div_flag = true;
-      Y = Y_b;
-      break;
+      return std::make_tuple(Y_b, true);
     }
   }
 
-  return Y;
+  return std::make_tuple(Y, false);
 }
 
 /**
@@ -170,16 +166,15 @@ inline DiagMatrix<T, M> cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
  * @param Y_b            The fallback matrix to return if decomposition fails.
  * @param division_min   The minimum value used to avoid division by zero in
  * reciprocal square root.
- * @param zero_div_flag  Reference to a boolean flag that is set to true if a
- * zero or negative pivot is encountered.
- * @return Matrix<T, M, M> The upper-triangular matrix resulting from the
- * Cholesky decomposition, or Y_b if failed.
+ * @return std::tuple<Matrix<T, M, M>, bool> A tuple of the upper-triangular
+ * matrix resulting from the Cholesky decomposition (or Y_b if failed) and a
+ * boolean flag that is true if a zero or negative pivot is encountered.
  */
 template <typename T, std::size_t M, typename RowIndices_U,
           typename RowPointers_U>
-inline Matrix<T, M, M> cholesky_decomposition_sparse(
+inline std::tuple<Matrix<T, M, M>, bool> cholesky_decomposition_sparse(
     const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
-    const Matrix<T, M, M> &Y_b, const T &division_min, bool &zero_div_flag) {
+    const Matrix<T, M, M> &Y_b, const T &division_min) {
   Matrix<T, M, M> U_dense = Base::Matrix::output_dense_matrix(U);
   Matrix<T, M, M> Y;
 
@@ -187,8 +182,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
     if (i == 0) {
       T temp = U_dense(i, i);
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
 
       T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
@@ -204,8 +198,7 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
       }
       temp = U_dense(i, i) - temp;
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
 
       T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
@@ -225,14 +218,13 @@ inline Matrix<T, M, M> cholesky_decomposition_sparse(
       }
       temp = U_dense(i, i) - temp;
       if (temp <= static_cast<T>(0)) {
-        zero_div_flag = true;
-        return Y_b;
+        return std::make_tuple(Y_b, true);
       }
       Y(i, i) = Base::Math::sqrt<T>(temp);
     }
   }
 
-  return Y;
+  return std::make_tuple(Y, false);
 }
 
 } // namespace Matrix

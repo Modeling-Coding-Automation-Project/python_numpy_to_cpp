@@ -25,6 +25,7 @@
 #include "python_numpy_templates.hpp"
 
 #include <cstddef>
+#include <tuple>
 
 namespace PythonNumpy {
 
@@ -149,10 +150,9 @@ public:
       -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                 UpperTriangular_SparseAvailable_Type> {
 
-    this->_cholesky_decomposed_matrix =
+    std::tie(this->_cholesky_decomposed_matrix, this->_zero_div_flag) =
         Base::Matrix::cholesky_decomposition<_T, A_Type::COLS>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
-            this->_zero_div_flag);
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min);
 
     Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
                                                          A_Type::COLS>(
@@ -186,8 +186,9 @@ public:
     Base::Matrix::DiagMatrix<_T, A_Type::COLS> Diag(
         this->_cholesky_decomposed_matrix(0));
 
-    Diag = Base::Matrix::cholesky_decomposition_diag<_T, A_Type::COLS>(
-        A.matrix, Diag, this->_zero_div_flag);
+    std::tie(Diag, this->_zero_div_flag) =
+        Base::Matrix::cholesky_decomposition_diag<_T, A_Type::COLS>(A.matrix,
+                                                                    Diag);
 
     this->_cholesky_decomposed_matrix(0) = Diag.data;
 
@@ -216,10 +217,9 @@ public:
       -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
                 UpperTriangular_SparseAvailable_Type> {
 
-    this->_cholesky_decomposed_matrix =
+    std::tie(this->_cholesky_decomposed_matrix, this->_zero_div_flag) =
         Base::Matrix::cholesky_decomposition_sparse<_T, A_Type::COLS>(
-            A.matrix, this->_cholesky_decomposed_matrix, this->division_min,
-            this->_zero_div_flag);
+            A.matrix, this->_cholesky_decomposed_matrix, this->division_min);
 
     Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
                                                          A_Type::COLS>(

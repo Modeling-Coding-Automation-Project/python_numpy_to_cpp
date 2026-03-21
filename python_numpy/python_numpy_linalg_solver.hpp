@@ -24,6 +24,7 @@
 
 #include <array>
 #include <cstddef>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -73,8 +74,8 @@ struct InverseDense<T, Complex_T, M, K, true> {
                       Base::Matrix::Matrix<Complex_T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::complex_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::complex_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
@@ -114,8 +115,8 @@ struct InverseDense<T, Complex_T, M, K, false> {
                       Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, T, M, M> {
 
-    X_1 = Base::Matrix::gmres_k_matrix_inv(A.matrix, decay_rate, division_min,
-                                           rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, T, M, M>(X_1);
   }
@@ -228,8 +229,9 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
           Base::Matrix::Matrix<Complex_T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::complex_sparse_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) =
+        Base::Matrix::complex_sparse_gmres_k_matrix_inv(A.matrix, decay_rate,
+                                                        division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
@@ -271,8 +273,8 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
                       Base::Matrix::Matrix<T, M, K> &X_1)
       -> Matrix<DefDense, Complex_T, M, M> {
 
-    X_1 = Base::Matrix::sparse_gmres_k_matrix_inv(
-        A.matrix, decay_rate, division_min, rho, rep_num, X_1);
+    std::tie(X_1, rho, rep_num) = Base::Matrix::sparse_gmres_k_matrix_inv(
+        A.matrix, decay_rate, division_min, X_1);
 
     return Matrix<DefDense, Complex_T, M, M>(X_1);
   }
@@ -371,9 +373,9 @@ public:
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-                                 this->decay_rate, this->division_min,
-                                 this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                     this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -394,9 +396,9 @@ public:
                     const Matrix<DefDiag, T, M> &B)
       -> Matrix<DefDense, T, M, M> {
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-                                 this->decay_rate, this->division_min,
-                                 this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                     this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
@@ -420,9 +422,9 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-                                 this->decay_rate, this->division_min,
-                                 this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                     this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -513,9 +515,10 @@ public:
                     const Matrix<DefDense, T, M, K> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
-                                        this->decay_rate, this->division_min,
-                                        this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_matrix(A.matrix, B.matrix, this->X_1,
+                                            this->decay_rate,
+                                            this->division_min);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -538,9 +541,10 @@ public:
     Base::Matrix::Matrix<T, M, M> B_dense_matrix =
         output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-                                        this->decay_rate, this->division_min,
-                                        this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                            this->decay_rate,
+                                            this->division_min);
 
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
@@ -563,9 +567,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
-                                        this->decay_rate, this->division_min,
-                                        this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                            this->decay_rate,
+                                            this->division_min);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -1241,9 +1246,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B.matrix, this->X_1,
+                                               this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -1271,9 +1277,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B.matrix,
+                                               X_1_temporary, this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
@@ -1298,9 +1305,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B.matrix, this->X_1,
+                                               this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
@@ -1329,9 +1337,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B.matrix,
+                                               X_1_temporary, this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
@@ -1359,9 +1368,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B_dense_matrix,
+                                               this->X_1, this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -1393,9 +1403,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_partition_matrix(A.matrix, B_dense_matrix,
+                                               X_1_temporary, this->decay_rate,
+                                               this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
@@ -1564,9 +1575,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
+            matrix_size);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -1594,9 +1606,10 @@ public:
       matrix_size = M;
     }
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B.matrix, X_1_temporary, this->decay_rate, this->division_min,
-        this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B.matrix, X_1_temporary, this->decay_rate,
+            this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
@@ -1624,9 +1637,10 @@ public:
     Base::Matrix::Matrix<T, M, M> B_dense_matrix =
         output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+            this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, M>(this->X_1);
   }
@@ -1658,9 +1672,10 @@ public:
     Base::Matrix::Matrix<T, M, M> B_dense_matrix =
         output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
+            this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, M>(X_1_temporary);
   }
@@ -1688,9 +1703,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+            this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(this->X_1);
   }
@@ -1722,9 +1738,10 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_partition_matrix(
-        A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
-        this->division_min, this->rho, this->rep_num, matrix_size);
+    std::tie(X_1_temporary, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_partition_matrix(
+            A.matrix, B_dense_matrix, X_1_temporary, this->decay_rate,
+            this->division_min, matrix_size);
 
     return Matrix<DefDense, T, M, K>(X_1_temporary);
   }
@@ -2184,9 +2201,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
-                                      this->decay_rate, this->division_min,
-                                      this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                          this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -2209,9 +2226,9 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
-                                      this->decay_rate, this->division_min,
-                                      this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                          this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, N, M>(X_1);
   }
@@ -2237,9 +2254,9 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::gmres_k_rect_matrix(A.matrix, B_dense_matrix, this->X_1,
-                                      this->decay_rate, this->division_min,
-                                      this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::gmres_k_rect_matrix(A.matrix, B_dense_matrix, this->X_1,
+                                          this->decay_rate, this->division_min);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -2263,9 +2280,10 @@ public:
     static_assert(M > N, "Class LinalgLstsqSolver argument 1, column number "
                          "must be larger than row number.");
 
-    Base::Matrix::sparse_gmres_k_rect_matrix(
-        A.matrix, B.matrix, this->X_1, this->decay_rate, this->division_min,
-        this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_rect_matrix(A.matrix, B.matrix, this->X_1,
+                                                 this->decay_rate,
+                                                 this->division_min);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }
@@ -2316,9 +2334,13 @@ public:
     Base::Matrix::Matrix<T, M, K> B_dense_matrix =
         Base::Matrix::output_dense_matrix(B.matrix);
 
-    Base::Matrix::sparse_gmres_k_rect_matrix(
-        A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
-        this->division_min, this->rho, this->rep_num);
+    // Base::Matrix::sparse_gmres_k_rect_matrix(
+    //     A.matrix, B_dense_matrix, this->X_1, this->decay_rate,
+    //     this->division_min, this->rho, this->rep_num);
+    std::tie(this->X_1, this->rho, this->rep_num) =
+        Base::Matrix::sparse_gmres_k_rect_matrix(A.matrix, B_dense_matrix,
+                                                 this->X_1, this->decay_rate,
+                                                 this->division_min);
 
     return Matrix<DefDense, T, N, K>(X_1);
   }

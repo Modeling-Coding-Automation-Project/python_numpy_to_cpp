@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <iostream>
+#include <tuple>
 
 #include "MCAP_tester.hpp"
 
@@ -350,7 +351,9 @@ void CheckBaseMatrix<T>::check_gmres_k_and_inverse(void) {
     T rho;
     size_t rep_num;
     Vector<T, 3> x_gmres_k_0;
-    Vector<T, 3> x_gmres_k = gmres_k(H, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    Vector<T, 3> x_gmres_k;
+    std::tie(x_gmres_k, rho, rep_num)
+        = gmres_k(H, b, x_gmres_k_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -376,7 +379,9 @@ void CheckBaseMatrix<T>::check_gmres_k_and_inverse(void) {
     H_2(3, 0) = 10.0F; H_2(3, 1) = 12.0F; H_2(3, 2) = 11.0F;
 
     Vector<T, 3> x_gmres_k_rect_0;
-    Vector<T, 3> x_gmres_k_rect = gmres_k_rect(H_2, b_2, x_gmres_k_rect_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    Vector<T, 3> x_gmres_k_rect;
+    std::tie(x_gmres_k_rect, rho, rep_num) =
+        gmres_k_rect(H_2, b_2, x_gmres_k_rect_0, static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     //std::cout << "x_gmres_k_rect = ";
     //for (size_t i = 0; i < x_gmres_k_rect.size(); ++i) {
@@ -1093,8 +1098,10 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     std::array<std::size_t, 3> rep_num_vec;
 
     Vector<T, 3> x_gmres_k_0;
-    Vector<T, 3> x_gmres_k = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    Vector<T, 3> x_gmres_k;
+    std::tie(x_gmres_k, rho, rep_num)
+        = sparse_gmres_k(SparseCc, b, x_gmres_k_0,
+            static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -1123,8 +1130,9 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     H_2(3, 0) = 10.0F; H_2(3, 1) = 12.0F; H_2(3, 2) = 11.0F;
 
     Vector<T, 3> x_gmres_k_rect_0;
-    x_gmres_k = sparse_gmres_k_rect(SBc, b_2, x_gmres_k_rect_0,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    std::tie(x_gmres_k, rho, rep_num)
+        = sparse_gmres_k_rect(SBc, b_2, x_gmres_k_rect_0,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     //std::cout << "x_gmres_k = ";
     //for (size_t i = 0; i < x_gmres_k.size(); ++i) {
@@ -1158,8 +1166,10 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check SparseMatrix create dense.");
 
     Matrix<T, 3, 3> X_temp = Matrix<T, 3, 3>::identity();
-    Matrix<T, 3, 3> S_inv = sparse_gmres_k_matrix_inv(SparseCc,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec, X_temp);
+    Matrix<T, 3, 3> S_inv;
+    std::tie(S_inv, rho_vec, rep_num_vec)
+        = sparse_gmres_k_matrix_inv(SparseCc,
+            static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
 
     //std::cout << "S_inv = " << std::endl;
     //for (size_t j = 0; j < S_inv.cols(); ++j) {
@@ -1516,7 +1526,7 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
 
     Matrix<T, 3, 3> K_ch;
     bool flag = false;
-    K_ch = cholesky_decomposition(K, K_ch, division_min, flag);
+    std::tie(K_ch, flag) = cholesky_decomposition(K, K_ch, division_min);
 
     //std::cout << "K_ch = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
@@ -1545,7 +1555,9 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     tester.expect_near(K_ch_2.data, K_ch_2_answer.data, NEAR_LIMIT_STRICT,
         "check Cholesky decomposition.");
 
-    DiagMatrix<T, 3> K_diag = cholesky_decomposition_diag(D, D, flag);
+    DiagMatrix<T, 3> K_diag;
+    std::tie(K_diag, flag) = cholesky_decomposition_diag(D, D);
+
     //std::cout << "K_diag = ";
     //for (size_t i = 0; i < K_diag.rows(); ++i) {
     //    std::cout << K_diag[i] << " ";
@@ -1559,7 +1571,9 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     CompiledSparseMatrix<T, 3, 3,
         RowIndices<0, 1, 2, 1, 2 >,
         RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
-    Matrix<T, 3, 3> K_ch_sparse = cholesky_decomposition_sparse(K_s, K_ch, division_min, flag);
+
+    Matrix<T, 3, 3> K_ch_sparse;
+    std::tie(K_ch_sparse, flag) = cholesky_decomposition_sparse(K_s, K_ch_sparse, division_min);
 
     Matrix<T, 3, 3> K_ch_sparse_2 = matrix_multiply_AT_mul_B(K_ch_sparse, K_ch_sparse);
 
@@ -1857,8 +1871,10 @@ void CheckBaseMatrix<T>::check_complex(void) {
     Vector<Complex<T>, 3> b_comp_2({ 1, 2, 3 });
 
     Vector<Complex<T>, 3> x_gmres_k_0_comp;
-    Vector<Complex<T>, 3> x_gmres_k_comp = complex_gmres_k(H_comp, b_comp_2, x_gmres_k_0_comp,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho, rep_num);
+    Vector<Complex<T>, 3> x_gmres_k_comp;
+    std::tie(x_gmres_k_comp, rho, rep_num)
+        = complex_gmres_k(H_comp, b_comp_2, x_gmres_k_0_comp,
+            static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     //std::cout << "x_gmres_k_comp = ";
     //std::cout << "[";
@@ -1885,8 +1901,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
 
     Matrix<Complex<T>, 3, 3> H_inv_H;
 
-    complex_gmres_k_matrix(H_comp, H_comp, H_inv_H,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec);
+    std::tie(H_inv_H, rho_vec, rep_num_vec) = complex_gmres_k_matrix(H_comp, H_comp, H_inv_H,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> H_inv_H_real = get_real_matrix_from_complex_matrix(H_inv_H);
     Matrix<T, 3, 3> H_inv_H_answer_real = {
@@ -1909,8 +1925,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
     DiagMatrix<Complex<T>, 3> I_Comp(DiagMatrix<Complex<T>, 3>::identity());
     Matrix<Complex<T>, 3, 3> H_inv_I;
 
-    complex_gmres_k_matrix(H_comp, I_Comp, H_inv_I,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), rho_vec, rep_num_vec);
+    std::tie(H_inv_I, rho_vec, rep_num_vec) = complex_gmres_k_matrix(H_comp, I_Comp, H_inv_I,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F));
 
     Matrix<T, 3, 3> I_real = get_real_matrix_from_complex_matrix(H_comp * H_inv_I);
 
@@ -1941,9 +1957,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
 
     Matrix<Complex<T>, 3, 3> C_inv;
 
-    C_inv = complex_sparse_gmres_k_matrix_inv(C_comp,
-        static_cast<T>(0.0F), static_cast<T>(1.0e-10F),
-        rho_vec, rep_num_vec, C_inv);
+    std::tie(C_inv, rho_vec, rep_num_vec) = complex_sparse_gmres_k_matrix_inv(C_comp,
+        static_cast<T>(0.0F), static_cast<T>(1.0e-10F), C_inv);
 
     Matrix<T, 3, 3> C_I_real = get_real_matrix_from_complex_matrix(C_comp * C_inv);
 
