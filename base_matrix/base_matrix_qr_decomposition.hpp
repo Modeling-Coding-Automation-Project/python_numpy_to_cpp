@@ -27,6 +27,7 @@
 #include "base_matrix_vector.hpp"
 
 #include <cstddef>
+#include <tuple>
 
 namespace Base {
 namespace Matrix {
@@ -50,11 +51,12 @@ constexpr double DEFAULT_DIVISION_MIN_QR = 1.0e-10;
  * @param Q_matrix The orthogonal matrix being built.
  * @param R_matrix The matrix being decomposed.
  * @param division_min A small value to avoid division by zero.
+ * @return A tuple of (Q_matrix, R_matrix) after the Givens rotation.
  */
 template <typename T, std::size_t M, std::size_t N>
-static inline void
-qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
-                  Matrix<T, M, N> &R_matrix, T division_min) {
+static inline std::tuple<Matrix<T, M, M>, Matrix<T, M, N>>
+qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> Q_matrix,
+                  Matrix<T, M, N> R_matrix, T division_min) {
   T c;
   T s;
 
@@ -97,6 +99,8 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q_matrix,
       Q_matrix(k, i) = s * u + c * v;
     }
   }
+
+  return std::make_tuple(std::move(Q_matrix), std::move(R_matrix));
 }
 
 /**
@@ -231,8 +235,10 @@ protected:
    * @param j The index of the second row to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
-    Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                                    this->division_min);
+    std::tie(this->_Q_matrix, this->_R_matrix) =
+        Base::Matrix::qr_givensRotation(i, j, std::move(this->_Q_matrix),
+                                        std::move(this->_R_matrix),
+                                        this->division_min);
   }
 };
 
@@ -465,8 +471,10 @@ protected:
    * @param j The index of the second row to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
-    Base::Matrix::qr_givensRotation(i, j, this->_Q_matrix, this->_R_matrix,
-                                    this->division_min);
+    std::tie(this->_Q_matrix, this->_R_matrix) =
+        Base::Matrix::qr_givensRotation(i, j, std::move(this->_Q_matrix),
+                                        std::move(this->_R_matrix),
+                                        this->division_min);
   }
 };
 
