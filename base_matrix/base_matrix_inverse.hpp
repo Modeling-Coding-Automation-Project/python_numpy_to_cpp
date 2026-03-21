@@ -1762,6 +1762,8 @@ complex_sparse_gmres_k(
  * @param X_1 The initial guess for the solution matrix X_1.
  * @param decay_rate The convergence criterion for the GMRES method.
  * @param division_min A small value to avoid division by zero.
+ * @return A tuple of (solution matrix X, residual norms rho, iteration counts
+ * rep_num).
  */
 template <typename T, std::size_t M, typename RowIndices_A,
           typename RowPointers_A>
@@ -1769,8 +1771,8 @@ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
                   std::array<std::size_t, M>>
 complex_sparse_gmres_k_matrix(
     const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
-        In_A,
-    T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> X_1) {
+        &In_A,
+    T decay_rate, const T &division_min, const Matrix<Complex<T>, M, M> &X_1) {
   Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
   Matrix<Complex<T>, M, M> X;
   std::array<T, M> rho = {};
