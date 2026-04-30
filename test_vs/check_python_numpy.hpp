@@ -2741,7 +2741,7 @@ void CheckPythonNumpy<T>::check_python_numpy_transpose(void) {
 
     auto B_T = B.transpose();
     //std::cout << "B_T = ";
-    //for (size_t i = 0; i < B_T.rows(); ++i) {
+    //for (size_t i = 0; i < B_T.cols(); ++i) {
     //    std::cout << B_T.matrix[i] << " ";
     //}
     //std::cout << std::endl;
@@ -3493,8 +3493,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     auto eigen_vectors = eig_solver.get_eigen_vectors();
 
     //std::cout << "eigen_vectors = " << std::endl;
-    //for (size_t j = 0; j < eigen_vectors.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_vectors.rows(); ++i) {
+    //for (size_t j = 0; j < eigen_vectors.rows(); ++j) {
+    //    for (size_t i = 0; i < eigen_vectors.cols(); ++i) {
     //        std::cout << eigen_vectors(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -3675,8 +3675,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     auto eigen_vectors_comp = eig_solver_comp.get_eigen_vectors();
 
     //std::cout << "eigen_vectors_comp = " << std::endl;
-    //for (size_t j = 0; j < eigen_vectors_comp.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_vectors_comp.rows(); ++i) {
+    //for (size_t j = 0; j < eigen_vectors_comp.rows(); ++j) {
+    //    for (size_t i = 0; i < eigen_vectors_comp.cols(); ++i) {
     //        std::cout << eigen_vectors_comp(j, i).real << " + " << eigen_vectors_comp(j, i).imag << "j, ";;
     //    }
     //    std::cout << std::endl;

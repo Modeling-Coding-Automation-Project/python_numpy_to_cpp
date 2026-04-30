@@ -9,8 +9,8 @@
  * to be used as part of a Python/Numpy-like C++ numerical library.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -44,7 +44,7 @@ using EigenVectors_Type = Matrix<DefDense, T, M, M>;
  * for the underlying computations.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square matrix.
+ * @tparam M The number of columns and rows in the square matrix.
  */
 template <typename T, std::size_t M> class LinalgSolverEigRealDense {
 public:
@@ -238,8 +238,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -259,7 +259,7 @@ protected:
  * to work with matrices that have a diagonal structure.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square diagonal matrix.
+ * @tparam M The number of columns and rows in the square diagonal matrix.
  */
 template <typename T, std::size_t M> class LinalgSolverEigRealDiag {
 public:
@@ -356,8 +356,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -377,7 +377,7 @@ protected:
  * for efficient computations.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square sparse matrix.
+ * @tparam M The number of columns and rows in the square sparse matrix.
  * @tparam SparseAvailable A type indicating whether sparse operations are
  * available.
  */
@@ -563,8 +563,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -591,10 +591,10 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEigReal()
     -> LinalgSolverEigRealDense<typename A_Type::Value_Complex_Type,
-                                A_Type::COLS> {
+                                A_Type::ROWS> {
 
   return LinalgSolverEigRealDense<typename A_Type::Value_Complex_Type,
-                                  A_Type::COLS>();
+                                  A_Type::ROWS>();
 }
 
 /** @brief Factory function to create a LinalgSolverEigReal instance for
@@ -612,10 +612,10 @@ template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEigReal()
     -> LinalgSolverEigRealDiag<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS> {
+                               A_Type::ROWS> {
 
   return LinalgSolverEigRealDiag<typename A_Type::Value_Complex_Type,
-                                 A_Type::COLS>();
+                                 A_Type::ROWS>();
 }
 
 /** @brief Factory function to create a LinalgSolverEigReal instance for
@@ -634,11 +634,11 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEigReal()
     -> LinalgSolverEigRealSparse<typename A_Type::Value_Complex_Type,
-                                 A_Type::COLS,
+                                 A_Type::ROWS,
                                  typename A_Type::SparseAvailable_Type> {
 
   return LinalgSolverEigRealSparse<typename A_Type::Value_Complex_Type,
-                                   A_Type::COLS,
+                                   A_Type::ROWS,
                                    typename A_Type::SparseAvailable_Type>();
 }
 
@@ -665,7 +665,7 @@ using EigenVectors_Type = Matrix<DefDense, Base::Matrix::Complex<T>, M, M>;
  * library
  * for the underlying computations.
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square matrix.
+ * @tparam M The number of columns and rows in the square matrix.
  */
 template <typename T, std::size_t M> class LinalgSolverEigDense {
 public:
@@ -884,8 +884,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -903,7 +903,7 @@ protected:
  * to work with matrices that have a diagonal structure.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square diagonal matrix.
+ * @tparam M The number of columns and rows in the square diagonal matrix.
  */
 template <typename T, std::size_t M> class LinalgSolverEigDiag {
 public:
@@ -1005,8 +1005,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -1025,7 +1025,7 @@ protected:
  * library for efficient computations.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square sparse matrix.
+ * @tparam M The number of columns and rows in the square sparse matrix.
  * @tparam SparseAvailable A type indicating whether sparse operations are
  * available.
  */
@@ -1228,8 +1228,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -1255,10 +1255,10 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEig()
-    -> LinalgSolverEigDense<typename A_Type::Value_Complex_Type, A_Type::COLS> {
+    -> LinalgSolverEigDense<typename A_Type::Value_Complex_Type, A_Type::ROWS> {
 
   return LinalgSolverEigDense<typename A_Type::Value_Complex_Type,
-                              A_Type::COLS>();
+                              A_Type::ROWS>();
 }
 
 /** @brief Factory function to create a LinalgSolverEig instance for diagonal
@@ -1275,10 +1275,10 @@ inline auto make_LinalgSolverEig()
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEig()
-    -> LinalgSolverEigDiag<typename A_Type::Value_Complex_Type, A_Type::COLS> {
+    -> LinalgSolverEigDiag<typename A_Type::Value_Complex_Type, A_Type::ROWS> {
 
   return LinalgSolverEigDiag<typename A_Type::Value_Complex_Type,
-                             A_Type::COLS>();
+                             A_Type::ROWS>();
 }
 
 /** @brief Factory function to create a LinalgSolverEig instance for sparse
@@ -1296,11 +1296,11 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverEig()
-    -> LinalgSolverEigSparse<typename A_Type::Value_Complex_Type, A_Type::COLS,
+    -> LinalgSolverEigSparse<typename A_Type::Value_Complex_Type, A_Type::ROWS,
                              typename A_Type::SparseAvailable_Type> {
 
   return LinalgSolverEigSparse<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS,
+                               A_Type::ROWS,
                                typename A_Type::SparseAvailable_Type>();
 }
 

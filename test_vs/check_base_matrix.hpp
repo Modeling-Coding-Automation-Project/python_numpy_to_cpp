@@ -243,8 +243,8 @@ void CheckBaseMatrix<T>::check_matrix_multiply(void) {
     BB(0, 0) = 3.0F; BB(0, 1) = 4.0F; BB(0, 2) = 5.0F;
     Matrix<T, 2, 3> Y = d * BB;
     //std::cout << "Y = " << std::endl;
-    //for (size_t j = 0; j < Y.cols(); ++j) {
-    //    for (size_t i = 0; i < Y.rows(); ++i) {
+    //for (size_t j = 0; j < Y.rows(); ++j) {
+    //    for (size_t i = 0; i < Y.cols(); ++i) {
     //        std::cout << Y(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -554,7 +554,7 @@ void CheckBaseMatrix<T>::check_diag_matrix(void) {
     DiagMatrix<T, 3> D_4 = D - D_3;
 
     //std::cout << "D_4 = ";
-    //for (size_t i = 0; i < D_4.rows(); ++i) {
+    //for (size_t i = 0; i < D_4.cols(); ++i) {
     //    std::cout << D_4[i] << " ";
     //}
     //std::cout << std::endl;
@@ -683,8 +683,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 3, 3> Sparse_mul_Dense = SparseCc * DenseB;
 
     //std::cout << "DenseC = " << std::endl;
-    //for (size_t j = 0; j < DenseC.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseC.rows(); ++i) {
+    //for (size_t j = 0; j < DenseC.rows(); ++j) {
+    //    for (size_t i = 0; i < DenseC.cols(); ++i) {
     //        std::cout << DenseC(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -717,8 +717,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 5, 4> DenseF = DenseD * SE;
 
     //std::cout << "DenseF = " << std::endl;
-    //for (size_t j = 0; j < DenseF.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseF.rows(); ++i) {
+    //for (size_t j = 0; j < DenseF.rows(); ++j) {
+    //    for (size_t i = 0; i < DenseF.cols(); ++i) {
     //        std::cout << DenseF(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -741,8 +741,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     //Matrix<T, 3, 3> DenseH = DenseG - SA;
 
     //std::cout << "DenseH = " << std::endl;
-    //for (size_t j = 0; j < DenseH.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseH.rows(); ++i) {
+    //for (size_t j = 0; j < DenseH.rows(); ++j) {
+    //    for (size_t i = 0; i < DenseH.cols(); ++i) {
     //        std::cout << DenseH(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -933,8 +933,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 3, 3> Dense_mul_SparseT = matrix_multiply_A_mul_SparseBTranspose(DenseG, SparseCc);
 
     //std::cout << "DenseL = " << std::endl;
-    //for (size_t j = 0; j < DenseL.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseL.rows(); ++i) {
+    //for (size_t j = 0; j < DenseL.rows(); ++j) {
+    //    for (size_t i = 0; i < DenseL.cols(); ++i) {
     //        std::cout << DenseL(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -971,8 +971,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 3, 3> DenseT_mul_Sparse = matrix_multiply_ATranspose_mul_SparseB(DenseG, SparseCc);
 
     //std::cout << "DenseM = " << std::endl;
-    //for (size_t j = 0; j < DenseM.cols(); ++j) {
-    //    for (size_t i = 0; i < DenseM.rows(); ++i) {
+    //for (size_t j = 0; j < DenseM.rows(); ++j) {
+    //    for (size_t i = 0; i < DenseM.cols(); ++i) {
     //        std::cout << DenseM(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1148,8 +1148,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 4, 3> SB_dense = Base::Matrix::output_dense_matrix(SBc);
 
     //std::cout << "SB_dense = " << std::endl;
-    //for (size_t j = 0; j < SB_dense.cols(); ++j) {
-    //    for (size_t i = 0; i < SB_dense.rows(); ++i) {
+    //for (size_t j = 0; j < SB_dense.rows(); ++j) {
+    //    for (size_t i = 0; i < SB_dense.cols(); ++i) {
     //        std::cout << SB_dense(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1172,8 +1172,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
             static_cast<T>(0.0F), static_cast<T>(1.0e-10F), X_temp);
 
     //std::cout << "S_inv = " << std::endl;
-    //for (size_t j = 0; j < S_inv.cols(); ++j) {
-    //    for (size_t i = 0; i < S_inv.rows(); ++i) {
+    //for (size_t j = 0; j < S_inv.rows(); ++j) {
+    //    for (size_t i = 0; i < S_inv.cols(); ++i) {
     //        std::cout << S_inv(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1195,8 +1195,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 3, 3> Dense_T = S_test * DenseB;
 
     //std::cout << "Dense_T = " << std::endl;
-    //for (size_t j = 0; j < Dense_T.cols(); ++j) {
-    //    for (size_t i = 0; i < Dense_T.rows(); ++i) {
+    //for (size_t j = 0; j < Dense_T.rows(); ++j) {
+    //    for (size_t i = 0; i < Dense_T.cols(); ++i) {
     //        std::cout << Dense_T(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1219,8 +1219,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     SparseMatrix<T, 3, 3, 3> G_s = create_sparse(D);
     Matrix<T, 3, 3> G_s_d = G_s.create_dense();
     //std::cout << "G_s_d = " << std::endl;
-    //for (size_t j = 0; j < G_s_d.cols(); ++j) {
-    //    for (size_t i = 0; i < G_s_d.rows(); ++i) {
+    //for (size_t j = 0; j < G_s_d.rows(); ++j) {
+    //    for (size_t i = 0; i < G_s_d.cols(); ++i) {
     //        std::cout << G_s_d(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1559,7 +1559,7 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
     std::tie(K_diag, flag) = cholesky_decomposition_diag(D, D);
 
     //std::cout << "K_diag = ";
-    //for (size_t i = 0; i < K_diag.rows(); ++i) {
+    //for (size_t i = 0; i < K_diag.cols(); ++i) {
     //    std::cout << K_diag[i] << " ";
     //}
     //std::cout << std::endl;
@@ -1746,8 +1746,8 @@ void CheckBaseMatrix<T>::check_variable_sparse_matrix(void) {
 
     Matrix<T, 3, 3> VS_test = CV * CV;
     //std::cout << "VS_test = " << std::endl;
-    //for (size_t j = 0; j < VS_test.cols(); ++j) {
-    //    for (size_t i = 0; i < VS_test.rows(); ++i) {
+    //for (size_t j = 0; j < VS_test.rows(); ++j) {
+    //    for (size_t i = 0; i < VS_test.cols(); ++i) {
     //        std::cout << VS_test(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -1799,8 +1799,8 @@ void CheckBaseMatrix<T>::check_triangular_matrix(void) {
     set_values_LowerTriangularSparseMatrix<T, 4, 4>(TS, Test_ts);
 
     Matrix<T, 4, 4> Test_lower = Base::Matrix::output_dense_matrix(TS);
-    //for (size_t j = 0; j < Test_lower.cols(); ++j) {
-    //    for (size_t i = 0; i < Test_lower.rows(); ++i) {
+    //for (size_t j = 0; j < Test_lower.rows(); ++j) {
+    //    for (size_t i = 0; i < Test_lower.cols(); ++i) {
     //        std::cout << Test_lower(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -2039,8 +2039,8 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     Matrix<T, 3, 3> eigen_vectors = eigen_solver.get_eigen_vectors();
 
     //std::cout << "eigen_vectors = " << std::endl;
-    //for (size_t j = 0; j < eigen_vectors.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_vectors.rows(); ++i) {
+    //for (size_t j = 0; j < eigen_vectors.rows(); ++j) {
+    //    for (size_t i = 0; i < eigen_vectors.cols(); ++i) {
     //        std::cout << eigen_vectors(j, i) << " ";
     //    }
     //    std::cout << std::endl;
@@ -2142,8 +2142,8 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     Matrix<Complex<T>, 3, 3> eigen_vectors_comp = eigen_solver_comp.get_eigen_vectors();
 
     //std::cout << "eigen_vectors_comp = " << std::endl;
-    //for (size_t j = 0; j < eigen_vectors_comp.cols(); ++j) {
-    //    for (size_t i = 0; i < eigen_vectors_comp.rows(); ++i) {
+    //for (size_t j = 0; j < eigen_vectors_comp.rows(); ++j) {
+    //    for (size_t i = 0; i < eigen_vectors_comp.cols(); ++i) {
     //        std::cout << eigen_vectors_comp(j, i).real << " + " << eigen_vectors_comp(j, i).imag << "j, ";
     //    }
     //    std::cout << std::endl;

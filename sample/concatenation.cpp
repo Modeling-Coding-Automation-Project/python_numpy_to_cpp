@@ -34,8 +34,8 @@ int main() {
 
   auto vertical_dense = vertical.create_dense();
   std::cout << "vertical = " << std::endl;
-  for (size_t j = 0; j < vertical_dense.cols(); ++j) {
-    for (size_t i = 0; i < vertical_dense.rows(); ++i) {
+  for (size_t j = 0; j < vertical_dense.rows(); ++j) {
+    for (size_t i = 0; i < vertical_dense.cols(); ++i) {
       std::cout << vertical_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -46,8 +46,8 @@ int main() {
 
   auto horizontal_dense = horizontal.create_dense();
   std::cout << "horizontal = " << std::endl;
-  for (size_t j = 0; j < horizontal_dense.cols(); ++j) {
-    for (size_t i = 0; i < horizontal_dense.rows(); ++i) {
+  for (size_t j = 0; j < horizontal_dense.rows(); ++j) {
+    for (size_t i = 0; i < horizontal_dense.cols(); ++i) {
       std::cout << horizontal_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -59,8 +59,8 @@ int main() {
 
   horizontal_dense = horizontal.create_dense();
   std::cout << "horizontal = " << std::endl;
-  for (size_t j = 0; j < horizontal_dense.cols(); ++j) {
-    for (size_t i = 0; i < horizontal_dense.rows(); ++i) {
+  for (size_t j = 0; j < horizontal_dense.rows(); ++j) {
+    for (size_t i = 0; i < horizontal_dense.cols(); ++i) {
       std::cout << horizontal_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -74,8 +74,8 @@ int main() {
   auto A_v_C_dense = A_v_C.create_dense();
 
   std::cout << "vertical = " << std::endl;
-  for (size_t j = 0; j < A_v_C_dense.cols(); ++j) {
-    for (size_t i = 0; i < A_v_C_dense.rows(); ++i) {
+  for (size_t j = 0; j < A_v_C_dense.rows(); ++j) {
+    for (size_t i = 0; i < A_v_C_dense.cols(); ++i) {
       std::cout << A_v_C_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -88,8 +88,8 @@ int main() {
   auto A_h_B_dense = A_h_B.create_dense();
 
   std::cout << "horizontal = " << std::endl;
-  for (size_t j = 0; j < A_h_B_dense.cols(); ++j) {
-    for (size_t i = 0; i < A_h_B_dense.rows(); ++i) {
+  for (size_t j = 0; j < A_h_B_dense.rows(); ++j) {
+    for (size_t i = 0; i < A_h_B_dense.cols(); ++i) {
       std::cout << A_h_B_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -109,8 +109,8 @@ int main() {
   auto ABCE_dense = ABCE.create_dense();
 
   std::cout << "ABCE = " << std::endl;
-  for (size_t j = 0; j < ABCE_dense.cols(); ++j) {
-    for (size_t i = 0; i < ABCE_dense.rows(); ++i) {
+  for (size_t j = 0; j < ABCE_dense.rows(); ++j) {
+    for (size_t i = 0; i < ABCE_dense.cols(); ++i) {
       std::cout << ABCE_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -123,8 +123,8 @@ int main() {
   ABCE_dense = ABCE.create_dense();
 
   std::cout << "ABCE = " << std::endl;
-  for (size_t j = 0; j < ABCE_dense.cols(); ++j) {
-    for (size_t i = 0; i < ABCE_dense.rows(); ++i) {
+  for (size_t j = 0; j < ABCE_dense.rows(); ++j) {
+    for (size_t i = 0; i < ABCE_dense.cols(); ++i) {
       std::cout << ABCE_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -141,8 +141,8 @@ int main() {
   auto C_Tile_dense = C_Tile.create_dense();
 
   std::cout << "C_Tile = " << std::endl;
-  for (size_t j = 0; j < C_Tile_dense.cols(); ++j) {
-    for (size_t i = 0; i < C_Tile_dense.rows(); ++i) {
+  for (size_t j = 0; j < C_Tile_dense.rows(); ++j) {
+    for (size_t i = 0; i < C_Tile_dense.cols(); ++i) {
       std::cout << C_Tile_dense(j, i) << " ";
     }
     std::cout << std::endl;

@@ -21,8 +21,8 @@
  * submatrices.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -45,14 +45,14 @@ namespace PythonNumpy {
  * B.
  *
  * This function takes two input matrices, A and B, with the same number of
- * columns (N) and concatenates them vertically to form the output matrix Y. The
- * resulting matrix Y will have (M + P) rows and N columns, where M and P are
- * the number of rows in A and B, respectively.
+ * rows (N) and concatenates them vertically to form the output matrix Y. The
+ * resulting matrix Y will have (M + P) cols and N rows, where M and P are
+ * the number of columns in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A, B, and Y.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A, B, and Y.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output matrix to store the vertically concatenated result
  * (size: (M + P) x N).
  * @param[in] A The first input matrix (size: M x N).
@@ -72,14 +72,14 @@ update_vertically_concatenated_matrix(Matrix<DefDense, T, (M + P), N> &Y,
  * @brief Concatenates two matrices A and B vertically to form a new matrix.
  *
  * This function takes two input matrices, A and B, with the same number of
- * columns (N) and concatenates them vertically to form a new matrix. The
- * resulting matrix will have (M + P) rows and N columns, where M and P are the
- * number of rows in A and B, respectively.
+ * rows (N) and concatenates them vertically to form a new matrix. The
+ * resulting matrix will have (M + P) cols and N rows, where M and P are the
+ * number of columns in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A, B, and the result.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A, B, and the result.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The first input matrix (size: M x N).
  * @param[in] B The second input matrix (size: P x N).
  * @return A new matrix containing the vertically concatenated result (size:
@@ -100,12 +100,12 @@ inline auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes a dense matrix A and a diagonal matrix B, and updates the
  * sparse matrix Y to be their vertical concatenation. The resulting matrix Y
- * will have (M + N) rows and N columns, where M is the number of rows in A and
- * N is the number of rows in B.
+ * will have (M + N) cols and N rows, where M is the number of columns in A and
+ * N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + N) x N).
  * @param[in] A The input dense matrix (size: M x N).
@@ -128,12 +128,12 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a dense matrix A and a diagonal matrix B, and returns a
  * new sparse matrix that is their vertical concatenation. The resulting matrix
- * will have (M + N) rows and N columns, where M is the number of rows in A and
- * N is the number of rows in B.
+ * will have (M + N) cols and N rows, where M is the number of columns in A and
+ * N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input dense matrix (size: M x N).
  * @param[in] B The input diagonal matrix (size: N x N).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -158,13 +158,13 @@ inline auto concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes a dense matrix A and a sparse matrix B, and updates the
  * sparse matrix Y to be their vertical concatenation. The resulting matrix Y
- * will have (M + P) rows and N columns, where M is the number of rows in A and
- * P is the number of rows in B.
+ * will have (M + P) cols and N rows, where M is the number of columns in A and
+ * P is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + P) x N).
  * @param[in] A The input dense matrix (size: M x N).
@@ -189,13 +189,13 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a dense matrix A and a sparse matrix B, and returns a new
  * sparse matrix that is their vertical concatenation. The resulting matrix will
- * have (M + P) rows and N columns, where M is the number of rows in A and P is
- * the number of rows in B.
+ * have (M + P) cols and N rows, where M is the number of columns in A and P is
+ * the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The input dense matrix (size: M x N).
  * @param[in] B The input sparse matrix (size: P x N).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -222,12 +222,12 @@ concatenate_vertically(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes a diagonal matrix A and a dense matrix B, and updates the
  * sparse matrix Y to be their vertical concatenation. The resulting matrix Y
- * will have (M + P) rows and M columns, where M is the number of rows in A and
- * P is the number of rows in B.
+ * will have (M + P) cols and M rows, where M is the number of columns in A and
+ * P is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + P) x M).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -250,12 +250,12 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a diagonal matrix A and a dense matrix B, and returns a
  * new sparse matrix that is their vertical concatenation. The resulting matrix
- * will have (M + P) rows and M columns, where M is the number of rows in A and
- * P is the number of rows in B.
+ * will have (M + P) cols and M rows, where M is the number of columns in A and
+ * P is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input dense matrix (size: P x M).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -280,10 +280,10 @@ inline auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes two diagonal matrices A and B, and updates the sparse
  * matrix Y to be their vertical concatenation. The resulting matrix Y will have
- * (2 * M) rows and M columns, where M is the number of rows in both A and B.
+ * (2 * M) cols and M rows, where M is the number of columns in both A and B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A and B.
+ * @tparam M The number of rows in matrices A and B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (2 * M) x M).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -306,10 +306,10 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes two diagonal matrices A and B, and returns a new sparse
  * matrix that is their vertical concatenation. The resulting matrix will have
- * (2 * M) rows and M columns, where M is the number of rows in both A and B.
+ * (2 * M) cols and M rows, where M is the number of columns in both A and B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A and B.
+ * @tparam M The number of rows in matrices A and B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input diagonal matrix (size: M x M).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -334,12 +334,12 @@ inline auto concatenate_vertically(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes a diagonal matrix A and a sparse matrix B, and updates
  * the sparse matrix Y to be their vertical concatenation. The resulting matrix
- * Y will have (M + P) rows and M columns, where M is the number of rows in A
- * and P is the number of rows in B.
+ * Y will have (M + P) cols and M rows, where M is the number of columns in A
+ * and P is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + P) x M).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -363,12 +363,12 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a diagonal matrix A and a sparse matrix B, and returns a
  * new sparse matrix that is their vertical concatenation. The resulting matrix
- * will have (M + P) rows and M columns, where M is the number of rows in A and
- * P is the number of rows in B.
+ * will have (M + P) cols and M rows, where M is the number of columns in A and
+ * P is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input sparse matrix (size: P x M).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -394,13 +394,13 @@ concatenate_vertically(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes two sparse matrices A and B, and updates the sparse
  * matrix Y to be their vertical concatenation. The resulting matrix Y will have
- * (M + P) rows and N columns, where M is the number of rows in A and P is the
- * number of rows in B.
+ * (M + P) cols and N rows, where M is the number of columns in A and P is the
+ * number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + P) x N).
  * @param[in] A The input sparse matrix (size: M x N).
@@ -425,13 +425,13 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a sparse matrix A and a dense matrix B, and returns a new
  * sparse matrix that is their vertical concatenation. The resulting matrix will
- * have (M + P) rows and N columns, where M is the number of rows in A and P is
- * the number of rows in B.
+ * have (M + P) cols and N rows, where M is the number of columns in A and P is
+ * the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The input sparse matrix (size: M x N).
  * @param[in] B The input dense matrix (size: P x N).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -458,12 +458,12 @@ concatenate_vertically(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  *
  * This function takes a sparse matrix A and a diagonal matrix B, and updates
  * the sparse matrix Y to be their vertical concatenation. The resulting matrix
- * Y will have (M + N) rows and N columns, where M is the number of rows in A
- * and N is the number of rows in B.
+ * Y will have (M + N) cols and N rows, where M is the number of columns in A
+ * and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + N) x N).
  * @param[in] A The input sparse matrix (size: M x N).
@@ -487,12 +487,12 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes a sparse matrix A and a diagonal matrix B, and returns a
  * new sparse matrix that is their vertical concatenation. The resulting matrix
- * will have (M + N) rows and N columns, where M is the number of rows in A and
- * N is the number of rows in B.
+ * will have (M + N) cols and N rows, where M is the number of columns in A and
+ * N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input sparse matrix (size: M x N).
  * @param[in] B The input diagonal matrix (size: N x N).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -518,13 +518,13 @@ concatenate_vertically(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  *
  * This function takes two sparse matrices A and B, and updates the sparse
  * matrix Y to be their vertical concatenation. The resulting matrix Y will have
- * (M + P) rows and N columns, where M is the number of rows in A and P is the
- * number of rows in B.
+ * (M + P) cols and N rows, where M is the number of columns in A and P is the
+ * number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[out] Y The output sparse matrix to store the vertically concatenated
  * result (size: (M + P) x N).
  * @param[in] A The input sparse matrix (size: M x N).
@@ -549,13 +549,13 @@ inline void update_vertically_concatenated_matrix(
  *
  * This function takes two sparse matrices A and B, and returns a new sparse
  * matrix that is their vertical concatenation. The resulting matrix will have
- * (M + P) rows and N columns, where M is the number of rows in A and P is the
- * number of rows in B.
+ * (M + P) cols and N rows, where M is the number of columns in A and P is the
+ * number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam P The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam P The number of rows in matrix B.
  * @param[in] A The input sparse matrix (size: M x N).
  * @param[in] B The input sparse matrix (size: P x N).
  * @return A new sparse matrix containing the vertically concatenated result
@@ -582,15 +582,15 @@ concatenate_vertically(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  * @brief Updates a matrix Y to be the horizontal concatenation of matrices A
  * and B.
  *
- * This function takes two input matrices, A and B, with the same number of rows
+ * This function takes two input matrices, A and B, with the same number of columns
  * (M) and concatenates them horizontally to form the output matrix Y. The
- * resulting matrix Y will have M rows and (N + L) columns, where N and L are
- * the number of columns in A and B, respectively.
+ * resulting matrix Y will have M cols and (N + L) rows, where N and L are
+ * the number of rows in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A, B, and Y.
- * @tparam N The number of rows in matrix A.
- * @tparam L The number of rows in matrix B.
+ * @tparam M The number of rows in matrices A, B, and Y.
+ * @tparam N The number of columns in matrix A.
+ * @tparam L The number of columns in matrix B.
  * @param[out] Y The output matrix to store the horizontally concatenated result
  * (size: M x (N + L)).
  * @param[in] A The first input matrix (size: M x N).
@@ -609,15 +609,15 @@ update_horizontally_concatenated_matrix(Matrix<DefDense, T, M, (N + L)> &Y,
 /**
  * @brief Concatenates two matrices A and B horizontally to form a new matrix.
  *
- * This function takes two input matrices, A and B, with the same number of rows
+ * This function takes two input matrices, A and B, with the same number of columns
  * (M) and concatenates them horizontally to form a new matrix. The resulting
- * matrix will have M rows and (N + L) columns, where N and L are the number of
- * columns in A and B, respectively.
+ * matrix will have M cols and (N + L) rows, where N and L are the number of
+ * rows in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A, B, and the result.
- * @tparam N The number of rows in matrix A.
- * @tparam L The number of rows in matrix B.
+ * @tparam M The number of rows in matrices A, B, and the result.
+ * @tparam N The number of columns in matrix A.
+ * @tparam L The number of columns in matrix B.
  * @param[in] A The first input matrix (size: M x N).
  * @param[in] B The second input matrix (size: M x L).
  * @return A new matrix containing the horizontally concatenated result (size:
@@ -638,12 +638,12 @@ inline auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes a dense matrix A and a diagonal matrix B, and updates the
  * sparse matrix Y to be their horizontal concatenation. The resulting matrix Y
- * will have M rows and (M + N) columns, where M is the number of rows in A and
- * N is the number of rows in B.
+ * will have M cols and (M + N) rows, where M is the number of columns in A and
+ * N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (M + N)).
  * @param[in] A The input dense matrix (size: M x N).
@@ -666,12 +666,12 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a dense matrix A and a diagonal matrix B, and returns a
  * new sparse matrix that is their horizontal concatenation. The resulting
- * matrix will have M rows and (M + N) columns, where M is the number of rows in
- * A and N is the number of rows in B.
+ * matrix will have M cols and (M + N) rows, where M is the number of columns in
+ * A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input dense matrix (size: M x N).
  * @param[in] B The input diagonal matrix (size: M x M).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -696,12 +696,12 @@ inline auto concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes a diagonal matrix A and a dense matrix B, and updates the
  * sparse matrix Y to be their horizontal concatenation. The resulting matrix Y
- * will have M rows and (M + N) columns, where M is the number of rows in A and
- * N is the number of rows in B.
+ * will have M cols and (M + N) rows, where M is the number of columns in A and
+ * N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (M + N)).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -726,13 +726,13 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a dense matrix A and a sparse matrix B, and returns a new
  * sparse matrix that is their horizontal concatenation. The resulting matrix
- * will have M rows and (N + L) columns, where M is the number of rows in A and
- * L is the number of rows in B.
+ * will have M cols and (N + L) rows, where M is the number of columns in A and
+ * L is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam L The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam L The number of rows in matrix B.
  * @param[in] A The input dense matrix (size: M x N).
  * @param[in] B The input sparse matrix (size: M x L).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -759,11 +759,11 @@ concatenate_horizontally(const Matrix<DefDense, T, M, N> &A,
  *
  * This function takes two diagonal matrices A and B, and updates the sparse
  * matrix Y to be their horizontal concatenation. The resulting matrix Y will
- * have M rows and (2 * M) columns, where M is the number of rows in both A and
+ * have M cols and (2 * M) rows, where M is the number of columns in both A and
  * B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A and B.
+ * @tparam M The number of rows in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (2 * M)).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -786,12 +786,12 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a diagonal matrix A and a dense matrix B, and returns a
  * new sparse matrix that is their horizontal concatenation. The resulting
- * matrix will have M rows and (M + N) columns, where M is the number of rows in
- * A and N is the number of rows in B.
+ * matrix will have M cols and (M + N) rows, where M is the number of columns in
+ * A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input dense matrix (size: M x N).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -816,11 +816,11 @@ inline auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes two diagonal matrices A and B, and updates the sparse
  * matrix Y to be their horizontal concatenation. The resulting matrix Y will
- * have M rows and (2 * M) columns, where M is the number of rows in both A and
+ * have M cols and (2 * M) rows, where M is the number of columns in both A and
  * B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A and B.
+ * @tparam M The number of rows in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (2 * M)).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -843,10 +843,10 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes two diagonal matrices A and B, and returns a new sparse
  * matrix that is their horizontal concatenation. The resulting matrix will have
- * M rows and (2 * M) columns, where M is the number of rows in both A and B.
+ * M cols and (2 * M) rows, where M is the number of columns in both A and B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A and B.
+ * @tparam M The number of rows in matrices A and B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input diagonal matrix (size: M x M).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -871,12 +871,12 @@ inline auto concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes a diagonal matrix A and a sparse matrix B, and updates
  * the sparse matrix Y to be their horizontal concatenation. The resulting
- * matrix Y will have M rows and (M + N) columns, where M is the number of rows
- * in A and N is the number of rows in B.
+ * matrix Y will have M cols and (M + N) rows, where M is the number of columns
+ * in A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (M + N)).
  * @param[in] A The input diagonal matrix (size: M x M).
@@ -900,12 +900,12 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a diagonal matrix A and a sparse matrix B, and returns a
  * new sparse matrix that is their horizontal concatenation. The resulting
- * matrix will have M rows and (M + N) columns, where M is the number of rows in
- * A and N is the number of rows in B.
+ * matrix will have M cols and (M + N) rows, where M is the number of columns in
+ * A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input diagonal matrix (size: M x M).
  * @param[in] B The input sparse matrix (size: M x N).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -931,12 +931,12 @@ concatenate_horizontally(const Matrix<DefDiag, T, M> &A,
  *
  * This function takes a sparse matrix A and a dense matrix B, and updates the
  * sparse matrix Y to be their horizontal concatenation. The resulting matrix Y
- * will have M rows and (N + L) columns, where M is the number of rows in A and
- * L is the number of rows in B.
+ * will have M cols and (N + L) rows, where M is the number of columns in A and
+ * L is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @tparam L The number of roes in matrix A.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (N + L)).
@@ -962,13 +962,13 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a sparse matrix A and a dense matrix B, and returns a new
  * sparse matrix that is their horizontal concatenation. The resulting matrix
- * will have M rows and (N + L) columns, where M is the number of rows in A and
- * L is the number of rows in B.
+ * will have M cols and (N + L) rows, where M is the number of columns in A and
+ * L is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
- * @tparam L The number of rows in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
+ * @tparam L The number of columns in matrix B.
  * @param[in] A The input sparse matrix (size: M x L).
  * @param[in] B The input dense matrix (size: M x N).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -995,12 +995,12 @@ concatenate_horizontally(const Matrix<DefSparse, T, M, L, SparseAvailable_A> &A,
  *
  * This function takes a sparse matrix A and a diagonal matrix B, and updates
  * the sparse matrix Y to be their horizontal concatenation. The resulting
- * matrix Y will have M rows and (M + N) columns, where M is the number of rows
- * in A and N is the number of rows in B.
+ * matrix Y will have M cols and (M + N) rows, where M is the number of columns
+ * in A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (M + N)).
  * @param[in] A The input sparse matrix (size: M x N).
@@ -1024,12 +1024,12 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes a sparse matrix A and a diagonal matrix B, and returns a
  * new sparse matrix that is their horizontal concatenation. The resulting
- * matrix will have M rows and (M + N) columns, where M is the number of rows in
- * A and N is the number of rows in B.
+ * matrix will have M cols and (M + N) rows, where M is the number of columns in
+ * A and N is the number of columns in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrices A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrices A and B.
  * @param[in] A The input sparse matrix (size: M x N).
  * @param[in] B The input diagonal matrix (size: M x M).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -1055,13 +1055,13 @@ concatenate_horizontally(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  *
  * This function takes two sparse matrices A and B, and updates the sparse
  * matrix Y to be their horizontal concatenation. The resulting matrix Y will
- * have M rows and (N + L) columns, where M is the number of rows in A and B, N
- * is the number of columns in A, and L is the number of columns in B.
+ * have M cols and (N + L) rows, where M is the number of columns in A and B, N
+ * is the number of rows in A, and L is the number of rows in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A, B, and Y.
- * @tparam N The number of rows in matrix A.
- * @tparam L The number of rows in matrix B.
+ * @tparam M The number of rows in matrices A, B, and Y.
+ * @tparam N The number of columns in matrix A.
+ * @tparam L The number of columns in matrix B.
  * @param[out] Y The output sparse matrix to store the horizontally concatenated
  * result (size: M x (N + L)).
  * @param[in] A The input sparse matrix (size: M x N).
@@ -1086,13 +1086,13 @@ inline void update_horizontally_concatenated_matrix(
  *
  * This function takes two sparse matrices A and B, and returns a new sparse
  * matrix that is their horizontal concatenation. The resulting matrix will have
- * M rows and (N + L) columns, where M is the number of rows in A and B, N is
- * the number of columns in A, and L is the number of columns in B.
+ * M cols and (N + L) rows, where M is the number of columns in A and B, N is
+ * the number of rows in A, and L is the number of rows in B.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrices A, B, and the result.
- * @tparam N The number of rows in matrix A.
- * @tparam L The number of rows in matrix B.
+ * @tparam M The number of rows in matrices A, B, and the result.
+ * @tparam N The number of columns in matrix A.
+ * @tparam L The number of columns in matrix B.
  * @param[in] A The input sparse matrix (size: M x N).
  * @param[in] B The input sparse matrix (size: M x L).
  * @return A new sparse matrix containing the horizontally concatenated result
@@ -1134,9 +1134,9 @@ using ConcatenateBlock2X2_Type =
  *
  * This function takes four matrices A, B, C, and D, and updates the
  * concatenated block 2x2 matrix Y to be their concatenation. The resulting
- * matrix Y will have (M + P) rows and (N + L) columns, where M is the number of
- * rows in A and C, N is the number of columns in A and B, P is the number of
- * rows in B and D, and L is the number of columns in B and D.
+ * matrix Y will have (M + P) cols and (N + L) rows, where M is the number of
+ * cols in A and C, N is the number of rows in A and B, P is the number of
+ * cols in B and D, and L is the number of rows in B and D.
  *
  * @tparam A_Type The type of matrix A.
  * @tparam B_Type The type of matrix B.
@@ -1167,9 +1167,9 @@ inline void update_block_2x2_concatenated_matrix(
  *
  * This function takes four matrices A, B, C, and D, and returns a new
  * concatenated block 2x2 matrix that is their concatenation. The resulting
- * matrix will have (M + P) rows and (N + L) columns, where M is the number of
- * rows in A and C, N is the number of columns in A and B, P is the number of
- * rows in B and D, and L is the number of columns in B and D.
+ * matrix will have (M + P) cols and (N + L) rows, where M is the number of
+ * cols in A and C, N is the number of rows in A and B, P is the number of
+ * cols in B and D, and L is the number of rows in B and D.
  *
  * @tparam A_Type The type of matrix A.
  * @tparam B_Type The type of matrix B.

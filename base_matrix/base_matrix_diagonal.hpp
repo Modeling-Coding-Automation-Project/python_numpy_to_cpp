@@ -12,8 +12,8 @@
  * matrix extraction.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -43,15 +43,15 @@ namespace Matrix {
  * __BASE_MATRIX_USE_STD_VECTOR__ macro.
  *
  * @tparam T Type of the matrix elements.
- * @tparam M Size of the matrix (number of rows and columns).
+ * @tparam M Size of the matrix (number of columns and rows).
  *
  * @note Only the diagonal elements are stored and manipulated.
  */
 template <typename T, std::size_t M> class DiagMatrix {
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
 public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
@@ -127,7 +127,7 @@ public:
    * matrix in the context of diagonal matrices.
    *
    * @tparam T The type of the matrix elements.
-   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @tparam M The size (number of columns and rows) of the square matrix.
    * @return DiagMatrix<T, M> An identity diagonal matrix of type T and size M.
    */
   static inline DiagMatrix<T, M> identity() {
@@ -144,7 +144,7 @@ public:
    * off-diagonal elements are zero.
    *
    * @tparam T The type of the matrix elements.
-   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @tparam M The size (number of columns and rows) of the square matrix.
    * @param value The value to fill the diagonal elements.
    * @return DiagMatrix<T, M> A diagonal matrix of type T and size M filled with
    * the specified value.
@@ -163,7 +163,7 @@ public:
    * elements are also zero.
    *
    * @tparam T The type of the matrix elements.
-   * @tparam M The size (number of rows and columns) of the square matrix.
+   * @tparam M The size (number of columns and rows) of the square matrix.
    * @return DiagMatrix<T, M> A diagonal matrix of type T and size M filled with
    * zeros.
    */
@@ -192,17 +192,17 @@ public:
    * @param index The index of the diagonal element to access.
    * @return T& A reference to the diagonal element at the specified index.
    */
-  constexpr std::size_t rows() const { return M; }
+  constexpr std::size_t cols() const { return M; }
 
   /**
-   * @brief Returns the number of columns in the diagonal matrix.
+   * @brief Returns the number of rows in the diagonal matrix.
    *
-   * Since this is a square matrix, the number of columns is equal to the
-   * number of rows.
+   * Since this is a square matrix, the number of rows is equal to the
+   * number of columns.
    *
-   * @return std::size_t The number of columns in the diagonal matrix.
+   * @return std::size_t The number of rows in the diagonal matrix.
    */
-  constexpr std::size_t cols() const { return M; }
+  constexpr std::size_t rows() const { return M; }
 
   /**
    * @brief Returns a vector representing the specified row of the diagonal
@@ -212,7 +212,7 @@ public:
    * non-zero. If the provided row index is out of bounds (greater than or equal
    * to M), it is clamped to the last valid index.
    *
-   * @param row The index of the row to retrieve.
+   * @param row The index of the column to retrieve.
    * @return Vector<T, M> A vector with only the diagonal element at the
    * specified row set, all other elements are zero.
    */
@@ -235,7 +235,7 @@ public:
    * is non-zero. If the provided column index is out of bounds (greater than or
    * equal to M), it is clamped to the last valid index.
    *
-   * @param col The index of the column to retrieve.
+   * @param col The index of the row to retrieve.
    * @return Vector<T, M> A vector with only the diagonal element at the
    * specified column set, all other elements are zero.
    */
@@ -265,7 +265,7 @@ public:
  * containing the diagonal elements of the matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam M The size of the diagonal matrix (number of columns and rows).
  * @param matrix The diagonal matrix to be converted.
  * @return Matrix<T, M, 1> A column vector containing the diagonal elements of
  * the input matrix.
@@ -1194,7 +1194,7 @@ struct Core<T, M, N, J, 0> {
 
 // Column-wise multiplication
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Column {
+struct Row {
   /**
    * @brief Computes the multiplication of a diagonal matrix with a dense
    * matrix, column by column.
@@ -1209,15 +1209,15 @@ struct Column {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Core<T, M, N, J, N - 1>::compute(A, B, result);
-    Column<T, M, N, J - 1>::compute(A, B, result);
+    Row<T, M, N, J - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for J == 0
-template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
   /**
    * @brief Computes the multiplication of a diagonal matrix with a dense
-   * matrix, starting from the first column.
+   * matrix, starting from the first row.
    *
    * This function serves as the base case for the recursive multiplication of a
    * diagonal matrix A and a dense matrix B, storing the result in the provided
@@ -1247,7 +1247,7 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result) {
-  Column<T, M, N, M - 1>::compute(A, B, result);
+  Row<T, M, N, M - 1>::compute(A, B, result);
 }
 
 } // namespace DiagMatrixMultiplyMatrix
@@ -1334,7 +1334,7 @@ struct Core<T, L, M, I, 0> {
 
 // Column-wise multiplication
 template <typename T, std::size_t L, std::size_t M, std::size_t I>
-struct Column {
+struct Row {
   /**
    * @brief Computes the multiplication of a dense matrix with a diagonal
    * matrix, column by column.
@@ -1349,15 +1349,15 @@ struct Column {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Core<T, L, M, I, M - 1>::compute(A, B, result);
-    Column<T, L, M, I - 1>::compute(A, B, result);
+    Row<T, L, M, I - 1>::compute(A, B, result);
   }
 };
 
 // Specialization for I = 0
-template <typename T, std::size_t L, std::size_t M> struct Column<T, L, M, 0> {
+template <typename T, std::size_t L, std::size_t M> struct Row<T, L, M, 0> {
   /**
    * @brief Computes the multiplication of a dense matrix with a diagonal
-   * matrix, starting from the first column.
+   * matrix, starting from the first row.
    *
    * This function serves as the base case for the recursive multiplication of a
    * dense matrix A and a diagonal matrix B, storing the result in the provided
@@ -1387,7 +1387,7 @@ template <typename T, std::size_t L, std::size_t M> struct Column<T, L, M, 0> {
 template <typename T, std::size_t L, std::size_t M>
 inline void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                     Matrix<T, L, M> &result) {
-  Column<T, L, M, L - 1>::compute(A, B, result);
+  Row<T, L, M, L - 1>::compute(A, B, result);
 }
 
 } // namespace MatrixMultiplyDiagMatrix
@@ -1718,7 +1718,7 @@ namespace DiagMatrixInverseMultiplyMatrix {
 // core multiplication for each element
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t K>
-struct Column {
+struct Row {
   /**
    * @brief Computes the element-wise division of a dense matrix by a diagonal
    * matrix.
@@ -1736,19 +1736,19 @@ struct Column {
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, K) =
         B(J, K) / Base::Utility::avoid_zero_divide(A[J], division_min);
-    Column<T, M, N, J, K - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, J, K - 1>::compute(A, B, result, division_min);
   }
 };
 
 // if K == 0
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Column<T, M, N, J, 0> {
+struct Row<T, M, N, J, 0> {
   /**
-   * @brief Computes the element-wise division of the first column of a dense
+   * @brief Computes the element-wise division of the first row of a dense
    * matrix by a diagonal matrix.
    *
    * This function serves as the base case for the recursive division of each
-   * element in the first column of a dense matrix B by the corresponding
+   * element in the first row of a dense matrix B by the corresponding
    * diagonal element in a diagonal matrix A, storing the result in the
    * provided result matrix.
    *
@@ -1765,7 +1765,7 @@ struct Column<T, M, N, J, 0> {
 };
 
 // Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
+template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Column {
   /**
    * @brief Computes the element-wise division of a dense matrix by a diagonal
    * matrix, row by row.
@@ -1781,19 +1781,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
    */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Column<T, M, N, J, N - 1>::compute(A, B, result, division_min);
-    Row<T, M, N, J - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, J, N - 1>::compute(A, B, result, division_min);
+    Column<T, M, N, J - 1>::compute(A, B, result, division_min);
   }
 };
 
 // if J == 0
-template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   /**
-   * @brief Computes the element-wise division of the first row of a dense
+   * @brief Computes the element-wise division of the first column of a dense
    * matrix by a diagonal matrix.
    *
    * This function serves as the base case for the recursive division of each
-   * element in the first row of a dense matrix B by the corresponding diagonal
+   * element in the first column of a dense matrix B by the corresponding diagonal
    * element in a diagonal matrix A, storing the result in the provided result
    * matrix.
    *
@@ -1804,7 +1804,7 @@ template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
    */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Column<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
   }
 };
 
@@ -1824,7 +1824,7 @@ template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result, T division_min) {
-  Row<T, M, N, M - 1>::compute(A, B, result, division_min);
+  Column<T, M, N, M - 1>::compute(A, B, result, division_min);
 }
 
 } // namespace DiagMatrixInverseMultiplyMatrix

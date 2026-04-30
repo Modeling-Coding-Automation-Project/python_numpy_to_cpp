@@ -11,8 +11,8 @@
  * the optimal multiplication strategy based on the matrix types involved.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -35,13 +35,13 @@ namespace PythonNumpy {
  *
  * This function computes the matrix product of A and the transpose of B,
  * i.e., it returns the result of A * B^T. Both input matrices must have the
- * same number of columns (K). The resulting matrix will have the same number of
- * rows as A (M) and the same number of rows as B (N).
+ * same number of rows (K). The resulting matrix will have the same number of
+ * cols as A (M) and the same number of columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side matrix of size M x K.
  * @param B The right-hand side matrix of size N x K (to be transposed).
  * @return Matrix<DefDense, T, M, N> The result of A multiplied by B transposed.
@@ -60,12 +60,12 @@ inline auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of A and the transpose of a
  * diagonal matrix B, i.e., it returns the result of A * B^T. The resulting
- * matrix will have the same number of rows as A (M) and the same number of rows
+ * matrix will have the same number of columns as A (M) and the same number of columns
  * as B (K).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
  * @param A The left-hand side matrix of size M x K.
  * @param B The right-hand side diagonal matrix of size K.
  * @return Matrix<DefDense, T, M, K> The result of
@@ -84,12 +84,12 @@ inline auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of A and the transpose of a sparse
  * matrix B, i.e., it returns the result of A * B^T. The resulting matrix will
- * have the same number of rows as A (M) and the same number of rows as B (N).
+ * have the same number of columns as A (M) and the same number of columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side matrix of size M x K.
  * @param B The right-hand side sparse matrix of size N x K (to be transposed).
  * @return Matrix<DefDense, T, M, N> The result of
@@ -111,11 +111,11 @@ A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of a diagonal matrix A and the
  * transpose of matrix B, i.e., it returns the result of A * B^T. The resulting
- * matrix will have the same number of rows as A (M) and the same number of rows
+ * matrix will have the same number of columns as A (M) and the same number of columns
  * as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in matrix A and columns in B.
+ * @tparam M The number of columns in matrix A and rows in B.
  * @param A The left-hand side diagonal matrix of size M.
  * @param B The right-hand side matrix of size N x M (to be transposed).
  * @return Matrix<DefDense, T, M, N> The result of A multiplied by B transposed.
@@ -137,7 +137,7 @@ inline auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
  * diagonal matrix of size M.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in both diagonal matrices.
+ * @tparam M The number of columns in both diagonal matrices.
  * @param A The left-hand side diagonal matrix of size M.
  * @param B The right-hand side diagonal matrix of size M (to be transposed).
  * @return Matrix<DefDiag, T, M> The result of A multiplied by B transposed.
@@ -155,11 +155,11 @@ inline auto A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
  *
  * This function computes the matrix product of a diagonal matrix A and the
  * transpose of a sparse matrix B, i.e., it returns the result of A * B^T. The
- * resulting matrix will have the same number of rows as A (M) and the same
- * number of rows as B (N).
+ * resulting matrix will have the same number of columns as A (M) and the same
+ * number of columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in matrix A and columns in B.
+ * @tparam M The number of columns in matrix A and rows in B.
  * @param A The left-hand side diagonal matrix of size M.
  * @param B The right-hand side sparse matrix of size N x M (to be transposed).
  * @return Matrix<DefSparse, T, N, M, SparseAvailable> The result of
@@ -180,13 +180,13 @@ A_mul_BTranspose(const Matrix<DefDiag, T, M> &A,
  *
  * This function computes the matrix product of a sparse matrix A and the
  * transpose of a dense matrix B, i.e., it returns the result of A * B^T. The
- * resulting matrix will have the same number of rows as A (M) and the same
- * number of rows as B (N).
+ * resulting matrix will have the same number of columns as A (M) and the same
+ * number of columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side sparse matrix of size M x K.
  * @param B The right-hand side dense matrix of size N x K (to be transposed).
  * @return Matrix<DefDense, T, M, N> The result of A multiplied by B transposed.
@@ -207,12 +207,12 @@ A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
  *
  * This function computes the matrix product of a sparse matrix A and the
  * transpose of a diagonal matrix B, i.e., it returns the result of A * B^T.
- * The resulting matrix will have the same number of rows as A (M) and the same
- * number of rows as B (K).
+ * The resulting matrix will have the same number of columns as A (M) and the same
+ * number of columns as B (K).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
  * @param A The left-hand side sparse matrix of size M x K.
  * @param B The right-hand side diagonal matrix
  * of size K (to be transposed).
@@ -233,12 +233,12 @@ A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
  *
  * This function computes the matrix product of two sparse matrices A and B,
  * i.e., it returns the result of A * B^T. The resulting matrix will have the
- * same number of rows as A (M) and the same number of rows as B (N).
+ * same number of columns as A (M) and the same number of columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side sparse matrix of size M x K.
  * @param B The right-hand side sparse matrix of size N x K (to be transposed).
  * @return Matrix<DefSparse, T, M, N, SparseAvailable> The result of
@@ -274,12 +274,12 @@ using A_mul_BTranspose_Type =
  *
  * This function computes the matrix product of the transpose of A and B,
  * i.e., it returns the result of A^T * B. The resulting matrix will have the
- * same number of rows as A (M) and the same number of columns as B (K).
+ * same number of columns as A (M) and the same number of rows as B (K).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in matrix A.
- * @tparam K The number of rows in matrix A and B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam K The number of columns in matrix A and B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side matrix of size N x M (to be transposed).
  * @param B The right-hand side matrix of size N x K.
  * @return Matrix<DefDense, T, M, K> The result of A transposed multiplied by B.
@@ -298,11 +298,11 @@ inline auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
  *
  * This function computes the matrix product of the transpose of a diagonal
  * matrix A and B, i.e., it returns the result of A^T * B. The resulting matrix
- * will have the same number of rows as A (M) and the same number of columns as
+ * will have the same number of columns as A (M) and the same number of rows as
  * B (K).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in matrix A and columns in B.
+ * @tparam M The number of columns in matrix A and rows in B.
  * @param A The left-hand side diagonal matrix
  * of size M (to be transposed).
  * @param B The right-hand side matrix of size N x M.
@@ -323,13 +323,13 @@ inline auto ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
  *
  * This function computes the matrix product of the transpose of a sparse
  * matrix A and B, i.e., it returns the result of A^T * B. The resulting matrix
- * will have the same number of rows as A (M) and the same number of columns as
+ * will have the same number of columns as A (M) and the same number of rows as
  * B (K).
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in matrix A.
- * @tparam K The number of rows in matrix B.
- * @tparam N The number of columns in matrix B.
+ * @tparam M The number of columns in matrix A.
+ * @tparam K The number of columns in matrix B.
+ * @tparam N The number of rows in matrix B.
  * @param A The left-hand side sparse matrix of size N x M (to be transposed).
  * @param B The right-hand side dense matrix of size N x K.
  * @return Matrix<DefDense, T, M, K> The result of
@@ -354,8 +354,8 @@ ATranspose_mul_B(const Matrix<DefDense, T, N, M> &A,
  * dense matrix.
  *
  * @tparam T  The data type of the matrix elements.
- * @tparam K  The number of rows in matrix B and the result.
- * @tparam N  The number of columns in matrix A and the result.
+ * @tparam K  The number of columns in matrix B and the result.
+ * @tparam N  The number of rows in matrix A and the result.
  * @param A   The input diagonal matrix (DefDiag) of size NxN.
  * @param B   The input dense matrix (DefDense) of size NxK.
  * @return    A dense matrix (DefDense) of size NxK representing the product A^T
@@ -378,7 +378,7 @@ inline auto ATranspose_mul_B(const Matrix<DefDiag, T, N> &A,
  * as a diagonal matrix.
  *
  * @tparam T  The data type of the matrix elements.
- * @tparam M  The number of rows in both diagonal matrices.
+ * @tparam M  The number of columns in both diagonal matrices.
  * @param A   The input diagonal matrix (DefDiag) of size M.
  * @param B   The input diagonal matrix (DefDiag) of size M.
  * @return    A diagonal matrix (DefDiag) of size M representing the product A^T
@@ -401,8 +401,8 @@ inline auto ATranspose_mul_B(const Matrix<DefDiag, T, M> &A,
  * sparse matrix.
  *
  * @tparam T  The data type of the matrix elements.
- * @tparam M  The number of rows in matrix A and columns in B.
- * @tparam N  The number of columns in matrix B.
+ * @tparam M  The number of columns in matrix A and rows in B.
+ * @tparam N  The number of rows in matrix B.
  * @param A   The input diagonal matrix (DefDiag) of size M.
  * @param B   The input sparse matrix (DefSparse) of size N x M.
  * @return    A sparse matrix (DefSparse) of size M x N representing the product
@@ -424,8 +424,8 @@ ATranspose_mul_B(const Matrix<DefDiag, T, M> &A,
  * a dense matrix B, returning the result as a dense matrix.
  *
  * @tparam T  The data type of the matrix elements.
- * @tparam M  The number of rows in matrix A and columns in B.
- * @tparam K  The number of rows in matrix B.
+ * @tparam M  The number of columns in matrix A and rows in B.
+ * @tparam K  The number of columns in matrix B.
  * @param A   The input sparse matrix (DefSparse) of
  * size N x M (to be transposed).
  * @param B   The input dense matrix (DefDense) of size N x K.
@@ -452,8 +452,8 @@ ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable> &A,
  * pattern determined by SparseAvailableTranspose<SparseAvailable>.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the original matrix A.
- * @tparam N The number of rows in the original matrix A (and the size of the
+ * @tparam M The number of rows in the original matrix A.
+ * @tparam N The number of columns in the original matrix A (and the size of the
  * diagonal matrix B).
  * @tparam SparseAvailable The sparsity pattern or trait for the input matrix A.
  *
@@ -485,9 +485,9 @@ ATranspose_mul_B(const Matrix<DefSparse, T, N, M, SparseAvailable> &A,
  * SparseAvailable_B>.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of rows in the original matrix A.
- * @tparam K The number of rows in the original matrix B.
- * @tparam N The number of columns in both matrices A and B.
+ * @tparam M The number of columns in the original matrix A.
+ * @tparam K The number of columns in the original matrix B.
+ * @tparam N The number of rows in both matrices A and B.
  * @tparam SparseAvailable_A The sparsity pattern or trait for the input matrix
  * A.
  * @tparam SparseAvailable_B The sparsity pattern or trait for the input matrix
