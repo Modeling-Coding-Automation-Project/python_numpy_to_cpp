@@ -244,7 +244,7 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
   }
 };
 
-// row_index loop
+// column index loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Col_Index_Count>
 struct BackwardSubstitution_ColLoop {
@@ -280,7 +280,7 @@ struct BackwardSubstitution_ColLoop {
   }
 };
 
-// row_index loop terminate
+// column index loop terminate
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T>
 struct BackwardSubstitution_ColLoop<Upper_Triangular_Matrix_Type,
