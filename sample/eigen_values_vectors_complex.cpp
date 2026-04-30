@@ -33,8 +33,8 @@ int main() {
   auto eigen_vectors_c = solver_c_t.get_eigen_vectors();
 
   std::cout << "eigen_values_c = " << std::endl;
-  for (size_t j = 0; j < eigen_values_c.cols(); ++j) {
-    for (size_t i = 0; i < eigen_values_c.rows(); ++i) {
+  for (size_t j = 0; j < eigen_values_c.rows(); ++j) {
+    for (size_t i = 0; i < eigen_values_c.cols(); ++i) {
       std::cout << "[" << eigen_values_c(j, i).real << ", "
                 << eigen_values_c(j, i).imag << "j], ";
     }
@@ -43,8 +43,8 @@ int main() {
   std::cout << std::endl;
 
   std::cout << "eigen_vectors_c = " << std::endl;
-  for (size_t j = 0; j < eigen_vectors_c.cols(); ++j) {
-    for (size_t i = 0; i < eigen_vectors_c.rows(); ++i) {
+  for (size_t j = 0; j < eigen_vectors_c.rows(); ++j) {
+    for (size_t i = 0; i < eigen_vectors_c.cols(); ++i) {
       std::cout << "[" << eigen_vectors_c(j, i).real << ", "
                 << eigen_vectors_c(j, i).imag << "j], ";
     }
@@ -59,8 +59,8 @@ int main() {
       A_c_comp * eigen_vectors_c - eigen_vectors_c * eigen_values_matrix;
 
   std::cout << "result = " << std::endl;
-  for (size_t j = 0; j < result.cols(); ++j) {
-    for (size_t i = 0; i < result.rows(); ++i) {
+  for (size_t j = 0; j < result.rows(); ++j) {
+    for (size_t i = 0; i < result.cols(); ++i) {
       std::cout << "[" << result(j, i).real << ", " << result(j, i).imag
                 << "j], ";
     }

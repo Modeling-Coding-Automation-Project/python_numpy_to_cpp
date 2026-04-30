@@ -10,8 +10,8 @@
  * complex types through template specialization and SFINAE.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -50,8 +50,8 @@ struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, true> {
    * original matrix dimensions.
    *
    * @tparam T The type of the real part of the complex numbers.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input matrix containing complex numbers.
    * @return Base::Matrix::Matrix<T, M, N> A matrix containing the real parts of
    * the input matrix.
@@ -72,8 +72,8 @@ struct GetRealFromComplexDenseMatrix<T, Complex_T, M, N, false> {
    * as it is assumed to be a matrix of real numbers.
    *
    * @tparam T The type of the elements in the matrix.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input matrix containing real numbers.
    * @return Base::Matrix::Matrix<T, M, N> The input matrix itself.
    */
@@ -98,8 +98,8 @@ struct GetImagFromComplexDenseMatrix<T, Complex_T, M, N, true> {
    * the original matrix dimensions.
    *
    * @tparam T The type of the imaginary part of the complex numbers.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input matrix containing complex numbers.
    * @return Base::Matrix::Matrix<T, M, N> A matrix containing the imaginary
    * parts of the input matrix.
@@ -121,8 +121,8 @@ struct GetImagFromComplexDenseMatrix<T, Complex_T, M, N, false> {
    * extract.
    *
    * @tparam T The type of the elements in the matrix.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input matrix containing real numbers.
    * @return Base::Matrix::Matrix<T, M, N> An empty matrix of type T with
    * dimensions M x N.
@@ -238,8 +238,8 @@ struct GetImagFromComplexDiagMatrix<T, Complex_T, M, false> {
  * SparseAvailable type.
  *
  * @tparam T The type of the elements in the sparse matrix.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix.
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix.
  * @tparam SparseAvailable A type that provides row indices and pointers for
  * the sparse matrix.
  */
@@ -264,8 +264,8 @@ struct GetRealFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
    * preserving the original matrix dimensions.
    *
    * @tparam T The type of the real part of the complex numbers.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input sparse matrix containing complex numbers.
    * @return BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> A sparse
    * matrix containing the real parts of the input matrix.
@@ -289,8 +289,8 @@ struct GetRealFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
    * changes, as it is assumed to be a matrix of real numbers.
    *
    * @tparam T The type of the elements in the sparse matrix.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input sparse matrix containing real numbers.
    * @return BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> The input
    * sparse matrix itself.
@@ -318,8 +318,8 @@ struct GetImagFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
    * element, preserving the original matrix dimensions.
    *
    * @tparam T The type of the imaginary part of the complex numbers.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input sparse matrix containing complex numbers.
    * @return BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> A sparse
    * matrix containing the imaginary parts of the input matrix.
@@ -344,8 +344,8 @@ struct GetImagFromComplexSparseMatrix<T, Complex_T, M, N, SparseAvailable,
    * imaginary parts to extract.
    *
    * @tparam T The type of the elements in the sparse matrix.
-   * @tparam M The number of columns in the matrix.
-   * @tparam N The number of rows in the matrix.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
    * @param input The input sparse matrix containing real numbers.
    * @return BaseMatrixSparseMatrix_Type<T, M, N, SparseAvailable> An empty
    * sparse matrix of type T with dimensions M x N.

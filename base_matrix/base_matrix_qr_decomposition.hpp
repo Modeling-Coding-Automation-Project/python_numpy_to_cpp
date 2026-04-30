@@ -8,8 +8,8 @@
  * fundamental matrix factorization technique used in numerical linear algebra.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -37,17 +37,17 @@ constexpr double DEFAULT_DIVISION_MIN_QR = 1.0e-10;
 /* Given's Rotation */
 
 /**
- * @brief Performs a Givens rotation on the specified rows of the matrix.
+ * @brief Performs a Givens rotation on the specified cols of the matrix.
  *
- * This function applies a Givens rotation to the rows i and j of the R_matrix
+ * This function applies a Givens rotation to the cols i and j of the R_matrix
  * and updates the Q_matrix accordingly. The rotation is used to zero out the
  * element at (i, j) in the R_matrix.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the Q_matrix.
- * @tparam N The number of rows in the R_matrix.
- * @param i The index of the first row to rotate.
- * @param j The index of the second row to rotate.
+ * @tparam M The number of rows in the Q_matrix.
+ * @tparam N The number of columns in the R_matrix.
+ * @param i The index of the first column to rotate.
+ * @param j The index of the second column to rotate.
  * @param Q_matrix The orthogonal matrix being built.
  * @param R_matrix The matrix being decomposed.
  * @param division_min A small value to avoid division by zero.
@@ -111,8 +111,8 @@ qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> Q_matrix,
  * triangular matrix R such that A = Q * R.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  */
 template <typename T, std::size_t M, std::size_t N> class QRDecomposition {
 public:
@@ -225,14 +225,14 @@ protected:
   }
 
   /**
-   * @brief Applies a Givens rotation to the specified rows of the matrix.
+   * @brief Applies a Givens rotation to the specified cols of the matrix.
    *
-   * This function performs a Givens rotation on the rows i and j of the
+   * This function performs a Givens rotation on the cols i and j of the
    * R_matrix and updates the Q_matrix accordingly. The rotation is used to zero
    * out the element at (i, j) in the R_matrix.
    *
-   * @param i The index of the first row to rotate.
-   * @param j The index of the second row to rotate.
+   * @param i The index of the first column to rotate.
+   * @param j The index of the second column to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
     std::tie(this->_Q_matrix, this->_R_matrix) =
@@ -250,7 +250,7 @@ protected:
  * the decomposition accordingly.
  *
  * @tparam T The type of elements in the diagonal matrix.
- * @tparam M The size of the diagonal matrix (number of rows/columns).
+ * @tparam M The size of the diagonal matrix (number of columns/rows).
  */
 template <typename T, std::size_t M> class QRDecompositionDiag {
 public:
@@ -337,8 +337,8 @@ protected:
  * an orthogonal matrix Q and an upper triangular matrix R.
  *
  * @tparam T The type of elements in the sparse matrix.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix.
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing row indices of the sparse matrix.
  * @tparam RowPointers_A Type representing row pointers of the sparse matrix.
  */
@@ -461,14 +461,14 @@ protected:
   }
 
   /**
-   * @brief Applies a Givens rotation to the specified rows of the matrix.
+   * @brief Applies a Givens rotation to the specified cols of the matrix.
    *
-   * This function performs a Givens rotation on the rows i and j of the
+   * This function performs a Givens rotation on the cols i and j of the
    * R_matrix and updates the Q_matrix accordingly. The rotation is used to zero
    * out the element at (i, j) in the R_matrix.
    *
-   * @param i The index of the first row to rotate.
-   * @param j The index of the second row to rotate.
+   * @param i The index of the first column to rotate.
+   * @param j The index of the second column to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
     std::tie(this->_Q_matrix, this->_R_matrix) =

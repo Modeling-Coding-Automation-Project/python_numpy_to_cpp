@@ -9,8 +9,8 @@
  * providing interfaces to compute and retrieve the Q and R factors.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -129,7 +129,7 @@ struct BackwardSubstitution_I_Loop {
 
     compute_conditional(
         R, matrix_in, matrix_out, division_min,
-        std::integral_constant<bool, (I + 1) < Matrix_Out_Type::ROWS>{});
+        std::integral_constant<bool, (I + 1) < Matrix_Out_Type::COLS>{});
   }
 
 private:
@@ -151,7 +151,7 @@ private:
                                   const T &division_min, std::true_type) {
 
     constexpr std::size_t I = I_Count;
-    constexpr int End_Index_Value = Matrix_Out_Type::COLS - (I + 1);
+    constexpr int End_Index_Value = Matrix_Out_Type::ROWS - (I + 1);
 
     T sum = matrix_in.template get<I, Row_Index>();
 
@@ -227,7 +227,7 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
 
-    constexpr int End_Index_Value = Matrix_Out_Type::COLS - 1;
+    constexpr int End_Index_Value = Matrix_Out_Type::ROWS - 1;
 
     T sum = matrix_in.template get<0, Row_Index>();
 
@@ -249,9 +249,9 @@ template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Row_Index_Count>
 struct BackwardSubstitution_RowLoop {
   /**
-   * @brief Computes the backward substitution for the row loop in the QR
+   * @brief Computes the backward substitution for the column loop in the QR
    * decomposition.
-   * This function computes the backward substitution for the row loop, updating
+   * This function computes the backward substitution for the column loop, updating
    * the output matrix with the computed values based on the upper triangular
    * matrix R and the input matrix.
    * @param R The upper triangular matrix from QR decomposition.
@@ -264,11 +264,11 @@ struct BackwardSubstitution_RowLoop {
                       Matrix_Out_Type &matrix_out, const T &division_min) {
 
     constexpr std::size_t Row_Index =
-        (Matrix_In_Type::ROWS - 1) - Row_Index_Count;
+        (Matrix_In_Type::COLS - 1) - Row_Index_Count;
 
     BackwardSubstitution_I_Loop<
         Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
-        Row_Index, (Matrix_Out_Type::COLS - 1)>::compute(R, matrix_in,
+        Row_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
                                                          matrix_out,
                                                          division_min);
 
@@ -287,9 +287,9 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
                                     Matrix_In_Type, Matrix_Out_Type, T, 0> {
 
   /**
-   * @brief Computes the backward substitution for the row loop in the QR
+   * @brief Computes the backward substitution for the column loop in the QR
    * decomposition.
-   * This function computes the backward substitution for the row loop, updating
+   * This function computes the backward substitution for the column loop, updating
    * the output matrix with the computed values based on the upper triangular
    * matrix R and the input matrix.
    * @param R The upper triangular matrix from QR decomposition.
@@ -301,11 +301,11 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
 
-    constexpr std::size_t Row_Index = Matrix_In_Type::ROWS - 1;
+    constexpr std::size_t Row_Index = Matrix_In_Type::COLS - 1;
 
     BackwardSubstitution_I_Loop<
         Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
-        Row_Index, (Matrix_Out_Type::COLS - 1)>::compute(R, matrix_in,
+        Row_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
                                                          matrix_out,
                                                          division_min);
   }
@@ -342,13 +342,13 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
                    Base::Matrix::Is_CompiledSparseMatrix>::value,
       "Upper_Triangular_Matrix_Type must be a compiled sparse matrix type.");
 
-  static_assert(Upper_Triangular_Matrix_Type::COLS == Matrix_Out_Type::COLS,
-                "The number of columns in the upper triangular matrix R must "
-                "match the number of columns in the input matrix.");
-  static_assert(Upper_Triangular_Matrix_Type::COLS >=
-                    Upper_Triangular_Matrix_Type::ROWS,
+  static_assert(Upper_Triangular_Matrix_Type::ROWS == Matrix_Out_Type::ROWS,
+                "The number of rows in the upper triangular matrix R must "
+                "match the number of rows in the input matrix.");
+  static_assert(Upper_Triangular_Matrix_Type::ROWS >=
+                    Upper_Triangular_Matrix_Type::COLS,
                 "The upper triangular matrix R must have at least as many "
-                "columns as rows.");
+                "rows as cols.");
 
   static_assert(Is_Dense_Matrix<Matrix_In_Type>::value ||
                     Is_Diag_Matrix<Matrix_In_Type>::value ||
@@ -362,7 +362,7 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
 
   BackwardSubstitution_RowLoop<
       Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
-      (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in, matrix_out,
+      (Matrix_Out_Type::COLS - 1)>::compute(R, matrix_in, matrix_out,
                                             division_min);
 }
 
@@ -377,8 +377,8 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
  * point values.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  */
 template <typename T, std::size_t M, std::size_t N> class LinalgSolverQR {
 public:
@@ -388,7 +388,7 @@ public:
                 "Value data type must be float or double.");
 
   /* Check Compatibility */
-  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+  static_assert(M >= N, "only supports M >= N (rows >= cols) "
                         "for QR decomposition.");
 
 protected:
@@ -446,14 +446,14 @@ public:
    */
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
-      -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
+      -> DenseMatrix_Type<T, Matrix_In_Type::ROWS, Matrix_In_Type::COLS> {
     static_assert(
-        Matrix_In_Type::COLS == M,
-        "The number of columns in the input matrix must match the number of "
-        "columns in the diagonal matrix.");
+        Matrix_In_Type::ROWS == M,
+        "The number of rows in the input matrix must match the number of "
+        "rows in the diagonal matrix.");
 
     using Backward_Substitution_Out_Type =
-        DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS>;
+        DenseMatrix_Type<T, Matrix_In_Type::ROWS, Matrix_In_Type::COLS>;
 
     Backward_Substitution_Out_Type matrix_out;
 
@@ -529,8 +529,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = N;
+  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = N;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -552,7 +552,7 @@ protected:
  * point values.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of columns in the diagonal matrix.
+ * @tparam M The number of rows in the diagonal matrix.
  */
 template <typename T, std::size_t M> class LinalgSolverQRDiag {
 public:
@@ -597,9 +597,9 @@ public:
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
       -> DenseMatrix_Type<T, M, M> {
-    static_assert(Matrix_In_Type::COLS == M,
-                  "The number of columns in the input matrix must match the "
-                  "number of columns in the diagonal matrix.");
+    static_assert(Matrix_In_Type::ROWS == M,
+                  "The number of rows in the input matrix must match the "
+                  "number of rows in the diagonal matrix.");
 
     using Backward_Substitution_Out_Type = DenseMatrix_Type<T, M, M>;
 
@@ -657,8 +657,8 @@ protected:
  * point values, and uses a sparse representation for the R matrix.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix.
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix.
  * @tparam SparseAvailable A type indicating the availability of sparse storage.
  */
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
@@ -670,7 +670,7 @@ public:
                 "Value data type must be float or double.");
 
   /* Check Compatibility */
-  static_assert(M >= N, "only supports M >= N (columns >= rows) "
+  static_assert(M >= N, "only supports M >= N (rows >= cols) "
                         "for QR decomposition.");
 
 protected:
@@ -728,14 +728,14 @@ public:
    */
   template <typename Matrix_In_Type>
   inline auto backward_substitution(const Matrix_In_Type &matrix_in)
-      -> DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS> {
+      -> DenseMatrix_Type<T, Matrix_In_Type::ROWS, Matrix_In_Type::COLS> {
     static_assert(
-        Matrix_In_Type::COLS == M,
-        "The number of columns in the input matrix must match the number of "
-        "columns in the diagonal matrix.");
+        Matrix_In_Type::ROWS == M,
+        "The number of rows in the input matrix must match the number of "
+        "rows in the diagonal matrix.");
 
     using Backward_Substitution_Out_Type =
-        DenseMatrix_Type<T, Matrix_In_Type::COLS, Matrix_In_Type::ROWS>;
+        DenseMatrix_Type<T, Matrix_In_Type::ROWS, Matrix_In_Type::COLS>;
 
     Backward_Substitution_Out_Type matrix_out;
 
@@ -808,8 +808,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = N;
+  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = N;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -844,10 +844,10 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverQR(void)
-    -> LinalgSolverQR<typename A_Type::Value_Type, A_Type::COLS, A_Type::ROWS> {
+    -> LinalgSolverQR<typename A_Type::Value_Type, A_Type::ROWS, A_Type::COLS> {
 
-  return LinalgSolverQR<typename A_Type::Value_Type, A_Type::COLS,
-                        A_Type::ROWS>();
+  return LinalgSolverQR<typename A_Type::Value_Type, A_Type::ROWS,
+                        A_Type::COLS>();
 }
 
 /**
@@ -855,7 +855,7 @@ inline auto make_LinalgSolverQR(void)
  * matrices.
  *
  * This function creates an instance of LinalgSolverQRDiag specifically for
- * diagonal matrices, using the value type and number of columns from the input
+ * diagonal matrices, using the value type and number of rows from the input
  * matrix type.
  *
  * @tparam A_Type The type of the input diagonal matrix.
@@ -864,9 +864,9 @@ inline auto make_LinalgSolverQR(void)
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverQR(void)
-    -> LinalgSolverQRDiag<typename A_Type::Value_Type, A_Type::COLS> {
+    -> LinalgSolverQRDiag<typename A_Type::Value_Type, A_Type::ROWS> {
 
-  return LinalgSolverQRDiag<typename A_Type::Value_Type, A_Type::COLS>();
+  return LinalgSolverQRDiag<typename A_Type::Value_Type, A_Type::ROWS>();
 }
 
 /**
@@ -874,7 +874,7 @@ inline auto make_LinalgSolverQR(void)
  * matrices.
  *
  * This function creates an instance of LinalgSolverQRSparse specifically for
- * sparse matrices, using the value type, number of columns, rows, and sparse
+ * sparse matrices, using the value type, number of rows, cols, and sparse
  * availability from the input matrix type.
  *
  * @tparam A_Type The type of the input sparse matrix.
@@ -884,12 +884,12 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverQR(void)
-    -> LinalgSolverQRSparse<typename A_Type::Value_Type, A_Type::COLS,
-                            A_Type::ROWS,
+    -> LinalgSolverQRSparse<typename A_Type::Value_Type, A_Type::ROWS,
+                            A_Type::COLS,
                             typename A_Type::SparseAvailable_Type> {
 
-  return LinalgSolverQRSparse<typename A_Type::Value_Type, A_Type::COLS,
-                              A_Type::ROWS,
+  return LinalgSolverQRSparse<typename A_Type::Value_Type, A_Type::ROWS,
+                              A_Type::COLS,
                               typename A_Type::SparseAvailable_Type>();
 }
 

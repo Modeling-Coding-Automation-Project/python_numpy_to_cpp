@@ -11,8 +11,8 @@
  * transpose, etc.) and conversions between matrix types.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -44,13 +44,13 @@ class Matrix;
  * @brief Dense matrix class template specialization for DefDense storage.
  *
  * This class represents a fixed-size dense matrix with elements of type T,
- * with dimensions M (columns) x N (rows). It provides constructors for various
+ * with dimensions M (rows) x N (cols). It provides constructors for various
  * initialization methods, copy/move semantics, element access, and common
  * matrix operations such as transpose and conversion to complex types.
  *
  * @tparam T   Element type of the matrix (e.g., float, double, std::complex).
- * @tparam M   Number of columns in the matrix.
- * @tparam N   Number of rows in the matrix.
+ * @tparam M   Number of rows in the matrix.
+ * @tparam N   Number of columns in the matrix.
  *
  * @note
  * - The underlying storage is provided by Base::Matrix::Matrix<T, M, N>.
@@ -110,36 +110,36 @@ public:
    * @brief Retrieves the element at the specified column and row indices from
    * the matrix.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than N).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than N).
    * @return T The value at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline T get() const {
-    static_assert(COL < M, "Column Index is out of range.");
-    static_assert(ROW < N, "Row Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline T get() const {
+    static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < N, "Column Index is out of range.");
 
-    return matrix.template get<COL, ROW>();
+    return matrix.template get<ROW, COL>();
   }
 
   /**
    * @brief Sets the element at the specified column and row indices to the
    * provided value.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than N).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than N).
    * @param value The value to set at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
-    static_assert(COL < M, "Column Index is out of range.");
-    static_assert(ROW < N, "Row Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
+    static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < N, "Column Index is out of range.");
 
-    matrix.template set<COL, ROW>(value);
+    matrix.template set<ROW, COL>(value);
   }
 
   /**
@@ -147,14 +147,14 @@ public:
    *
    * @return Base::Matrix::Matrix<T, M, N> The underlying matrix data.
    */
-  constexpr std::size_t rows() const { return ROWS; }
+  constexpr std::size_t cols() const { return COLS; }
 
   /**
-   * @brief Retrieves the number of columns in the matrix.
+   * @brief Retrieves the number of rows in the matrix.
    *
-   * @return std::size_t The number of columns in the matrix.
+   * @return std::size_t The number of rows in the matrix.
    */
-  constexpr std::size_t cols() const { return COLS; }
+  constexpr std::size_t rows() const { return ROWS; }
 
   /**
    * @brief Retrieves the number of elements in the matrix.
@@ -259,7 +259,7 @@ public:
    * @brief Transposes the matrix.
    *
    * This method returns a new matrix that is the transpose of the current
-   * matrix, swapping rows and columns.
+   * matrix, swapping cols and rows.
    *
    * @return Matrix<DefDense, T, N, M> A new matrix that is the transpose of the
    * current matrix.
@@ -316,8 +316,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t ROWS = N;
-  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
@@ -335,7 +335,7 @@ public:
  * such as transpose and conversion to complex types.
  *
  * @tparam T   Element type of the matrix (e.g., float, double, std::complex).
- * @tparam M   Number of columns/rows in the square matrix.
+ * @tparam M   Number of rows/cols in the square matrix.
  *
  * @note
  * - The underlying storage is provided by Base::Matrix::DiagMatrix<T, M>.
@@ -459,36 +459,36 @@ public:
    * @brief Gets the value at the specified column and row indices from the
    * diagonal matrix.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than M).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than M).
    * @return T The value at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline T get() const {
-    static_assert(COL < M, "Column Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline T get() const {
     static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < M, "Column Index is out of range.");
 
-    return GetSetDiagMatrix<T, M, COL, (COL - ROW)>::get_value(this->matrix);
+    return GetSetDiagMatrix<T, M, ROW, (ROW - COL)>::get_value(this->matrix);
   }
 
   /**
    * @brief Sets the element at the specified column and row indices to the
    * provided value.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than M).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than M).
    * @param value The value to set at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
-    static_assert(COL < M, "Column Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
     static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < M, "Column Index is out of range.");
 
-    GetSetDiagMatrix<T, M, COL, (COL - ROW)>::set_value(this->matrix, value);
+    GetSetDiagMatrix<T, M, ROW, (ROW - COL)>::set_value(this->matrix, value);
   }
 
   /**
@@ -496,15 +496,15 @@ public:
    *
    * @return Base::Matrix::DiagMatrix<T, M> The underlying diagonal matrix data.
    */
-  constexpr std::size_t rows() const { return ROWS; }
+  constexpr std::size_t cols() const { return COLS; }
 
   /**
-   * @brief Retrieves the number of columns in the diagonal matrix.
+   * @brief Retrieves the number of rows in the diagonal matrix.
    *
-   * @return std::size_t The number of columns in the diagonal matrix (equal to
+   * @return std::size_t The number of rows in the diagonal matrix (equal to
    * M).
    */
-  constexpr std::size_t cols() const { return COLS; }
+  constexpr std::size_t rows() const { return ROWS; }
 
   /**
    * @brief Retrieves the number of elements in the diagonal matrix.
@@ -665,8 +665,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
@@ -684,8 +684,8 @@ public:
  * such as transpose and conversion to complex types.
  *
  * @tparam T   Element type of the matrix (e.g., float, double, std::complex).
- * @tparam M   Number of columns in the matrix.
- * @tparam N   Number of rows in the matrix.
+ * @tparam M   Number of rows in the matrix.
+ * @tparam N   Number of columns in the matrix.
  * @tparam SparseAvailable Type indicating the availability of sparse features.
  *
  * @note
@@ -769,18 +769,18 @@ public:
    * @brief Retrieves the element at the specified column and row indices from
    * the sparse matrix.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than N).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than N).
    * @return T The value at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline T get() const {
-    static_assert(COL < M, "Column Index is out of range.");
-    static_assert(ROW < N, "Row Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline T get() const {
+    static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < N, "Column Index is out of range.");
 
-    return Base::Matrix::get_sparse_matrix_value<COL, ROW>(this->matrix);
+    return Base::Matrix::get_sparse_matrix_value<ROW, COL>(this->matrix);
   }
 
   /**
@@ -805,18 +805,18 @@ public:
    * @brief Sets the element at the specified column and row indices to the
    * provided value.
    *
-   * @tparam COL The zero-based column index (must be less than M).
-   * @tparam ROW The zero-based row index (must be less than N).
+   * @tparam ROW The zero-based column index (must be less than M).
+   * @tparam COL The zero-based row index (must be less than N).
    * @param value The value to set at the specified column and row.
    *
    * @note Compile-time assertions ensure that the provided indices are within
    * valid bounds.
    */
-  template <std::size_t COL, std::size_t ROW> inline void set(const T &value) {
-    static_assert(COL < M, "Column Index is out of range.");
-    static_assert(ROW < N, "Row Index is out of range.");
+  template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
+    static_assert(ROW < M, "Row Index is out of range.");
+    static_assert(COL < N, "Column Index is out of range.");
 
-    Base::Matrix::set_sparse_matrix_value<COL, ROW>(this->matrix, value);
+    Base::Matrix::set_sparse_matrix_value<ROW, COL>(this->matrix, value);
   }
 
   /**
@@ -842,15 +842,15 @@ public:
    *
    * @return _BaseMatrix_Type The underlying sparse matrix data.
    */
-  constexpr std::size_t rows() const { return ROWS; }
+  constexpr std::size_t cols() const { return COLS; }
 
   /**
-   * @brief Retrieves the number of columns in the sparse matrix.
+   * @brief Retrieves the number of rows in the sparse matrix.
    *
-   * @return std::size_t The number of columns in the sparse matrix (equal to
+   * @return std::size_t The number of rows in the sparse matrix (equal to
    * M).
    */
-  constexpr std::size_t cols() const { return COLS; }
+  constexpr std::size_t rows() const { return ROWS; }
 
   /**
    * @brief Retrieves the number of elements in the sparse matrix.
@@ -926,7 +926,7 @@ public:
    * @brief Transposes the sparse matrix.
    *
    * This method returns a new sparse matrix that is the transpose of the
-   * current matrix, swapping rows and columns.
+   * current matrix, swapping cols and rows.
    *
    * @return Matrix<DefSparse, T, N, M,
    * SparseAvailableTranspose<SparseAvailable>> A new sparse matrix that is the
@@ -993,8 +993,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t ROWS = N;
-  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = M;
 
   static constexpr std::size_t NumberOfValues = _RowPointers_Type::list[M];
 
@@ -1015,8 +1015,8 @@ public:
  * matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The first matrix to add.
  * @param B The second matrix to add.
  * @return Matrix<DefDense, T, M, N> A new matrix containing the sum of A and B.
@@ -1037,7 +1037,7 @@ inline auto operator+(const Matrix<DefDense, T, M, N> &A,
  * the sum of the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The dense matrix to add.
  * @param B The diagonal matrix to add.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the sum of A
@@ -1060,8 +1060,8 @@ inline auto operator+(const Matrix<DefDense, T, M, N> &A,
  * the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The dense matrix to add.
  * @param B The sparse matrix to add.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the sum of A
@@ -1083,7 +1083,7 @@ inline auto operator+(const Matrix<DefDense, T, M, N> &A,
  * sum of the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to add.
  * @param B The dense matrix to add.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the sum of A
@@ -1106,7 +1106,7 @@ inline auto operator+(const Matrix<DefDiag, T, M> &A,
  * matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The first diagonal matrix to add.
  * @param B The second diagonal matrix to add.
  * @return Matrix<DefDiag, T, M> A new diagonal matrix containing the sum of A
@@ -1127,7 +1127,7 @@ inline auto operator+(const Matrix<DefDiag, T, M> &A,
  * sum of the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to add.
  * @param B The sparse matrix to add.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the sum of
@@ -1153,8 +1153,8 @@ inline auto operator+(const Matrix<DefDiag, T, M> &A,
  * the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The sparse matrix to add.
  * @param B The dense matrix to add.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the sum of A
@@ -1176,7 +1176,7 @@ inline auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * the sum of the two matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The sparse matrix to add.
  * @param B The diagonal matrix to add.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the sum of
@@ -1202,8 +1202,8 @@ inline auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * of the two input matrices.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The first sparse matrix to add.
  * @param B The second sparse matrix to add.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the sum of
@@ -1233,8 +1233,8 @@ inline auto operator+(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The matrix to subtract from.
  * @param B The matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new matrix containing the result of A -
@@ -1255,7 +1255,7 @@ inline auto operator-(const Matrix<DefDense, T, M, N> &A)
  * the result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to subtract from.
  * @param B The dense matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1275,8 +1275,8 @@ inline auto operator-(const Matrix<DefDiag, T, M> &A) -> Matrix<DefDiag, T, M> {
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The dense matrix to subtract from.
  * @param B The sparse matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1297,8 +1297,8 @@ inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A)
  * containing the result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The first dense matrix to subtract from.
  * @param B The second dense matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1320,7 +1320,7 @@ inline auto operator-(const Matrix<DefDense, T, M, N> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The dense matrix to subtract from.
  * @param B The diagonal matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1343,8 +1343,8 @@ inline auto operator-(const Matrix<DefDense, T, M, N> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The dense matrix to subtract from.
  * @param B The sparse matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1366,7 +1366,7 @@ inline auto operator-(const Matrix<DefDense, T, M, N> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to subtract from.
  * @param B The dense matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1389,7 +1389,7 @@ inline auto operator-(const Matrix<DefDiag, T, M> &A,
  * matrix containing the result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The first diagonal matrix to subtract from.
  * @param B The second diagonal matrix to subtract.
  * @return Matrix<DefDiag, T, M> A new diagonal matrix containing the result of
@@ -1411,7 +1411,7 @@ inline auto operator-(const Matrix<DefDiag, T, M> &A,
  * the result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to subtract from.
  * @param B The sparse matrix to subtract.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the result
@@ -1437,8 +1437,8 @@ inline auto operator-(const Matrix<DefDiag, T, M> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The sparse matrix to subtract from.
  * @param B The dense matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1460,8 +1460,8 @@ inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The sparse matrix to subtract from.
  * @param B The dense matrix to subtract.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1487,8 +1487,8 @@ inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * containing the result of the subtraction.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param A The first sparse matrix to subtract from.
  * @param B The second sparse matrix to subtract.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the result
@@ -1518,8 +1518,8 @@ inline auto operator-(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  * multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param a The scalar to multiply with.
  * @param B The dense matrix to multiply.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1540,8 +1540,8 @@ inline auto operator*(const T &a, const Matrix<DefDense, T, M, N> &B)
  * multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param B The dense matrix to multiply.
  * @param a The scalar to multiply with.
  * @return Matrix<DefDense, T, M, N> A new dense matrix containing the result of
@@ -1562,7 +1562,7 @@ inline auto operator*(const Matrix<DefDense, T, M, N> &B, const T &a)
  * the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param a The scalar to multiply with.
  * @param B The diagonal matrix to multiply.
  * @return Matrix<DefDiag, T, M> A new diagonal matrix containing the result of
@@ -1583,7 +1583,7 @@ inline auto operator*(const T &a, const Matrix<DefDiag, T, M> &B)
  * multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param B The diagonal matrix to multiply.
  * @param a The scalar to multiply with.
  * @return Matrix<DefDiag, T, M> A new diagonal matrix containing the result of
@@ -1604,8 +1604,8 @@ inline auto operator*(const Matrix<DefDiag, T, M> &B, const T &a)
  * multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param a The scalar to multiply with.
  * @param B The sparse matrix to multiply.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the result
@@ -1627,8 +1627,8 @@ inline auto operator*(const T &a,
  * multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param B The sparse matrix to multiply.
  * @param a The scalar to multiply with.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the result
@@ -1652,10 +1652,10 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &B,
  * the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the first matrix.
- * @tparam N The number of rows in the first matrix and columns in the second
+ * @tparam M The number of rows in the first matrix.
+ * @tparam N The number of columns in the first matrix and rows in the second
  * matrix.
- * @tparam K The number of rows in the second matrix.
+ * @tparam K The number of columns in the second matrix.
  * @param A The first dense matrix to multiply.
  * @param B The second dense matrix to multiply.
  * @return Matrix<DefDense, T, M, K> A new dense matrix containing the result of
@@ -1677,9 +1677,9 @@ inline auto operator*(const Matrix<DefDense, T, M, N> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the dense matrix and rows in the diagonal
+ * @tparam M The number of rows in the dense matrix and cols in the diagonal
  * matrix.
- * @tparam N The number of rows in the dense matrix and columns in the diagonal
+ * @tparam N The number of columns in the dense matrix and rows in the diagonal
  * matrix.
  * @param A The dense matrix to multiply.
  * @param B The diagonal matrix to multiply.
@@ -1702,9 +1702,9 @@ inline auto operator*(const Matrix<DefDense, T, M, N> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the dense matrix and rows in the sparse
+ * @tparam M The number of rows in the dense matrix and cols in the sparse
  * matrix.
- * @tparam N The number of rows in the dense matrix and columns in the sparse
+ * @tparam N The number of columns in the dense matrix and rows in the sparse
  * matrix.
  * @param A The dense matrix to multiply.
  * @param B The sparse matrix to multiply.
@@ -1728,9 +1728,9 @@ inline auto operator*(const Matrix<DefDense, T, M, N> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the diagonal matrix and rows in the dense
+ * @tparam M The number of rows in the diagonal matrix and cols in the dense
  * matrix.
- * @tparam N The number of rows in the diagonal matrix and columns in the dense
+ * @tparam N The number of columns in the diagonal matrix and rows in the dense
  * matrix.
  * @param A The diagonal matrix to multiply.
  * @param B The dense matrix to multiply.
@@ -1753,7 +1753,7 @@ inline auto operator*(const Matrix<DefDiag, T, M> &A,
  * the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The first diagonal matrix to multiply.
  * @param B The second diagonal matrix to multiply.
  * @return Matrix<DefDiag, T, M> A new diagonal matrix containing the result of
@@ -1774,7 +1774,7 @@ inline auto operator*(const Matrix<DefDiag, T, M> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns/rows in the square matrices.
+ * @tparam M The number of rows/cols in the square matrices.
  * @param A The diagonal matrix to multiply.
  * @param B The sparse matrix to multiply.
  * @return Matrix<DefSparse, T, M, N> A new sparse matrix containing the result
@@ -1797,9 +1797,9 @@ inline auto operator*(const Matrix<DefDiag, T, M> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the sparse matrix and rows in the dense
+ * @tparam M The number of rows in the sparse matrix and cols in the dense
  * matrix.
- * @tparam N The number of rows in the sparse matrix and columns in the dense
+ * @tparam N The number of columns in the sparse matrix and rows in the dense
  * matrix.
  * @param A The sparse matrix to multiply.
  * @param B The dense matrix to multiply.
@@ -1823,9 +1823,9 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * containing the result of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the sparse matrix and rows in the diagonal
+ * @tparam M The number of rows in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam N The number of rows in the sparse matrix and columns in the diagonal
+ * @tparam N The number of columns in the sparse matrix and rows in the diagonal
  * matrix.
  * @param A The sparse matrix to multiply.
  * @param B The diagonal matrix to multiply.
@@ -1849,10 +1849,10 @@ inline auto operator*(const Matrix<DefSparse, T, M, N, SparseAvailable> &A,
  * of the multiplication.
  *
  * @tparam T The type of elements in the matrices (e.g., float, double).
- * @tparam M The number of columns in the first sparse matrix.
- * @tparam N The number of rows in the first sparse matrix and columns in the
+ * @tparam M The number of rows in the first sparse matrix.
+ * @tparam N The number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
- * @tparam K The number of rows in the second sparse matrix.
+ * @tparam K The number of columns in the second sparse matrix.
  * @param A The first sparse matrix to multiply.
  * @param B The second sparse matrix to multiply.
  * @return Matrix<DefSparse, T, M, K> A new sparse matrix containing the result

@@ -11,8 +11,8 @@
  * template-based C++ environment.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -52,7 +52,7 @@ struct InverseDense<T, Complex_T, M, K, true> {
    *
    * @tparam DefDense   The matrix storage type.
    * @tparam Complex_T  The complex number type.
-   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam M          The number of columns and rows in the square matrix.
    * @tparam T          The floating-point type for decay and division
    * parameters.
    * @tparam K          The size of the `rho` and `rep_num` arrays.
@@ -96,7 +96,7 @@ struct InverseDense<T, Complex_T, M, K, false> {
    * @tparam DefDense   The matrix storage type.
    * @tparam T          The floating-point type for decay and division
    * parameters.
-   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam M          The number of columns and rows in the square matrix.
    * @tparam K          The size of the `rho` and `rep_num` arrays.
    *
    * @param A           The input square matrix to invert (of size MxM).
@@ -207,7 +207,7 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, true> {
    *
    * @tparam DefSparse  The matrix storage type for sparse matrices.
    * @tparam Complex_T  The complex number type.
-   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam M          The number of columns and rows in the square matrix.
    * @tparam T          The floating-point type for decay and division
    * parameters.
    * @tparam K          The size of the `rho` and `rep_num` arrays.
@@ -253,7 +253,7 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
    * @tparam DefSparse  The matrix storage type for sparse matrices.
    * @tparam T          The floating-point type for decay and division
    * parameters.
-   * @tparam M          The number of rows and columns in the square matrix.
+   * @tparam M          The number of columns and rows in the square matrix.
    * @tparam K          The size of the `rho` and `rep_num` arrays.
    *
    * @param A           The input square sparse matrix to invert (of size MxM).
@@ -292,8 +292,8 @@ struct InverseSparse<T, Complex_T, M, K, SparseAvailable, false> {
  * matrices. It supports both real and complex number types (float or double).
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square matrix.
- * @tparam K The number of columns in the right-hand side matrix.
+ * @tparam M The number of columns and rows in the square matrix.
+ * @tparam K The number of rows in the right-hand side matrix.
  * @tparam SparseAvailable_A Indicates if the first matrix is sparse.
  * @tparam SparseAvailable_B Indicates if the second matrix is sparse.
  */
@@ -654,8 +654,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = K;
+  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = K;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
@@ -675,7 +675,7 @@ public:
  * It supports both real and complex number types (float or double).
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of rows and columns in the square matrix.
+ * @tparam M The number of columns and rows in the square matrix.
  */
 template <typename T, std::size_t M> class LinalgInvDiag {
 public:
@@ -761,8 +761,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
   static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = M;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
@@ -791,12 +791,12 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverInv(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    A_Type::COLS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                     typename A_Type::SparseAvailable_Type> {
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      A_Type::COLS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                       typename A_Type::SparseAvailable_Type>();
 }
 
@@ -807,15 +807,15 @@ inline auto make_LinalgSolverInv(void)
  * diagonal matrices. It supports both real and complex number types.
  *
  * @tparam A_Type The type of the input diagonal matrix (e.g., DiagMatrix).
- * @return LinalgInvDiag<Type, COLS> An instance of LinalgInvDiag for diagonal
+ * @return LinalgInvDiag<Type, ROWS> An instance of LinalgInvDiag for diagonal
  * matrix inversion.
  */
 template <typename A_Type, typename std::enable_if<
                                Is_Diag_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverInv(void)
-    -> LinalgInvDiag<typename A_Type::Value_Complex_Type, A_Type::COLS> {
+    -> LinalgInvDiag<typename A_Type::Value_Complex_Type, A_Type::ROWS> {
 
-  return LinalgInvDiag<typename A_Type::Value_Complex_Type, A_Type::COLS>();
+  return LinalgInvDiag<typename A_Type::Value_Complex_Type, A_Type::ROWS>();
 }
 
 /**
@@ -832,12 +832,12 @@ template <
     typename A_Type,
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolverInv(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    A_Type::COLS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                     typename A_Type::SparseAvailable_Type> {
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      A_Type::COLS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                       typename A_Type::SparseAvailable_Type>();
 }
 
@@ -858,7 +858,7 @@ using LinalgSolverInv_Type = decltype(make_LinalgSolverInv<A_Type>());
  * DiagMatrix, SparseMatrix).
  * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
  * DiagMatrix, SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems.
  */
 template <
@@ -866,16 +866,16 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -891,7 +891,7 @@ inline auto make_LinalgSolver(void)
  * DiagMatrix).
  * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
  * DiagMatrix, SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with diagonal matrices.
  */
 template <
@@ -899,16 +899,16 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    A_Type::COLS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      A_Type::COLS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -924,7 +924,7 @@ inline auto make_LinalgSolver(void)
  * SparseMatrix).
  * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
  * DiagMatrix, SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with sparse matrices.
  */
 template <
@@ -932,16 +932,16 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -957,7 +957,7 @@ inline auto make_LinalgSolver(void)
  * DiagMatrix).
  * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
  * DiagMatrix, SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with diagonal matrices.
  */
 template <
@@ -965,16 +965,16 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -990,7 +990,7 @@ inline auto make_LinalgSolver(void)
  * DiagMatrix).
  * @tparam B_Type The type of the right-hand side diagonal matrix (e.g.,
  * DiagMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with diagonal matrices.
  */
 template <
@@ -998,16 +998,16 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    A_Type::COLS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      A_Type::COLS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -1024,7 +1024,7 @@ inline auto make_LinalgSolver(void)
  * DiagMatrix).
  * @tparam B_Type The type of the right-hand side sparse matrix (e.g.,
  * SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with diagonal and sparse matrices.
  */
 template <
@@ -1032,16 +1032,16 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -1058,7 +1058,7 @@ inline auto make_LinalgSolver(void)
  * SparseMatrix).
  * @tparam B_Type The type of the right-hand side matrix (e.g., DenseMatrix,
  * DiagMatrix, SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with sparse matrices.
  */
 template <
@@ -1066,16 +1066,16 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -1092,7 +1092,7 @@ inline auto make_LinalgSolver(void)
  * SparseMatrix).
  * @tparam B_Type The type of the right-hand side diagonal matrix (e.g.,
  * DiagMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with sparse and diagonal matrices.
  */
 template <
@@ -1100,16 +1100,16 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    A_Type::COLS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      A_Type::COLS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      A_Type::ROWS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -1125,7 +1125,7 @@ inline auto make_LinalgSolver(void)
  * SparseMatrix).
  * @tparam B_Type The type of the right-hand side sparse matrix (e.g.,
  * SparseMatrix).
- * @return LinalgSolver<Type, COLS, ROWS> An instance of LinalgSolver for
+ * @return LinalgSolver<Type, ROWS, COLS> An instance of LinalgSolver for
  * solving linear systems with sparse matrices.
  */
 template <
@@ -1133,16 +1133,16 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgSolver(void)
-    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                    B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+    -> LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                    B_Type::COLS, typename A_Type::SparseAvailable_Type,
                     typename B_Type::SparseAvailable_Type> {
 
   static_assert(std::is_same<typename A_Type::Value_Type,
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                      B_Type::ROWS, typename A_Type::SparseAvailable_Type,
+  return LinalgSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                      B_Type::COLS, typename A_Type::SparseAvailable_Type,
                       typename B_Type::SparseAvailable_Type>();
 }
 
@@ -1156,11 +1156,11 @@ using LinalgSolver_Type = decltype(make_LinalgSolver<A_Type, B_Type>());
  *
  * This class provides methods to solve linear systems using partitioned
  * matrices. It supports both dense and sparse matrices, and allows for
- * partitioning based on the number of rows and columns.
+ * partitioning based on the number of columns and rows.
  *
  * @tparam T The data type of the matrix elements (e.g., float, double).
- * @tparam M The number of columns in the square matrix.
- * @tparam K The number of rows in the right-hand side matrix.
+ * @tparam M The number of rows in the square matrix.
+ * @tparam K The number of columns in the right-hand side matrix.
  * @tparam SparseAvailable_A Indicates if the coefficient matrix A is sparse.
  * @tparam SparseAvailable_B Indicates if the right-hand side matrix B is
  * sparse.
@@ -1785,8 +1785,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = K;
+  static constexpr std::size_t ROWS = M;
+  static constexpr std::size_t COLS = K;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
@@ -1819,8 +1819,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1829,7 +1829,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -1852,8 +1852,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             A_Type::COLS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             A_Type::ROWS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1862,7 +1862,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, A_Type::COLS,
+                               A_Type::ROWS, A_Type::ROWS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -1885,8 +1885,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1895,7 +1895,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -1918,8 +1918,8 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1928,7 +1928,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -1951,8 +1951,8 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             A_Type::COLS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             A_Type::ROWS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1961,7 +1961,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, A_Type::COLS,
+                               A_Type::ROWS, A_Type::ROWS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -1984,8 +1984,8 @@ template <
     typename std::enable_if<Is_Diag_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -1994,7 +1994,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -2017,8 +2017,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -2027,7 +2027,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -2050,8 +2050,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             A_Type::COLS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             A_Type::ROWS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -2060,7 +2060,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, A_Type::COLS,
+                               A_Type::ROWS, A_Type::ROWS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -2083,8 +2083,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgPartitionSolver(void)
-    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                             B_Type::ROWS,
+    -> LinalgPartitionSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                             B_Type::COLS,
                              typename A_Type::SparseAvailable_Type,
                              typename B_Type::SparseAvailable_Type> {
 
@@ -2093,7 +2093,7 @@ inline auto make_LinalgPartitionSolver(void)
                 "Value data type of A and B must be the same.");
 
   return LinalgPartitionSolver<typename A_Type::Value_Complex_Type,
-                               A_Type::COLS, B_Type::ROWS,
+                               A_Type::ROWS, B_Type::COLS,
                                typename A_Type::SparseAvailable_Type,
                                typename B_Type::SparseAvailable_Type>();
 }
@@ -2114,9 +2114,9 @@ using LinalgPartitionSolver_Type =
  * starts.
  *
  * @tparam T The value type of the matrices (float or double).
- * @tparam M The number of columns in matrix A.
- * @tparam N The number of rows in matrix A (and rows in matrix B).
- * @tparam K The number of rows in matrix B.
+ * @tparam M The number of rows in matrix A.
+ * @tparam N The number of columns in matrix A (and cols in matrix B).
+ * @tparam K The number of columns in matrix B.
  * @tparam SparseAvailable_A Indicates if sparse matrices are available for A.
  * @tparam SparseAvailable_B Indicates if sparse matrices are available for B.
  */
@@ -2389,8 +2389,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = N;
-  static constexpr std::size_t ROWS = K;
+  static constexpr std::size_t ROWS = N;
+  static constexpr std::size_t COLS = K;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -2424,8 +2424,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, B_Type::ROWS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, B_Type::COLS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2433,8 +2433,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, B_Type::ROWS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, B_Type::COLS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }
@@ -2457,8 +2457,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, A_Type::COLS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, A_Type::ROWS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2466,8 +2466,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, A_Type::COLS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, A_Type::ROWS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }
@@ -2490,8 +2490,8 @@ template <
     typename std::enable_if<Is_Dense_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, B_Type::ROWS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, B_Type::COLS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2499,8 +2499,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, B_Type::ROWS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, B_Type::COLS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }
@@ -2523,8 +2523,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Dense_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, B_Type::ROWS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, B_Type::COLS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2532,8 +2532,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, B_Type::ROWS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, B_Type::COLS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }
@@ -2556,8 +2556,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Diag_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, A_Type::COLS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, A_Type::ROWS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2565,8 +2565,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, A_Type::COLS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, A_Type::ROWS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }
@@ -2589,8 +2589,8 @@ template <
     typename std::enable_if<Is_Sparse_Matrix<A_Type>::value &&
                             Is_Sparse_Matrix<B_Type>::value>::type * = nullptr>
 inline auto make_LinalgLstsqSolver(void)
-    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                         A_Type::ROWS, B_Type::ROWS,
+    -> LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                         A_Type::COLS, B_Type::COLS,
                          typename A_Type::SparseAvailable_Type,
                          typename B_Type::SparseAvailable_Type> {
 
@@ -2598,8 +2598,8 @@ inline auto make_LinalgLstsqSolver(void)
                              typename B_Type::Value_Type>::value,
                 "Value data type of A and B must be the same.");
 
-  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::COLS,
-                           A_Type::ROWS, B_Type::ROWS,
+  return LinalgLstsqSolver<typename A_Type::Value_Complex_Type, A_Type::ROWS,
+                           A_Type::COLS, B_Type::COLS,
                            typename A_Type::SparseAvailable_Type,
                            typename B_Type::SparseAvailable_Type>();
 }

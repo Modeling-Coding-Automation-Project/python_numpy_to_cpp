@@ -15,8 +15,8 @@
  * multiplication.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -48,8 +48,8 @@ namespace Matrix {
  * access to matrix values, row indices, and row pointers.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  */
 template <typename T, std::size_t M, std::size_t N> class VariableSparseMatrix {
 public:
@@ -125,7 +125,7 @@ public:
    * This function returns the row index at the specified index i in the sparse
    * matrix.
    *
-   * @param i The index of the row index to access.
+   * @param i The index of the column index to access.
    * @return The row index at index i.
    */
   std::size_t row_index(std::size_t i) { return this->row_indices[i]; }
@@ -136,7 +136,7 @@ public:
    * This function returns the row index at the specified index i in the sparse
    * matrix, without allowing modification.
    *
-   * @param i The index of the row index to access.
+   * @param i The index of the column index to access.
    * @return The row index at index i.
    */
   const std::size_t row_index(std::size_t i) const {
@@ -149,7 +149,7 @@ public:
    * This function returns the row pointer at the specified index i in the
    * sparse matrix.
    *
-   * @param i The index of the row pointer to access.
+   * @param i The index of the column pointer to access.
    * @return The row pointer at index i.
    */
   std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
@@ -160,7 +160,7 @@ public:
    * This function returns the row pointer at the specified index i in the
    * sparse matrix, without allowing modification.
    *
-   * @param i The index of the row pointer to access.
+   * @param i The index of the column pointer to access.
    * @return The row pointer at index i.
    */
   const std::size_t row_pointer(std::size_t i) const {
@@ -189,10 +189,10 @@ public:
  * and a Matrix, returning the resulting Matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the VariableSparseMatrix.
- * @tparam N The number of rows in the VariableSparseMatrix and rows in the
+ * @tparam M The number of rows in the VariableSparseMatrix.
+ * @tparam N The number of columns in the VariableSparseMatrix and cols in the
  * Matrix.
- * @tparam K The number of columns in the Matrix.
+ * @tparam K The number of rows in the Matrix.
  * @param A The VariableSparseMatrix to multiply.
  * @param B The Matrix to multiply with.
  * @return The resulting Matrix after multiplication.
@@ -223,10 +223,10 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
  * VariableSparseMatrix, returning the resulting Matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the SparseMatrix.
- * @tparam N The number of rows in the SparseMatrix and rows in the
+ * @tparam M The number of rows in the SparseMatrix.
+ * @tparam N The number of columns in the SparseMatrix and cols in the
  * VariableSparseMatrix.
- * @tparam K The number of columns in the VariableSparseMatrix.
+ * @tparam K The number of rows in the VariableSparseMatrix.
  * @param A The SparseMatrix to multiply.
  * @param B The VariableSparseMatrix to multiply with.
  * @return The resulting Matrix after multiplication.
@@ -256,10 +256,10 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
  * objects, returning the resulting Matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the first SparseMatrix.
- * @tparam N The number of rows in the first SparseMatrix and rows in the
+ * @tparam M The number of rows in the first SparseMatrix.
+ * @tparam N The number of columns in the first SparseMatrix and cols in the
  * second SparseMatrix.
- * @tparam K The number of columns in the second SparseMatrix.
+ * @tparam K The number of rows in the second SparseMatrix.
  * @tparam V The maximum number of non-zero values in the SparseMatrix.
  * @param A The first SparseMatrix to multiply.
  * @param B The second SparseMatrix to multiply with.
@@ -297,10 +297,10 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
  * VariableSparseMatrix, returning the resulting Matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the SparseMatrix.
- * @tparam N The number of rows in the SparseMatrix and rows in the
+ * @tparam M The number of rows in the SparseMatrix.
+ * @tparam N The number of columns in the SparseMatrix and cols in the
  * VariableSparseMatrix.
- * @tparam K The number of columns in the VariableSparseMatrix.
+ * @tparam K The number of rows in the VariableSparseMatrix.
  * @tparam V The maximum number of non-zero values in the SparseMatrix.
  * @param A The SparseMatrix to multiply.
  * @param B The VariableSparseMatrix to multiply with.
@@ -338,10 +338,10 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
  * objects, returning the resulting Matrix.
  *
  * @tparam T The type of the matrix elements.
- * @tparam M The number of columns in the first VariableSparseMatrix.
- * @tparam N The number of rows in the first VariableSparseMatrix and rows in
+ * @tparam M The number of rows in the first VariableSparseMatrix.
+ * @tparam N The number of columns in the first VariableSparseMatrix and cols in
  * the second VariableSparseMatrix.
- * @tparam K The number of columns in the second VariableSparseMatrix.
+ * @tparam K The number of rows in the second VariableSparseMatrix.
  * @param A The first VariableSparseMatrix to multiply.
  * @param B The second VariableSparseMatrix to multiply with.
  * @return The resulting Matrix after multiplication.

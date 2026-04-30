@@ -33,8 +33,8 @@ int main() {
   auto eigen_vectors_r = solver_r_t.get_eigen_vectors();
 
   std::cout << "eigen_values_r = " << std::endl;
-  for (size_t j = 0; j < eigen_values_r.cols(); ++j) {
-    for (size_t i = 0; i < eigen_values_r.rows(); ++i) {
+  for (size_t j = 0; j < eigen_values_r.rows(); ++j) {
+    for (size_t i = 0; i < eigen_values_r.cols(); ++i) {
       std::cout << eigen_values_r(j, i) << " ";
     }
     std::cout << std::endl;
@@ -42,8 +42,8 @@ int main() {
   std::cout << std::endl;
 
   std::cout << "eigen_vectors_r = " << std::endl;
-  for (size_t j = 0; j < eigen_vectors_r.cols(); ++j) {
-    for (size_t i = 0; i < eigen_vectors_r.rows(); ++i) {
+  for (size_t j = 0; j < eigen_vectors_r.rows(); ++j) {
+    for (size_t i = 0; i < eigen_vectors_r.cols(); ++i) {
       std::cout << eigen_vectors_r(j, i) << " ";
     }
     std::cout << std::endl;
@@ -54,8 +54,8 @@ int main() {
                 eigen_vectors_r * Matrix<DefDiag, double, 3>(eigen_values_r);
 
   std::cout << "result = " << std::endl;
-  for (size_t j = 0; j < result.cols(); ++j) {
-    for (size_t i = 0; i < result.rows(); ++i) {
+  for (size_t j = 0; j < result.rows(); ++j) {
+    for (size_t i = 0; i < result.cols(); ++i) {
       std::cout << result(j, i) << " ";
     }
     std::cout << std::endl;

@@ -42,8 +42,8 @@ int main() {
   auto result = solver_t.inv(A);
 
   std::cout << "result = " << std::endl;
-  for (size_t j = 0; j < result.cols(); ++j) {
-    for (size_t i = 0; i < result.rows(); ++i) {
+  for (size_t j = 0; j < result.rows(); ++j) {
+    for (size_t i = 0; i < result.cols(); ++i) {
       std::cout << result(j, i) << " ";
     }
     std::cout << std::endl;

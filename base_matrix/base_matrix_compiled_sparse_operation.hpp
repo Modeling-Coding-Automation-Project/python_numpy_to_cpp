@@ -21,8 +21,8 @@ cases.
 - Utility structures for compile-time calculation of result matrix types.
 
 @note
-tparam M is the number of columns in the matrix.
-tparam N is the number of rows in the matrix.
+tparam M is the number of rows in the matrix.
+tparam N is the number of columns in the matrix.
 Somehow programming custom is vice versa,
 but in this project, we use the mathematical custom.
 ********************************************************************************/
@@ -58,8 +58,8 @@ struct Loop {
    * segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the matrix.
-   * @tparam N Number of rows in the matrix.
+   * @tparam M Number of rows in the matrix.
+   * @tparam N Number of columns in the matrix.
    * @tparam RowIndices Type representing the row indices of nonzero elements.
    * @tparam RowPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
@@ -92,8 +92,8 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the matrix.
-   * @tparam N Number of rows in the matrix.
+   * @tparam M Number of rows in the matrix.
+   * @tparam N Number of columns in the matrix.
    * @tparam RowIndices Type representing the row indices of nonzero elements.
    * @tparam RowPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
@@ -111,10 +111,10 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers, std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the negation of all values in a specific row of a sparse matrix.
@@ -123,8 +123,8 @@ struct Row {
    * the negation operation to all non-zero elements in that row.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the matrix.
-   * @tparam N Number of rows in the matrix.
+   * @tparam M Number of rows in the matrix.
+   * @tparam N Number of columns in the matrix.
    * @tparam RowIndices Type representing the row indices of nonzero elements.
    * @tparam RowPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
@@ -137,24 +137,24 @@ struct Row {
           CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
     Loop<T, M, N, RowIndices, RowPointers, J, 0, RowPointers::list[J],
          RowPointers::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices, RowPointers, J - 1>::compute(A, Y);
+    Column<T, M, N, RowIndices, RowPointers, J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices,
           typename RowPointers>
-struct Row<T, M, N, RowIndices, RowPointers, 0> {
+struct Column<T, M, N, RowIndices, RowPointers, 0> {
   /**
    * @brief
-   * Computes the negation of all values in the first row of a sparse matrix.
+   * Computes the negation of all values in the first column of a sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the matrix.
-   * @tparam N Number of rows in the matrix.
+   * @tparam M Number of rows in the matrix.
+   * @tparam N Number of columns in the matrix.
    * @tparam RowIndices Type representing the row indices of nonzero elements.
    * @tparam RowPointers Type representing the row pointers for sparse storage.
    * @param[in]  A Input sparse matrix.
@@ -177,8 +177,8 @@ struct Row<T, M, N, RowIndices, RowPointers, 0> {
  * matrix. It initializes the recursive computation starting from the last row.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the matrix.
- * @tparam N Number of rows in the matrix.
+ * @tparam M Number of rows in the matrix.
+ * @tparam N Number of columns in the matrix.
  * @tparam RowIndices Type representing the row indices of nonzero elements.
  * @tparam RowPointers Type representing the row pointers for sparse storage.
  * @param[in]  A Input sparse matrix.
@@ -190,7 +190,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
         CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
-  Row<T, M, N, RowIndices, RowPointers, M - 1>::compute(A, Y);
+  Column<T, M, N, RowIndices, RowPointers, M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixMinus
@@ -203,8 +203,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
  * the corresponding value in the input sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the matrix.
- * @tparam N Number of rows in the matrix.
+ * @tparam M Number of rows in the matrix.
+ * @tparam N Number of columns in the matrix.
  * @tparam RowIndices Type representing the row indices of nonzero elements.
  * @tparam RowPointers Type representing the row pointers for sparse storage.
  * @param[in] A Input sparse matrix to be negated.
@@ -248,10 +248,10 @@ struct Loop {
    * dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -289,10 +289,10 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -326,10 +326,10 @@ struct Core {
    * of a sparse matrix with a dense matrix, accumulating the result in a sum.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -360,17 +360,17 @@ struct List {
   /**
    * @brief
    * Computes the product of a sparse matrix with a dense matrix for multiple
-   * rows.
+   * cols.
    *
    * This function recursively processes each row of the sparse matrix, calling
    * the core computation for each row and accumulating results in the output
    * dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -396,17 +396,17 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
   /**
    * @brief
-   * Computes the product of the first row of a sparse matrix with a dense
+   * Computes the product of the first column of a sparse matrix with a dense
    * matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -423,24 +423,24 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct Column {
+struct Row {
   /**
    * @brief
    * Computes the product of a sparse matrix with a dense matrix for multiple
-   * columns.
+   * rows.
    *
    * This function recursively processes each column of the dense matrix,
    * calling the list computation for each column and accumulating results in
    * the output dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -455,27 +455,27 @@ struct Column {
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
     List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, I>::compute(A, B, Y);
-    Column<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    Row<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
-struct Column<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
+struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the product of the first column of a sparse matrix with a dense
+   * Computes the product of the first row of a sparse matrix with a dense
    * matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first column of the dense matrix.
+   * processes the first row of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam K Number of rows in the dense matrix.
+   * @tparam K Number of columns in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -500,12 +500,12 @@ struct Column<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
  * a dense matrix, producing a resulting dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
- * @tparam K Number of rows in the dense matrix.
+ * @tparam K Number of columns in the dense matrix.
  * @param[in]  A Input sparse matrix.
  * @param[in]  B Input dense matrix.
  * @param[out] Y Output dense matrix where results are accumulated.
@@ -516,7 +516,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-  Column<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixMultiplyDenseMatrix
@@ -529,12 +529,12 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * matrix and a dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
- * @tparam K Number of rows in the dense matrix.
+ * @tparam K Number of columns in the dense matrix.
  * @param[in] A Input sparse matrix to be multiplied.
  * @param[in] B Input dense matrix to be multiplied.
  * @return A new dense matrix that is the product of A and B.
@@ -583,10 +583,10 @@ struct Loop {
    * column segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -628,10 +628,10 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -667,10 +667,10 @@ struct Core {
    * dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -698,17 +698,17 @@ struct List {
   /**
    * @brief
    * Computes the product of a dense matrix with a sparse matrix for multiple
-   * rows.
+   * cols.
    *
    * This function recursively processes each row of the dense matrix, calling
    * the core computation for each row and accumulating results in the output
    * dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -735,17 +735,17 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 struct List<T, M, N, K, RowIndices_B, RowPointers_B, J, 0> {
   /**
    * @brief
-   * Computes the product of the first row of a dense matrix with a sparse
+   * Computes the product of the first column of a dense matrix with a sparse
    * matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first row of the dense matrix.
+   * processes the first column of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -762,24 +762,24 @@ struct List<T, M, N, K, RowIndices_B, RowPointers_B, J, 0> {
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B, std::size_t J>
-struct Column {
+struct Row {
   /**
    * @brief
    * Computes the product of a dense matrix with a sparse matrix for multiple
-   * columns.
+   * rows.
    *
    * This function recursively processes each column of the sparse matrix,
    * calling the list computation for each column and accumulating results in
    * the output dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -795,27 +795,27 @@ struct Column {
           Matrix<T, M, K> &Y) {
 
     List<T, M, N, K, RowIndices_B, RowPointers_B, J, M - 1>::compute(A, B, Y);
-    Column<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    Row<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
-struct Column<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
+struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
   /**
    * @brief
-   * Computes the product of the first column of a dense matrix with a sparse
+   * Computes the product of the first row of a dense matrix with a sparse
    * matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the sparse matrix.
+   * processes the first row of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam N Number of rows in the dense matrix and columns in the sparse
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse
@@ -841,13 +841,13 @@ struct Column<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
  * a sparse matrix, producing a resulting dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the dense matrix.
- * @tparam N Number of rows in the dense matrix and columns in the sparse
+ * @tparam M Number of rows in the dense matrix.
+ * @tparam N Number of columns in the dense matrix and rows in the sparse
  * matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage.
- * @tparam K Number of rows in the sparse matrix.
+ * @tparam K Number of columns in the sparse matrix.
  * @param[in]  A Input dense matrix.
  * @param[in]  B Input sparse matrix.
  * @param[out] Y Output dense matrix where results are accumulated.
@@ -858,7 +858,7 @@ inline void
 compute(const Matrix<T, M, N> &A,
         const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
         Matrix<T, M, K> &Y) {
-  Column<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
+  Row<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
 }
 
 } // namespace DenseMatrixMultiplySparseMatrix
@@ -871,13 +871,13 @@ compute(const Matrix<T, M, N> &A,
  * matrix and a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the dense matrix.
- * @tparam N Number of rows in the dense matrix and columns in the sparse
+ * @tparam M Number of rows in the dense matrix.
+ * @tparam N Number of columns in the dense matrix and rows in the sparse
  * matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage.
- * @tparam K Number of rows in the sparse matrix.
+ * @tparam K Number of columns in the sparse matrix.
  * @param[in] A Input dense matrix to be multiplied.
  * @param[in] B Input sparse matrix to be multiplied.
  * @return A new dense matrix that is the product of A and B.
@@ -942,24 +942,24 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t J>
-struct Row {
+struct Column {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, M, N> &B) {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
          RowPointers_A::list[J + 1]>::compute(A, B);
-    Row<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B);
+    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
+struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
   static void
   compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
           const Matrix<T, M, N> &B) {
@@ -974,7 +974,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline void
 compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const Matrix<T, M, N> &B) {
-  Row<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B);
+  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B);
 }
 
 } // namespace DenseMatrixSubstituteSparseMatrix
@@ -1002,8 +1002,8 @@ struct Loop {
    * matrix row segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -1041,8 +1041,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -1061,10 +1061,10 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the addition of a sparse matrix row with a dense matrix row.
@@ -1074,8 +1074,8 @@ struct Row {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -1090,25 +1090,25 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
          RowPointers_A::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
+    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
+struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the addition of the first row of a sparse matrix with a dense
+   * Computes the addition of the first column of a sparse matrix with a dense
    * matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse
@@ -1133,8 +1133,8 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * dense matrix, producing a resulting dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
@@ -1146,7 +1146,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         Matrix<T, M, N> &Y) {
-  Row<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
+  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixAddDenseMatrix
@@ -1159,8 +1159,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * sparse matrix to a dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
@@ -1204,8 +1204,8 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * dense matrix to a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
@@ -1253,8 +1253,8 @@ struct Loop {
    * sparse matrix row segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1300,8 +1300,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1324,11 +1324,11 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
           std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the addition of a sparse matrix row with another sparse matrix
@@ -1339,8 +1339,8 @@ struct Row {
    * sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1359,27 +1359,27 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
          0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
         J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
            0> {
   /**
    * @brief
-   * Computes the addition of the first row of a sparse matrix with another
+   * Computes the addition of the first column of a sparse matrix with another
    * sparse matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1408,8 +1408,8 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1427,7 +1427,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
 
-  Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
       M - 1>::compute(A, Y);
 }
 
@@ -1448,8 +1448,8 @@ struct Core {
    * its value based on the corresponding element in the diagonal matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows and columns in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns and rows in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_Y Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_Y Type representing the row pointers for sparse storage
@@ -1479,8 +1479,8 @@ struct Core<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows and columns in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns and rows in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_Y Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_Y Type representing the row pointers for sparse storage
@@ -1504,8 +1504,8 @@ struct Core<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
  * sparse matrix using the values from a diagonal matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows and columns in the diagonal matrix.
- * @tparam N Number of columns in the sparse matrix.
+ * @tparam M Number of columns and rows in the diagonal matrix.
+ * @tparam N Number of rows in the sparse matrix.
  * @tparam RowIndices_Y Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_Y Type representing the row pointers for sparse storage
@@ -1552,9 +1552,9 @@ struct DiagAddSubSparse {
  * sparse matrix to a diagonal matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix and rows in the diagonal
+ * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1625,9 +1625,9 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * diagonal matrix to a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix and rows in the diagonal
+ * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1721,8 +1721,8 @@ struct SparseAddSubSparse {
  * sparse matrices together.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrices.
- * @tparam N Number of rows in the sparse matrices.
+ * @tparam M Number of rows in the sparse matrices.
+ * @tparam N Number of columns in the sparse matrices.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1798,8 +1798,8 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * dense matrix from a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage.
@@ -1847,8 +1847,8 @@ struct Loop {
    * matrix row segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1886,8 +1886,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1906,10 +1906,10 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the subtraction of a sparse matrix row from a dense matrix row.
@@ -1919,8 +1919,8 @@ struct Row {
    * dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1935,25 +1935,25 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
          RowPointers_A::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
+    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
+struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the subtraction of the first row of a sparse matrix from a dense
+   * Computes the subtraction of the first column of a sparse matrix from a dense
    * matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1978,9 +1978,9 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * a dense matrix, producing a resulting dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix and rows in the dense
+ * @tparam M Number of rows in the sparse matrix and cols in the dense
  * matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the dense matrix.
+ * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -1993,7 +1993,7 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         Matrix<T, M, N> &Y) {
-  Row<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
+  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
 }
 
 } // namespace DenseMatrixSubSparseMatrix
@@ -2006,9 +2006,9 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * sparse matrix from a dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the dense matrix and rows in the sparse
+ * @tparam M Number of rows in the dense matrix and cols in the sparse
  * matrix.
- * @tparam N Number of rows in the dense matrix and rows in the sparse matrix.
+ * @tparam N Number of columns in the dense matrix and cols in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2053,9 +2053,9 @@ operator-(const Matrix<T, M, N> &B,
  * diagonal matrix from a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix and rows in the diagonal
+ * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2130,8 +2130,8 @@ struct Loop {
    * matrix row segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the diagonal
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -2178,8 +2178,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the diagonal
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -2203,11 +2203,11 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
           std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the subtraction of a sparse matrix row from a diagonal matrix row.
@@ -2217,8 +2217,8 @@ struct Row {
    * output sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the diagonal
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -2238,27 +2238,27 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
          0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
         J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
            0> {
   /**
    * @brief
-   * Computes the subtraction of the first row of a sparse matrix from a
+   * Computes the subtraction of the first column of a sparse matrix from a
    * diagonal matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix and rows in the diagonal
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -2288,9 +2288,9 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * a diagonal matrix, producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix and rows in the diagonal
+ * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam N Number of rows in the sparse matrix and rows in the diagonal
+ * @tparam N Number of columns in the sparse matrix and cols in the diagonal
  * matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
@@ -2305,7 +2305,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
 
-  Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
       M - 1>::compute(A, Y);
 }
 
@@ -2319,9 +2319,9 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * sparse matrix from a diagonal matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the diagonal matrix and rows in the sparse
+ * @tparam M Number of rows in the diagonal matrix and cols in the sparse
  * matrix.
- * @tparam N Number of rows in the diagonal matrix and rows in the sparse
+ * @tparam N Number of columns in the diagonal matrix and cols in the sparse
  * matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
@@ -2398,8 +2398,8 @@ struct Loop {
    * sparse matrix row segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2445,8 +2445,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2469,11 +2469,11 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
           std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Computes the subtraction of a sparse matrix row from another sparse matrix
@@ -2484,8 +2484,8 @@ struct Row {
    * output sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2504,27 +2504,27 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
          0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
         J - 1>::compute(A, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
            0> {
   /**
    * @brief
-   * Computes the subtraction of the first row of a sparse matrix from another
+   * Computes the subtraction of the first column of a sparse matrix from another
    * sparse matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2553,8 +2553,8 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * from another, producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrices.
- * @tparam N Number of rows in the sparse matrices.
+ * @tparam M Number of rows in the sparse matrices.
+ * @tparam N Number of columns in the sparse matrices.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2572,7 +2572,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
 
-  Row<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
       M - 1>::compute(A, Y);
 }
 
@@ -2586,8 +2586,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * one sparse matrix from another.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrices.
- * @tparam N Number of rows in the sparse matrices.
+ * @tparam M Number of rows in the sparse matrices.
+ * @tparam N Number of columns in the sparse matrices.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2666,8 +2666,8 @@ struct Loop {
    * Recursively computes the scalar multiplication of a sparse matrix element.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2704,8 +2704,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, End, End> {
    * recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2733,8 +2733,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, End, End> {
  * scalar, producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2764,8 +2764,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * sparse matrix by a scalar.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2807,8 +2807,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * scalar by a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2854,8 +2854,8 @@ struct Loop {
    * vector segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2892,8 +2892,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2926,8 +2926,8 @@ struct Core {
    * vector.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2955,11 +2955,11 @@ struct List {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with a vector
-   * across multiple rows.
+   * across multiple cols.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -2984,15 +2984,15 @@ template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
 struct List<T, M, N, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a sparse matrix with a
+   * Computes the multiplication of the first column of a sparse matrix with a
    * vector.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3017,8 +3017,8 @@ struct List<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * vector, producing a resulting vector.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3045,8 +3045,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * matrix by a vector.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3097,9 +3097,9 @@ struct Loop {
    * matrix segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the column vector and columns in the sparse
+   * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3137,9 +3137,9 @@ struct Loop<T, N, K, RowIndices_B, RowPointers_B, J, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the column vector and columns in the sparse
+   * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3170,9 +3170,9 @@ struct List {
    * matrix across multiple segments.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the column vector and columns in the sparse
+   * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3199,16 +3199,16 @@ template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
 struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a column vector with a
+   * Computes the multiplication of the first row of a column vector with a
    * sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the column vector.
+   * processes the first row of the column vector.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the column vector and columns in the sparse
+   * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
-   * @tparam K Number of rows in the sparse matrix.
+   * @tparam K Number of columns in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3235,9 +3235,9 @@ struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
  * sparse matrix, producing a resulting column vector.
  *
  * @tparam T Value type of the matrix.
- * @tparam N Number of rows in the column vector and columns in the sparse
+ * @tparam N Number of columns in the column vector and rows in the sparse
  * matrix.
- * @tparam K Number of rows in the sparse matrix.
+ * @tparam K Number of columns in the sparse matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3266,9 +3266,9 @@ compute(const ColVector<T, N> &a,
  * column vector by a sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam N Number of rows in the column vector and columns in the sparse
+ * @tparam N Number of columns in the column vector and rows in the sparse
  * matrix.
- * @tparam K Number of rows in the sparse matrix.
+ * @tparam K Number of columns in the sparse matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -3317,9 +3317,9 @@ struct Loop {
    * matrix column segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3358,9 +3358,9 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3396,9 +3396,9 @@ struct Core {
    * the output matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3428,12 +3428,12 @@ struct List {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with a dense
-   * matrix across multiple rows.
+   * matrix across multiple cols.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3465,19 +3465,19 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with a dense
-   * matrix across multiple columns.
+   * matrix across multiple rows.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3492,26 +3492,26 @@ struct Column {
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
     List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, I>::compute(A, B, Y);
-    Column<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    Row<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
-struct Column<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
+struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a sparse matrix with a
+   * Computes the multiplication of the first row of a sparse matrix with a
    * dense matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first column of the dense matrix.
+   * processes the first row of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3537,13 +3537,13 @@ struct Column<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
  * dense matrix, producing a resulting dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
- * @tparam K Number of columns in the dense matrix.
+ * @tparam K Number of rows in the dense matrix.
  * @param[in]  A Input sparse matrix to be multiplied.
  * @param[in]  B Input dense matrix to multiply with.
  * @param[out] Y Output dense matrix where results are accumulated.
@@ -3554,7 +3554,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-  Column<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixMultiplyDenseTranspose
@@ -3567,13 +3567,13 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * matrix by the transpose of a dense matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the sparse matrix.
- * @tparam N Number of rows in the sparse matrix.
+ * @tparam M Number of rows in the sparse matrix.
+ * @tparam N Number of columns in the sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
- * @tparam K Number of columns in the dense matrix.
+ * @tparam K Number of rows in the dense matrix.
  * @param[in] A Input sparse matrix to be multiplied.
  * @param[in] B Input dense matrix to multiply with (transposed).
  * @return A new matrix that is the result of A * B^T.
@@ -3623,10 +3623,10 @@ struct InnerLoop {
    * sparse matrix column segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3680,10 +3680,10 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3724,10 +3724,10 @@ struct Loop {
    * sparse matrix column across multiple segments.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3780,10 +3780,10 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3828,10 +3828,10 @@ struct Core {
    * results in the output sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3868,13 +3868,13 @@ struct List {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple rows.
+   * sparse matrix across multiple cols.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3912,17 +3912,17 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
             RowPointers_B, RowIndices_Y, RowPointers_Y, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a sparse matrix with
+   * Computes the multiplication of the first column of a sparse matrix with
    * another sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3949,21 +3949,21 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple columns.
+   * sparse matrix across multiple rows.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -3998,14 +3998,14 @@ struct Column {
  * producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the first sparse matrix.
- * @tparam N Number of rows in the first sparse matrix and columns in the
+ * @tparam M Number of rows in the first sparse matrix.
+ * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam K Number of rows in the second sparse matrix.
+ * @tparam K Number of columns in the second sparse matrix.
  * @param[in]  A Input sparse matrix to be multiplied.
  * @param[in]  B Input sparse matrix to multiply with.
  * @param[out] Y Output sparse matrix where results are accumulated.
@@ -4018,7 +4018,7 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
         CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
 
-  Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
          RowIndices_Y, RowPointers_Y>::compute(A, B, Y);
 }
 
@@ -4059,14 +4059,14 @@ struct SparseMulSparse {
  * two sparse matrices.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the first sparse matrix.
- * @tparam N Number of rows in the first sparse matrix and columns in the
+ * @tparam M Number of rows in the first sparse matrix.
+ * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam K Number of rows in the second sparse matrix.
+ * @tparam K Number of columns in the second sparse matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -4144,9 +4144,9 @@ struct InnerLoop {
    * sparse matrix column segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4195,9 +4195,9 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4232,9 +4232,9 @@ struct Loop {
    * sparse matrix column across multiple segments.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4279,9 +4279,9 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4319,9 +4319,9 @@ struct Core {
    * results in the output sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4354,12 +4354,12 @@ struct List {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple rows.
+   * sparse matrix across multiple cols.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4391,16 +4391,16 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
             RowPointers_B, Y_Type, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a sparse matrix with
+   * Computes the multiplication of the first column of a sparse matrix with
    * another sparse matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4424,20 +4424,20 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, typename Y_Type>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple columns.
+   * sparse matrix across multiple rows.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the sparse matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix.
+   * @tparam M Number of rows in the sparse matrix.
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4466,14 +4466,14 @@ struct Column {
  * producing a resulting sparse matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the first sparse matrix.
- * @tparam N Number of rows in the first sparse matrix and columns in the
+ * @tparam M Number of rows in the first sparse matrix.
+ * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam K Number of rows in the second sparse matrix.
+ * @tparam K Number of columns in the second sparse matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -4486,7 +4486,7 @@ inline void
 compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
         const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
         Y_Type &Y) {
-  Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
          Y_Type>::compute(A, B, Y);
 }
 
@@ -4528,13 +4528,13 @@ struct SparseATransposeMulSparseB {
  * the transpose of a sparse matrix A with another sparse matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the first sparse matrix (A^T).
- * @tparam N Number of columns in the first sparse matrix (A^T).
+ * @tparam M Number of columns in the first sparse matrix (A^T).
+ * @tparam N Number of rows in the first sparse matrix (A^T).
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix (A^T).
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix (A^T).
- * @tparam K Number of rows in the second sparse matrix (B).
+ * @tparam K Number of columns in the second sparse matrix (B).
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix (B).
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -4593,10 +4593,10 @@ struct CoreConditional {
    * matrix column segment, with a conditional operation based on the indices.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4633,10 +4633,10 @@ struct CoreConditional<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * the indices match and the multiplication can be performed.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4670,10 +4670,10 @@ struct InnerLoop {
    * sparse matrix column segment.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4719,10 +4719,10 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4756,10 +4756,10 @@ struct OuterLoop {
    * sparse matrix column across multiple segments.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4803,10 +4803,10 @@ struct OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4843,10 +4843,10 @@ struct Core {
    * results in the output sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4877,13 +4877,13 @@ struct List {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple rows.
+   * sparse matrix across multiple cols.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4914,17 +4914,17 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
             RowPointers_B, Y_Type, 0, J> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a sparse matrix with
+   * Computes the multiplication of the first column of a sparse matrix with
    * another sparse matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4945,21 +4945,21 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, typename Y_Type, std::size_t J>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with another
-   * sparse matrix across multiple columns.
+   * sparse matrix across multiple rows.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -4977,30 +4977,30 @@ struct Column {
 
     List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
          Y_Type, M - 1, J>::compute(A, B, Y);
-    Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
            Y_Type, J - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
           typename RowPointers_B, typename Y_Type>
-struct Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
+struct Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
               RowPointers_B, Y_Type, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a sparse matrix with
+   * Computes the multiplication of the first row of a sparse matrix with
    * another sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the sparse matrix.
+   * processes the first row of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of columns in the first sparse matrix.
-   * @tparam N Number of rows in the first sparse matrix and columns in the
+   * @tparam M Number of rows in the first sparse matrix.
+   * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
-   * @tparam K Number of rows in the second sparse matrix.
+   * @tparam K Number of columns in the second sparse matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
    * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -5031,14 +5031,14 @@ struct Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
  * matrix.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of columns in the first sparse matrix.
- * @tparam N Number of rows in the first sparse matrix and columns in the
+ * @tparam M Number of rows in the first sparse matrix.
+ * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam K Number of rows in the second sparse matrix.
+ * @tparam K Number of columns in the second sparse matrix.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5051,7 +5051,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
         Y_Type &Y) {
-  Column<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
          Y_Type, K - 1>::compute(A, B, Y);
 }
 } // namespace SparseMatrixMultiplySparseTranspose
@@ -5090,13 +5090,13 @@ struct SparseAMulSparseBTranspose {
  * the sparse matrix A with the transpose of the sparse matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the first sparse matrix (A).
- * @tparam N Number of columns in the first sparse matrix (A).
+ * @tparam M Number of columns in the first sparse matrix (A).
+ * @tparam N Number of rows in the first sparse matrix (A).
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix (A).
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix (A).
- * @tparam K Number of rows in the second sparse matrix (B^T).
+ * @tparam K Number of columns in the second sparse matrix (B^T).
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix (B^T).
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5155,8 +5155,8 @@ struct Loop {
    * diagonal matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and size of the diagonal
+   * @tparam M Number of columns in the sparse matrix.
+   * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5189,8 +5189,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and size of the diagonal
+   * @tparam M Number of columns in the sparse matrix.
+   * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5208,18 +5208,18 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A, std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix row with a
    * diagonal matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and size of the diagonal
+   * @tparam M Number of columns in the sparse matrix.
+   * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5233,25 +5233,25 @@ struct Row {
 
     Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
          RowPointers_A::list[J + 1]>::compute(A, B, Y);
-    Row<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B, Y);
+    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
           typename RowPointers_A>
-struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
+struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a sparse matrix with a
+   * Computes the multiplication of the first column of a sparse matrix with a
    * diagonal matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the sparse matrix.
+   * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and size of the diagonal
+   * @tparam M Number of columns in the sparse matrix.
+   * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5276,8 +5276,8 @@ struct Row<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * with a diagonal matrix B, producing a resulting sparse matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the sparse matrix A.
- * @tparam N Number of columns in the sparse matrix A and size of the diagonal
+ * @tparam M Number of columns in the sparse matrix A.
+ * @tparam N Number of rows in the sparse matrix A and size of the diagonal
  * matrix B.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix A.
@@ -5290,7 +5290,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
         const DiagMatrix<T, N> &B,
         CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
-  Row<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B, Y);
+  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B, Y);
 }
 } // namespace SparseMatrixMultiplyDiagMatrix
 
@@ -5302,8 +5302,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * the sparse matrix A with the diagonal matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the sparse matrix (A).
- * @tparam N Number of columns in the sparse matrix (A) and size of the diagonal
+ * @tparam M Number of columns in the sparse matrix (A).
+ * @tparam N Number of rows in the sparse matrix (A) and size of the diagonal
  * matrix (B).
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix (A).
@@ -5353,8 +5353,8 @@ struct Loop {
    * matrix row.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5386,8 +5386,8 @@ struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5404,18 +5404,18 @@ struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
   }
 };
 
-// Row loop
+// Column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B, std::size_t J>
-struct Row {
+struct Column {
   /**
    * @brief
    * Recursively computes the multiplication of a diagonal matrix with a sparse
    * matrix row.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5428,25 +5428,25 @@ struct Row {
 
     Loop<T, M, N, RowIndices_B, RowPointers_B, J, 0, RowPointers_B::list[J],
          RowPointers_B::list[J + 1]>::compute(A, B, Y);
-    Row<T, M, N, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    Column<T, M, N, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
-// End of row loop
+// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
           typename RowPointers_B>
-struct Row<T, M, N, RowIndices_B, RowPointers_B, 0> {
+struct Column<T, M, N, RowIndices_B, RowPointers_B, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a diagonal matrix with a
+   * Computes the multiplication of the first column of a diagonal matrix with a
    * sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the diagonal matrix.
+   * processes the first column of the diagonal matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam N Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5470,8 +5470,8 @@ struct Row<T, M, N, RowIndices_B, RowPointers_B, 0> {
  * with a sparse matrix B, producing a resulting sparse matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the diagonal matrix A.
- * @tparam N Number of columns in the sparse matrix B.
+ * @tparam M Number of columns in the diagonal matrix A.
+ * @tparam N Number of rows in the sparse matrix B.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5484,7 +5484,7 @@ compute(const DiagMatrix<T, M> &A,
         const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
         CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
 
-  Row<T, M, N, RowIndices_B, RowPointers_B, M - 1>::compute(A, B, Y);
+  Column<T, M, N, RowIndices_B, RowPointers_B, M - 1>::compute(A, B, Y);
 }
 
 } // namespace DiagMatrixMultiplySparseMatrix
@@ -5497,8 +5497,8 @@ compute(const DiagMatrix<T, M> &A,
  * the diagonal matrix A with the sparse matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the diagonal matrix (A).
- * @tparam K Number of columns in the sparse matrix (B).
+ * @tparam M Number of columns in the diagonal matrix (A).
+ * @tparam K Number of rows in the sparse matrix (B).
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5550,8 +5550,8 @@ struct ConditionalOperation {
    * meaning it does not perform any operation.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5584,8 +5584,8 @@ struct ConditionalOperation<T, M, K, RowIndices_B, RowPointers_B, Y_Type, I,
    * meaning it performs the multiplication operation.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5614,8 +5614,8 @@ struct InnerLoop {
    * matrix transpose.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5650,8 +5650,8 @@ struct InnerLoop<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I, KEnd,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5680,8 +5680,8 @@ struct Core {
    * matrix A with a sparse matrix B, producing a resulting sparse matrix Y.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix A.
-   * @tparam K Number of columns in the sparse matrix B.
+   * @tparam M Number of columns in the diagonal matrix A.
+   * @tparam K Number of rows in the sparse matrix B.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix B.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5708,8 +5708,8 @@ struct List {
    * matrix transpose.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5731,15 +5731,15 @@ template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
 struct List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a diagonal matrix with a
+   * Computes the multiplication of the first column of a diagonal matrix with a
    * sparse matrix transpose.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first row of the diagonal matrix.
+   * processes the first column of the diagonal matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the diagonal matrix.
-   * @tparam K Number of columns in the sparse matrix.
+   * @tparam M Number of columns in the diagonal matrix.
+   * @tparam K Number of rows in the sparse matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
    * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5763,8 +5763,8 @@ struct List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0> {
  * with a sparse matrix B, producing a resulting sparse matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the diagonal matrix A.
- * @tparam K Number of columns in the sparse matrix B.
+ * @tparam M Number of columns in the diagonal matrix A.
+ * @tparam K Number of rows in the sparse matrix B.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5811,8 +5811,8 @@ struct TransposeDiagAMulSparseB {
  * transpose of the product.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the diagonal matrix A.
- * @tparam K Number of columns in the sparse matrix B.
+ * @tparam M Number of columns in the diagonal matrix A.
+ * @tparam K Number of rows in the sparse matrix B.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -5864,9 +5864,9 @@ struct Loop {
    * matrix transpose.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5900,9 +5900,9 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5934,9 +5934,9 @@ struct Core {
    * A with a sparse matrix B, producing a resulting dense matrix Y.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix A.
-   * @tparam N Number of columns in the sparse matrix B.
-   * @tparam K Number of columns in the dense matrix A and rows in the sparse
+   * @tparam M Number of columns in the dense matrix A.
+   * @tparam N Number of rows in the sparse matrix B.
+   * @tparam K Number of rows in the dense matrix A and cols in the sparse
    * matrix B.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix B.
@@ -5966,9 +5966,9 @@ struct List {
    * matrix transpose.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -5991,16 +5991,16 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 struct List<T, M, N, K, RowIndices_B, RowPointers_B, 0, J> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a dense matrix with a
+   * Computes the multiplication of the first column of a dense matrix with a
    * sparse matrix transpose.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first row of the dense matrix.
+   * processes the first column of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6016,19 +6016,19 @@ struct List<T, M, N, K, RowIndices_B, RowPointers_B, 0, J> {
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B, std::size_t J>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a dense matrix with a sparse
    * matrix transpose.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6041,26 +6041,26 @@ struct Column {
           Matrix<T, M, N> &Y) {
 
     List<T, M, N, K, RowIndices_B, RowPointers_B, M - 1, J>::compute(A, B, Y);
-    Column<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    Row<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
           typename RowIndices_B, typename RowPointers_B>
-struct Column<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
+struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a dense matrix with a
+   * Computes the multiplication of the first row of a dense matrix with a
    * sparse matrix transpose.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the dense matrix.
+   * processes the first row of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6085,8 +6085,8 @@ struct Column<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
  * the transpose of a sparse matrix B, producing a resulting dense matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the dense matrix A.
- * @tparam N Number of columns in the sparse matrix B.
+ * @tparam M Number of columns in the dense matrix A.
+ * @tparam N Number of rows in the sparse matrix B.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
  * @tparam RowPointers_B Type representing the row pointers for sparse storage
@@ -6099,7 +6099,7 @@ compute(const Matrix<T, M, K> &A,
         const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
         Matrix<T, M, N> &Y) {
 
-  Column<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
+  Row<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
 }
 
 } // namespace DenseMatrixMultiplySparseTranspose
@@ -6112,9 +6112,9 @@ compute(const Matrix<T, M, K> &A,
  * the dense matrix A with the transpose of the sparse matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the dense matrix (A).
- * @tparam N Number of columns in the sparse matrix (B).
- * @tparam K Number of columns in the dense matrix (A) and rows in the sparse
+ * @tparam M Number of columns in the dense matrix (A).
+ * @tparam N Number of rows in the sparse matrix (B).
+ * @tparam K Number of rows in the dense matrix (A) and cols in the sparse
  * matrix (B).
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
@@ -6166,9 +6166,9 @@ struct InnerLoop {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6205,9 +6205,9 @@ struct InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, End,
    * case to terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6236,9 +6236,9 @@ struct MiddleLoop {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6265,16 +6265,16 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 struct MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first row of a dense matrix with a
+   * Computes the multiplication of the first column of a dense matrix with a
    * sparse matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first row of the dense matrix.
+   * processes the first column of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6303,9 +6303,9 @@ struct OuterLoop {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6330,16 +6330,16 @@ template <typename T, std::size_t M, std::size_t N, std::size_t K,
 struct OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a dense matrix with a
+   * Computes the multiplication of the first row of a dense matrix with a
    * sparse matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the dense matrix.
+   * processes the first row of the dense matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam M Number of rows in the dense matrix.
-   * @tparam N Number of columns in the sparse matrix.
-   * @tparam K Number of columns in the dense matrix and rows in the sparse
+   * @tparam M Number of columns in the dense matrix.
+   * @tparam N Number of rows in the sparse matrix.
+   * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
    * @tparam RowIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6365,9 +6365,9 @@ struct OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex> {
  * a sparse matrix B, producing a resulting dense matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the dense matrix A.
- * @tparam N Number of columns in the sparse matrix B.
- * @tparam K Number of columns in the dense matrix A and rows in the sparse
+ * @tparam M Number of columns in the dense matrix A.
+ * @tparam N Number of rows in the sparse matrix B.
+ * @tparam K Number of rows in the dense matrix A and cols in the sparse
  * matrix B.
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
@@ -6395,9 +6395,9 @@ compute(const Matrix<T, N, M> &A,
  * the dense matrix A with the transpose of the sparse matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam M Number of rows in the dense matrix (A).
- * @tparam N Number of columns in the sparse matrix (B).
- * @tparam K Number of columns in the dense matrix (A) and rows in the sparse
+ * @tparam M Number of columns in the dense matrix (A).
+ * @tparam N Number of rows in the sparse matrix (B).
+ * @tparam K Number of rows in the dense matrix (A) and cols in the sparse
  * matrix (B).
  * @tparam RowIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
@@ -6447,9 +6447,9 @@ struct Loop {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6484,9 +6484,9 @@ struct Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * terminate recursion.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6516,9 +6516,9 @@ struct Core {
    * matrix A with a dense matrix B, producing a resulting dense matrix Y.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix A.
-   * @tparam M Number of columns in the dense matrix B.
-   * @tparam K Number of columns in the sparse matrix A and rows in the dense
+   * @tparam N Number of columns in the sparse matrix A.
+   * @tparam M Number of rows in the dense matrix B.
+   * @tparam K Number of rows in the sparse matrix A and cols in the dense
    * matrix B.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix A.
@@ -6545,9 +6545,9 @@ struct List {
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6569,16 +6569,16 @@ template <typename T, std::size_t N, std::size_t M, std::size_t K,
 struct List<T, N, M, K, RowIndices_A, RowPointers_A, 0, I> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a sparse matrix with a
+   * Computes the multiplication of the first row of a sparse matrix with a
    * dense matrix.
    *
    * This function is a specialization for the base case when J is 0, meaning it
-   * processes the first column of the sparse matrix.
+   * processes the first row of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6593,19 +6593,19 @@ struct List<T, N, M, K, RowIndices_A, RowPointers_A, 0, I> {
   }
 };
 
-// Column loop
+// Row loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct Column {
+struct Row {
   /**
    * @brief
    * Recursively computes the multiplication of a sparse matrix with a dense
    * matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6617,26 +6617,26 @@ struct Column {
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
     List<T, N, M, K, RowIndices_A, RowPointers_A, N - 1, I>::compute(A, B, Y);
-    Column<T, N, M, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    Row<T, N, M, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
-// End of column loop
+// End of row loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
           typename RowIndices_A, typename RowPointers_A>
-struct Column<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
+struct Row<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
   /**
    * @brief
-   * Computes the multiplication of the first column of a sparse matrix with a
+   * Computes the multiplication of the first row of a sparse matrix with a
    * dense matrix.
    *
    * This function is a specialization for the base case when I is 0, meaning it
-   * processes the first column of the sparse matrix.
+   * processes the first row of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
-   * @tparam N Number of rows in the sparse matrix.
-   * @tparam M Number of columns in the dense matrix.
-   * @tparam K Number of columns in the sparse matrix and rows in the dense
+   * @tparam N Number of columns in the sparse matrix.
+   * @tparam M Number of rows in the dense matrix.
+   * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
    * @tparam RowIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
@@ -6660,8 +6660,8 @@ struct Column<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
  * with a dense matrix B, producing a resulting dense matrix Y.
  *
  * @tparam T Value type of the matrix.
- * @tparam N Number of rows in the sparse matrix A.
- * @tparam M Number of columns in the dense matrix B.
+ * @tparam N Number of columns in the sparse matrix A.
+ * @tparam M Number of rows in the dense matrix B.
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix A.
  * @tparam RowPointers_A Type representing the row pointers for sparse storage
@@ -6673,7 +6673,7 @@ inline void
 compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-  Column<T, N, M, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, N, M, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseTransposeMatrixMultiplyDenseMatrix
@@ -6686,9 +6686,9 @@ compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
  * the sparse matrix A with the dense matrix B.
  *
  * @tparam T Value type of the matrix.
- * @tparam N Number of rows in the sparse matrix (A).
- * @tparam M Number of columns in the dense matrix (B).
- * @tparam K Number of columns in the sparse matrix (A) and rows in the dense
+ * @tparam N Number of columns in the sparse matrix (A).
+ * @tparam M Number of rows in the dense matrix (B).
+ * @tparam K Number of rows in the sparse matrix (A) and cols in the dense
  * matrix (B).
  * @tparam RowIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix (A).

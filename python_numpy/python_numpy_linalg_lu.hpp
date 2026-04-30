@@ -11,8 +11,8 @@
  * as determinant calculation.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -53,27 +53,27 @@ public:
 
   using UpperTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::COLS, UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-          UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
+          A_Type::ROWS, UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
+          UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
 
   using LowerTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::COLS, LowerTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-          LowerTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
+          A_Type::ROWS, LowerTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
+          LowerTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
 
 protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
   using _L_RowIndices =
-      Base::Matrix::LowerTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+      Base::Matrix::LowerTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
   using _L_RowPointers =
-      Base::Matrix::LowerTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+      Base::Matrix::LowerTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
 
   using _U_RowIndices =
-      Base::Matrix::UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+      Base::Matrix::UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
   using _U_RowPointers =
-      Base::Matrix::UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+      Base::Matrix::UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
 
 public:
   /* Constructor */
@@ -83,12 +83,12 @@ public:
   LinalgSolverLU()
       : _LU_decomposer(),
         _L_triangular(
-            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()),
+            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()),
         _U_triangular(
-            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()) {
-    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
+            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()) {
+    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::ROWS>();
   }
 
   template <typename U = A_Type,
@@ -96,11 +96,11 @@ public:
   LinalgSolverLU()
       : _LU_decomposer(),
         _L_triangular(
-            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()),
+            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()),
         _U_triangular(
-            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()) {}
+            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()) {}
 
   template <
       typename U = A_Type,
@@ -108,12 +108,12 @@ public:
   LinalgSolverLU()
       : _LU_decomposer(),
         _L_triangular(
-            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()),
+            Base::Matrix::create_LowerTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()),
         _U_triangular(
-            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()) {
-    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::COLS>();
+            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()) {
+    this->_LU_decomposer = Base::Matrix::LUDecomposition<_T, A_Type::ROWS>();
   }
 
   /* Copy Constructor */
@@ -160,7 +160,7 @@ public:
    *
    * @param A The input matrix for LU decomposition.
    */
-  inline void solve(const Matrix<DefDense, _T, A_Type::COLS, A_Type::COLS> &A) {
+  inline void solve(const Matrix<DefDense, _T, A_Type::ROWS, A_Type::ROWS> &A) {
     this->_LU_decomposer.solve(A.matrix);
   }
 
@@ -174,9 +174,9 @@ public:
    *
    * @param A The input diagonal matrix for LU decomposition.
    */
-  inline void solve(const Matrix<DefDiag, _T, A_Type::COLS> &A) {
+  inline void solve(const Matrix<DefDiag, _T, A_Type::ROWS> &A) {
     this->_LU_decomposer =
-        Base::Matrix::LUDecomposition<_T, A_Type::COLS>(A.matrix);
+        Base::Matrix::LUDecomposition<_T, A_Type::ROWS>(A.matrix);
   }
 
   /**
@@ -189,7 +189,7 @@ public:
    *
    * @param A The input sparse matrix for LU decomposition.
    */
-  inline void solve(const Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+  inline void solve(const Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                                  SparseAvailable_Type> &A) {
 
     auto A_dense = A.matrix.create_dense();
@@ -209,14 +209,14 @@ public:
    * @return A pair containing the lower triangular matrix L and upper
    * triangular matrix U.
    */
-  inline auto get_L() -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+  inline auto get_L() -> Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                                 LowerTriangular_SparseAvailable_Type> const {
 
-    Base::Matrix::set_values_LowerTriangularSparseMatrix<_T, A_Type::COLS,
-                                                         A_Type::COLS>(
+    Base::Matrix::set_values_LowerTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                         A_Type::ROWS>(
         this->_L_triangular, this->_LU_decomposer.get_L());
 
-    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+    return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                   LowerTriangular_SparseAvailable_Type>(this->_L_triangular);
   }
 
@@ -229,14 +229,14 @@ public:
    *
    * @return The upper triangular matrix U.
    */
-  inline auto get_U() -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+  inline auto get_U() -> Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                                 UpperTriangular_SparseAvailable_Type> const {
 
-    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                         A_Type::COLS>(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                         A_Type::ROWS>(
         this->_U_triangular, this->_LU_decomposer.get_U());
 
-    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+    return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                   UpperTriangular_SparseAvailable_Type>(this->_U_triangular);
   }
 
@@ -268,21 +268,21 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = A_Type::COLS;
   static constexpr std::size_t ROWS = A_Type::ROWS;
+  static constexpr std::size_t COLS = A_Type::COLS;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<_T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
 
 protected:
   /* Variable */
-  Base::Matrix::LUDecomposition<_T, A_Type::COLS> _LU_decomposer;
+  Base::Matrix::LUDecomposition<_T, A_Type::ROWS> _LU_decomposer;
 
-  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
                                      _L_RowIndices, _L_RowPointers>
       _L_triangular;
 
-  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
                                      _U_RowIndices, _U_RowPointers>
       _U_triangular;
 };

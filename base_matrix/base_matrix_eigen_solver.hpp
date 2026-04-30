@@ -11,8 +11,8 @@
  * __BASE_MATRIX_USE_STD_VECTOR__ macro.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -52,7 +52,7 @@ const double EIGEN_SMALL_VALUE = 1.0e-6;
  * supports both std::vector and std::array storage for eigenvalues.
  *
  * @tparam T Type of the matrix elements (e.g., float, double).
- * @tparam M Size of the square matrix (number of rows and columns).
+ * @tparam M Size of the square matrix (number of columns and rows).
  */
 template <typename T, std::size_t M> class EigenSolverReal {
 public:
@@ -591,7 +591,7 @@ protected:
  * supports both std::vector and std::array storage for eigenvalues.
  *
  * @tparam T Type of the matrix elements (e.g., float, double).
- * @tparam M Size of the square matrix (number of rows and columns).
+ * @tparam M Size of the square matrix (number of columns and rows).
  */
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:

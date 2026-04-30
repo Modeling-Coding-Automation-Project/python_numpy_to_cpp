@@ -12,8 +12,8 @@
  * required.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -39,7 +39,7 @@ constexpr double DEFAULT_DIVISION_MIN_LINALG_CHOLESKY = 1.0e-10;
  * decomposed matrix. The decomposition is only supported for real-valued (float
  * or double) matrices and does not support complex types.
  *
- * @tparam A_Type Matrix type traits, must define Value_Type, COLS, ROWS, and
+ * @tparam A_Type Matrix type traits, must define Value_Type, ROWS, COLS, and
  * SparseAvailable_Type.
  *
  * @note The class supports copy and move semantics.
@@ -64,25 +64,25 @@ public:
 
   using UpperTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::COLS, UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>,
-          UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>>;
+          A_Type::ROWS, UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
+          UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
 
 protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
   using _CholeskyTriangularRowIndices =
-      UpperTriangularRowIndices<A_Type::COLS, A_Type::COLS>;
+      UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
   using _CholeskyTriangularRowPointers =
-      UpperTriangularRowPointers<A_Type::COLS, A_Type::COLS>;
+      UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
 
 public:
   /* Constructor */
   LinalgSolverCholesky()
       : _cholesky_decomposed_matrix(),
         _cholesky_decomposed_triangular(
-            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                             A_Type::COLS>()),
+            Base::Matrix::create_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                             A_Type::ROWS>()),
         _zero_div_flag(false) {}
 
   /* Copy Constructor */
@@ -139,27 +139,27 @@ public:
    * sparse matrix is returned.
    *
    * @tparam _T The data type of the matrix elements (e.g., float, double).
-   * @tparam A_Type::COLS The number of columns (and rows) of the square matrix
+   * @tparam A_Type::ROWS The number of rows (and cols) of the square matrix
    * A.
    * @param A The input dense square matrix to decompose.
-   * @return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+   * @return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
    * UpperTriangular_SparseAvailable_Type> The upper triangular matrix in sparse
    * format resulting from the Cholesky decomposition.
    */
-  inline auto solve(const Matrix<DefDense, _T, A_Type::COLS, A_Type::COLS> &A)
-      -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+  inline auto solve(const Matrix<DefDense, _T, A_Type::ROWS, A_Type::ROWS> &A)
+      -> Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                 UpperTriangular_SparseAvailable_Type> {
 
     std::tie(this->_cholesky_decomposed_matrix, this->_zero_div_flag) =
-        Base::Matrix::cholesky_decomposition<_T, A_Type::COLS>(
+        Base::Matrix::cholesky_decomposition<_T, A_Type::ROWS>(
             A.matrix, this->_cholesky_decomposed_matrix, this->division_min);
 
-    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                         A_Type::COLS>(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                         A_Type::ROWS>(
         this->_cholesky_decomposed_triangular,
         this->_cholesky_decomposed_matrix);
 
-    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+    return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                   UpperTriangular_SparseAvailable_Type>(
         this->_cholesky_decomposed_triangular);
   }
@@ -174,25 +174,25 @@ public:
    * suitable for solving linear systems where A is a diagonal matrix.
    *
    * @tparam _T The data type of the matrix elements (e.g., float, double).
-   * @tparam A_Type::COLS The number of columns (and rows) of the diagonal
+   * @tparam A_Type::ROWS The number of rows (and cols) of the diagonal
    * matrix A.
    * @param A The input diagonal matrix to decompose.
-   * @return Matrix<DefDiag, _T, A_Type::COLS> The diagonal matrix resulting
+   * @return Matrix<DefDiag, _T, A_Type::ROWS> The diagonal matrix resulting
    * from the Cholesky decomposition.
    */
-  inline auto solve(const Matrix<DefDiag, _T, A_Type::COLS> &A)
-      -> Matrix<DefDiag, _T, A_Type::COLS> {
+  inline auto solve(const Matrix<DefDiag, _T, A_Type::ROWS> &A)
+      -> Matrix<DefDiag, _T, A_Type::ROWS> {
 
-    Base::Matrix::DiagMatrix<_T, A_Type::COLS> Diag(
+    Base::Matrix::DiagMatrix<_T, A_Type::ROWS> Diag(
         this->_cholesky_decomposed_matrix(0));
 
     std::tie(Diag, this->_zero_div_flag) =
-        Base::Matrix::cholesky_decomposition_diag<_T, A_Type::COLS>(A.matrix,
+        Base::Matrix::cholesky_decomposition_diag<_T, A_Type::ROWS>(A.matrix,
                                                                     Diag);
 
     this->_cholesky_decomposed_matrix(0) = Diag.data;
 
-    return Matrix<DefDiag, _T, A_Type::COLS>(Diag);
+    return Matrix<DefDiag, _T, A_Type::ROWS>(Diag);
   }
 
   /**
@@ -205,28 +205,28 @@ public:
    * sparse matrix is returned.
    *
    * @tparam _T The data type of the matrix elements (e.g., float, double).
-   * @tparam A_Type::COLS The number of columns (and rows) of the square matrix
+   * @tparam A_Type::ROWS The number of rows (and cols) of the square matrix
    * A.
    * @param A The input sparse square matrix to decompose.
-   * @return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+   * @return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
    * UpperTriangular_SparseAvailable_Type> The upper triangular matrix in sparse
    * format resulting from the Cholesky decomposition.
    */
-  inline auto solve(const Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+  inline auto solve(const Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                                  SparseAvailable_Type> &A)
-      -> Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+      -> Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                 UpperTriangular_SparseAvailable_Type> {
 
     std::tie(this->_cholesky_decomposed_matrix, this->_zero_div_flag) =
-        Base::Matrix::cholesky_decomposition_sparse<_T, A_Type::COLS>(
+        Base::Matrix::cholesky_decomposition_sparse<_T, A_Type::ROWS>(
             A.matrix, this->_cholesky_decomposed_matrix, this->division_min);
 
-    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::COLS,
-                                                         A_Type::COLS>(
+    Base::Matrix::set_values_UpperTriangularSparseMatrix<_T, A_Type::ROWS,
+                                                         A_Type::ROWS>(
         this->_cholesky_decomposed_triangular,
         this->_cholesky_decomposed_matrix);
 
-    return Matrix<DefSparse, _T, A_Type::COLS, A_Type::COLS,
+    return Matrix<DefSparse, _T, A_Type::ROWS, A_Type::ROWS,
                   UpperTriangular_SparseAvailable_Type>(
         this->_cholesky_decomposed_triangular);
   }
@@ -261,8 +261,8 @@ public:
 
 public:
   /* Constant */
-  static constexpr std::size_t COLS = A_Type::COLS;
   static constexpr std::size_t ROWS = A_Type::ROWS;
+  static constexpr std::size_t COLS = A_Type::COLS;
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<_T>::value;
   static_assert(!IS_COMPLEX, "Complex type is not supported.");
@@ -273,10 +273,10 @@ public:
 
 protected:
   /* Variable */
-  Base::Matrix::Matrix<_T, A_Type::COLS, A_Type::COLS>
+  Base::Matrix::Matrix<_T, A_Type::ROWS, A_Type::ROWS>
       _cholesky_decomposed_matrix;
 
-  Base::Matrix::CompiledSparseMatrix<_T, A_Type::COLS, A_Type::COLS,
+  Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
                                      _CholeskyTriangularRowIndices,
                                      _CholeskyTriangularRowPointers>
       _cholesky_decomposed_triangular;
@@ -292,7 +292,7 @@ protected:
  * This function creates and returns an instance of the LinalgSolverCholesky
  * class template for the specified matrix type A_Type.
  *
- * @tparam A_Type The matrix type traits, must define Value_Type, COLS, ROWS,
+ * @tparam A_Type The matrix type traits, must define Value_Type, ROWS, COLS,
  * and SparseAvailable_Type.
  * @return An instance of LinalgSolverCholesky<A_Type>.
  */

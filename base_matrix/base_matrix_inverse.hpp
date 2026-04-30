@@ -11,8 +11,8 @@
  * and vectors, supporting both real and complex types.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -283,7 +283,7 @@ gmres_k_partition(const Matrix<T, M, M> &A, const Vector<T, M> &b,
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param A The input matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -361,7 +361,7 @@ gmres_k_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param A The input matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -451,8 +451,8 @@ gmres_k_partition_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
  * initial guess. It returns the solution vector x.
  *
  * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of rows in the matrix A.
- * @tparam N The number of columns in the matrix A.
+ * @tparam M The number of columns in the matrix A.
+ * @tparam N The number of rows in the matrix A.
  * @param In_A The input matrix A.
  * @param b The right-hand side vector b.
  * @param x_1 The initial guess for the solution vector x.
@@ -595,9 +595,9 @@ gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
  * matrix X_1.
  *
  * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of columns in the matrix A.
- * @tparam N The number of rows in the matrix A.
- * @tparam K The number of rows of matrix B.
+ * @tparam M The number of rows in the matrix A.
+ * @tparam N The number of columns in the matrix A.
+ * @tparam K The number of columns of matrix B.
  * @param A The input matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -954,7 +954,7 @@ inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k_partition(
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param SA The compiled sparse matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -997,7 +997,7 @@ sparse_gmres_k_matrix(
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param SA The compiled sparse matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -1047,8 +1047,8 @@ sparse_gmres_k_partition_matrix(
  * initial guess. It returns the solution vector x.
  *
  * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of rows in the matrix A.
- * @tparam N The number of columns in the matrix A.
+ * @tparam M The number of columns in the matrix A.
+ * @tparam N The number of rows in the matrix A.
  * @param In_SA The compiled sparse matrix A.
  * @param b The right-hand side vector b.
  * @param x_1 The initial guess for the solution vector x.
@@ -1190,9 +1190,9 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
  * matrix X_1.
  *
  * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of columns in the matrix A.
- * @tparam N The number of rows in the matrix A.
- * @tparam K The number of rows of matrix B.
+ * @tparam M The number of rows in the matrix A.
+ * @tparam N The number of columns in the matrix A.
+ * @tparam K The number of columns of matrix B.
  * @param In_SA The compiled sparse matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -1234,8 +1234,8 @@ sparse_gmres_k_rect_matrix(
  * the matrix and returns the solution matrix X_1.
  *
  * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of columns in the matrix A.
- * @tparam N The number of rows in the matrix A.
+ * @tparam M The number of rows in the matrix A.
+ * @tparam N The number of columns in the matrix A.
  * @tparam RowIndices_A The type representing row indices of the sparse matrix.
  * @tparam RowPointers_A The type representing row pointers of the sparse
  * matrix.
@@ -1502,7 +1502,7 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param A The complex matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.
@@ -1757,7 +1757,7 @@ complex_sparse_gmres_k(
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam K The number of rows of matrix B.
+ * @tparam K The number of columns of matrix B.
  * @param In_A The compiled sparse matrix A.
  * @param B The right-hand side matrix B.
  * @param X_1 The initial guess for the solution matrix X_1.

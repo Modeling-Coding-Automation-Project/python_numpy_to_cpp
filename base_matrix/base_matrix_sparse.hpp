@@ -13,8 +13,8 @@
  * involving sparse matrices.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -48,8 +48,8 @@ const double SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE = 1.0e-20;
  * matrices, as well as conversion to dense format.
  *
  * @tparam T The type of elements in the matrix.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t V>
@@ -240,7 +240,7 @@ public:
   const T value(std::size_t i) const { return this->values[i]; }
 
   /**
-   * @brief Returns the index of the row corresponding to the specified index.
+   * @brief Returns the index of the column corresponding to the specified index.
    *
    * This function retrieves the row index for the given index in the sparse
    * matrix.
@@ -260,7 +260,7 @@ public:
    * This function retrieves the starting index of the specified row in the
    * sparse matrix.
    *
-   * @param i The index of the row to retrieve the pointer for.
+   * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
   std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
@@ -271,7 +271,7 @@ public:
    * This function retrieves the starting index of the specified row in the
    * sparse matrix.
    *
-   * @param i The index of the row to retrieve the pointer for.
+   * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
   const std::size_t row_pointer(std::size_t i) const {
@@ -450,22 +450,22 @@ public:
   }
 
   /**
-   * @brief Returns the number of rows in the sparse matrix.
-   *
-   * This function returns the number of rows in the sparse matrix.
-   *
-   * @return The number of rows in the sparse matrix.
-   */
-  constexpr std::size_t rows() const { return N; }
-
-  /**
    * @brief Returns the number of columns in the sparse matrix.
    *
    * This function returns the number of columns in the sparse matrix.
    *
    * @return The number of columns in the sparse matrix.
    */
-  constexpr std::size_t cols() const { return M; }
+  constexpr std::size_t cols() const { return N; }
+
+  /**
+   * @brief Returns the number of rows in the sparse matrix.
+   *
+   * This function returns the number of rows in the sparse matrix.
+   *
+   * @return The number of rows in the sparse matrix.
+   */
+  constexpr std::size_t rows() const { return M; }
 
 /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
@@ -485,8 +485,8 @@ public:
  * non-zero elements and their corresponding row indices.
  *
  * @tparam T The type of elements in the matrix.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @param A The dense matrix to convert.
  * @return A sparse matrix representation of the dense matrix.
  */
@@ -527,7 +527,7 @@ inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
  * the diagonal elements and their corresponding row indices.
  *
  * @tparam T The type of elements in the matrix.
- * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam M The size of the diagonal matrix (number of columns and rows).
  * @param A The diagonal matrix to convert.
  * @return A sparse matrix representation of the diagonal matrix.
  */
@@ -566,8 +566,8 @@ inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
  * given dense matrix to it.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @param B The dense matrix to add.
  * @param A The sparse matrix to add to.
  * @return A dense matrix resulting from the addition.
@@ -593,7 +593,7 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
  * the given sparse matrix from it.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The size of the diagonal matrix (number of rows and columns).
+ * @tparam M The size of the diagonal matrix (number of columns and rows).
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param B The diagonal matrix to subtract from.
  * @param A The sparse matrix to subtract.
@@ -621,8 +621,8 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
  * This function scales all values in the sparse matrix by the given scalar.
  *
  * @tparam T The type of elements in the matrix.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param scalar The scalar value to multiply with.
  * @param A The sparse matrix to scale.
@@ -649,8 +649,8 @@ inline SparseMatrix<T, M, N, V> operator*(const T &scalar,
  * and the given vector, returning a new vector as the result.
  *
  * @tparam T The type of elements in the matrix and vector.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix (and size of the
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix (and size of the
  * vector).
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply.
@@ -680,9 +680,9 @@ inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
  * and the sparse matrix, returning a new vector as the result.
  *
  * @tparam T The type of elements in the matrix and vector.
- * @tparam N The number of columns in the sparse matrix (and size of the
+ * @tparam N The number of rows in the sparse matrix (and size of the
  * vector).
- * @tparam K The number of rows in the sparse matrix.
+ * @tparam K The number of columns in the sparse matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param a The vector to multiply with.
  * @param B The sparse matrix to multiply.
@@ -712,10 +712,10 @@ colVector_a_mul_SparseB(const ColVector<T, N> &a,
  * the given dense matrix, returning a new dense matrix as the result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix (and rows in the dense
  * matrix).
- * @tparam K The number of columns in the dense matrix.
+ * @tparam K The number of rows in the dense matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply.
  * @param B The dense matrix to multiply with.
@@ -747,11 +747,11 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
  * and the sparse matrix, returning a new dense matrix as the result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the dense matrix (and columns in the
+ * @tparam M The number of rows in the dense matrix (and rows in the
  * sparse matrix).
- * @tparam N The number of rows in the dense matrix (and rows in the sparse
+ * @tparam N The number of columns in the dense matrix (and cols in the sparse
  * matrix).
- * @tparam K The number of rows in the sparse matrix.
+ * @tparam K The number of columns in the sparse matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The dense matrix to multiply.
  * @param B The sparse matrix to multiply with.
@@ -782,10 +782,10 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix (and rows in the dense
  * matrix).
- * @tparam K The number of rows in the dense matrix.
+ * @tparam K The number of columns in the dense matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply.
  * @param B The dense matrix to multiply with (transposed).
@@ -820,10 +820,10 @@ matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
  * returning a new dense matrix as the result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the first sparse matrix.
- * @tparam N The number of rows in the first sparse matrix (and columns in the
+ * @tparam M The number of rows in the first sparse matrix.
+ * @tparam N The number of columns in the first sparse matrix (and rows in the
  * second sparse matrix).
- * @tparam K The number of rows in the second sparse matrix.
+ * @tparam K The number of columns in the second sparse matrix.
  * @tparam V The maximum number of non-zero values in the first sparse matrix.
  * @param A The first sparse matrix to multiply.
  * @param B The second sparse matrix to multiply with.
@@ -856,10 +856,10 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the first sparse matrix.
- * @tparam N The number of rows in the first sparse matrix (and rows in the
+ * @tparam M The number of rows in the first sparse matrix.
+ * @tparam N The number of columns in the first sparse matrix (and cols in the
  * second sparse matrix).
- * @tparam K The number of columns in the second sparse matrix.
+ * @tparam K The number of rows in the second sparse matrix.
  * @tparam V The maximum number of non-zero values in the first sparse matrix.
  * @param A The first sparse matrix to multiply.
  * @param B The second sparse matrix to multiply with (transposed).
@@ -895,11 +895,11 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the first sparse matrix (and columns in
+ * @tparam M The number of rows in the first sparse matrix (and rows in
  * the second sparse matrix).
- * @tparam N The number of rows in the first sparse matrix (and rows in the
+ * @tparam N The number of columns in the first sparse matrix (and cols in the
  * second sparse matrix).
- * @tparam K The number of columns in the second sparse matrix.
+ * @tparam K The number of rows in the second sparse matrix.
  * @tparam V The maximum number of non-zero values in the first sparse matrix.
  * @param A The first sparse matrix to multiply (transposed).
  * @param B The second sparse matrix to multiply with.
@@ -931,8 +931,8 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
  * the diagonal matrix, returning a new dense matrix as the result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the sparse matrix.
- * @tparam N The number of rows in the sparse matrix (and size of the diagonal
+ * @tparam M The number of rows in the sparse matrix.
+ * @tparam N The number of columns in the sparse matrix (and size of the diagonal
  * matrix).
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply.
@@ -966,8 +966,8 @@ inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
  * the sparse matrix, returning a new dense matrix as the result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The size of the diagonal matrix (number of rows and columns).
- * @tparam K The number of columns in the sparse matrix.
+ * @tparam M The size of the diagonal matrix (number of columns and rows).
+ * @tparam K The number of rows in the sparse matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The diagonal matrix to multiply.
  * @param B The sparse matrix to multiply with.
@@ -999,8 +999,8 @@ inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The size of the diagonal matrix (number of rows and columns).
- * @tparam K The number of rows in the sparse matrix.
+ * @tparam M The size of the diagonal matrix (number of columns and rows).
+ * @tparam K The number of columns in the sparse matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The diagonal matrix to multiply.
  * @param B The sparse matrix to multiply with (transposed).
@@ -1034,8 +1034,8 @@ matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
  * given dense matrix to it.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param B The dense matrix to add.
  * @param SA The sparse matrix to add to.
@@ -1062,8 +1062,8 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
  * the given dense matrix from it.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the matrices.
- * @tparam N The number of rows in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param B The dense matrix to subtract.
  * @param SA The sparse matrix to subtract from.
@@ -1093,11 +1093,11 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam M The number of columns in the dense matrix (and rows in the sparse
+ * @tparam M The number of rows in the dense matrix (and cols in the sparse
  * matrix).
- * @tparam N The number of rows in the dense matrix (and columns in the sparse
+ * @tparam N The number of columns in the dense matrix (and rows in the sparse
  * matrix).
- * @tparam K The number of rows in the sparse matrix.
+ * @tparam K The number of columns in the sparse matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The dense matrix to multiply.
  * @param SB The sparse matrix to multiply with (transposed).
@@ -1131,11 +1131,11 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * @tparam N The number of columns in the sparse matrix (and rows in the dense
  * matrix).
- * @tparam M The number of columns in the sparse matrix (and rows in the dense
+ * @tparam M The number of rows in the sparse matrix (and cols in the dense
  * matrix).
- * @tparam K The number of columns in the dense matrix.
+ * @tparam K The number of rows in the dense matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply (transposed).
  * @param B The dense matrix to multiply with.
@@ -1167,11 +1167,11 @@ matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
  * result.
  *
  * @tparam T The type of elements in the matrices.
- * @tparam N The number of rows in the sparse matrix (and columns in the dense
+ * @tparam N The number of columns in the sparse matrix (and rows in the dense
  * matrix).
- * @tparam M The number of columns in the sparse matrix (and rows in the dense
+ * @tparam M The number of rows in the sparse matrix (and cols in the dense
  * matrix).
- * @tparam K The number of columns in the dense matrix.
+ * @tparam K The number of rows in the dense matrix.
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply (transposed).
  * @param B The dense matrix to multiply with.

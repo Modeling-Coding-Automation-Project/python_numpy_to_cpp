@@ -14,8 +14,8 @@
  * in C++.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
@@ -42,8 +42,8 @@ namespace PythonNumpy {
  * the template parameters.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @return Matrix<DefDense, T, M, N> A dense matrix of zeros with dimensions M x
  * N.
  */
@@ -62,8 +62,8 @@ inline auto make_DenseMatrixZeros(void) -> Matrix<DefDense, T, M, N> {
  * the template parameters.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @return Matrix<DefDense, T, M, N> A dense matrix of ones with dimensions M x
  * N.
  */
@@ -80,8 +80,8 @@ inline auto make_DenseMatrixOnes(void) -> Matrix<DefDense, T, M, N> {
  * type and dimensions, initialized with a given value. The matrix type is
  * determined by the template parameters.
  *
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @tparam T The data type of the matrix elements.
  * @param value The value to fill the matrix with.
  * @return Matrix<DefDense, T, M, N> A dense matrix filled with the specified
@@ -101,7 +101,7 @@ inline auto make_DenseMatrixFull(const T &value) -> Matrix<DefDense, T, M, N> {
  * determined by the template parameters.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
+ * @tparam M The number of rows in the matrix.
  * @return Matrix<DefDiag, T, M> A diagonal matrix of zeros with dimensions M x
  * M.
  */
@@ -120,7 +120,7 @@ inline auto make_DiagMatrixZeros(void) -> Matrix<DefDiag, T, M> {
  * determined by the template parameters.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
+ * @tparam M The number of rows in the matrix.
  * @return Matrix<DefDiag, T, M> A diagonal matrix of ones with dimensions M x
  * M.
  */
@@ -137,7 +137,7 @@ inline auto make_DiagMatrixIdentity(void) -> Matrix<DefDiag, T, M> {
  * specified type and dimensions, initialized with a given value. The matrix
  * type is determined by the template parameters.
  *
- * @tparam M The number of columns in the matrix.
+ * @tparam M The number of rows in the matrix.
  * @tparam T The data type of the matrix elements.
  * @param value The value to fill the diagonal of the matrix with.
  * @return Matrix<DefDiag, T, M> A diagonal matrix filled with the specified
@@ -157,8 +157,8 @@ inline auto make_DiagMatrixFull(const T &value) -> Matrix<DefDiag, T, M> {
  * parameters.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @return Matrix<DefSparse, T, M, N, SparseAvailableEmpty<M, N>> An empty
  * sparse matrix with dimensions M x N.
  */
@@ -188,10 +188,10 @@ template <std::size_t ColumnCount, std::size_t RowCount,
           typename DenseMatrix_Type, typename T>
 inline void assign_values(DenseMatrix_Type &matrix, T value_1) {
 
-  static_assert(ColumnCount < DenseMatrix_Type::COLS,
+  static_assert(ColumnCount < DenseMatrix_Type::ROWS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
-  static_assert(RowCount < DenseMatrix_Type::ROWS,
+  static_assert(RowCount < DenseMatrix_Type::COLS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
@@ -221,17 +221,17 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1, U value_2,
                           Args... args) {
 
   static_assert(std::is_same<T, U>::value, "Arguments must be the same type.");
-  static_assert(ColumnCount < DenseMatrix_Type::COLS,
+  static_assert(ColumnCount < DenseMatrix_Type::ROWS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
-  static_assert(RowCount < DenseMatrix_Type::ROWS,
+  static_assert(RowCount < DenseMatrix_Type::COLS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
   matrix.template set<ColumnCount, RowCount>(value_1);
 
-  assign_values<ColumnCount + 1 * (RowCount == (DenseMatrix_Type::ROWS - 1)),
-                ((RowCount + 1) * (RowCount != (DenseMatrix_Type::ROWS - 1)))>(
+  assign_values<ColumnCount + 1 * (RowCount == (DenseMatrix_Type::COLS - 1)),
+                ((RowCount + 1) * (RowCount != (DenseMatrix_Type::COLS - 1)))>(
       matrix, value_2, args...);
 }
 
@@ -244,8 +244,8 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1, U value_2,
  * type and dimensions, initialized with given values. The matrix type is
  * determined by the template parameters.
  *
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @tparam T The data type of the matrix elements.
  * @param value_1 The first value to fill the matrix with.
  * @param args Additional values to fill the matrix with, if any.
@@ -280,8 +280,8 @@ namespace MakeDiagMatrixOperation {
 template <std::size_t IndexCount, typename DiagMatrix_Type, typename T>
 inline void assign_values(DiagMatrix_Type &matrix, T value_1) {
 
-  static_assert(IndexCount < DiagMatrix_Type::COLS,
-                "Number of arguments must be less than the number of columns.");
+  static_assert(IndexCount < DiagMatrix_Type::ROWS,
+                "Number of arguments must be less than the number of rows.");
 
   matrix.template set<IndexCount, IndexCount>(value_1);
 }
@@ -308,8 +308,8 @@ inline void assign_values(DiagMatrix_Type &matrix, T value_1, U value_2,
                           Args... args) {
 
   static_assert(std::is_same<T, U>::value, "Arguments must be the same type.");
-  static_assert(IndexCount < DiagMatrix_Type::COLS,
-                "Number of arguments must be less than the number of columns.");
+  static_assert(IndexCount < DiagMatrix_Type::ROWS,
+                "Number of arguments must be less than the number of rows.");
 
   matrix.template set<IndexCount, IndexCount>(value_1);
 
@@ -325,7 +325,7 @@ inline void assign_values(DiagMatrix_Type &matrix, T value_1, U value_2,
  * specified type and dimensions, initialized with given values. The matrix type
  * is determined by the template parameters.
  *
- * @tparam M The number of columns in the matrix.
+ * @tparam M The number of rows in the matrix.
  * @tparam T The data type of the matrix elements.
  * @param value_1 The first value to fill the diagonal with.
  * @param args Additional values to fill the diagonal with, if any.
@@ -508,8 +508,8 @@ inline auto make_SparseMatrix(T value_1, Args... args)
  * resulting sparse matrix has the same dimensions as the dense matrix.
  *
  * @tparam T The data type of the matrix elements.
- * @tparam M The number of columns in the matrix.
- * @tparam N The number of rows in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
  * @param dense_matrix The dense matrix to convert to a sparse matrix.
  * @return Matrix<DefSparse, T, M, N, DenseAvailable<M, N>> A sparse matrix
  * created from the dense matrix, with dimensions M x N.

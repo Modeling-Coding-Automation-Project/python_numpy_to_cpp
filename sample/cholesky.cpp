@@ -37,8 +37,8 @@ int main() {
 
   auto SA_dense = SA.create_dense();
   std::cout << "SA = " << std::endl;
-  for (size_t j = 0; j < SA_dense.cols(); ++j) {
-    for (size_t i = 0; i < SA_dense.rows(); ++i) {
+  for (size_t j = 0; j < SA_dense.rows(); ++j) {
+    for (size_t i = 0; i < SA_dense.cols(); ++i) {
       std::cout << SA_dense(j, i) << " ";
     }
     std::cout << std::endl;
@@ -49,8 +49,8 @@ int main() {
   auto result_dense = result.create_dense();
 
   std::cout << "result = " << std::endl;
-  for (size_t j = 0; j < result.cols(); ++j) {
-    for (size_t i = 0; i < result.rows(); ++i) {
+  for (size_t j = 0; j < result.rows(); ++j) {
+    for (size_t i = 0; i < result.cols(); ++i) {
       std::cout << result_dense(j, i) << " ";
     }
     std::cout << std::endl;

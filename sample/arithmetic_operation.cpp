@@ -40,8 +40,8 @@ int main() {
   auto result = A * C;
 
   std::cout << "result = " << std::endl;
-  for (size_t i = 0; i < result.cols(); ++i) {
-    for (size_t j = 0; j < result.rows(); ++j) {
+  for (size_t i = 0; i < result.rows(); ++i) {
+    for (size_t j = 0; j < result.cols(); ++j) {
       std::cout << result(i, j) << " ";
     }
     std::cout << std::endl;
@@ -54,8 +54,8 @@ int main() {
   auto E_dense = E.create_dense(); // convert SparseMatrix to DenseMatrix
 
   std::cout << "E = " << std::endl;
-  for (size_t i = 0; i < E_dense.cols(); ++i) {
-    for (size_t j = 0; j < E_dense.rows(); ++j) {
+  for (size_t i = 0; i < E_dense.rows(); ++i) {
+    for (size_t j = 0; j < E_dense.cols(); ++j) {
       std::cout << E_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -66,8 +66,8 @@ int main() {
   auto A_T = A.transpose();
 
   std::cout << "A_T = " << std::endl;
-  for (size_t i = 0; i < A_T.cols(); ++i) {
-    for (size_t j = 0; j < A_T.rows(); ++j) {
+  for (size_t i = 0; i < A_T.rows(); ++i) {
+    for (size_t j = 0; j < A_T.cols(); ++j) {
       std::cout << A_T(i, j) << " ";
     }
     std::cout << std::endl;
@@ -78,8 +78,8 @@ int main() {
   auto A_T_mul_C = ATranspose_mul_B(A, C);
 
   std::cout << "A_T_mul_C = " << std::endl;
-  for (size_t i = 0; i < A_T_mul_C.cols(); ++i) {
-    for (size_t j = 0; j < A_T_mul_C.rows(); ++j) {
+  for (size_t i = 0; i < A_T_mul_C.rows(); ++i) {
+    for (size_t j = 0; j < A_T_mul_C.cols(); ++j) {
       std::cout << A_T_mul_C(i, j) << " ";
     }
     std::cout << std::endl;
@@ -89,8 +89,8 @@ int main() {
   auto A_mul_C_T = A_mul_BTranspose(A, C);
 
   std::cout << "A_mul_C_T = " << std::endl;
-  for (size_t i = 0; i < A_mul_C_T.cols(); ++i) {
-    for (size_t j = 0; j < A_mul_C_T.rows(); ++j) {
+  for (size_t i = 0; i < A_mul_C_T.rows(); ++i) {
+    for (size_t j = 0; j < A_mul_C_T.cols(); ++j) {
       std::cout << A_mul_C_T(i, j) << " ";
     }
     std::cout << std::endl;
@@ -101,8 +101,8 @@ int main() {
   auto Dense_zeros = make_DenseMatrixZeros<double, 3, 3>();
 
   std::cout << "Dense_zeros = " << std::endl;
-  for (size_t i = 0; i < Dense_zeros.cols(); ++i) {
-    for (size_t j = 0; j < Dense_zeros.rows(); ++j) {
+  for (size_t i = 0; i < Dense_zeros.rows(); ++i) {
+    for (size_t j = 0; j < Dense_zeros.cols(); ++j) {
       std::cout << Dense_zeros(i, j) << " ";
     }
     std::cout << std::endl;
@@ -113,8 +113,8 @@ int main() {
 
   auto Diag_zeros_dense = Diag_zeros.create_dense();
   std::cout << "Diag_zeros = " << std::endl;
-  for (size_t i = 0; i < Diag_zeros.cols(); ++i) {
-    for (size_t j = 0; j < Diag_zeros.rows(); ++j) {
+  for (size_t i = 0; i < Diag_zeros.rows(); ++i) {
+    for (size_t j = 0; j < Diag_zeros.cols(); ++j) {
       std::cout << Diag_zeros_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -125,8 +125,8 @@ int main() {
 
   auto Sparse_zeros_dense = Sparse_zeros.create_dense();
   std::cout << "Sparse_zeros = " << std::endl;
-  for (size_t i = 0; i < Sparse_zeros_dense.cols(); ++i) {
-    for (size_t j = 0; j < Sparse_zeros_dense.rows(); ++j) {
+  for (size_t i = 0; i < Sparse_zeros_dense.rows(); ++i) {
+    for (size_t j = 0; j < Sparse_zeros_dense.cols(); ++j) {
       std::cout << Sparse_zeros_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -137,8 +137,8 @@ int main() {
   auto Dense_ones = make_DenseMatrixOnes<double, 3, 3>();
 
   std::cout << "Dense_ones = " << std::endl;
-  for (size_t i = 0; i < Dense_ones.cols(); ++i) {
-    for (size_t j = 0; j < Dense_ones.rows(); ++j) {
+  for (size_t i = 0; i < Dense_ones.rows(); ++i) {
+    for (size_t j = 0; j < Dense_ones.cols(); ++j) {
       std::cout << Dense_ones(i, j) << " ";
     }
     std::cout << std::endl;
@@ -149,8 +149,8 @@ int main() {
 
   auto Diag_ones_dense = Diag_ones.create_dense();
   std::cout << "Diag_ones = " << std::endl;
-  for (size_t i = 0; i < Diag_ones.cols(); ++i) {
-    for (size_t j = 0; j < Diag_ones.rows(); ++j) {
+  for (size_t i = 0; i < Diag_ones.rows(); ++i) {
+    for (size_t j = 0; j < Diag_ones.cols(); ++j) {
       std::cout << Diag_ones_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -161,8 +161,8 @@ int main() {
 
   auto Sparse_ones_dense = Sparse_ones.create_dense();
   std::cout << "Sparse_ones = " << std::endl;
-  for (size_t i = 0; i < Sparse_ones_dense.cols(); ++i) {
-    for (size_t j = 0; j < Sparse_ones_dense.rows(); ++j) {
+  for (size_t i = 0; i < Sparse_ones_dense.rows(); ++i) {
+    for (size_t j = 0; j < Sparse_ones_dense.cols(); ++j) {
       std::cout << Sparse_ones_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -173,8 +173,8 @@ int main() {
   auto Dense_full = make_DenseMatrixFull<3, 3>(2.0);
 
   std::cout << "Dense_full = " << std::endl;
-  for (size_t i = 0; i < Dense_full.cols(); ++i) {
-    for (size_t j = 0; j < Dense_full.rows(); ++j) {
+  for (size_t i = 0; i < Dense_full.rows(); ++i) {
+    for (size_t j = 0; j < Dense_full.cols(); ++j) {
       std::cout << Dense_full(i, j) << " ";
     }
     std::cout << std::endl;
@@ -185,8 +185,8 @@ int main() {
   auto Diag_full_dense = Diag_full.create_dense();
 
   std::cout << "Diag_full = " << std::endl;
-  for (size_t i = 0; i < Diag_full.cols(); ++i) {
-    for (size_t j = 0; j < Diag_full.rows(); ++j) {
+  for (size_t i = 0; i < Diag_full.rows(); ++i) {
+    for (size_t j = 0; j < Diag_full.cols(); ++j) {
       std::cout << Diag_full_dense(i, j) << " ";
     }
     std::cout << std::endl;
@@ -197,8 +197,8 @@ int main() {
   auto Sparse_full_dense = Sparse_full.create_dense();
 
   std::cout << "Sparse_full = " << std::endl;
-  for (size_t i = 0; i < Sparse_full_dense.cols(); ++i) {
-    for (size_t j = 0; j < Sparse_full_dense.rows(); ++j) {
+  for (size_t i = 0; i < Sparse_full_dense.rows(); ++i) {
+    for (size_t j = 0; j < Sparse_full_dense.cols(); ++j) {
       std::cout << Sparse_full_dense(i, j) << " ";
     }
     std::cout << std::endl;

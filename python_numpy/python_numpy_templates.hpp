@@ -18,7 +18,7 @@
  * - Creation and transformation of sparse matrix representations.
  * - Concatenation, addition, subtraction, and multiplication of sparse
  * matrices.
- * - Extraction of matrix rows and transposition.
+ * - Extraction of matrix cols and transposition.
  * - Validation and utility operations for matrix structures.
  *
  * All templates are intended to be used as building blocks for
@@ -26,8 +26,8 @@
  * Numpy-like functionality.
  *
  * @note
- * tparam M is the number of columns in the matrix.
- * tparam N is the number of rows in the matrix.
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
