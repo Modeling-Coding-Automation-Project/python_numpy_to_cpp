@@ -247,13 +247,13 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 // row_index loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T, std::size_t Col_Index_Count>
-struct BackwardSubstitution_RowLoop {
+struct BackwardSubstitution_ColLoop {
   /**
    * @brief Computes the backward substitution for the column loop in the QR
    * decomposition.
-   * This function computes the backward substitution for the column loop, updating
-   * the output matrix with the computed values based on the upper triangular
-   * matrix R and the input matrix.
+   * This function computes the backward substitution for the column loop,
+   * updating the output matrix with the computed values based on the upper
+   * triangular matrix R and the input matrix.
    * @param R The upper triangular matrix from QR decomposition.
    * @param matrix_in The input matrix used for substitution.
    * @param matrix_out The output matrix to store results.
@@ -272,7 +272,7 @@ struct BackwardSubstitution_RowLoop {
                                                          matrix_out,
                                                          division_min);
 
-    BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
+    BackwardSubstitution_ColLoop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                  Matrix_Out_Type, T,
                                  (Col_Index_Count - 1)>::compute(R, matrix_in,
                                                                  matrix_out,
@@ -283,15 +283,15 @@ struct BackwardSubstitution_RowLoop {
 // row_index loop terminate
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
           typename Matrix_Out_Type, typename T>
-struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
+struct BackwardSubstitution_ColLoop<Upper_Triangular_Matrix_Type,
                                     Matrix_In_Type, Matrix_Out_Type, T, 0> {
 
   /**
    * @brief Computes the backward substitution for the column loop in the QR
    * decomposition.
-   * This function computes the backward substitution for the column loop, updating
-   * the output matrix with the computed values based on the upper triangular
-   * matrix R and the input matrix.
+   * This function computes the backward substitution for the column loop,
+   * updating the output matrix with the computed values based on the upper
+   * triangular matrix R and the input matrix.
    * @param R The upper triangular matrix from QR decomposition.
    * @param matrix_in The input matrix used for substitution.
    * @param matrix_out The output matrix to store results.
@@ -360,7 +360,7 @@ inline void backward_substitution(const Upper_Triangular_Matrix_Type &R,
                     Is_Sparse_Matrix<Matrix_Out_Type>::value,
                 "The output matrix must be either dense or sparse.");
 
-  BackwardSubstitution_RowLoop<
+  BackwardSubstitution_ColLoop<
       Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
       (Matrix_Out_Type::COLS - 1)>::compute(R, matrix_in, matrix_out,
                                             division_min);
