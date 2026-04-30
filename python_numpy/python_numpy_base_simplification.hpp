@@ -351,17 +351,17 @@ inline auto make_DiagMatrix(T value_1, Args... args) -> Matrix<DefDiag, T, M> {
  *
  * @tparam T The data type of the matrix elements.
  * @tparam SparseAvailable The sparse matrix availability type.
- * @return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
- * SparseAvailable::column_size, SparseAvailable> A sparse matrix of zeros with
+ * @return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+ * SparseAvailable::row_size, SparseAvailable> A sparse matrix of zeros with
  * dimensions defined by SparseAvailable.
  */
 template <typename T, typename SparseAvailable>
 inline auto make_SparseMatrixZeros(void)
-    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-              SparseAvailable::column_size, SparseAvailable> {
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+              SparseAvailable::row_size, SparseAvailable> {
 
-  Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-         SparseAvailable::column_size, SparseAvailable>
+  Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+         SparseAvailable::row_size, SparseAvailable>
       result;
 
   return result;
@@ -376,17 +376,17 @@ inline auto make_SparseMatrixZeros(void)
  *
  * @tparam T The data type of the matrix elements.
  * @tparam SparseAvailable The sparse matrix availability type.
- * @return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
- * SparseAvailable::column_size, SparseAvailable> A sparse matrix of ones with
+ * @return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+ * SparseAvailable::row_size, SparseAvailable> A sparse matrix of ones with
  * dimensions defined by SparseAvailable.
  */
 template <typename T, typename SparseAvailable>
 inline auto make_SparseMatrixOnes(void)
-    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-              SparseAvailable::column_size, SparseAvailable> {
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+              SparseAvailable::row_size, SparseAvailable> {
 
-  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-                SparseAvailable::column_size,
+  return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+                SparseAvailable::row_size,
                 SparseAvailable>::full(static_cast<T>(1));
 }
 
@@ -400,17 +400,17 @@ inline auto make_SparseMatrixOnes(void)
  * @tparam SparseAvailable The sparse matrix availability type.
  * @tparam T The data type of the matrix elements.
  * @param value The value to fill the sparse matrix with.
- * @return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
- * SparseAvailable::column_size, SparseAvailable> A sparse matrix filled with
+ * @return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+ * SparseAvailable::row_size, SparseAvailable> A sparse matrix filled with
  * the specified value, with dimensions defined by SparseAvailable.
  */
 template <typename SparseAvailable, typename T>
 inline auto make_SparseMatrixFull(const T &value)
-    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-              SparseAvailable::column_size, SparseAvailable> {
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+              SparseAvailable::row_size, SparseAvailable> {
 
-  return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-                SparseAvailable::column_size, SparseAvailable>::full(value);
+  return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+                SparseAvailable::row_size, SparseAvailable>::full(value);
 }
 
 namespace MakeSparseMatrixOperation {
@@ -482,17 +482,17 @@ inline void assign_values(SparseMatrix_Type &matrix, T value_1, U value_2,
  * @tparam T The data type of the matrix elements.
  * @param value_1 The first value to fill the sparse matrix with.
  * @param args Additional values to fill the sparse matrix with, if any.
- * @return Matrix<DefSparse, T, SparseAvailable::number_of_columns,
- * SparseAvailable::column_size, SparseAvailable> A sparse matrix filled with
+ * @return Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+ * SparseAvailable::row_size, SparseAvailable> A sparse matrix filled with
  * the specified values, with dimensions defined by SparseAvailable.
  */
 template <typename SparseAvailable, typename T, typename... Args>
 inline auto make_SparseMatrix(T value_1, Args... args)
-    -> Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-              SparseAvailable::column_size, SparseAvailable> {
+    -> Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+              SparseAvailable::row_size, SparseAvailable> {
 
-  Matrix<DefSparse, T, SparseAvailable::number_of_columns,
-         SparseAvailable::column_size, SparseAvailable>
+  Matrix<DefSparse, T, SparseAvailable::number_of_rows,
+         SparseAvailable::row_size, SparseAvailable>
       result;
 
   MakeSparseMatrixOperation::assign_values<0>(result, value_1, args...);

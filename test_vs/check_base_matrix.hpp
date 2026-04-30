@@ -169,7 +169,7 @@ void CheckBaseMatrix<T>::check_matrix_swap(void) {
 
     /* スワップ */
     Matrix<T, 3, 3>Test_swap({ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} });
-    matrix_row_swap(0, 2, Test_swap);
+    matrix_col_swap(0, 2, Test_swap);
     //std::cout << "Test_swap = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 3; ++i) {
@@ -1011,10 +1011,10 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(Dense_n.data, Dense_n_answer.data, NEAR_LIMIT_STRICT,
         "check SparseMatrix multiply Vector.");
 
-    ColVector<T, 3> b_col(b);
-    ColVector<T, 3> Dense_m = colVector_a_mul_SparseB(b_col, SparseCc);
+    ColVector<T, 3> b_row(b);
+    ColVector<T, 3> Dense_m = colVector_a_mul_SparseB(b_row, SparseCc);
 
-    //std::cout << "b_col * SA = ";
+    //std::cout << "b_row * SA = ";
     //for (size_t i = 0; i < Dense_m.size(); ++i) {
     //    std::cout << Dense_m[i] << " ";
     //}

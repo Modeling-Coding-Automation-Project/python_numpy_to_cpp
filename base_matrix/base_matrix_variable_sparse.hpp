@@ -273,15 +273,15 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.row_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.row_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }
@@ -314,15 +314,15 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.row_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.row_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }
@@ -353,15 +353,15 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.row_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.row_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }

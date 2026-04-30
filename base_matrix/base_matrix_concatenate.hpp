@@ -1082,8 +1082,8 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 
 /* Copy DenseMatrix to horizontally concatenated matrix */
 // when J_idx < N
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromDenseColumn {
@@ -1099,10 +1099,10 @@ struct ConcatMatrixSetFromDenseColumn {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I The current row index being processed.
@@ -1111,24 +1111,24 @@ struct ConcatMatrixSetFromDenseColumn {
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
 
     Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Row_Offset)>(Y, A(I, J_idx));
+                                          (J_idx + Col_Offset)>(Y, A(I, J_idx));
 
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, I,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, RowIndices_Y, RowPointers_Y, I,
                                    J_idx - 1>::compute(Y, A);
   }
 };
 
 // column recursion termination
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I>
-struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                      Row_Offset, RowIndices_Y, RowPointers_Y,
+struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                      Col_Offset, RowIndices_Y, RowPointers_Y,
                                       I, 0> {
   /**
    * @brief Copies the first row of a dense matrix into a horizontally
@@ -1141,27 +1141,27 @@ struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
 
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
         Y, A(I, 0));
   }
 };
 
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDenseRow {
   /**
@@ -1176,10 +1176,10 @@ struct ConcatMatrixSetFromDenseRow {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
@@ -1187,23 +1187,23 @@ struct ConcatMatrixSetFromDenseRow {
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, RowIndices_Y, RowPointers_Y,
                                    I_idx, N - 1>::compute(Y, A);
-    ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                Row_Offset, RowIndices_Y, RowPointers_Y,
+    ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                Col_Offset, RowIndices_Y, RowPointers_Y,
                                 I_idx - 1>::compute(Y, A);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, 0> {
+struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, RowIndices_Y, RowPointers_Y, 0> {
   /**
    * @brief Copies the first column of a dense matrix into a horizontally
    * concatenated sparse matrix.
@@ -1215,28 +1215,28 @@ struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, 0,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, RowIndices_Y, RowPointers_Y, 0,
                                    N - 1>::compute(Y, A);
   }
 };
 
 /* Copy DiagMatrix to horizontally concatenated matrix */
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDiagRow {
   /**
@@ -1250,10 +1250,10 @@ struct ConcatMatrixSetFromDiagRow {
    *
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
@@ -1261,23 +1261,23 @@ struct ConcatMatrixSetFromDiagRow {
    * @param B The input diagonal matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
     Base::Matrix::set_sparse_matrix_value<(I_idx + Column_Offset),
-                                          (I_idx + Row_Offset)>(Y, B[I_idx]);
+                                          (I_idx + Col_Offset)>(Y, B[I_idx]);
 
-    ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
+    ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
                                RowIndices_Y, RowPointers_Y,
                                I_idx - 1>::compute(Y, B);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
+struct ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
                                   RowIndices_Y, RowPointers_Y, 0> {
   /**
    * @brief Copies the first column of a diagonal matrix into a horizontally
@@ -1289,20 +1289,20 @@ struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
    *
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from B.
    * @param B The input diagonal matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
-    Base::Matrix::set_sparse_matrix_value<Column_Offset, Row_Offset>(Y, B[0]);
+    Base::Matrix::set_sparse_matrix_value<Column_Offset, Col_Offset>(Y, B[0]);
   }
 };
 
@@ -1419,8 +1419,8 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 /* Copy SparseMatrix to horizontally concatenated matrix */
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromSparseColumn {
@@ -1438,10 +1438,10 @@ struct ConcatMatrixSetFromSparseColumn {
    * @tparam N The number of columns in the sparse matrix A.
    * @tparam RowIndices_A The row indices for the sparse matrix A.
    * @tparam RowPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I The current row index being processed.
@@ -1450,26 +1450,26 @@ struct ConcatMatrixSetFromSparseColumn {
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
 
     Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Row_Offset)>(
+                                          (J_idx + Col_Offset)>(
         Y, Base::Matrix::get_sparse_matrix_value<I, J_idx>(A));
 
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, I, J_idx - 1>::compute(Y, A);
+        T, M, N, RowIndices_A, RowPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, RowIndices_Y, RowPointers_Y, I, J_idx - 1>::compute(Y, A);
   }
 };
 
 // column recursion termination
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I>
 struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
-                                       Y_Col, Y_Row, Column_Offset, Row_Offset,
+                                       Y_Row, Y_Col, Column_Offset, Col_Offset,
                                        RowIndices_Y, RowPointers_Y, I, 0> {
   /**
    * @brief Copies the first row of a sparse matrix into a horizontally
@@ -1482,28 +1482,28 @@ struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
 
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
         Y, Base::Matrix::get_sparse_matrix_value<I, 0>(A));
   }
 };
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromSparseRow {
   /**
@@ -1520,10 +1520,10 @@ struct ConcatMatrixSetFromSparseRow {
    * @tparam N The number of columns in the sparse matrix A.
    * @tparam RowIndices_A The row indices for the sparse matrix A.
    * @tparam RowPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
@@ -1531,24 +1531,24 @@ struct ConcatMatrixSetFromSparseRow {
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, I_idx, N - 1>::compute(Y, A);
-    ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
-                                 Y_Row, Column_Offset, Row_Offset, RowIndices_Y,
+        T, M, N, RowIndices_A, RowPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, RowIndices_Y, RowPointers_Y, I_idx, N - 1>::compute(Y, A);
+    ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Row,
+                                 Y_Col, Column_Offset, Col_Offset, RowIndices_Y,
                                  RowPointers_Y, I_idx - 1>::compute(Y, A);
   }
 };
 
 // row recursion termination
 template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
+          typename RowPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
           typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
-                                    Y_Row, Column_Offset, Row_Offset,
+struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Row,
+                                    Y_Col, Column_Offset, Col_Offset,
                                     RowIndices_Y, RowPointers_Y, 0> {
   /**
    * @brief Copies the first column of a sparse matrix into a horizontally
@@ -1561,21 +1561,21 @@ struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
    * @tparam RowIndices_Y The row indices for the sparse matrix Y.
    * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, RowIndices_Y, RowPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, 0, N - 1>::compute(Y, A);
+        T, M, N, RowIndices_A, RowPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, RowIndices_Y, RowPointers_Y, 0, N - 1>::compute(Y, A);
   }
 };
 

@@ -185,20 +185,20 @@ protected:
 
       // Pivoting
       if (Base::Utility::near_zero(this->_Upper(i, i), this->division_min)) {
-        std::size_t maxRow = i;
+        std::size_t maxCol = i;
         T maxVal = Base::Math::abs(this->_Upper(i, i));
         for (std::size_t k = i + 1; k < M; ++k) {
           T absVal = Base::Math::abs(this->_Upper(k, i));
           if (absVal > maxVal) {
             maxVal = absVal;
-            maxRow = k;
+            maxCol = k;
           }
         }
-        if (maxRow != i) {
+        if (maxCol != i) {
           Base::Utility::swap_value(this->_pivot_index_vec[i],
-                                    this->_pivot_index_vec[maxRow]);
-          Base::Matrix::matrix_col_swap(i, maxRow, this->_Upper);
-          Base::Matrix::matrix_col_swap(i, maxRow, this->_Lower);
+                                    this->_pivot_index_vec[maxCol]);
+          Base::Matrix::matrix_row_swap(i, maxCol, this->_Upper);
+          Base::Matrix::matrix_row_swap(i, maxCol, this->_Lower);
         }
       }
 

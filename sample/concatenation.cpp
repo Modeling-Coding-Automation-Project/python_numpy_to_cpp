@@ -97,15 +97,15 @@ int main() {
   std::cout << std::endl;
 
   /* Concatenate Block */
-  constexpr std::size_t BLOCK_COLUMN_SIZE = 2;
   constexpr std::size_t BLOCK_ROW_SIZE = 2;
+  constexpr std::size_t BLOCK_COLUMN_SIZE = 2;
 
   using ABCE_Type =
-      ConcatenateBlock_Type<BLOCK_COLUMN_SIZE, BLOCK_ROW_SIZE, decltype(A),
+      ConcatenateBlock_Type<BLOCK_ROW_SIZE, BLOCK_COLUMN_SIZE, decltype(A),
                             decltype(B), decltype(C), decltype(E)>;
 
   ABCE_Type ABCE =
-      concatenate_block<BLOCK_COLUMN_SIZE, BLOCK_ROW_SIZE>(A, B, C, E);
+      concatenate_block<BLOCK_ROW_SIZE, BLOCK_COLUMN_SIZE>(A, B, C, E);
   auto ABCE_dense = ABCE.create_dense();
 
   std::cout << "ABCE = " << std::endl;
@@ -118,7 +118,7 @@ int main() {
   std::cout << std::endl;
 
   /* Update Block */
-  update_block_concatenated_matrix<BLOCK_COLUMN_SIZE, BLOCK_ROW_SIZE>(
+  update_block_concatenated_matrix<BLOCK_ROW_SIZE, BLOCK_COLUMN_SIZE>(
       ABCE, A, 2.0 * B, C, E);
   ABCE_dense = ABCE.create_dense();
 
@@ -132,12 +132,12 @@ int main() {
   std::cout << std::endl;
 
   /* Concatenate Tile */
-  constexpr std::size_t TILE_COLUMN_SIZE = 2;
-  constexpr std::size_t TILE_ROW_SIZE = 3;
+  constexpr std::size_t TILE_ROW_SIZE = 2;
+  constexpr std::size_t TILE_COLUMN_SIZE = 3;
 
-  using C_Tile_Type = Tile_Type<TILE_COLUMN_SIZE, TILE_ROW_SIZE, decltype(C)>;
+  using C_Tile_Type = Tile_Type<TILE_ROW_SIZE, TILE_COLUMN_SIZE, decltype(C)>;
 
-  C_Tile_Type C_Tile = concatenate_tile<TILE_COLUMN_SIZE, TILE_ROW_SIZE>(C);
+  C_Tile_Type C_Tile = concatenate_tile<TILE_ROW_SIZE, TILE_COLUMN_SIZE>(C);
   auto C_Tile_dense = C_Tile.create_dense();
 
   std::cout << "C_Tile = " << std::endl;

@@ -36,7 +36,7 @@ namespace LinalgQR_Operation {
 
 // inner loop: j loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
-          typename Matrix_Out_Type, typename T, std::size_t Row_Index,
+          typename Matrix_Out_Type, typename T, std::size_t Col_Index,
           std::size_t I, std::size_t J, int End_Index_Value>
 struct BackwardSubstitution_J_Loop {
   /*
@@ -59,10 +59,10 @@ struct BackwardSubstitution_J_Loop {
                       const T &division_min) {
 
     sum -= Base::Matrix::get_sparse_matrix_value<I, J>(R) *
-           matrix_out.template get<J, Row_Index>();
+           matrix_out.template get<J, Col_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                Matrix_Out_Type, T, Row_Index, I, (J + 1),
+                                Matrix_Out_Type, T, Col_Index, I, (J + 1),
                                 (End_Index_Value - 1)>::compute(R, matrix_in,
                                                                 matrix_out, sum,
                                                                 division_min);
@@ -71,10 +71,10 @@ struct BackwardSubstitution_J_Loop {
 
 // terminate j loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
-          typename Matrix_Out_Type, typename T, std::size_t Row_Index,
+          typename Matrix_Out_Type, typename T, std::size_t Col_Index,
           std::size_t I, std::size_t J>
 struct BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                   Matrix_Out_Type, T, Row_Index, I, J, 0> {
+                                   Matrix_Out_Type, T, Col_Index, I, J, 0> {
   /*
    * @brief Computes the backward substitution for the j loop in the QR
    * decomposition.
@@ -105,7 +105,7 @@ struct BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 
 // inner loop: i loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
-          typename Matrix_Out_Type, typename T, std::size_t Row_Index,
+          typename Matrix_Out_Type, typename T, std::size_t Col_Index,
           std::size_t I_Count>
 struct BackwardSubstitution_I_Loop {
   /*
@@ -153,21 +153,21 @@ private:
     constexpr std::size_t I = I_Count;
     constexpr int End_Index_Value = Matrix_Out_Type::ROWS - (I + 1);
 
-    T sum = matrix_in.template get<I, Row_Index>();
+    T sum = matrix_in.template get<I, Col_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                Matrix_Out_Type, T, Row_Index, I, (I + 1),
+                                Matrix_Out_Type, T, Col_Index, I, (I + 1),
                                 End_Index_Value>::compute(R, matrix_in,
                                                           matrix_out, sum,
                                                           division_min);
 
-    matrix_out.template set<I, Row_Index>(
+    matrix_out.template set<I, Col_Index>(
         sum /
         Base::Utility::avoid_zero_divide(
             Base::Matrix::get_sparse_matrix_value<I, I>(R), division_min));
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                Matrix_Out_Type, T, Row_Index,
+                                Matrix_Out_Type, T, Col_Index,
                                 (I_Count - 1)>::compute(R, matrix_in,
                                                         matrix_out,
                                                         division_min);
@@ -192,15 +192,15 @@ private:
 
     constexpr std::size_t I = I_Count;
 
-    T sum = matrix_in.template get<I, Row_Index>();
+    T sum = matrix_in.template get<I, Col_Index>();
 
-    matrix_out.template set<I, Row_Index>(
+    matrix_out.template set<I, Col_Index>(
         sum /
         Base::Utility::avoid_zero_divide(
             Base::Matrix::get_sparse_matrix_value<I, I>(R), division_min));
 
     BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                Matrix_Out_Type, T, Row_Index,
+                                Matrix_Out_Type, T, Col_Index,
                                 (I_Count - 1)>::compute(R, matrix_in,
                                                         matrix_out,
                                                         division_min);
@@ -209,9 +209,9 @@ private:
 
 // terminate i loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
-          typename Matrix_Out_Type, typename T, std::size_t Row_Index>
+          typename Matrix_Out_Type, typename T, std::size_t Col_Index>
 struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                   Matrix_Out_Type, T, Row_Index, 0> {
+                                   Matrix_Out_Type, T, Col_Index, 0> {
   /**
    * @brief Computes the backward substitution for the i loop in the QR
    * decomposition.
@@ -229,15 +229,15 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 
     constexpr int End_Index_Value = Matrix_Out_Type::ROWS - 1;
 
-    T sum = matrix_in.template get<0, Row_Index>();
+    T sum = matrix_in.template get<0, Col_Index>();
 
     BackwardSubstitution_J_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
-                                Matrix_Out_Type, T, Row_Index, 0, 1,
+                                Matrix_Out_Type, T, Col_Index, 0, 1,
                                 End_Index_Value>::compute(R, matrix_in,
                                                           matrix_out, sum,
                                                           division_min);
 
-    matrix_out.template set<0, Row_Index>(
+    matrix_out.template set<0, Col_Index>(
         sum /
         Base::Utility::avoid_zero_divide(
             Base::Matrix::get_sparse_matrix_value<0, 0>(R), division_min));
@@ -246,7 +246,7 @@ struct BackwardSubstitution_I_Loop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
 
 // row_index loop
 template <typename Upper_Triangular_Matrix_Type, typename Matrix_In_Type,
-          typename Matrix_Out_Type, typename T, std::size_t Row_Index_Count>
+          typename Matrix_Out_Type, typename T, std::size_t Col_Index_Count>
 struct BackwardSubstitution_RowLoop {
   /**
    * @brief Computes the backward substitution for the column loop in the QR
@@ -263,18 +263,18 @@ struct BackwardSubstitution_RowLoop {
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
 
-    constexpr std::size_t Row_Index =
-        (Matrix_In_Type::COLS - 1) - Row_Index_Count;
+    constexpr std::size_t Col_Index =
+        (Matrix_In_Type::COLS - 1) - Col_Index_Count;
 
     BackwardSubstitution_I_Loop<
         Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
-        Row_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
+        Col_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
                                                          matrix_out,
                                                          division_min);
 
     BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type, Matrix_In_Type,
                                  Matrix_Out_Type, T,
-                                 (Row_Index_Count - 1)>::compute(R, matrix_in,
+                                 (Col_Index_Count - 1)>::compute(R, matrix_in,
                                                                  matrix_out,
                                                                  division_min);
   }
@@ -301,11 +301,11 @@ struct BackwardSubstitution_RowLoop<Upper_Triangular_Matrix_Type,
                       const Matrix_In_Type &matrix_in,
                       Matrix_Out_Type &matrix_out, const T &division_min) {
 
-    constexpr std::size_t Row_Index = Matrix_In_Type::COLS - 1;
+    constexpr std::size_t Col_Index = Matrix_In_Type::COLS - 1;
 
     BackwardSubstitution_I_Loop<
         Upper_Triangular_Matrix_Type, Matrix_In_Type, Matrix_Out_Type, T,
-        Row_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
+        Col_Index, (Matrix_Out_Type::ROWS - 1)>::compute(R, matrix_in,
                                                          matrix_out,
                                                          division_min);
   }

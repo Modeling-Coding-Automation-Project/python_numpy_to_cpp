@@ -602,7 +602,7 @@ using SparseAvailableRow = SparseAvailableGetRow<M, SparseAvailable, Index>;
  */
 template <typename T, std::size_t M, std::size_t Index,
           typename SparseAvailable>
-using SparseRow_Type =
+using SparseCol_Type =
     SparseMatrix_Type<T, SparseAvailableRow<M, Index, SparseAvailable>>;
 
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
@@ -626,10 +626,10 @@ struct GetRow_Loop {
    * @param matrix     The input sparse matrix of type Matrix<DefSparse, T, M,
    * N, SparseAvailable>.
    * @param result     The output sparse matrix (vector) of type
-   * SparseRow_Type<T, M, COL, SparseAvailable> to store the computed result.
+   * SparseCol_Type<T, M, COL, SparseAvailable> to store the computed result.
    */
   static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
-                      SparseRow_Type<T, M, COL, SparseAvailable> &result) {
+                      SparseCol_Type<T, M, COL, SparseAvailable> &result) {
 
     result.template set<COL_Index, 0>(matrix.template get<COL_Index, COL>());
     GetRow_Loop<T, M, N, SparseAvailable, COL, COL_Index - 1>::compute(matrix,
@@ -656,10 +656,10 @@ struct GetRow_Loop<T, M, N, SparseAvailable, COL, 0> {
    * @param matrix The input sparse matrix of type Matrix<DefSparse, T, M, N,
    * SparseAvailable>.
    * @param result The output sparse matrix (vector) of type
-   * SparseRow_Type<T, M, COL, SparseAvailable> to store the computed result.
+   * SparseCol_Type<T, M, COL, SparseAvailable> to store the computed result.
    */
   static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
-                      SparseRow_Type<T, M, COL, SparseAvailable> &result) {
+                      SparseCol_Type<T, M, COL, SparseAvailable> &result) {
 
     result.template set<0, 0>(matrix.template get<0, COL>());
   }
@@ -676,7 +676,7 @@ struct GetRow_Loop<T, M, N, SparseAvailable, COL, 0> {
  * @tparam N The number of columns in the sparse matrix.
  * @tparam SparseAvailable The sparse matrix availability type.
  * @tparam COL The index of the column to extract.
- * @return SparseRow_Type<T, M, COL, SparseAvailable> A sparse matrix (vector)
+ * @return SparseCol_Type<T, M, COL, SparseAvailable> A sparse matrix (vector)
  * containing the extracted row.
  */
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
@@ -697,15 +697,15 @@ using GetRow = GetRow_Loop<T, M, N, SparseAvailable, COL, M - 1>;
  * @tparam N The number of columns in the sparse matrix.
  * @tparam SparseAvailable The sparse matrix availability type.
  * @param matrix The input sparse matrix from which to extract the row.
- * @return GetSparseMatrixOperation::SparseRow_Type<T, M, COL,
+ * @return GetSparseMatrixOperation::SparseCol_Type<T, M, COL,
  * SparseAvailable> A sparse matrix (vector) containing the extracted row.
  */
 template <std::size_t COL, typename T, std::size_t M, std::size_t N,
           typename SparseAvailable>
 inline auto get_row(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
-    -> GetSparseMatrixOperation::SparseRow_Type<T, M, COL, SparseAvailable> {
+    -> GetSparseMatrixOperation::SparseCol_Type<T, M, COL, SparseAvailable> {
 
-  GetSparseMatrixOperation::SparseRow_Type<T, M, COL, SparseAvailable> result;
+  GetSparseMatrixOperation::SparseCol_Type<T, M, COL, SparseAvailable> result;
 
   GetSparseMatrixOperation::GetRow<T, M, N, SparseAvailable, COL>::compute(
       matrix, result);
@@ -806,7 +806,7 @@ inline void set_row(Matrix_Type &matrix, const RowVector_Type &row_vector) {
 namespace PartMatrixOperation {
 
 // when J_idx < N
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I,
           std::size_t J_idx>
 struct SubstituteColumn {
@@ -815,12 +815,12 @@ struct SubstituteColumn {
    * substitutes its values into the corresponding position in the All matrix.
    *
    * This static function assigns a particular value from the part matrix
-   * (indexed by I and J_idx) to the All matrix at the position (Col_Offset + I,
-   * Row_Offset + J_idx). It then recursively processes the remaining rows by
+   * (indexed by I and J_idx) to the All matrix at the position (Row_Offset + I,
+   * Col_Offset + J_idx). It then recursively processes the remaining rows by
    * invoking SubstituteColumn with a decremented column index.
    *
-   * @tparam Col_Offset The column offset for substitution.
-   * @tparam Row_Offset The row offset for substitution.
+   * @tparam Row_Offset The column offset for substitution.
+   * @tparam Col_Offset The row offset for substitution.
    * @tparam All_Type The type of the All matrix.
    * @tparam Part_Type The type of the part matrix.
    * @tparam M The number of rows in the part matrix.
@@ -832,28 +832,28 @@ struct SubstituteColumn {
    */
   static void compute(All_Type &All, const Part_Type &Part) {
 
-    All.template set<(Col_Offset + I), (Row_Offset + J_idx)>(
+    All.template set<(Row_Offset + I), (Col_Offset + J_idx)>(
         Part.template get<I, J_idx>());
 
-    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+    SubstituteColumn<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, I,
                      (J_idx - 1)>::compute(All, Part);
   }
 };
 
 // column recursion termination
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I>
-struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
+struct SubstituteColumn<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, I,
                         0> {
   /**
    * @brief Computes a specific operation on the input part matrix and
    * substitutes its values into the corresponding position in the All matrix.
    *
    * This static function assigns the first row (index 0) from the part
-   * matrix to the All matrix at the position (Col_Offset + I, Row_Offset).
+   * matrix to the All matrix at the position (Row_Offset + I, Col_Offset).
    *
-   * @tparam Col_Offset The column offset for substitution.
-   * @tparam Row_Offset The row offset for substitution.
+   * @tparam Row_Offset The column offset for substitution.
+   * @tparam Col_Offset The row offset for substitution.
    * @tparam All_Type The type of the All matrix.
    * @tparam Part_Type The type of the part matrix.
    * @tparam M The number of rows in the part matrix.
@@ -864,12 +864,12 @@ struct SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I,
    */
   static void compute(All_Type &All, const Part_Type &Part) {
 
-    All.template set<(Col_Offset + I), Row_Offset>(Part.template get<I, 0>());
+    All.template set<(Row_Offset + I), Col_Offset>(Part.template get<I, 0>());
   }
 };
 
 // when I_idx < M
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I_idx>
 struct SubstituteRow {
   /**
@@ -877,12 +877,12 @@ struct SubstituteRow {
    * substitutes its values into the corresponding position in the All matrix.
    *
    * This static function assigns a particular value from the part matrix
-   * (indexed by I_idx and J_idx) to the All matrix at the position (Col_Offset,
-   * Row_Offset + I_idx). It then recursively processes the remaining cols by
+   * (indexed by I_idx and J_idx) to the All matrix at the position (Row_Offset,
+   * Col_Offset + I_idx). It then recursively processes the remaining cols by
    * invoking SubstituteRow with a decremented row index.
    *
-   * @tparam Col_Offset The column offset for substitution.
-   * @tparam Row_Offset The row offset for substitution.
+   * @tparam Row_Offset The column offset for substitution.
+   * @tparam Col_Offset The row offset for substitution.
    * @tparam All_Type The type of the All matrix.
    * @tparam Part_Type The type of the part matrix.
    * @tparam M The number of rows in the part matrix.
@@ -893,26 +893,26 @@ struct SubstituteRow {
    */
   static void compute(All_Type &All, const Part_Type &Part) {
 
-    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, I_idx,
+    SubstituteColumn<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, I_idx,
                      (N - 1)>::compute(All, Part);
-    SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N,
+    SubstituteRow<Row_Offset, Col_Offset, All_Type, Part_Type, M, N,
                   (I_idx - 1)>::compute(All, Part);
   }
 };
 
 // row recursion termination
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N>
-struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
+struct SubstituteRow<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, 0> {
   /**
    * @brief Computes a specific operation on the input part matrix and
    * substitutes its values into the corresponding position in the All matrix.
    *
    * This static function assigns the first column (index 0) from the part matrix
-   * to the All matrix at the position (Col_Offset, Row_Offset).
+   * to the All matrix at the position (Row_Offset, Col_Offset).
    *
-   * @tparam Col_Offset The column offset for substitution.
-   * @tparam Row_Offset The row offset for substitution.
+   * @tparam Row_Offset The column offset for substitution.
+   * @tparam Col_Offset The row offset for substitution.
    * @tparam All_Type The type of the All matrix.
    * @tparam Part_Type The type of the part matrix.
    * @tparam M The number of rows in the part matrix.
@@ -922,7 +922,7 @@ struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
    */
   static void compute(All_Type &All, const Part_Type &Part) {
 
-    SubstituteColumn<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0,
+    SubstituteColumn<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, 0,
                      (N - 1)>::compute(All, Part);
   }
 };
@@ -934,32 +934,32 @@ struct SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, M, N, 0> {
  * larger matrix (All) at specified column and row offsets. It ensures that the
  * All matrix has enough space to accommodate the part matrix.
  *
- * @tparam Col_Offset The column offset for substitution.
- * @tparam Row_Offset The row offset for substitution.
+ * @tparam Row_Offset The column offset for substitution.
+ * @tparam Col_Offset The row offset for substitution.
  * @tparam All_Type The type of the All matrix.
  * @tparam Part_Type The type of the part matrix.
  * @param All The All matrix where values are substituted.
  * @param Part The part matrix containing values to substitute.
  */
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename All_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type>
 inline void substitute_each(All_Type &All, const Part_Type &Part) {
 
   static_assert(
-      All_Type::ROWS >= (Part_Type::ROWS + Col_Offset),
+      All_Type::ROWS >= (Part_Type::ROWS + Row_Offset),
       "All matrix must have enough rows to substitute the part matrix.");
   static_assert(
-      All_Type::COLS >= (Part_Type::COLS + Row_Offset),
+      All_Type::COLS >= (Part_Type::COLS + Col_Offset),
       "All matrix must have enough cols to substitute the part matrix.");
 
-  SubstituteRow<Col_Offset, Row_Offset, All_Type, Part_Type, Part_Type::ROWS,
+  SubstituteRow<Row_Offset, Col_Offset, All_Type, Part_Type, Part_Type::ROWS,
                 Part_Type::COLS, (Part_Type::ROWS - 1)>::compute(All, Part);
 }
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t TupleCol_Count,
-          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset,
-          std::size_t TupleRow_Index>
+          typename ArgsTuple_Type, std::size_t TupleRow_Count,
+          std::size_t TupleRow_Offset, std::size_t TupleCol_Offset,
+          std::size_t TupleCol_Index>
 struct TupleColumn {
   /**
    * @brief Substitutes a specific column of a tuple into the All matrix.
@@ -973,37 +973,37 @@ struct TupleColumn {
    * @tparam N The number of columns in the matrix.
    * @tparam All_Type The type of the All matrix.
    * @tparam ArgsTuple_Type The type of the tuple containing arguments.
-   * @tparam TupleCol_Count The number of rows in the tuple.
-   * @tparam TupleCol_Offset The column offset for substitution.
-   * @tparam TupleRow_Offset The row offset for substitution.
-   * @tparam TupleRow_Index The current row index being processed.
+   * @tparam TupleRow_Count The number of rows in the tuple.
+   * @tparam TupleRow_Offset The column offset for substitution.
+   * @tparam TupleCol_Offset The row offset for substitution.
+   * @tparam TupleCol_Index The current row index being processed.
    * @param All The All matrix where values are substituted.
    * @param args The tuple containing arguments to substitute.
    */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
     constexpr std::size_t THIS_TUPLE_INDEX =
-        N - TupleRow_Index + (TupleCol_Count * N);
+        N - TupleCol_Index + (TupleRow_Count * N);
 
     using ArgType =
         typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
             args))>::type;
 
-    constexpr std::size_t EACH_ROW_SIZE = ArgType::COLS;
+    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::COLS;
 
-    substitute_each<TupleCol_Offset, TupleRow_Offset>(
+    substitute_each<TupleRow_Offset, TupleCol_Offset>(
         All, std::get<THIS_TUPLE_INDEX>(args));
-    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count, TupleCol_Offset,
-                (TupleRow_Offset + EACH_ROW_SIZE),
-                (TupleRow_Index - 1)>::substitute(All, args);
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleRow_Count, TupleRow_Offset,
+                (TupleCol_Offset + EACH_COLUMN_SIZE),
+                (TupleCol_Index - 1)>::substitute(All, args);
   }
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t TupleCol_Count,
-          std::size_t TupleCol_Offset, std::size_t TupleRow_Offset>
-struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
-                   TupleCol_Offset, TupleRow_Offset, 0> {
+          typename ArgsTuple_Type, std::size_t TupleRow_Count,
+          std::size_t TupleRow_Offset, std::size_t TupleCol_Offset>
+struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleRow_Count,
+                   TupleRow_Offset, TupleCol_Offset, 0> {
   /**
    * @brief Substitutes a specific column of a tuple into the All matrix.
    *
@@ -1014,9 +1014,9 @@ struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
    * @tparam N The number of columns in the matrix.
    * @tparam All_Type The type of the All matrix.
    * @tparam ArgsTuple_Type The type of the tuple containing arguments.
-   * @tparam TupleCol_Count The number of rows in the tuple.
-   * @tparam TupleCol_Offset The column offset for substitution.
-   * @tparam TupleRow_Offset The row offset for substitution.
+   * @tparam TupleRow_Count The number of rows in the tuple.
+   * @tparam TupleRow_Offset The column offset for substitution.
+   * @tparam TupleCol_Offset The row offset for substitution.
    * @param All The All matrix where values would be substituted (not used
    * here).
    * @param args The tuple containing arguments to substitute (not used here).
@@ -1029,8 +1029,8 @@ struct TupleColumn<M, N, All_Type, ArgsTuple_Type, TupleCol_Count,
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t TupleCol_Offset,
-          std::size_t TupleCol_Index>
+          typename ArgsTuple_Type, std::size_t TupleRow_Offset,
+          std::size_t TupleRow_Index>
 struct TupleRow {
   /**
    * @brief Substitutes a specific row of a tuple into the All matrix.
@@ -1044,14 +1044,14 @@ struct TupleRow {
    * @tparam N The number of columns in the matrix.
    * @tparam All_Type The type of the All matrix.
    * @tparam ArgsTuple_Type The type of the tuple containing arguments.
-   * @tparam TupleCol_Offset The column offset for substitution.
-   * @tparam TupleCol_Index The current column index being processed.
+   * @tparam TupleRow_Offset The column offset for substitution.
+   * @tparam TupleRow_Index The current column index being processed.
    * @param All The All matrix where values are substituted.
    * @param args The tuple containing arguments to substitute.
    */
   static void substitute(All_Type &All, const ArgsTuple_Type &args) {
 
-    constexpr std::size_t TUPLECOL_COUNT = M - TupleCol_Index;
+    constexpr std::size_t TUPLECOL_COUNT = M - TupleRow_Index;
 
     constexpr std::size_t THIS_TUPLE_INDEX = TUPLECOL_COUNT * N;
 
@@ -1059,19 +1059,19 @@ struct TupleRow {
         typename std::remove_reference<decltype(std::get<THIS_TUPLE_INDEX>(
             args))>::type;
 
-    constexpr std::size_t EACH_COLUMN_SIZE = ArgType::ROWS;
+    constexpr std::size_t EACH_ROW_SIZE = ArgType::ROWS;
 
-    TupleColumn<M, N, All_Type, ArgsTuple_Type, TUPLECOL_COUNT, TupleCol_Offset,
+    TupleColumn<M, N, All_Type, ArgsTuple_Type, TUPLECOL_COUNT, TupleRow_Offset,
                 0, N>::substitute(All, args);
 
-    TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset + EACH_COLUMN_SIZE,
-             (TupleCol_Index - 1)>::substitute(All, args);
+    TupleRow<M, N, All_Type, ArgsTuple_Type, TupleRow_Offset + EACH_ROW_SIZE,
+             (TupleRow_Index - 1)>::substitute(All, args);
   }
 };
 
 template <std::size_t M, std::size_t N, typename All_Type,
-          typename ArgsTuple_Type, std::size_t TupleCol_Offset>
-struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
+          typename ArgsTuple_Type, std::size_t TupleRow_Offset>
+struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleRow_Offset, 0> {
   /**
    * @brief Substitutes a specific row of a tuple into the All matrix.
    *
@@ -1082,7 +1082,7 @@ struct TupleRow<M, N, All_Type, ArgsTuple_Type, TupleCol_Offset, 0> {
    * @tparam N The number of columns in the matrix.
    * @tparam All_Type The type of the All matrix.
    * @tparam ArgsTuple_Type The type of the tuple containing arguments.
-   * @tparam TupleCol_Offset The column offset for substitution.
+   * @tparam TupleRow_Offset The column offset for substitution.
    * @param All The All matrix where values would be substituted (not used
    * here).
    * @param args The tuple containing arguments to substitute (not used here).
@@ -1132,58 +1132,58 @@ inline void substitute_matrix(To_Type &to_matrix,
  * larger matrix at specified column and row offsets. It ensures that the large
  * matrix has enough space to accommodate the small matrix.
  *
- * @tparam Col_Offset The column offset for substitution.
- * @tparam Row_Offset The row offset for substitution.
+ * @tparam Row_Offset The column offset for substitution.
+ * @tparam Col_Offset The row offset for substitution.
  * @tparam Large_Type The type of the large matrix.
  * @tparam Small_Type The type of the small matrix.
  * @param Large The large matrix where values are substituted.
  * @param Small The small matrix containing values to substitute.
  */
-template <std::size_t Col_Offset, std::size_t Row_Offset, typename Large_Type,
+template <std::size_t Row_Offset, std::size_t Col_Offset, typename Large_Type,
           typename Small_Type>
 inline void substitute_part_matrix(Large_Type &Large, const Small_Type &Small) {
 
-  static_assert(Large_Type::ROWS >= (Small_Type::ROWS + Col_Offset),
+  static_assert(Large_Type::ROWS >= (Small_Type::ROWS + Row_Offset),
                 "Large matrix must have enough rows to substitute the small "
                 "matrix.");
-  static_assert(Large_Type::COLS >= (Small_Type::COLS + Row_Offset),
+  static_assert(Large_Type::COLS >= (Small_Type::COLS + Col_Offset),
                 "Large matrix must have enough cols to substitute the small "
                 "matrix.");
 
-  PartMatrixOperation::substitute_each<Col_Offset, Row_Offset>(Large, Small);
+  PartMatrixOperation::substitute_each<Row_Offset, Col_Offset>(Large, Small);
 }
 
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 
-template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type,
-          std::size_t Row_Index>
+template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
+          std::size_t Col_Index>
 struct ConcatenateBlockRows {
 
-  using Arg_Type = typename std::tuple_element<(Col_Offset + Row_Index),
+  using Arg_Type = typename std::tuple_element<(Row_Offset + Col_Index),
                                                ArgsTuple_Type>::type;
 
   using type = ConcatenateHorizontally_Type<
-      typename ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type,
-                                    (Row_Index - 1)>::type,
+      typename ConcatenateBlockRows<Row_Offset, N, ArgsTuple_Type,
+                                    (Col_Index - 1)>::type,
       Arg_Type>;
 };
 
-template <std::size_t Col_Offset, std::size_t N, typename ArgsTuple_Type>
-struct ConcatenateBlockRows<Col_Offset, N, ArgsTuple_Type, 0> {
+template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type>
+struct ConcatenateBlockRows<Row_Offset, N, ArgsTuple_Type, 0> {
 
-  using type = typename std::tuple_element<Col_Offset, ArgsTuple_Type>::type;
+  using type = typename std::tuple_element<Row_Offset, ArgsTuple_Type>::type;
 };
 
-template <std::size_t N, typename ArgsTuple_Type, std::size_t Col_Index>
+template <std::size_t N, typename ArgsTuple_Type, std::size_t Row_Index>
 struct ConcatenateBlockColumns {
 
-  using Arg_Type = typename ConcatenateBlockRows<(Col_Index * N), N,
+  using Arg_Type = typename ConcatenateBlockRows<(Row_Index * N), N,
                                                  ArgsTuple_Type, (N - 1)>::type;
 
   using type =
       ConcatenateVertically_Type<typename ConcatenateBlockColumns<
-                                     N, ArgsTuple_Type, (Col_Index - 1)>::type,
+                                     N, ArgsTuple_Type, (Row_Index - 1)>::type,
                                  Arg_Type>;
 };
 

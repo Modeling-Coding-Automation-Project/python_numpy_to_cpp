@@ -662,20 +662,20 @@ inline auto create_compiled_sparse(const DiagMatrix<T, M> &A)
  * @tparam T            The type of the matrix elements.
  * @tparam SparseAvailable The type representing the sparsity pattern and size.
  * @param values        An initializer list of values to fill the sparse matrix.
- * @return CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
- *         SparseAvailable::column_size,
+ * @return CompiledSparseMatrix<T, SparseAvailable::number_of_rows,
+ *         SparseAvailable::row_size,
  * RowIndicesFromSparseAvailable<SparseAvailable>,
  *         RowPointersFromSparseAvailable<SparseAvailable>>
  *         A sparse matrix representation of the input values.
  */
 template <typename T, typename SparseAvailable>
 inline auto create_compiled_sparse(std::initializer_list<T> values)
-    -> CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
-                            SparseAvailable::column_size,
+    -> CompiledSparseMatrix<T, SparseAvailable::number_of_rows,
+                            SparseAvailable::row_size,
                             RowIndicesFromSparseAvailable<SparseAvailable>,
                             RowPointersFromSparseAvailable<SparseAvailable>> {
-  CompiledSparseMatrix<T, SparseAvailable::number_of_columns,
-                       SparseAvailable::column_size,
+  CompiledSparseMatrix<T, SparseAvailable::number_of_rows,
+                       SparseAvailable::row_size,
                        RowIndicesFromSparseAvailable<SparseAvailable>,
                        RowPointersFromSparseAvailable<SparseAvailable>>
       Y;

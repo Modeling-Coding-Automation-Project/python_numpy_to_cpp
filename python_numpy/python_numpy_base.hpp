@@ -393,7 +393,7 @@ public:
 public:
   /* Function */
 
-  template <typename U, std::size_t P, std::size_t I_Col, std::size_t I_Col_Row>
+  template <typename U, std::size_t P, std::size_t I_Row, std::size_t I_Row_Col>
   struct GetSetDiagMatrix {
     /** @brief Gets the value at the specified column and row indices from the
      * diagonal matrix.
@@ -422,8 +422,8 @@ public:
     }
   };
 
-  template <typename U, std::size_t P, std::size_t I_Col>
-  struct GetSetDiagMatrix<U, P, I_Col, 0> {
+  template <typename U, std::size_t P, std::size_t I_Row>
+  struct GetSetDiagMatrix<U, P, I_Row, 0> {
     /**
      * @brief Gets the value at the specified column index from the diagonal
      * matrix.
@@ -436,7 +436,7 @@ public:
      */
     static T get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
 
-      return matrix.data[I_Col];
+      return matrix.data[I_Row];
     }
 
     /**
@@ -451,7 +451,7 @@ public:
      */
     static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
 
-      matrix.data[I_Col] = value;
+      matrix.data[I_Row] = value;
     }
   };
 

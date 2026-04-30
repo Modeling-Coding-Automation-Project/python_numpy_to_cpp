@@ -1085,9 +1085,9 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
   Matrix<T, N, N> A = Base::Matrix::matrix_multiply_ATranspose_mul_SparseB(
       Base::Matrix::output_dense_matrix(In_SA), In_SA);
 
-  ColVector<T, M> b_ax_temp_col(b_ax_temp);
+  ColVector<T, M> b_ax_temp_row(b_ax_temp);
   ColVector<T, N> b_SA =
-      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_col, In_SA);
+      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_row, In_SA);
   Vector<T, N> b_ax = b_SA.transpose();
 
   // Normalize b_Ax
