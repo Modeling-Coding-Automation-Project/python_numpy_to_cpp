@@ -339,11 +339,11 @@ protected:
  * @tparam T The type of elements in the sparse matrix.
  * @tparam M The number of rows in the sparse matrix.
  * @tparam N The number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing row indices of the sparse matrix.
- * @tparam RowPointers_A Type representing row pointers of the sparse matrix.
+ * @tparam CSRIndices_A Type representing row indices of the sparse matrix.
+ * @tparam CSRPointers_A Type representing row pointers of the sparse matrix.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 class QRDecompositionSparse {
 public:
   /* Check Compatibility */
@@ -357,11 +357,11 @@ public:
 
   /* Copy Constructor */
   QRDecompositionSparse(
-      const QRDecompositionSparse<T, M, N, RowIndices_A, RowPointers_A> &other)
+      const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &other)
       : division_min(other.division_min), _Q_matrix(other._Q_matrix),
         _R_matrix(other._R_matrix) {}
-  QRDecompositionSparse<T, M, N, RowIndices_A, RowPointers_A> &
-  operator=(const QRDecompositionSparse<T, M, N, RowIndices_A, RowPointers_A>
+  QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
+  operator=(const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
                 &other) {
     if (this != &other) {
       this->division_min = other.division_min;
@@ -372,12 +372,12 @@ public:
   }
 
   /* Move Constructor */
-  QRDecompositionSparse(QRDecompositionSparse<T, M, N, RowIndices_A,
-                                              RowPointers_A> &&other) noexcept
+  QRDecompositionSparse(QRDecompositionSparse<T, M, N, CSRIndices_A,
+                                              CSRPointers_A> &&other) noexcept
       : division_min(other.division_min), _Q_matrix(std::move(other._Q_matrix)),
         _R_matrix(std::move(other._R_matrix)) {}
-  QRDecompositionSparse<T, M, N, RowIndices_A, RowPointers_A> &
-  operator=(QRDecompositionSparse<T, M, N, RowIndices_A, RowPointers_A>
+  QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
+  operator=(QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
                 &&other) noexcept {
     if (this != &other) {
       this->division_min = other.division_min;
@@ -399,7 +399,7 @@ public:
    * @param A The input sparse matrix to decompose.
    */
   inline void
-  solve(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  solve(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     this->_R_matrix = Base::Matrix::output_dense_matrix(A);
     this->_decompose(A);
   }
@@ -448,13 +448,13 @@ protected:
    * @param A The input sparse matrix to decompose.
    */
   inline void _decompose(
-      const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+      const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t k = RowPointers_A::list[i];
-           k < RowPointers_A::list[i + 1]; k++) {
-        if ((i >= RowIndices_A::list[k] + 1) &&
+      for (std::size_t k = CSRPointers_A::list[i];
+           k < CSRPointers_A::list[i + 1]; k++) {
+        if ((i >= CSRIndices_A::list[k] + 1) &&
             (!Base::Utility::near_zero(A.values[k], this->division_min))) {
-          this->_givensRotation(i, RowIndices_A::list[k]);
+          this->_givensRotation(i, CSRIndices_A::list[k]);
         }
       }
     }

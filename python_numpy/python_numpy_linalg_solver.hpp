@@ -488,10 +488,10 @@ public:
                     const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B)
       -> Matrix<DefDense, T, M, K> {
 
-    using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
-    using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
+    using CSRIndices_B = CSRIndicesFromSparseAvailable<SparseAvailable_B>;
+    using CSRPointers_B = CSRPointersFromSparseAvailable<SparseAvailable_B>;
 
-    Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
+    Base::Matrix::CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B>
         result = Base::Matrix::diag_inv_multiply_sparse(A.matrix, B.matrix,
                                                         this->division_min);
 
@@ -1540,14 +1540,14 @@ public:
                          const Matrix<DefSparse, T, M, K, SparseAvailable_B> &B,
                          std::size_t matrix_size) -> Matrix<DefDense, T, M, K> {
 
-    using RowIndices_B = RowIndicesFromSparseAvailable<SparseAvailable_B>;
-    using RowPointers_B = RowPointersFromSparseAvailable<SparseAvailable_B>;
+    using CSRIndices_B = CSRIndicesFromSparseAvailable<SparseAvailable_B>;
+    using CSRPointers_B = CSRPointersFromSparseAvailable<SparseAvailable_B>;
 
     if (matrix_size > M) {
       matrix_size = M;
     }
 
-    Base::Matrix::CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B>
+    Base::Matrix::CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B>
         X_1_temporary = Base::Matrix::diag_inv_multiply_sparse_partition(
             A.matrix, B.matrix, this->division_min, matrix_size);
 

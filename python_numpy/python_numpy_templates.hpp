@@ -43,10 +43,10 @@ template <typename T> using Is_Complex_Type = Base::Matrix::Is_Complex_Type<T>;
 
 /* Compiled Sparse Matrix Templates */
 template <std::size_t... Sizes>
-using RowIndices = Base::Matrix::RowIndices<Sizes...>;
+using CSRIndices = Base::Matrix::CSRIndices<Sizes...>;
 
 template <std::size_t... Sizes>
-using RowPointers = Base::Matrix::RowPointers<Sizes...>;
+using CSRPointers = Base::Matrix::CSRPointers<Sizes...>;
 
 template <bool... Flags>
 using ColumnAvailable = Base::Matrix::ColumnAvailable<Flags...>;
@@ -66,17 +66,17 @@ using SparseAvailableEmpty = Base::Matrix::DenseAvailableEmpty<M, N>;
 template <std::size_t M> using DiagAvailable = Base::Matrix::DiagAvailable<M>;
 
 template <typename SparseAvailable>
-using RowIndicesFromSparseAvailable =
-    Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>;
+using CSRIndicesFromSparseAvailable =
+    Base::Matrix::CSRIndicesFromSparseAvailable<SparseAvailable>;
 
 template <typename SparseAvailable>
-using RowPointersFromSparseAvailable =
-    Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>;
+using CSRPointersFromSparseAvailable =
+    Base::Matrix::CSRPointersFromSparseAvailable<SparseAvailable>;
 
-template <std::size_t N, typename RowIndices, typename RowPointers>
+template <std::size_t N, typename CSRIndices, typename CSRPointers>
 using CreateSparseAvailableFromIndicesAndPointers =
-    Base::Matrix::CreateSparseAvailableFromIndicesAndPointers<N, RowIndices,
-                                                              RowPointers>;
+    Base::Matrix::CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices,
+                                                              CSRPointers>;
 
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using ConcatenateSparseAvailableVertically =
@@ -89,18 +89,18 @@ using ConcatenateSparseAvailableHorizontally =
                                                          SparseAvailable_B>;
 
 template <std::size_t M, std::size_t N>
-using LowerTriangularRowIndices = Base::Matrix::LowerTriangularRowIndices<M, N>;
+using LowerTriangularCSRIndices = Base::Matrix::LowerTriangularCSRIndices<M, N>;
 
 template <std::size_t M, std::size_t N>
-using LowerTriangularRowPointers =
-    Base::Matrix::LowerTriangularRowPointers<M, N>;
+using LowerTriangularCSRPointers =
+    Base::Matrix::LowerTriangularCSRPointers<M, N>;
 
 template <std::size_t M, std::size_t N>
-using UpperTriangularRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
+using UpperTriangularCSRIndices = Base::Matrix::UpperTriangularCSRIndices<M, N>;
 
 template <std::size_t M, std::size_t N>
-using UpperTriangularRowPointers =
-    Base::Matrix::UpperTriangularRowPointers<M, N>;
+using UpperTriangularCSRPointers =
+    Base::Matrix::UpperTriangularCSRPointers<M, N>;
 
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using MatrixAddSubSparseAvailable =

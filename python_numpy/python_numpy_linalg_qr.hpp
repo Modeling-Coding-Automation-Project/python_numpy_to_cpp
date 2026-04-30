@@ -393,9 +393,9 @@ public:
 
 protected:
   /* Type */
-  using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
-  using _R_TriangluarRowPointers =
-      Base::Matrix::UpperTriangularRowPointers<M, N>;
+  using _R_TriangluarCSRIndices = Base::Matrix::UpperTriangularCSRIndices<M, N>;
+  using _R_TriangluarCSRPointers =
+      Base::Matrix::UpperTriangularCSRPointers<M, N>;
 
 public:
   /* Constructor */
@@ -494,11 +494,11 @@ public:
   inline auto get_R(void) -> Matrix<
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
-          N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
+          N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>> const {
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
-                      N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>>(
+                      N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>>(
         this->_R_triangular);
   }
 
@@ -539,8 +539,8 @@ protected:
   /* Properties */
   Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;
 
-  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
-                                     _R_TriangluarRowPointers>
+  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarCSRIndices,
+                                     _R_TriangluarCSRPointers>
       _R_triangular;
 };
 
@@ -675,9 +675,9 @@ public:
 
 protected:
   /* Type */
-  using _R_TriangluarRowIndices = Base::Matrix::UpperTriangularRowIndices<M, N>;
-  using _R_TriangluarRowPointers =
-      Base::Matrix::UpperTriangularRowPointers<M, N>;
+  using _R_TriangluarCSRIndices = Base::Matrix::UpperTriangularCSRIndices<M, N>;
+  using _R_TriangluarCSRPointers =
+      Base::Matrix::UpperTriangularCSRPointers<M, N>;
 
 public:
   /* Constructor */
@@ -773,11 +773,11 @@ public:
   inline auto get_R(void) -> Matrix<
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
-          N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>> const {
+          N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>> const {
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
-                      N, _R_TriangluarRowIndices, _R_TriangluarRowPointers>>(
+                      N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>>(
         this->_R_triangular);
   }
 
@@ -817,12 +817,12 @@ public:
 protected:
   /* Variable */
   Base::Matrix::QRDecompositionSparse<
-      T, M, N, Base::Matrix::RowIndicesFromSparseAvailable<SparseAvailable>,
-      Base::Matrix::RowPointersFromSparseAvailable<SparseAvailable>>
+      T, M, N, Base::Matrix::CSRIndicesFromSparseAvailable<SparseAvailable>,
+      Base::Matrix::CSRPointersFromSparseAvailable<SparseAvailable>>
       _QR_decomposer;
 
-  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarRowIndices,
-                                     _R_TriangluarRowPointers>
+  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarCSRIndices,
+                                     _R_TriangluarCSRPointers>
       _R_triangular =
           Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>();
 };

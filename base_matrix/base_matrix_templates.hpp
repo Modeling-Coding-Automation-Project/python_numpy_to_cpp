@@ -93,7 +93,7 @@ public:
  * @tparam Sizes Variadic template parameter pack representing the row indices.
  */
 template <std::size_t... Sizes>
-using RowIndices = TemplatesOperation::CompiledSparseMatrixList<
+using CSRIndices = TemplatesOperation::CompiledSparseMatrixList<
     TemplatesOperation::list_array<Sizes...>>;
 
 /**
@@ -110,7 +110,7 @@ using RowIndices = TemplatesOperation::CompiledSparseMatrixList<
  * indices.
  */
 template <std::size_t... Sizes>
-using RowPointers = TemplatesOperation::CompiledSparseMatrixList<
+using CSRPointers = TemplatesOperation::CompiledSparseMatrixList<
     TemplatesOperation::list_array<Sizes...>>;
 
 namespace TemplatesOperation {
@@ -654,7 +654,8 @@ struct IndexedRepeatColumnAvailable {
  * collecting the repeated column availability types into a sparse column
  * representation.
  *
- * @tparam N The number of columns in the matrix (unused in this specialization).
+ * @tparam N The number of columns in the matrix (unused in this
+ * specialization).
  * @tparam Index The current index (unused in this specialization).
  * @tparam ColumnAvailable The type representing the availability of the current
  * column (unused in this specialization).
@@ -760,18 +761,18 @@ using GenerateORTrueFlagsColumnAvailable =
  * based on the provided row indices and pointers. It generates a type that
  * indicates which rows are available (true) or not (false) for each row.
  *
- * @tparam RowIndices A type representing the row indices.
+ * @tparam CSRIndices A type representing the row indices.
  * @tparam N The number of rows in the matrix.
- * @tparam RowIndicesIndex The current index in the RowIndices list being
+ * @tparam CSRIndicesIndex The current index in the CSRIndices list being
  * processed.
  * @tparam RowEndCount The number of columns remaining to process.
  */
-template <typename RowIndices, std::size_t N, std::size_t RowIndicesIndex,
+template <typename CSRIndices, std::size_t N, std::size_t CSRIndicesIndex,
           std::size_t RowEndCount>
 struct CreateSparsePointersRowLoop {
   using type = typename GenerateORTrueFlagsLoop<
-      GenerateIndexedTrueColumnAvailable<N, RowIndices::list[RowIndicesIndex]>,
-      typename CreateSparsePointersRowLoop<RowIndices, N, (RowIndicesIndex + 1),
+      GenerateIndexedTrueColumnAvailable<N, CSRIndices::list[CSRIndicesIndex]>,
+      typename CreateSparsePointersRowLoop<CSRIndices, N, (CSRIndicesIndex + 1),
                                            (RowEndCount - 1)>::type,
       N>::type;
 };
@@ -784,14 +785,14 @@ struct CreateSparsePointersRowLoop {
  * GenerateFalseColumnAvailable<N>, effectively creating a ColumnAvailable type
  * with all rows marked as unavailable (false).
  *
- * @tparam RowIndices A type representing the row indices (unused in this
+ * @tparam CSRIndices A type representing the row indices (unused in this
  * specialization).
  * @tparam N The number of rows in the matrix.
- * @tparam RowIndicesIndex The current index in the RowIndices list (unused in
+ * @tparam CSRIndicesIndex The current index in the CSRIndices list (unused in
  * this specialization).
  */
-template <typename RowIndices, std::size_t N, std::size_t RowIndicesIndex>
-struct CreateSparsePointersRowLoop<RowIndices, N, RowIndicesIndex, 0> {
+template <typename CSRIndices, std::size_t N, std::size_t CSRIndicesIndex>
+struct CreateSparsePointersRowLoop<CSRIndices, N, CSRIndicesIndex, 0> {
   using type = GenerateFalseColumnAvailable<N>;
 };
 
@@ -804,24 +805,24 @@ struct CreateSparsePointersRowLoop<RowIndices, N, RowIndicesIndex, 0> {
  * row based on the row indices and pointers.
  *
  * @tparam N The number of rows in the matrix.
- * @tparam RowIndices A type representing the row indices.
- * @tparam RowPointers A type representing the row pointers.
+ * @tparam CSRIndices A type representing the row indices.
+ * @tparam CSRPointers A type representing the row pointers.
  * @tparam EndCount The number of columns remaining to process.
- * @tparam ConsecutiveIndex The current index in the RowPointers list being
+ * @tparam ConsecutiveIndex The current index in the CSRPointers list being
  * processed.
  * @tparam Columns The accumulated ColumnAvailable types during recursion.
  */
-template <std::size_t N, typename RowIndices, typename RowPointers,
+template <std::size_t N, typename CSRIndices, typename CSRPointers,
           std::size_t EndCount, std::size_t ConsecutiveIndex,
           typename... Columns>
 struct CreateSparsePointersLoop {
   using type = typename CreateSparsePointersLoop<
-      N, RowIndices, RowPointers, (EndCount - 1),
-      RowPointers::list[RowPointers::size - EndCount], Columns...,
+      N, CSRIndices, CSRPointers, (EndCount - 1),
+      CSRPointers::list[CSRPointers::size - EndCount], Columns...,
       typename CreateSparsePointersRowLoop<
-          RowIndices, N, RowPointers::list[RowPointers::size - EndCount - 1],
-          (RowPointers::list[RowPointers::size - EndCount] -
-           RowPointers::list[RowPointers::size - EndCount - 1])>::type>::type;
+          CSRIndices, N, CSRPointers::list[CSRPointers::size - EndCount - 1],
+          (CSRPointers::list[CSRPointers::size - EndCount] -
+           CSRPointers::list[CSRPointers::size - EndCount - 1])>::type>::type;
 };
 
 /**
@@ -834,18 +835,18 @@ struct CreateSparsePointersLoop {
  *
  * @tparam N The number of rows in the matrix (unused in this
  * specialization).
- * @tparam RowIndices A type representing the row indices (unused in this
+ * @tparam CSRIndices A type representing the row indices (unused in this
  * specialization).
- * @tparam RowPointers A type representing the row pointers (unused in this
+ * @tparam CSRPointers A type representing the row pointers (unused in this
  * specialization).
- * @tparam ConsecutiveIndex The current index in the RowPointers list (unused in
+ * @tparam ConsecutiveIndex The current index in the CSRPointers list (unused in
  * this specialization).
  * @tparam Columns Variadic template parameter pack representing the accumulated
  * ColumnAvailable types.
  */
-template <std::size_t N, typename RowIndices, typename RowPointers,
+template <std::size_t N, typename CSRIndices, typename CSRPointers,
           std::size_t ConsecutiveIndex, typename... Columns>
-struct CreateSparsePointersLoop<N, RowIndices, RowPointers, 0, ConsecutiveIndex,
+struct CreateSparsePointersLoop<N, CSRIndices, CSRPointers, 0, ConsecutiveIndex,
                                 Columns...> {
   using type = SparseAvailableColumns<Columns...>;
 };
@@ -863,16 +864,16 @@ struct CreateSparsePointersLoop<N, RowIndices, RowPointers, 0, ConsecutiveIndex,
  * indices and pointers.
  *
  * @tparam N The number of rows in the matrix.
- * @tparam RowIndices A type representing the row indices.
- * @tparam RowPointers A type representing the row pointers.
+ * @tparam CSRIndices A type representing the row indices.
+ * @tparam CSRPointers A type representing the row pointers.
  *
  * The resulting type is a SparseAvailableColumns type with the availability of
  * each column determined by the provided row indices and pointers.
  */
-template <std::size_t N, typename RowIndices, typename RowPointers>
+template <std::size_t N, typename CSRIndices, typename CSRPointers>
 using CreateSparseAvailableFromIndicesAndPointers =
     typename TemplatesOperation::CreateSparsePointersLoop<
-        N, RowIndices, RowPointers, (RowPointers::size - 1), 0>::type;
+        N, CSRIndices, CSRPointers, (CSRPointers::size - 1), 0>::type;
 
 namespace TemplatesOperation {
 
@@ -1091,26 +1092,26 @@ struct RepeatConcatenateIndexSequence {
 };
 
 /**
- * @brief A template struct to convert an IndexSequence into a RowIndices type.
+ * @brief A template struct to convert an IndexSequence into a CSRIndices type.
  *
- * This struct provides a type alias 'type' that is set to RowIndices<Seq...>,
- * effectively converting the IndexSequence into a RowIndices type.
+ * This struct provides a type alias 'type' that is set to CSRIndices<Seq...>,
+ * effectively converting the IndexSequence into a CSRIndices type.
  *
  * @tparam Seq The index sequence to be converted.
  */
-template <typename Seq> struct ToRowIndices;
+template <typename Seq> struct ToCSRIndices;
 
 /**
- * @brief Specialization of ToRowIndices for IndexSequence types.
+ * @brief Specialization of ToCSRIndices for IndexSequence types.
  *
  * This specialization defines a type alias 'type' that is set to
- * RowIndices<Seq...>, effectively converting the IndexSequence into a
- * RowIndices type.
+ * CSRIndices<Seq...>, effectively converting the IndexSequence into a
+ * CSRIndices type.
  *
  * @tparam Seq The index sequence to be converted.
  */
-template <std::size_t... Seq> struct ToRowIndices<IndexSequence<Seq...>> {
-  using type = RowIndices<Seq...>;
+template <std::size_t... Seq> struct ToCSRIndices<IndexSequence<Seq...>> {
+  using type = CSRIndices<Seq...>;
 };
 
 /**
@@ -1145,7 +1146,7 @@ using MatrixColumnRowNumbers =
  * dense matrix.
  */
 template <std::size_t M, std::size_t N>
-using DenseMatrixRowIndices = typename TemplatesOperation::ToRowIndices<
+using DenseMatrixCSRIndices = typename TemplatesOperation::ToCSRIndices<
     TemplatesOperation::MatrixColumnRowNumbers<M, N>>::type;
 
 namespace TemplatesOperation {
@@ -1202,38 +1203,38 @@ template <std::size_t M, std::size_t N> struct MatrixDensePointerList {
  * @brief A template struct to create a list of row pointers for a dense matrix
  * of size MxN.
  *
- * This struct provides a type alias 'type' that is set to RowPointers<Seq...>,
+ * This struct provides a type alias 'type' that is set to CSRPointers<Seq...>,
  * effectively converting the IndexSequence generated by MakePointerList into a
- * RowPointers type.
+ * CSRPointers type.
  *
  * @tparam M The number of rows in the matrix.
  * @tparam N The number of columns in the matrix.
  */
 template <std::size_t M, std::size_t N>
-using MatrixColumnRowPointers = typename MatrixDensePointerList<M, N>::type;
+using MatrixColumnCSRPointers = typename MatrixDensePointerList<M, N>::type;
 
 /**
- * @brief A template struct to convert an IndexSequence into a RowPointers type.
+ * @brief A template struct to convert an IndexSequence into a CSRPointers type.
  *
- * This struct provides a type alias 'type' that is set to RowPointers<Seq...>,
- * effectively converting the IndexSequence into a RowPointers type.
+ * This struct provides a type alias 'type' that is set to CSRPointers<Seq...>,
+ * effectively converting the IndexSequence into a CSRPointers type.
  *
  * @tparam Seq The index sequence to be converted.
  */
-template <typename Seq> struct ToRowPointers;
+template <typename Seq> struct ToCSRPointers;
 
 /**
- * @brief Specialization of ToRowPointers for IndexSequence types.
+ * @brief Specialization of ToCSRPointers for IndexSequence types.
  *
  * This specialization defines a type alias 'type' that is set to
- * RowPointers<Seq...>, effectively converting the IndexSequence into a
- * RowPointers type.
+ * CSRPointers<Seq...>, effectively converting the IndexSequence into a
+ * CSRPointers type.
  *
  * @tparam Seq The index sequence to be converted.
  */
 template <std::size_t... Seq>
-struct ToRowPointers<TemplatesOperation::IndexSequence<Seq...>> {
-  using type = RowPointers<Seq...>;
+struct ToCSRPointers<TemplatesOperation::IndexSequence<Seq...>> {
+  using type = CSRPointers<Seq...>;
 };
 
 } // namespace TemplatesOperation
@@ -1242,19 +1243,19 @@ struct ToRowPointers<TemplatesOperation::IndexSequence<Seq...>> {
  * @brief Alias template to create a list of row pointers for a dense matrix of
  * size MxN.
  *
- * This alias uses the TemplatesOperation::MatrixColumnRowPointers to generate
+ * This alias uses the TemplatesOperation::MatrixColumnCSRPointers to generate
  * a type representing the row pointers for a dense matrix with M cols and N
  * rows.
  *
  * @tparam M The number of rows in the matrix.
  * @tparam N The number of columns in the matrix.
  *
- * The resulting type is a RowPointers type containing the row pointers for the
+ * The resulting type is a CSRPointers type containing the row pointers for the
  * dense matrix.
  */
 template <std::size_t M, std::size_t N>
-using DenseMatrixRowPointers = typename TemplatesOperation::ToRowIndices<
-    TemplatesOperation::MatrixColumnRowPointers<M, N>>::type;
+using DenseMatrixCSRPointers = typename TemplatesOperation::ToCSRIndices<
+    TemplatesOperation::MatrixColumnCSRPointers<M, N>>::type;
 
 /* Concatenate ColumnAvailable */
 
@@ -1825,10 +1826,10 @@ struct AssignSparseMatrixColumnLoop<SparseAvailable, 0> {
  * is empty or not.
  */
 template <typename SparseAvailable, bool NotEmpty>
-struct RowIndicesSequenceFromSparseAvailable;
+struct CSRIndicesSequenceFromSparseAvailable;
 
 /**
- * @brief Specialization of RowIndicesSequenceFromSparseAvailable for the case
+ * @brief Specialization of CSRIndicesSequenceFromSparseAvailable for the case
  * when the SparseAvailable type is not empty.
  *
  * This specialization defines a type alias 'type' that is set to the result of
@@ -1838,7 +1839,7 @@ struct RowIndicesSequenceFromSparseAvailable;
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
  */
 template <typename SparseAvailable>
-struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
+struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
   using type = typename AssignSparseMatrixColumnLoop<
       AvoidEmptyColumnsSparseAvailable<SparseAvailable>,
       (AvoidEmptyColumnsSparseAvailable<SparseAvailable>::number_of_rows -
@@ -1846,7 +1847,7 @@ struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
 };
 
 /**
- * @brief Specialization of RowIndicesSequenceFromSparseAvailable for the case
+ * @brief Specialization of CSRIndicesSequenceFromSparseAvailable for the case
  * when the SparseAvailable type is empty.
  *
  * This specialization defines a type alias 'type' that is set to
@@ -1856,7 +1857,7 @@ struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, true> {
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
  */
 template <typename SparseAvailable>
-struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
+struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
   using type = IndexSequence<0>;
 };
 
@@ -1866,7 +1867,7 @@ struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
  * @brief Alias template to create a sequence of row indices from a
  * SparseAvailable type.
  *
- * This alias uses the TemplatesOperation::RowIndicesSequenceFromSparseAvailable
+ * This alias uses the TemplatesOperation::CSRIndicesSequenceFromSparseAvailable
  * to generate a type representing the row indices for the SparseAvailable type,
  * taking into account whether it is empty or not.
  *
@@ -1876,8 +1877,8 @@ struct RowIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
  * SparseAvailable type.
  */
 template <typename SparseAvailable>
-using RowIndicesFromSparseAvailable = typename TemplatesOperation::ToRowIndices<
-    typename TemplatesOperation::RowIndicesSequenceFromSparseAvailable<
+using CSRIndicesFromSparseAvailable = typename TemplatesOperation::ToCSRIndices<
+    typename TemplatesOperation::CSRIndicesSequenceFromSparseAvailable<
         SparseAvailable, TemplatesOperation::CheckSparseAvailableEmpty<
                              SparseAvailable>::value>::type>::type;
 
@@ -2133,16 +2134,15 @@ struct AccumulateSparseMatrixElementNumberStruct {
  *
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
  *
- * The resulting type is a RowPointers type that contains the accumulated number
+ * The resulting type is a CSRPointers type that contains the accumulated number
  * of elements in each row of the SparseAvailable type.
  */
 template <typename SparseAvailable>
-using RowPointersFromSparseAvailable =
-    typename TemplatesOperation::ToRowPointers<
+using CSRPointersFromSparseAvailable =
+    typename TemplatesOperation::ToCSRPointers<
         typename TemplatesOperation::AccumulateSparseMatrixElementNumberStruct<
             typename TemplatesOperation::CountSparseMatrixColumnLoop<
-                SparseAvailable,
-                (SparseAvailable::number_of_rows - 1)>::type,
+                SparseAvailable, (SparseAvailable::number_of_rows - 1)>::type,
             SparseAvailable>::type>::type;
 
 namespace TemplatesOperation {
@@ -2391,7 +2391,7 @@ struct AccumulateTriangularElementNumberStructExtend<TriangularCountNumbers, M,
  * indices for the specified range.
  */
 template <std::size_t M, std::size_t N>
-using UpperTriangularRowIndices = typename TemplatesOperation::ToRowIndices<
+using UpperTriangularCSRIndices = typename TemplatesOperation::ToCSRIndices<
     TemplatesOperation::UpperTriangularRowNumbers<M, N>>::type;
 
 /**
@@ -2405,11 +2405,11 @@ using UpperTriangularRowIndices = typename TemplatesOperation::ToRowIndices<
  * @tparam M The starting index of the sequence.
  * @tparam N The ending index of the sequence.
  *
- * The resulting type is a RowPointers type that contains the accumulated number
+ * The resulting type is a CSRPointers type that contains the accumulated number
  * of elements in each row of the upper triangular sparse matrix.
  */
 template <std::size_t M, std::size_t N>
-using UpperTriangularRowPointers = typename TemplatesOperation::ToRowPointers<
+using UpperTriangularCSRPointers = typename TemplatesOperation::ToCSRPointers<
     typename TemplatesOperation::AccumulateTriangularElementNumberStructExtend<
         typename TemplatesOperation::TriangularCountNumbers<M, N>::type, M, N,
         (M <= N ? 0 : M - N)>::type>::type;
@@ -2534,7 +2534,7 @@ using LowerTriangularRowNumbers =
  * indices for the specified range.
  */
 template <std::size_t M, std::size_t N>
-using LowerTriangularRowIndices = typename TemplatesOperation::ToRowIndices<
+using LowerTriangularCSRIndices = typename TemplatesOperation::ToCSRIndices<
     TemplatesOperation::LowerTriangularRowNumbers<M, N>>::type;
 
 namespace TemplatesOperation {
@@ -2639,11 +2639,11 @@ struct AccumulateLowerTriangularElementNumberStruct {
  * @tparam M The starting index of the sequence.
  * @tparam N The ending index of the sequence.
  *
- * The resulting type is a RowPointers type that contains the accumulated number
+ * The resulting type is a CSRPointers type that contains the accumulated number
  * of elements in each row of the lower triangular sparse matrix.
  */
 template <std::size_t M, std::size_t N>
-using LowerTriangularRowPointers = typename TemplatesOperation::ToRowPointers<
+using LowerTriangularCSRPointers = typename TemplatesOperation::ToCSRPointers<
     typename TemplatesOperation::AccumulateLowerTriangularElementNumberStruct<
         typename TemplatesOperation::LowerTriangularCountNumbers<M, N>::type,
         M>::type>::type;

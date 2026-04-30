@@ -38,13 +38,13 @@ namespace Matrix {
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto create_UpperTriangularSparseMatrix(void)
-    -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                            UpperTriangularRowPointers<M, N>> {
+    -> CompiledSparseMatrix<T, M, N, UpperTriangularCSRIndices<M, N>,
+                            UpperTriangularCSRPointers<M, N>> {
   // Currently, only support M >= N.
   static_assert(M >= N, "M must be greater than or equal to N");
 
-  CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                       UpperTriangularRowPointers<M, N>>
+  CompiledSparseMatrix<T, M, N, UpperTriangularCSRIndices<M, N>,
+                       UpperTriangularCSRPointers<M, N>>
       Y;
 
   return Y;
@@ -52,13 +52,13 @@ inline auto create_UpperTriangularSparseMatrix(void)
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto create_UpperTriangularSparseMatrix(const Matrix<T, M, N> &A)
-    -> CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                            UpperTriangularRowPointers<M, N>> {
+    -> CompiledSparseMatrix<T, M, N, UpperTriangularCSRIndices<M, N>,
+                            UpperTriangularCSRPointers<M, N>> {
   // Currently, only support M >= N.
   static_assert(M >= N, "M must be greater than or equal to N");
 
-  CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                       UpperTriangularRowPointers<M, N>>
+  CompiledSparseMatrix<T, M, N, UpperTriangularCSRIndices<M, N>,
+                       UpperTriangularCSRPointers<M, N>>
       Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -84,8 +84,8 @@ inline auto create_UpperTriangularSparseMatrix(const Matrix<T, M, N> &A)
 
 template <typename T, std::size_t M, std::size_t N>
 inline void set_values_UpperTriangularSparseMatrix(
-    CompiledSparseMatrix<T, M, N, UpperTriangularRowIndices<M, N>,
-                         UpperTriangularRowPointers<M, N>> &A,
+    CompiledSparseMatrix<T, M, N, UpperTriangularCSRIndices<M, N>,
+                         UpperTriangularCSRPointers<M, N>> &A,
     const Matrix<T, M, N> &B) {
   // Currently, only support M >= N.
   static_assert(M >= N, "M must be greater than or equal to N");
@@ -112,13 +112,13 @@ inline void set_values_UpperTriangularSparseMatrix(
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto create_LowerTriangularSparseMatrix(void)
-    -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                            LowerTriangularRowPointers<M, N>> {
+    -> CompiledSparseMatrix<T, M, N, LowerTriangularCSRIndices<M, N>,
+                            LowerTriangularCSRPointers<M, N>> {
   // Currently, only support M <= N.
   static_assert(M <= N, "M must be smaller than or equal to N");
 
-  CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                       LowerTriangularRowPointers<M, N>>
+  CompiledSparseMatrix<T, M, N, LowerTriangularCSRIndices<M, N>,
+                       LowerTriangularCSRPointers<M, N>>
       Y;
 
   return Y;
@@ -126,13 +126,13 @@ inline auto create_LowerTriangularSparseMatrix(void)
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto create_LowerTriangularSparseMatrix(const Matrix<T, M, N> &A)
-    -> CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                            LowerTriangularRowPointers<M, N>> {
+    -> CompiledSparseMatrix<T, M, N, LowerTriangularCSRIndices<M, N>,
+                            LowerTriangularCSRPointers<M, N>> {
   // Currently, only support M <= N.
   static_assert(M <= N, "M must be smaller than or equal to N");
 
-  CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                       LowerTriangularRowPointers<M, N>>
+  CompiledSparseMatrix<T, M, N, LowerTriangularCSRIndices<M, N>,
+                       LowerTriangularCSRPointers<M, N>>
       Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -158,8 +158,8 @@ inline auto create_LowerTriangularSparseMatrix(const Matrix<T, M, N> &A)
 
 template <typename T, std::size_t M, std::size_t N>
 inline void set_values_LowerTriangularSparseMatrix(
-    CompiledSparseMatrix<T, M, N, LowerTriangularRowIndices<M, N>,
-                         LowerTriangularRowPointers<M, N>> &A,
+    CompiledSparseMatrix<T, M, N, LowerTriangularCSRIndices<M, N>,
+                         LowerTriangularCSRPointers<M, N>> &A,
     const Matrix<T, M, N> &B) {
   // Currently, only support M <= N.
   static_assert(M <= N, "M must be smaller than or equal to N");

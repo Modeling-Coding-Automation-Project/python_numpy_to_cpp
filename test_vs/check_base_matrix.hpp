@@ -613,11 +613,11 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
 
     /* スパース行列 */
     std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
-    std::vector<size_t> A_row_indices({ 0, 0, 2, 1, 2 });
-    std::vector<size_t> A_row_pointers({ 0, 1, 3, 5 });
+    std::vector<size_t> A_csr_indices({ 0, 0, 2, 1, 2 });
+    std::vector<size_t> A_csr_pointers({ 0, 1, 3, 5 });
 
     Matrix<T, 3, 3> DenseB({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
-    SparseMatrix<T, 3, 3, 5> SA(A_value, A_row_indices, A_row_pointers);
+    SparseMatrix<T, 3, 3, 5> SA(A_value, A_csr_indices, A_csr_pointers);
 
     Matrix<T, 3, 3> DenseA({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
 
@@ -626,8 +626,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         { 0, 1, 3, 5 });
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     auto Cc_mul_A = output_matrix_transpose(SparseCc);
     auto Cc_mul_A_dense = output_dense_matrix(Cc_mul_A);
@@ -637,8 +637,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check CompiledSparseMatrix transpose.");
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc_mul_scalar = SparseCc * static_cast<T>(3);
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc_mul_scalar = SparseCc * static_cast<T>(3);
     Matrix<T, 3, 3> SparseCc_mul_scalar_dense = Base::Matrix::output_dense_matrix(SparseCc_mul_scalar);
 
     Matrix<T, 3, 3> SparseCc_mul_scalar_answer({
@@ -651,8 +651,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check CompiledSparseMatrix multiply scalar.");
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> Scalar_mul_SparseCc = static_cast<T>(3) * SparseCc;
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> Scalar_mul_SparseCc = static_cast<T>(3) * SparseCc;
     Matrix<T, 3, 3> Scalar_mul_SparseCc_dense = Base::Matrix::output_dense_matrix(Scalar_mul_SparseCc);
 
     tester.expect_near(Scalar_mul_SparseCc_dense.data, SparseCc_mul_scalar_answer.data, NEAR_LIMIT_STRICT,
@@ -769,8 +769,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check Matrix subtract SparseMatrix.");
 
     CompiledSparseMatrix<T, 3, 4,
-        RowIndices<0, 0, 2, 3, 1, 2>,
-        RowPointers<0, 1, 4, 6>> SEc({ 1, 3, 8, 1, 2, 4 });
+        CSRIndices<0, 0, 2, 3, 1, 2>,
+        CSRPointers<0, 1, 4, 6>> SEc({ 1, 3, 8, 1, 2, 4 });
 
     auto Sparse_mul_Sparse = SparseCc * SEc;
     Matrix<T, 3, 4> Sparse_mul_Sparse_dense = Base::Matrix::output_dense_matrix(Sparse_mul_Sparse);
@@ -952,8 +952,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     Matrix<T, 4, 4> Dense_44({ {1, 2, 3, 4}, {5, 4, 6, 7}, {9, 8, 7, 3}, {1, 2, 3, 4} });
 
     CompiledSparseMatrix<T, 2, 4,
-        RowIndices<0, 0, 2>,
-        RowPointers<0, 1, 3>> Sparse_24({ 1, 3, 8 });
+        CSRIndices<0, 0, 2>,
+        CSRPointers<0, 1, 3>> Sparse_24({ 1, 3, 8 });
 
     Matrix<T, 4, 2> Dense_44_mul_SparseT_answer = matrix_multiply_A_mul_SparseBTranspose(Dense_44, Sparse_24);
 
@@ -1039,15 +1039,15 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check DenseMatrix to CompiledSparseMatrix.");
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc_set = SparseCc;
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc_set = SparseCc;
 
     set_sparse_matrix_value<2, 0>(SparseCc_set, static_cast<T>(100));
     set_sparse_matrix_value<2, 2>(SparseCc_set, static_cast<T>(100));
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc_set_answer({ 1, 3, 8, 2, 100 });
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc_set_answer({ 1, 3, 8, 2, 100 });
 
     tester.expect_near(SparseCc_set.values, SparseCc_set_answer.values, NEAR_LIMIT_STRICT,
         "check CompiledSparseMatrix set value.");
@@ -1115,8 +1115,8 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
         "check SparseMatrix GMRES k.");
 
     CompiledSparseMatrix<T, 4, 3,
-        RowIndices<0, 1, 2, 1, 2, 1>,
-        RowPointers<0, 2, 3, 5, 6>> SBc({ 1, 3, 2, 8, 4, 1 });
+        CSRIndices<0, 1, 2, 1, 2, 1>,
+        CSRPointers<0, 2, 3, 5, 6>> SBc({ 1, 3, 2, 8, 4, 1 });
 
     Vector<T, 4> b_2;
     b_2[0] = 1.0F;
@@ -1256,8 +1256,8 @@ void CheckBaseMatrix<T>::check_matrix_cocatenation(void) {
     D[2] = 3.0F;
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     /* 行列結合 */
     auto A_v_A = concatenate_vertically(DenseA, DenseA);
@@ -1569,8 +1569,8 @@ void CheckBaseMatrix<T>::check_cholesky_decomposition(void) {
         "check Cholesky decomposition diag.");
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 1, 2, 1, 2 >,
-        RowPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
+        CSRIndices<0, 1, 2, 1, 2 >,
+        CSRPointers<0, 1, 3, 5>> K_s({ 1, 8, 3, 3, 4 });
 
     Matrix<T, 3, 3> K_ch_sparse;
     std::tie(K_ch_sparse, flag) = cholesky_decomposition_sparse(K_s, K_ch_sparse, division_min);
@@ -1601,8 +1601,8 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
     DiagMatrix<T, 3> DiagJ({ 10, 20, 30 });
 
     CompiledSparseMatrix<T, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     /* QR分解 */
     Matrix<T, 3, 3> C_dense({ {1, 0, 0}, {3, 0, 8}, {0 ,2, 4} });
@@ -1631,8 +1631,8 @@ void CheckBaseMatrix<T>::check_qr_decomposition(void) {
         "check QR Decomposition Q.");
 
 
-    QRDecompositionSparse<T, 3, 3, RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> qr_s;
+    QRDecompositionSparse<T, 3, 3, CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> qr_s;
     qr_s.division_min = static_cast<T>(1.0e-10F);
     qr_s.solve(SparseCc);
 
@@ -1732,17 +1732,17 @@ void CheckBaseMatrix<T>::check_variable_sparse_matrix(void) {
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     std::vector<T> A_value({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
-    std::vector<size_t> A_row_indices({ 0, 0, 2, 1, 2 });
-    std::vector<size_t> A_row_pointers({ 0, 1, 3, 5 });
+    std::vector<size_t> A_csr_indices({ 0, 0, 2, 1, 2 });
+    std::vector<size_t> A_csr_pointers({ 0, 1, 3, 5 });
 
     /* 可変スパース行列 */
     VariableSparseMatrix<T, 3, 3> CV;
     std::copy(A_value.begin(),
         A_value.end(), CV.values.begin());
-    std::copy(A_row_indices.begin(),
-        A_row_indices.end(), CV.row_indices.begin());
-    std::copy(A_row_pointers.begin(),
-        A_row_pointers.end(), CV.row_pointers.begin());
+    std::copy(A_csr_indices.begin(),
+        A_csr_indices.end(), CV.csr_indices.begin());
+    std::copy(A_csr_pointers.begin(),
+        A_csr_pointers.end(), CV.csr_pointers.begin());
 
     Matrix<T, 3, 3> VS_test = CV * CV;
     //std::cout << "VS_test = " << std::endl;
@@ -1952,8 +1952,8 @@ void CheckBaseMatrix<T>::check_complex(void) {
 
 
     CompiledSparseMatrix<Complex<T>, 3, 3,
-        RowIndices<0, 0, 2, 1, 2>,
-        RowPointers<0, 1, 3, 5>> C_comp({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> C_comp({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
 
     Matrix<Complex<T>, 3, 3> C_inv;
 

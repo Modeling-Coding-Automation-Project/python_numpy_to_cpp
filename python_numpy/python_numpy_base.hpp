@@ -690,7 +690,7 @@ public:
  *
  * @note
  * - The underlying storage is provided by Base::Matrix::CompiledSparseMatrix<T,
- * M, N, RowIndices_Type, RowPointers_Type>.
+ * M, N, CSRIndices_Type, CSRPointers_Type>.
  * - Provides compile-time dimension checks for element access.
  * - Supports creation of full-valued matrices.
  * - Supports conversion to complex, and extraction of real/imaginary parts.
@@ -707,12 +707,12 @@ public:
 protected:
   /* Type */
   using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
-  using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
-  using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
+  using _CSRIndices_Type = CSRIndicesFromSparseAvailable<SparseAvailable>;
+  using _CSRPointers_Type = CSRPointersFromSparseAvailable<SparseAvailable>;
 
   using _BaseMatrix_Type =
-      Base::Matrix::CompiledSparseMatrix<T, M, N, _RowIndices_Type,
-                                         _RowPointers_Type>;
+      Base::Matrix::CompiledSparseMatrix<T, M, N, _CSRIndices_Type,
+                                         _CSRPointers_Type>;
 
 public:
   /* Constructor */
@@ -996,7 +996,7 @@ public:
   static constexpr std::size_t COLS = N;
   static constexpr std::size_t ROWS = M;
 
-  static constexpr std::size_t NumberOfValues = _RowPointers_Type::list[M];
+  static constexpr std::size_t NumberOfValues = _CSRPointers_Type::list[M];
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 

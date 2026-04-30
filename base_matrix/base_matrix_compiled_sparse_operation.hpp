@@ -48,8 +48,8 @@ namespace Matrix {
 namespace SparseMatrixMinus {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J, std::size_t K, std::size_t Start,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t J, std::size_t K, std::size_t Start,
           std::size_t End>
 struct Loop {
   /**
@@ -60,8 +60,8 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the matrix.
    * @tparam N Number of columns in the matrix.
-   * @tparam RowIndices Type representing the row indices of nonzero elements.
-   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam CSRIndices Type representing the row indices of nonzero elements.
+   * @tparam CSRPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
    * @tparam K Unused parameter for compatibility.
    * @tparam Start Start index of the current segment.
@@ -71,17 +71,17 @@ struct Loop {
    * of the corresponding value in A.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
     Y.values[Start] = -A.values[Start];
-    Loop<T, M, N, RowIndices, RowPointers, J, K, Start + 1, End>::compute(A, Y);
+    Loop<T, M, N, CSRIndices, CSRPointers, J, K, Start + 1, End>::compute(A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, J, K, End, End> {
   /**
    * @brief
    * End condition for the recursive negation loop in sparse matrix operations.
@@ -94,8 +94,8 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the matrix.
    * @tparam N Number of columns in the matrix.
-   * @tparam RowIndices Type representing the row indices of nonzero elements.
-   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam CSRIndices Type representing the row indices of nonzero elements.
+   * @tparam CSRPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
    * @tparam K Unused parameter for compatibility.
    * @tparam End End index of the current segment.
@@ -103,8 +103,8 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
    * @param[out] Y Output sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
     // End of loop, do nothing
@@ -112,8 +112,8 @@ struct Loop<T, M, N, RowIndices, RowPointers, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t J>
 struct Column {
   /**
    * @brief
@@ -125,26 +125,26 @@ struct Column {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the matrix.
    * @tparam N Number of columns in the matrix.
-   * @tparam RowIndices Type representing the row indices of nonzero elements.
-   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam CSRIndices Type representing the row indices of nonzero elements.
+   * @tparam CSRPointers Type representing the row pointers for sparse storage.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix.
    * @param[out] Y Output sparse matrix, where each value is set to the negation
    * of the corresponding value in A.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
-    Loop<T, M, N, RowIndices, RowPointers, J, 0, RowPointers::list[J],
-         RowPointers::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices, RowPointers, J - 1>::compute(A, Y);
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
+    Loop<T, M, N, CSRIndices, CSRPointers, J, 0, CSRPointers::list[J],
+         CSRPointers::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices, CSRPointers, J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
-struct Column<T, M, N, RowIndices, RowPointers, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers>
+struct Column<T, M, N, CSRIndices, CSRPointers, 0> {
   /**
    * @brief
    * Computes the negation of all values in the first column of a sparse matrix.
@@ -155,17 +155,17 @@ struct Column<T, M, N, RowIndices, RowPointers, 0> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the matrix.
    * @tparam N Number of columns in the matrix.
-   * @tparam RowIndices Type representing the row indices of nonzero elements.
-   * @tparam RowPointers Type representing the row pointers for sparse storage.
+   * @tparam CSRIndices Type representing the row indices of nonzero elements.
+   * @tparam CSRPointers Type representing the row pointers for sparse storage.
    * @param[in]  A Input sparse matrix.
    * @param[out] Y Output sparse matrix, where each value is set to the negation
    * of the corresponding value in A.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
-    Loop<T, M, N, RowIndices, RowPointers, 0, 0, RowPointers::list[0],
-         RowPointers::list[1]>::compute(A, Y);
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
+    Loop<T, M, N, CSRIndices, CSRPointers, 0, 0, CSRPointers::list[0],
+         CSRPointers::list[1]>::compute(A, Y);
   }
 };
 
@@ -179,18 +179,18 @@ struct Column<T, M, N, RowIndices, RowPointers, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the matrix.
  * @tparam N Number of columns in the matrix.
- * @tparam RowIndices Type representing the row indices of nonzero elements.
- * @tparam RowPointers Type representing the row pointers for sparse storage.
+ * @tparam CSRIndices Type representing the row indices of nonzero elements.
+ * @tparam CSRPointers Type representing the row pointers for sparse storage.
  * @param[in]  A Input sparse matrix.
  * @param[out] Y Output sparse matrix, where each value is set to the negation
  * of the corresponding value in A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
-        CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &Y) {
-  Column<T, M, N, RowIndices, RowPointers, M - 1>::compute(A, Y);
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
+        CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
+  Column<T, M, N, CSRIndices, CSRPointers, M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixMinus
@@ -205,21 +205,21 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the matrix.
  * @tparam N Number of columns in the matrix.
- * @tparam RowIndices Type representing the row indices of nonzero elements.
- * @tparam RowPointers Type representing the row pointers for sparse storage.
+ * @tparam CSRIndices Type representing the row indices of nonzero elements.
+ * @tparam CSRPointers Type representing the row pointers for sparse storage.
  * @param[in] A Input sparse matrix to be negated.
  * @return A new sparse matrix with negated values.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices,
-          typename RowPointers>
-inline CompiledSparseMatrix<T, M, N, RowIndices, RowPointers>
-operator-(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A) {
-  CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> Y;
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers>
+inline CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers>
+operator-(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A) {
+  CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers::list[j]; k < RowPointers::list[j + 1];
+    for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
          ++k) {
       Y.values[k] = -A.values[k];
     }
@@ -227,7 +227,7 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices, RowPointers> &A) {
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMinus::compute<T, M, N, RowIndices, RowPointers>(A, Y);
+  SparseMatrixMinus::compute<T, M, N, CSRIndices, CSRPointers>(A, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -239,7 +239,7 @@ namespace SparseMatrixMultiplyDenseMatrix {
 
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -252,9 +252,9 @@ struct Loop {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -265,19 +265,19 @@ struct Loop {
    * @param[out] sum Accumulator for the product result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, T &sum) {
-    sum += A.values[Start] * B.template get<RowIndices_A::list[Start], I>();
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, Start + 1,
+    sum += A.values[Start] * B.template get<CSRIndices_A::list[Start], I>();
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, Start + 1,
          End>::compute(A, B, sum);
   }
 };
 
 // Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t End>
-struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
+struct Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, End, End> {
   /**
    * @brief
    * End condition for the recursive product computation in sparse matrix
@@ -293,9 +293,9 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -304,7 +304,7 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * @param[out] sum Accumulator for the product result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, T &sum) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -315,7 +315,7 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct Core {
   /**
@@ -330,9 +330,9 @@ struct Core {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -341,12 +341,12 @@ struct Core {
    * @param[out] Y Output dense matrix where the computed sum is stored.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
     T sum = static_cast<T>(0);
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B, sum);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B, sum);
 
     Y.template set<J, I>(sum);
   }
@@ -354,7 +354,7 @@ struct Core {
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct List {
   /**
@@ -371,9 +371,9 @@ struct List {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -382,18 +382,18 @@ struct List {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, J, I>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_A, RowPointers_A, J - 1, I>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, J - 1, I>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
+struct List<T, M, N, K, CSRIndices_A, CSRPointers_A, 0, I> {
   /**
    * @brief
    * Computes the product of the first column of a sparse matrix with a dense
@@ -407,25 +407,25 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @param[in]  A Input sparse matrix.
    * @param[in]  B Input dense matrix.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, 0, I>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, 0, I>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
 struct Row {
   /**
    * @brief
@@ -441,9 +441,9 @@ struct Row {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam I Current column index (compile-time).
    * @param[in]  A Input sparse matrix.
@@ -451,18 +451,18 @@ struct Row {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, I>::compute(A, B, Y);
-    Row<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, M - 1, I>::compute(A, B, Y);
+    Row<T, M, N, K, CSRIndices_A, CSRPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A>
-struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
+          typename CSRIndices_A, typename CSRPointers_A>
+struct Row<T, M, N, K, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the product of the first row of a sparse matrix with a dense
@@ -476,19 +476,19 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
    * @tparam N Number of columns in the sparse matrix and cols in the dense
    * matrix.
    * @tparam K Number of columns in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @param[in]  A Input sparse matrix.
    * @param[in]  B Input dense matrix.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, 0>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, M - 1, 0>::compute(A, B, Y);
   }
 };
 
@@ -501,22 +501,23 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @tparam K Number of columns in the dense matrix.
  * @param[in]  A Input sparse matrix.
  * @param[in]  B Input dense matrix.
  * @param[out] Y Output dense matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-  Row<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixMultiplyDenseMatrix
@@ -530,19 +531,20 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @tparam K Number of columns in the dense matrix.
  * @param[in] A Input sparse matrix to be multiplied.
  * @param[in] B Input dense matrix to be multiplied.
  * @return A new dense matrix that is the product of A and B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K>
 inline Matrix<T, M, K>
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
@@ -551,9 +553,9 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = RowPointers_A::list[j];
-           k < RowPointers_A::list[j + 1]; k++) {
-        sum += A.values[k] * B(RowIndices_A::list[k], i);
+      for (std::size_t k = CSRPointers_A::list[j];
+           k < CSRPointers_A::list[j + 1]; k++) {
+        sum += A.values[k] * B(CSRIndices_A::list[k], i);
       }
       Y(j, i) = sum;
     }
@@ -561,7 +563,7 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyDenseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
+  SparseMatrixMultiplyDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                            K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -574,7 +576,7 @@ namespace DenseMatrixMultiplySparseMatrix {
 
 // Core loop for multiplication
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -587,9 +589,9 @@ struct Loop {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -601,22 +603,22 @@ struct Loop {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    Y.template set<I, RowIndices_B::list[Start]>(
-        Y.template get<I, RowIndices_B::list[Start]>() +
+    Y.template set<I, CSRIndices_B::list[Start]>(
+        Y.template get<I, CSRIndices_B::list[Start]>() +
         B.values[Start] * A.template get<I, J>());
-    Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, Start + 1,
+    Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, I, Start + 1,
          End>::compute(A, B, Y);
   }
 };
 
 // End of core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t I, std::size_t End>
-struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, End, End> {
+struct Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, I, End, End> {
   /**
    * @brief
    * End condition for the recursive product computation in dense matrix and
@@ -632,9 +634,9 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, End, End> {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -644,7 +646,7 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, End, End> {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -655,7 +657,7 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, End, End> {
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t I>
 struct Core {
   /**
@@ -671,9 +673,9 @@ struct Core {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -683,16 +685,16 @@ struct Core {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
-    Loop<T, M, N, K, RowIndices_B, RowPointers_B, J, I, RowPointers_B::list[J],
-         RowPointers_B::list[J + 1]>::compute(A, B, Y);
+    Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, I, CSRPointers_B::list[J],
+         CSRPointers_B::list[J + 1]>::compute(A, B, Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t I>
 struct List {
   /**
@@ -709,9 +711,9 @@ struct List {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -721,18 +723,18 @@ struct List {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    Core<T, M, N, K, RowIndices_B, RowPointers_B, J, I>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_B, RowPointers_B, J, I - 1>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, J, I>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, J, I - 1>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J>
-struct List<T, M, N, K, RowIndices_B, RowPointers_B, J, 0> {
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J>
+struct List<T, M, N, K, CSRIndices_B, CSRPointers_B, J, 0> {
   /**
    * @brief
    * Computes the product of the first column of a dense matrix with a sparse
@@ -746,9 +748,9 @@ struct List<T, M, N, K, RowIndices_B, RowPointers_B, J, 0> {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @param[in]  A Input dense matrix.
    * @param[in]  B Input sparse matrix.
@@ -756,15 +758,15 @@ struct List<T, M, N, K, RowIndices_B, RowPointers_B, J, 0> {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
-    Core<T, M, N, K, RowIndices_B, RowPointers_B, J, 0>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, J, 0>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J>
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J>
 struct Row {
   /**
    * @brief
@@ -780,9 +782,9 @@ struct Row {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @tparam J Current column index (compile-time).
    * @param[in]  A Input dense matrix.
@@ -791,18 +793,18 @@ struct Row {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, J, M - 1>::compute(A, B, Y);
-    Row<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, J, M - 1>::compute(A, B, Y);
+    Row<T, M, N, K, CSRIndices_B, CSRPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B>
-struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
+          typename CSRIndices_B, typename CSRPointers_B>
+struct Row<T, M, N, K, CSRIndices_B, CSRPointers_B, 0> {
   /**
    * @brief
    * Computes the product of the first row of a dense matrix with a sparse
@@ -816,9 +818,9 @@ struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
    * @tparam N Number of columns in the dense matrix and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse
+   * @tparam CSRPointers_B Type representing the row pointers for sparse
    * storage.
    * @param[in]  A Input dense matrix.
    * @param[in]  B Input sparse matrix.
@@ -826,10 +828,10 @@ struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
    */
   static void
   compute(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, 0, M - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, 0, M - 1>::compute(A, B, Y);
   }
 };
 
@@ -844,21 +846,21 @@ struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
  * @tparam M Number of rows in the dense matrix.
  * @tparam N Number of columns in the dense matrix and rows in the sparse
  * matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage.
  * @tparam K Number of columns in the sparse matrix.
  * @param[in]  A Input dense matrix.
  * @param[in]  B Input sparse matrix.
  * @param[out] Y Output dense matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t K>
 inline void
 compute(const Matrix<T, M, N> &A,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, K> &Y) {
-  Row<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(A, B, Y);
 }
 
 } // namespace DenseMatrixMultiplySparseMatrix
@@ -874,35 +876,35 @@ compute(const Matrix<T, M, N> &A,
  * @tparam M Number of rows in the dense matrix.
  * @tparam N Number of columns in the dense matrix and rows in the sparse
  * matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage.
  * @tparam K Number of columns in the sparse matrix.
  * @param[in] A Input dense matrix to be multiplied.
  * @param[in] B Input sparse matrix to be multiplied.
  * @return A new dense matrix that is the product of A and B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t K>
 inline Matrix<T, M, K>
 operator*(const Matrix<T, M, N> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, K> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
          k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, RowIndices_B::list[k]) += B.values[k] * A(i, j);
+        Y(i, CSRIndices_B::list[k]) += B.values[k] * A(i, j);
       }
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DenseMatrixMultiplySparseMatrix::compute<T, M, N, RowIndices_B, RowPointers_B,
+  DenseMatrixMultiplySparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
                                            K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -914,27 +916,27 @@ operator*(const Matrix<T, M, N> &A,
 namespace DenseMatrixSubstituteSparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K,
           std::size_t Start, std::size_t End>
 struct Loop {
   static void
-  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
 
-    A.values[Start] = B.template get<J, RowIndices_A::list[Start]>();
+    A.values[Start] = B.template get<J, CSRIndices_A::list[Start]>();
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, Start + 1, End>::compute(
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, Start + 1, End>::compute(
         A, B);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, End, End> {
   static void
-  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -943,57 +945,57 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct Column {
   static void
-  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B);
-    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, 0, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, J - 1>::compute(A, B);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   static void
-  compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, 0, 0, RowPointers_A::list[0],
-         RowPointers_A::list[1]>::compute(A, B);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, 0, CSRPointers_A::list[0],
+         CSRPointers_A::list[1]>::compute(A, B);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, M, N> &B) {
-  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, B);
 }
 
 } // namespace DenseMatrixSubstituteSparseMatrix
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void substitute_dense_to_sparse(
-    CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, M, N> &B) {
-  DenseMatrixSubstituteSparseMatrix::compute<T, M, N, RowIndices_A,
-                                             RowPointers_A>(A, B);
+  DenseMatrixSubstituteSparseMatrix::compute<T, M, N, CSRIndices_A,
+                                             CSRPointers_A>(A, B);
 }
 
 /* Sparse Matrix add Dense Matrix */
 namespace SparseMatrixAddDenseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K,
           std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -1003,10 +1005,11 @@ struct Loop {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1016,20 +1019,20 @@ struct Loop {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Y.template set<J, RowIndices_A::list[Start]>(
-        Y.template get<J, RowIndices_A::list[Start]>() + A.values[Start]);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, Start + 1, End>::compute(
+    Y.template set<J, CSRIndices_A::list[Start]>(
+        Y.template get<J, CSRIndices_A::list[Start]>() + A.values[Start]);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, Start + 1, End>::compute(
         A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, End, End> {
   /**
    * @brief
    * End condition for the recursive addition computation in sparse matrix and
@@ -1042,10 +1045,11 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1053,7 +1057,7 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
@@ -1062,8 +1066,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct Column {
   /**
    * @brief
@@ -1075,29 +1079,30 @@ struct Column {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, 0, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the addition of the first column of a sparse matrix with a dense
@@ -1108,20 +1113,21 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse
+   * @tparam CSRPointers_A Type representing the row pointers for sparse
    * storage.
    * @param[in]  A Input sparse matrix.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, 0, 0, RowPointers_A::list[0],
-         RowPointers_A::list[1]>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, 0, CSRPointers_A::list[0],
+         CSRPointers_A::list[1]>::compute(A, Y);
   }
 };
 
@@ -1134,19 +1140,20 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @param[in]  A Input sparse matrix.
  * @param[out] Y Output dense matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         Matrix<T, M, N> &Y) {
-  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixAddDenseMatrix
@@ -1160,33 +1167,34 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @param[in] A Input sparse matrix to be added.
  * @param[in] B Input dense matrix to be added.
  * @return A new dense matrix that is the sum of A and B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline Matrix<T, M, N>
-operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = B;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y(j, RowIndices_A::list[k]) += A.values[k];
+      Y(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixAddDenseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(A,
+  SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -1205,33 +1213,34 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @param[in] B Input dense matrix to be added.
  * @param[in] A Input sparse matrix to be added.
  * @return A new dense matrix that is the sum of B and A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline Matrix<T, M, N>
 operator+(const Matrix<T, M, N> &B,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
   Matrix<T, M, N> Y = B;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y(j, RowIndices_A::list[k]) += A.values[k];
+      Y(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixAddDenseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(A,
+  SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -1243,8 +1252,8 @@ operator+(const Matrix<T, M, N> &B,
 namespace SparseMatrixAddSparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -1255,13 +1264,13 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1271,23 +1280,23 @@ struct Loop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+    Base::Matrix::set_sparse_matrix_value<J, CSRIndices_A::list[Start]>(
         Y,
-        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) +
+        Base::Matrix::get_sparse_matrix_value<J, CSRIndices_A::list[Start]>(Y) +
             A.values[Start]);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
          K, Start + 1, End>::compute(A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
             J, K, End, End> {
   /**
    * @brief
@@ -1302,13 +1311,13 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1316,8 +1325,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
     // End of loop, do nothing
@@ -1325,8 +1334,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J>
 struct Column {
   /**
@@ -1341,34 +1350,34 @@ struct Column {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be added.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
-         0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-        J - 1>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
+         0, CSRPointers_A::list[J], CSRPointers_A::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+           J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-           0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+              0> {
   /**
    * @brief
    * Computes the addition of the first column of a sparse matrix with another
@@ -1380,23 +1389,23 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @param[in]  A Input sparse matrix to be added.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, 0,
-         0, RowPointers_A::list[0], RowPointers_A::list[1]>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, 0,
+         0, CSRPointers_A::list[0], CSRPointers_A::list[1]>::compute(A, Y);
   }
 };
 
@@ -1410,25 +1419,25 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  * @param[in]  A Input sparse matrix to be added.
  * @param[out] Y Output sparse matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-        CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+        CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-      M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+         M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixAddSparseMatrix
@@ -1436,8 +1445,8 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 /* Set DiagMatrix values to CompiledSparseMatrix */
 namespace SetDiagMatrixToValuesSparseMatrix {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y, std::size_t I>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_Y,
+          typename CSRPointers_Y, std::size_t I>
 struct Core {
   /**
    * @brief
@@ -1450,26 +1459,26 @@ struct Core {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns and rows in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam I Current index (compile-time).
    * @param[in,out] Y Output sparse matrix where diagonal values are set.
    * @param[in] B Input diagonal matrix providing values for the diagonal.
    */
   static void
-  apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+  apply(CompiledSparseMatrix<T, M, M, CSRIndices_Y, CSRPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
 
     Base::Matrix::set_sparse_matrix_value<I, I>(Y, B[I]);
-    Core<T, M, N, RowIndices_Y, RowPointers_Y, I - 1>::apply(Y, B);
+    Core<T, M, N, CSRIndices_Y, CSRPointers_Y, I - 1>::apply(Y, B);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y>
-struct Core<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_Y,
+          typename CSRPointers_Y>
+struct Core<T, M, N, CSRIndices_Y, CSRPointers_Y, 0> {
   /**
    * @brief
    * Base case for the recursive setting of diagonal values in a sparse matrix.
@@ -1481,15 +1490,15 @@ struct Core<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns and rows in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in,out] Y Output sparse matrix where diagonal values are set.
    * @param[in] B Input diagonal matrix providing values for the diagonal.
    */
   static void
-  apply(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+  apply(CompiledSparseMatrix<T, M, M, CSRIndices_Y, CSRPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
 
     Base::Matrix::set_sparse_matrix_value<0, 0>(Y, B[0]);
@@ -1506,40 +1515,40 @@ struct Core<T, M, N, RowIndices_Y, RowPointers_Y, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns and rows in the diagonal matrix.
  * @tparam N Number of rows in the sparse matrix.
- * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in,out] Y Output sparse matrix where diagonal values are set.
  * @param[in] B Input diagonal matrix providing values for the diagonal.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_Y,
-          typename RowPointers_Y>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_Y,
+          typename CSRPointers_Y>
 inline void
-compute(CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y> &Y,
+compute(CompiledSparseMatrix<T, M, M, CSRIndices_Y, CSRPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
-  Core<T, M, N, RowIndices_Y, RowPointers_Y, M - 1>::apply(Y, B);
+  Core<T, M, N, CSRIndices_Y, CSRPointers_Y, M - 1>::apply(Y, B);
 }
 
 } // namespace SetDiagMatrixToValuesSparseMatrix
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 struct DiagAddSubSparse {
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
+                                      N, CSRIndices_A, CSRPointers_A>,
                                   DiagAvailable<M>>>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
+                                      N, CSRIndices_A, CSRPointers_A>,
                                   DiagAvailable<M>>>;
 
-  using Y_Type = CompiledSparseMatrix<T, M, M, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, M, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -1555,32 +1564,32 @@ struct DiagAddSubSparse {
  * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] A Input sparse matrix to be added.
  * @param[in] B Input diagonal matrix to be added.
  * @return A new sparse matrix that is the sum of A and B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto
-operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, M> &B) ->
-    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                       RowPointers_A>::Y_Type {
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                       CSRPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   using Y_Type =
-      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                         RowPointers_A>::Y_Type;
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                         CSRPointers_A>::Y_Type;
 
   Y_Type Y;
 
@@ -1589,26 +1598,26 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_A::list[k]) += A.values[k];
+      Y_temp(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, RowIndices_Y,
-                                             RowPointers_Y>(Y, B);
+  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
+                                             CSRPointers_Y>(Y, B);
 
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
-                                       RowIndices_Y, RowPointers_Y>(A, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       CSRIndices_Y, CSRPointers_Y>(A, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1628,33 +1637,33 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] B Input diagonal matrix to be added.
  * @param[in] A Input sparse matrix to be added.
  * @return A new sparse matrix that is the sum of B and A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto
 operator+(const DiagMatrix<T, M> &B,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A)
     ->
-    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                       RowPointers_A>::Y_Type {
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                       CSRPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   using Y_Type =
-      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                         RowPointers_A>::Y_Type;
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                         CSRPointers_A>::Y_Type;
 
   Y_Type Y;
 
@@ -1663,26 +1672,26 @@ operator+(const DiagMatrix<T, M> &B,
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_A::list[k]) += A.values[k];
+      Y_temp(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, RowIndices_Y,
-                                             RowPointers_Y>(Y, B);
+  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
+                                             CSRPointers_Y>(Y, B);
 
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
-                                       RowIndices_Y, RowPointers_Y>(A, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       CSRIndices_Y, CSRPointers_Y>(A, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1691,22 +1700,22 @@ operator+(const DiagMatrix<T, M> &B,
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_B, typename CSRPointers_B>
 struct SparseAddSubSparse {
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
+                                      N, CSRIndices_A, CSRPointers_A>,
                                   CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>;
-  using RowPointers_Y = RowPointersFromSparseAvailable<
+                                      N, CSRIndices_B, CSRPointers_B>>>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<
       MatrixAddSubSparseAvailable<CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_A, RowPointers_A>,
+                                      N, CSRIndices_A, CSRPointers_A>,
                                   CreateSparseAvailableFromIndicesAndPointers<
-                                      N, RowIndices_B, RowPointers_B>>>;
+                                      N, CSRIndices_B, CSRPointers_B>>>;
 
-  using Y_Type = CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -1723,38 +1732,38 @@ struct SparseAddSubSparse {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrices.
  * @tparam N Number of columns in the sparse matrices.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  * @param[in] A Input first sparse matrix to be added.
  * @param[in] B Input second sparse matrix to be added.
  * @return A new sparse matrix that is the sum of A and B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_B, typename CSRPointers_B>
 inline auto
-operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B)
     -> typename CompiledSparseOperation::SparseAddSubSparse<
-        T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
-  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRPointers_Y;
 
   using Y_Type = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::Y_Type;
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
@@ -1763,25 +1772,25 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_A::list[k]) += A.values[k];
+      Y_temp(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
-                                       RowIndices_Y, RowPointers_Y>(A, Y);
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_B, RowPointers_B,
-                                       RowIndices_Y, RowPointers_Y>(B, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       CSRIndices_Y, CSRPointers_Y>(A, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
+                                       CSRIndices_Y, CSRPointers_Y>(B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1799,33 +1808,34 @@ operator+(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  *
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage.
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage.
  * @param[in] A Input sparse matrix to be subtracted from.
  * @param[in] B Input dense matrix to be subtracted.
  * @return A new dense matrix that is the result of A - B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline Matrix<T, M, N>
-operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = -B;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y(j, RowIndices_A::list[k]) += A.values[k];
+      Y(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixAddDenseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(A,
+  SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -1837,8 +1847,8 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 namespace DenseMatrixSubSparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K,
           std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -1848,10 +1858,11 @@ struct Loop {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1861,20 +1872,20 @@ struct Loop {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Y.template set<J, RowIndices_A::list[Start]>(
-        Y.template get<J, RowIndices_A::list[Start]>() - A.values[Start]);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, Start + 1, End>::compute(
+    Y.template set<J, CSRIndices_A::list[Start]>(
+        Y.template get<J, CSRIndices_A::list[Start]>() - A.values[Start]);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, Start + 1, End>::compute(
         A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, End, End> {
   /**
    * @brief
    * End condition for the recursive subtraction computation in dense matrix and
@@ -1887,10 +1898,11 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -1898,7 +1910,7 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
@@ -1907,8 +1919,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct Column {
   /**
    * @brief
@@ -1920,53 +1932,55 @@ struct Column {
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be subtracted.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, 0, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
-   * Computes the subtraction of the first column of a sparse matrix from a dense
-   * matrix row.
+   * Computes the subtraction of the first column of a sparse matrix from a
+   * dense matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
    * processes the first column of the sparse matrix.
    *
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
-   * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam N Number of columns in the sparse matrix and cols in the dense
+   * matrix.
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in]  A Input sparse matrix to be subtracted.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           Matrix<T, M, N> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, 0, 0, RowPointers_A::list[0],
-         RowPointers_A::list[1]>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, 0, CSRPointers_A::list[0],
+         CSRPointers_A::list[1]>::compute(A, Y);
   }
 };
 
@@ -1980,20 +1994,21 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix and cols in the dense
  * matrix.
- * @tparam N Number of columns in the sparse matrix and cols in the dense matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the sparse matrix and cols in the dense
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in]  A Input sparse matrix to be subtracted.
  * @param[out] Y Output dense matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         Matrix<T, M, N> &Y) {
-  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, Y);
 }
 
 } // namespace DenseMatrixSubSparseMatrix
@@ -2008,34 +2023,35 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the dense matrix and cols in the sparse
  * matrix.
- * @tparam N Number of columns in the dense matrix and cols in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam N Number of columns in the dense matrix and cols in the sparse
+ * matrix.
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] B Input dense matrix to be subtracted from.
  * @param[in] A Input sparse matrix to be subtracted.
  * @return A new dense matrix that is the result of B - A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline Matrix<T, M, N>
 operator-(const Matrix<T, M, N> &B,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
   Matrix<T, M, N> Y = B;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y(j, RowIndices_A::list[k]) -= A.values[k];
+      Y(j, CSRIndices_A::list[k]) -= A.values[k];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DenseMatrixSubSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(A,
+  DenseMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2056,32 +2072,32 @@ operator-(const Matrix<T, M, N> &B,
  * @tparam M Number of rows in the sparse matrix and cols in the diagonal
  * matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] A Input sparse matrix to be subtracted from.
  * @param[in] B Input diagonal matrix to be subtracted.
  * @return A new sparse matrix that is the result of A - B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto
-operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, M> &B) ->
-    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                       RowPointers_A>::Y_Type {
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                       CSRPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   using Y_Type =
-      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                         RowPointers_A>::Y_Type;
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                         CSRPointers_A>::Y_Type;
 
   Y_Type Y;
 
@@ -2090,26 +2106,26 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Matrix<T, M, M> Y_temp = -(Base::Matrix::output_dense_matrix(B));
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_A::list[k]) += A.values[k];
+      Y_temp(j, CSRIndices_A::list[k]) += A.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, RowIndices_Y,
-                                             RowPointers_Y>(Y, -B);
+  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
+                                             CSRPointers_Y>(Y, -B);
 
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
-                                       RowIndices_Y, RowPointers_Y>(A, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       CSRIndices_Y, CSRPointers_Y>(A, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -2120,8 +2136,8 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 namespace DiagMatrixSubSparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -2133,13 +2149,13 @@ struct Loop {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the diagonal matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the diagonal matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -2149,23 +2165,23 @@ struct Loop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+    Base::Matrix::set_sparse_matrix_value<J, CSRIndices_A::list[Start]>(
         Y,
-        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
+        Base::Matrix::get_sparse_matrix_value<J, CSRIndices_A::list[Start]>(Y) -
             A.values[Start]);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
          K, Start + 1, End>::compute(A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
             J, K, End, End> {
   /**
    * @brief
@@ -2181,13 +2197,13 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the diagonal matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the diagonal matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -2195,8 +2211,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
     // End of loop, do nothing
@@ -2204,8 +2220,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J>
 struct Column {
   /**
@@ -2220,34 +2236,34 @@ struct Column {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the diagonal matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the diagonal matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be subtracted.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
-         0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-        J - 1>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
+         0, CSRPointers_A::list[J], CSRPointers_A::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+           J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-           0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+              0> {
   /**
    * @brief
    * Computes the subtraction of the first column of a sparse matrix from a
@@ -2260,23 +2276,23 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix and cols in the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the diagonal matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the diagonal matrix.
    * @param[in]  A Input sparse matrix to be subtracted.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, 0,
-         0, RowPointers_A::list[0], RowPointers_A::list[1]>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, 0,
+         0, CSRPointers_A::list[0], CSRPointers_A::list[1]>::compute(A, Y);
   }
 };
 
@@ -2292,21 +2308,21 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * matrix.
  * @tparam N Number of columns in the sparse matrix and cols in the diagonal
  * matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in]  A Input sparse matrix to be subtracted.
  * @param[out] Y Output sparse matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-        CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+        CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-      M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+         M - 1>::compute(A, Y);
 }
 
 } // namespace DiagMatrixSubSparseMatrix
@@ -2323,33 +2339,33 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * matrix.
  * @tparam N Number of columns in the diagonal matrix and cols in the sparse
  * matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] B Input diagonal matrix to be subtracted from.
  * @param[in] A Input sparse matrix to be subtracted.
  * @return A new sparse matrix that is the result of B - A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto
 operator-(const DiagMatrix<T, M> &B,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A)
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A)
     ->
-    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                       RowPointers_A>::Y_Type {
+    typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                       CSRPointers_A>::Y_Type {
   static_assert(M == N, "Argument is not square matrix.");
 
-  using RowIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::DiagAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   using Y_Type =
-      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, RowIndices_A,
-                                                         RowPointers_A>::Y_Type;
+      typename CompiledSparseOperation::DiagAddSubSparse<T, M, N, CSRIndices_A,
+                                                         CSRPointers_A>::Y_Type;
 
   Y_Type Y;
 
@@ -2358,25 +2374,25 @@ operator-(const DiagMatrix<T, M> &B,
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_A::list[k]) -= A.values[k];
+      Y_temp(j, CSRIndices_A::list[k]) -= A.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, RowIndices_Y,
-                                             RowPointers_Y>(Y, B);
+  SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
+                                             CSRPointers_Y>(Y, B);
 
-  DiagMatrixSubSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(A,
+  DiagMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                            Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2388,8 +2404,8 @@ operator-(const DiagMatrix<T, M> &B,
 namespace SparseMatrixSubSparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -2400,13 +2416,13 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -2416,23 +2432,23 @@ struct Loop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Base::Matrix::set_sparse_matrix_value<J, RowIndices_A::list[Start]>(
+    Base::Matrix::set_sparse_matrix_value<J, CSRIndices_A::list[Start]>(
         Y,
-        Base::Matrix::get_sparse_matrix_value<J, RowIndices_A::list[Start]>(Y) -
+        Base::Matrix::get_sparse_matrix_value<J, CSRIndices_A::list[Start]>(Y) -
             A.values[Start]);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
          K, Start + 1, End>::compute(A, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
             J, K, End, End> {
   /**
    * @brief
@@ -2447,13 +2463,13 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam K Current column index (compile-time).
@@ -2461,8 +2477,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
     static_cast<void>(A);
     static_cast<void>(Y);
     // End of loop, do nothing
@@ -2470,8 +2486,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J>
 struct Column {
   /**
@@ -2486,38 +2502,38 @@ struct Column {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be subtracted from.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, J,
-         0, RowPointers_A::list[J], RowPointers_A::list[J + 1]>::compute(A, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-        J - 1>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, J,
+         0, CSRPointers_A::list[J], CSRPointers_A::list[J + 1]>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+           J - 1>::compute(A, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-           0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+              0> {
   /**
    * @brief
-   * Computes the subtraction of the first column of a sparse matrix from another
-   * sparse matrix row.
+   * Computes the subtraction of the first column of a sparse matrix from
+   * another sparse matrix row.
    *
    * This function is a specialization for the base case when J is 0, meaning it
    * processes the first column of the sparse matrix.
@@ -2525,23 +2541,23 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @param[in]  A Input sparse matrix to be subtracted from.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y, 0,
-         0, RowPointers_A::list[0], RowPointers_A::list[1]>::compute(A, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y, 0,
+         0, CSRPointers_A::list[0], CSRPointers_A::list[1]>::compute(A, Y);
   }
 };
 
@@ -2555,25 +2571,25 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrices.
  * @tparam N Number of columns in the sparse matrices.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  * @param[in]  A Input sparse matrix to be subtracted from.
  * @param[out] Y Output sparse matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_Y, typename RowPointers_Y>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_Y, typename CSRPointers_Y>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-        CompiledSparseMatrix<T, M, N, RowIndices_Y, RowPointers_Y> &Y) {
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+        CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-  Column<T, M, N, RowIndices_A, RowPointers_A, RowIndices_Y, RowPointers_Y,
-      M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
+         M - 1>::compute(A, Y);
 }
 
 } // namespace SparseMatrixSubSparseMatrix
@@ -2588,38 +2604,38 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrices.
  * @tparam N Number of columns in the sparse matrices.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  * @param[in] A Input sparse matrix to be subtracted from.
  * @param[in] B Input sparse matrix to be subtracted.
  * @return A new sparse matrix that is the result of A - B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, typename RowIndices_B, typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, typename CSRIndices_B, typename CSRPointers_B>
 inline auto
-operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B)
+operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B)
     -> typename CompiledSparseOperation::SparseAddSubSparse<
-        T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
-  using RowIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::SparseAddSubSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRPointers_Y;
 
   using Y_Type = typename CompiledSparseOperation::SparseAddSubSparse<
-      T, M, N, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::Y_Type;
+      T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
@@ -2628,26 +2644,26 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(A);
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
          ++k) {
-      Y_temp(j, RowIndices_B::list[k]) -= B.values[k];
+      Y_temp(j, CSRIndices_B::list[k]) -= B.values[k];
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixAddSparseMatrix::compute<T, M, N, RowIndices_A, RowPointers_A,
-                                       RowIndices_Y, RowPointers_Y>(A, Y);
+  SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       CSRIndices_Y, CSRPointers_Y>(A, Y);
 
-  SparseMatrixSubSparseMatrix::compute<T, M, N, RowIndices_B, RowPointers_B,
-                                       RowIndices_Y, RowPointers_Y>(B, Y);
+  SparseMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
+                                       CSRIndices_Y, CSRPointers_Y>(B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -2658,8 +2674,8 @@ operator-(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 namespace SparseMatrixMultiplyScalar {
 
 // Core loop for scalar multiplication
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t I, std::size_t End>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t I, std::size_t End>
 struct Loop {
   /**
    * @brief
@@ -2668,9 +2684,9 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam I Current index (compile-time).
    * @tparam End End index for the loop.
@@ -2679,20 +2695,20 @@ struct Loop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &scalar,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
     Y.values[I] = scalar * A.values[I];
-    Loop<T, M, N, RowIndices_A, RowPointers_A, I + 1, End>::compute(A, scalar,
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, I + 1, End>::compute(A, scalar,
                                                                     Y);
   }
 };
 
 // End of loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, End, End> {
   /**
    * @brief
    * End condition for the recursive scalar multiplication computation in sparse
@@ -2706,18 +2722,18 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, End, End> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied by scalar.
    * @param[in]  scalar Scalar value to multiply with.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &scalar,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
     static_cast<void>(A);
     static_cast<void>(scalar);
     static_cast<void>(Y);
@@ -2735,22 +2751,22 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, End, End> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in]  A Input sparse matrix to be multiplied by scalar.
  * @param[in]  scalar Scalar value to multiply with.
  * @param[out] Y Output sparse matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const T &scalar,
-        CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+        CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-  Loop<T, M, N, RowIndices_A, RowPointers_A, 0, RowIndices_A::size>::compute(
+  Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, CSRIndices_A::size>::compute(
       A, scalar, Y);
 }
 
@@ -2766,30 +2782,30 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] A Input sparse matrix to be multiplied by scalar.
  * @param[in] scalar Scalar value to multiply with.
  * @return A new sparse matrix that is the result of A * scalar.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-inline CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+inline CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A>
+operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &scalar) {
-  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
+  CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y = A;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  for (std::size_t i = 0; i < RowIndices_A::size; i++) {
+  for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyScalar::compute<T, M, N, RowIndices_A, RowPointers_A>(
+  SparseMatrixMultiplyScalar::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, scalar, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2809,30 +2825,30 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] scalar Scalar value to multiply with.
  * @param[in] A Input sparse matrix to be multiplied by scalar.
  * @return A new sparse matrix that is the result of scalar * A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-inline CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+inline CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A>
 operator*(const T &scalar,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
-  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y = A;
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
+  CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y = A;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  for (std::size_t i = 0; i < RowIndices_A::size; i++) {
+  for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyScalar::compute<T, M, N, RowIndices_A, RowPointers_A>(
+  SparseMatrixMultiplyScalar::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, scalar, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2844,8 +2860,8 @@ operator*(const T &scalar,
 namespace SparseMatrixMultiplyVector {
 
 // Start < End (Core)
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t Start,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
           std::size_t End>
 struct Loop {
   /**
@@ -2856,9 +2872,9 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam Start Start index of the current segment.
@@ -2868,19 +2884,19 @@ struct Loop {
    * @param[out] sum Accumulator for the result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b, T &sum) {
 
-    sum += A.values[Start] * b[RowIndices_A::list[Start]];
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, Start + 1, End>::compute(A, b,
+    sum += A.values[Start] * b[CSRIndices_A::list[Start]];
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, Start + 1, End>::compute(A, b,
                                                                            sum);
   }
 };
 
 // Start == End (End of Core Loop)
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -2894,9 +2910,9 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, End, End> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -2904,7 +2920,7 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, End, End> {
    * @param[out] sum Accumulator for the result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b, T &sum) {
     static_cast<void>(A);
     static_cast<void>(b);
@@ -2914,8 +2930,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, End, End> {
 };
 
 // Core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct Core {
   /**
    * @brief
@@ -2928,9 +2944,9 @@ struct Core {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -2938,19 +2954,19 @@ struct Core {
    * @param[out] y Output vector where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b, Vector<T, M> &y) {
 
     T sum = static_cast<T>(0);
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, b, sum);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, b, sum);
     y[J] = sum;
   }
 };
 
 // List loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct List {
   /**
    * @brief
@@ -2960,9 +2976,9 @@ struct List {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -2970,18 +2986,18 @@ struct List {
    * @param[out] y Output vector where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b, Vector<T, M> &y) {
 
-    Core<T, M, N, RowIndices_A, RowPointers_A, J>::compute(A, b, y);
-    List<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, b, y);
+    Core<T, M, N, CSRIndices_A, CSRPointers_A, J>::compute(A, b, y);
+    List<T, M, N, CSRIndices_A, CSRPointers_A, J - 1>::compute(A, b, y);
   }
 };
 
 // End of list loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-struct List<T, M, N, RowIndices_A, RowPointers_A, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+struct List<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a sparse matrix with a
@@ -2993,19 +3009,19 @@ struct List<T, M, N, RowIndices_A, RowPointers_A, 0> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
    * @param[in]  b Input vector to multiply with.
    * @param[out] y Output vector where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b, Vector<T, M> &y) {
 
-    Core<T, M, N, RowIndices_A, RowPointers_A, 0>::compute(A, b, y);
+    Core<T, M, N, CSRIndices_A, CSRPointers_A, 0>::compute(A, b, y);
   }
 };
 
@@ -3019,20 +3035,20 @@ struct List<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in]  A Input sparse matrix to be multiplied.
  * @param[in]  b Input vector to multiply with.
  * @param[out] y Output vector where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Vector<T, N> &b, Vector<T, M> &y) {
-  List<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, b, y);
+  List<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, b, y);
 }
 
 } // namespace SparseMatrixMultiplyVector
@@ -3047,18 +3063,18 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] A Input sparse matrix to be multiplied.
  * @param[in] b Input vector to multiply with.
  * @return A new vector that is the result of A * b.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline Vector<T, M>
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b) {
   Vector<T, M> y;
 
@@ -3066,16 +3082,16 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 
   for (std::size_t j = 0; j < M; j++) {
     T sum = static_cast<T>(0);
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          k++) {
-      sum += A.values[k] * b[RowIndices_A::list[k]];
+      sum += A.values[k] * b[CSRIndices_A::list[k]];
     }
     y[j] = sum;
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyVector::compute<T, M, N, RowIndices_A, RowPointers_A>(
+  SparseMatrixMultiplyVector::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, b, y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -3087,8 +3103,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 namespace ColVectorMultiplySparseMatrix {
 
 // Core loop
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t Start,
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J, std::size_t Start,
           std::size_t End>
 struct Loop {
   /**
@@ -3100,9 +3116,9 @@ struct Loop {
    * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current column index (compile-time).
    * @tparam Start Start index of the current segment.
@@ -3113,19 +3129,19 @@ struct Loop {
    */
   static void
   compute(const ColVector<T, N> &a,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           ColVector<T, K> &y) {
 
-    y[RowIndices_B::list[Start]] += B.values[Start] * a[J];
-    Loop<T, N, K, RowIndices_B, RowPointers_B, J, Start + 1, End>::compute(a, B,
+    y[CSRIndices_B::list[Start]] += B.values[Start] * a[J];
+    Loop<T, N, K, CSRIndices_B, CSRPointers_B, J, Start + 1, End>::compute(a, B,
                                                                            y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t End>
-struct Loop<T, N, K, RowIndices_B, RowPointers_B, J, End, End> {
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J, std::size_t End>
+struct Loop<T, N, K, CSRIndices_B, CSRPointers_B, J, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in column vector
@@ -3140,9 +3156,9 @@ struct Loop<T, N, K, RowIndices_B, RowPointers_B, J, End, End> {
    * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current column index (compile-time).
    * @param[in]  a Input column vector to multiply with.
@@ -3151,7 +3167,7 @@ struct Loop<T, N, K, RowIndices_B, RowPointers_B, J, End, End> {
    */
   static void
   compute(const ColVector<T, N> &a,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           ColVector<T, K> &y) {
     static_cast<void>(a);
     static_cast<void>(B);
@@ -3161,8 +3177,8 @@ struct Loop<T, N, K, RowIndices_B, RowPointers_B, J, End, End> {
 };
 
 // List loop
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J>
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J>
 struct List {
   /**
    * @brief
@@ -3173,9 +3189,9 @@ struct List {
    * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current column index (compile-time).
    * @param[in]  a Input column vector to multiply with.
@@ -3184,19 +3200,19 @@ struct List {
    */
   static void
   compute(const ColVector<T, N> &a,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           ColVector<T, K> &y) {
 
-    Loop<T, N, K, RowIndices_B, RowPointers_B, J, RowPointers_B::list[J],
-         RowPointers_B::list[J + 1]>::compute(a, B, y);
-    List<T, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(a, B, y);
+    Loop<T, N, K, CSRIndices_B, CSRPointers_B, J, CSRPointers_B::list[J],
+         CSRPointers_B::list[J + 1]>::compute(a, B, y);
+    List<T, N, K, CSRIndices_B, CSRPointers_B, J - 1>::compute(a, B, y);
   }
 };
 
 // End of list loop
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
-struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
+struct List<T, N, K, CSRIndices_B, CSRPointers_B, 0> {
   /**
    * @brief
    * Computes the multiplication of the first row of a column vector with a
@@ -3209,9 +3225,9 @@ struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
    * @tparam N Number of columns in the column vector and rows in the sparse
    * matrix.
    * @tparam K Number of columns in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in]  a Input column vector to multiply with.
    * @param[in]  B Input sparse matrix to multiply with.
@@ -3219,11 +3235,11 @@ struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
    */
   static void
   compute(const ColVector<T, N> &a,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           ColVector<T, K> &y) {
 
-    Loop<T, N, K, RowIndices_B, RowPointers_B, 0, RowPointers_B::list[0],
-         RowPointers_B::list[1]>::compute(a, B, y);
+    Loop<T, N, K, CSRIndices_B, CSRPointers_B, 0, CSRPointers_B::list[0],
+         CSRPointers_B::list[1]>::compute(a, B, y);
   }
 };
 
@@ -3238,22 +3254,22 @@ struct List<T, N, K, RowIndices_B, RowPointers_B, 0> {
  * @tparam N Number of columns in the column vector and rows in the sparse
  * matrix.
  * @tparam K Number of columns in the sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in]  a Input column vector to multiply with.
  * @param[in]  B Input sparse matrix to multiply with.
  * @param[out] y Output column vector where results are accumulated.
  */
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void
 compute(const ColVector<T, N> &a,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         ColVector<T, K> &y) {
 
-  List<T, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(a, B, y);
+  List<T, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(a, B, y);
 }
 
 } // namespace ColVectorMultiplySparseMatrix
@@ -3269,33 +3285,33 @@ compute(const ColVector<T, N> &a,
  * @tparam N Number of columns in the column vector and rows in the sparse
  * matrix.
  * @tparam K Number of columns in the sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @param[in] a Input column vector to multiply with.
  * @param[in] B Input sparse matrix to multiply with.
  * @return A new column vector that is the result of a * B.
  */
-template <typename T, std::size_t N, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t N, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline ColVector<T, K> colVector_a_mul_SparseB(
     const ColVector<T, N> &a,
-    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   ColVector<T, K> y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
          k++) {
-      y[RowIndices_B::list[k]] += B.values[k] * a[j];
+      y[CSRIndices_B::list[k]] += B.values[k] * a[j];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  ColVectorMultiplySparseMatrix::compute<T, N, K, RowIndices_B, RowPointers_B>(
+  ColVectorMultiplySparseMatrix::compute<T, N, K, CSRIndices_B, CSRPointers_B>(
       a, B, y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -3308,7 +3324,7 @@ namespace SparseMatrixMultiplyDenseTranspose {
 
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -3320,9 +3336,9 @@ struct Loop {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -3333,20 +3349,20 @@ struct Loop {
    * @param[out] sum Accumulator for the result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, T &sum) {
 
-    sum += A.values[Start] * B.template get<I, RowIndices_A::list[Start]>();
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, Start + 1,
+    sum += A.values[Start] * B.template get<I, CSRIndices_A::list[Start]>();
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, Start + 1,
          End>::compute(A, B, sum);
   }
 };
 
 // Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t End>
-struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
+struct Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -3361,9 +3377,9 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -3372,7 +3388,7 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * @param[out] sum Accumulator for the result.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, T &sum) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -3383,7 +3399,7 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, End, End> {
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct Core {
   /**
@@ -3399,9 +3415,9 @@ struct Core {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -3410,19 +3426,19 @@ struct Core {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
     T sum = static_cast<T>(0);
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, J, I, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B, sum);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B, sum);
     Y(J, I) = sum;
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct List {
   /**
@@ -3434,9 +3450,9 @@ struct List {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam I Current column index (compile-time).
@@ -3445,29 +3461,29 @@ struct List {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, J, I>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_A, RowPointers_A, J - 1, I>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, J - 1, I>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct List<T, M, N, K, RowIndices_A, RowPointers_A, 0, I> {
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
+struct List<T, M, N, K, CSRIndices_A, CSRPointers_A, 0, I> {
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, 0, I>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, 0, I>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
 struct Row {
   /**
    * @brief
@@ -3478,9 +3494,9 @@ struct Row {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam I Current column index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -3488,18 +3504,18 @@ struct Row {
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, I>::compute(A, B, Y);
-    Row<T, M, N, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, M - 1, I>::compute(A, B, Y);
+    Row<T, M, N, K, CSRIndices_A, CSRPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A>
-struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
+          typename CSRIndices_A, typename CSRPointers_A>
+struct Row<T, M, N, K, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the multiplication of the first row of a sparse matrix with a
@@ -3512,19 +3528,19 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
    * @param[in]  B Input dense matrix to multiply with.
    * @param[out] Y Output dense matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, M - 1, 0>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, M - 1, 0>::compute(A, B, Y);
   }
 };
 
@@ -3539,22 +3555,22 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @tparam K Number of rows in the dense matrix.
  * @param[in]  A Input sparse matrix to be multiplied.
  * @param[in]  B Input dense matrix to multiply with.
  * @param[out] Y Output dense matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
 
-  Row<T, M, N, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixMultiplyDenseTranspose
@@ -3569,19 +3585,19 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of rows in the sparse matrix.
  * @tparam N Number of columns in the sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix.
  * @tparam K Number of rows in the dense matrix.
  * @param[in] A Input sparse matrix to be multiplied.
  * @param[in] B Input dense matrix to multiply with (transposed).
  * @return A new matrix that is the result of A * B^T.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K>
 inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
 
@@ -3590,9 +3606,9 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = RowPointers_A::list[j];
-           k < RowPointers_A::list[j + 1]; k++) {
-        sum += A.values[k] * B(i, RowIndices_A::list[k]);
+      for (std::size_t k = CSRPointers_A::list[j];
+           k < CSRPointers_A::list[j + 1]; k++) {
+        sum += A.values[k] * B(i, CSRIndices_A::list[k]);
       }
       Y(j, i) = sum;
     }
@@ -3600,8 +3616,8 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyDenseTranspose::compute<T, M, N, RowIndices_A,
-                                              RowPointers_A, K>(A, B, Y);
+  SparseMatrixMultiplyDenseTranspose::compute<T, M, N, CSRIndices_A,
+                                              CSRPointers_A, K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -3613,8 +3629,8 @@ namespace SparseMatrixMultiplySparse {
 
 // Inner loop for Sparse Matrix multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t Start, std::size_t L, std::size_t LEnd>
 struct InnerLoop {
   /**
@@ -3627,17 +3643,17 @@ struct InnerLoop {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam Start Start index of the current segment.
@@ -3648,26 +3664,26 @@ struct InnerLoop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Base::Matrix::set_sparse_matrix_value<J, RowIndices_B::list[L]>(
-        Y, Base::Matrix::get_sparse_matrix_value<J, RowIndices_B::list[L]>(Y) +
+    Base::Matrix::set_sparse_matrix_value<J, CSRIndices_B::list[L]>(
+        Y, Base::Matrix::get_sparse_matrix_value<J, CSRIndices_B::list[L]>(Y) +
                A.values[Start] * B.values[L]);
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, RowIndices_Y, RowPointers_Y, J, Start, L + 1,
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, CSRIndices_Y, CSRPointers_Y, J, Start, L + 1,
               LEnd>::compute(A, B, Y);
   }
 };
 
 // End of Inner loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t Start, std::size_t LEnd>
-struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                 RowPointers_B, RowIndices_Y, RowPointers_Y, J, Start, LEnd,
+struct InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                 CSRPointers_B, CSRIndices_Y, CSRPointers_Y, J, Start, LEnd,
                  LEnd> {
   /**
    * @brief
@@ -3684,17 +3700,17 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -3702,9 +3718,9 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -3714,8 +3730,8 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Outer loop for Sparse Matrix multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -3728,17 +3744,17 @@ struct Loop {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @tparam J Current row index (compile-time).
    * @tparam Start Start index of the current segment.
@@ -3748,27 +3764,27 @@ struct Loop {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, RowIndices_Y, RowPointers_Y, J, Start,
-              RowPointers_B::list[RowIndices_A::list[Start]],
-              RowPointers_B::list[RowIndices_A::list[Start] + 1]>::compute(A, B,
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, CSRIndices_Y, CSRPointers_Y, J, Start,
+              CSRPointers_B::list[CSRIndices_A::list[Start]],
+              CSRPointers_B::list[CSRIndices_A::list[Start] + 1]>::compute(A, B,
                                                                            Y);
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, J, Start + 1, End>::compute(A, B, Y);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, J, Start + 1, End>::compute(A, B, Y);
   }
 };
 
 // End of Outer loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J, std::size_t End>
-struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-            RowPointers_B, RowIndices_Y, RowPointers_Y, J, End, End> {
+struct Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+            CSRPointers_B, CSRIndices_Y, CSRPointers_Y, J, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -3784,17 +3800,17 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -3802,9 +3818,9 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -3814,8 +3830,8 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J>
 struct Core {
   /**
@@ -3832,37 +3848,37 @@ struct Core {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
    * @param[in]  B Input sparse matrix to multiply with.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, J, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B, Y);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, J, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B, Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y,
           std::size_t J>
 struct List {
   /**
@@ -3875,17 +3891,17 @@ struct List {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @tparam J Current row index (compile-time).
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -3893,23 +3909,23 @@ struct List {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, J>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, J - 1>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, J>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y>
-struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-            RowPointers_B, RowIndices_Y, RowPointers_Y, 0> {
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y>
+struct List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+            CSRPointers_B, CSRIndices_Y, CSRPointers_Y, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a sparse matrix with
@@ -3923,36 +3939,36 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
    * @param[in]  B Input sparse matrix to multiply with.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, 0>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, 0>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y>
 struct Row {
   /**
    * @brief
@@ -3964,29 +3980,29 @@ struct Row {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
-   * @tparam RowIndices_Y Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_Y Type representing the row indices of nonzero elements
    * in the output sparse matrix.
-   * @tparam RowPointers_Y Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_Y Type representing the row pointers for sparse storage
    * in the output sparse matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
    * @param[in]  B Input sparse matrix to multiply with.
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y, M - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         CSRIndices_Y, CSRPointers_Y, M - 1>::compute(A, B, Y);
   }
 };
 
@@ -4001,52 +4017,52 @@ struct Row {
  * @tparam M Number of rows in the first sparse matrix.
  * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
  * @tparam K Number of columns in the second sparse matrix.
  * @param[in]  A Input sparse matrix to be multiplied.
  * @param[in]  B Input sparse matrix to multiply with.
  * @param[out] Y Output sparse matrix where results are accumulated.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename RowIndices_Y, typename RowPointers_Y>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename CSRIndices_Y, typename CSRPointers_Y>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
-        CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y> &Y) {
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
+        CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
-  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         RowIndices_Y, RowPointers_Y>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+      CSRIndices_Y, CSRPointers_Y>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixMultiplySparse
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct SparseMulSparse {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<K, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_A_mul_B =
       SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_A_mul_B>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_A_mul_B>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_A_mul_B>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_A_mul_B>;
 
-  using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -4062,38 +4078,38 @@ struct SparseMulSparse {
  * @tparam M Number of rows in the first sparse matrix.
  * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
  * @tparam K Number of columns in the second sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  * @return A new sparse matrix that is the result of A * B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B)
+operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B)
     -> typename CompiledSparseOperation::SparseMulSparse<
-        T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
-  using RowIndices_Y = typename CompiledSparseOperation::SparseMulSparse<
-      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-      RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename CompiledSparseOperation::SparseMulSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+      CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename CompiledSparseOperation::SparseMulSparse<
-      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-      RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename CompiledSparseOperation::SparseMulSparse<
+      T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+      CSRPointers_B>::CSRPointers_Y;
 
   using Y_Type = typename CompiledSparseOperation::SparseMulSparse<
-      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-      RowPointers_B>::Y_Type;
+      T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+      CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
@@ -4102,27 +4118,27 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
   Matrix<T, M, K> Y_temp;
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          ++k) {
-      for (std::size_t l = RowPointers_B::list[RowIndices_A::list[k]];
-           l < RowPointers_B::list[RowIndices_A::list[k] + 1]; ++l) {
-        Y_temp(j, RowIndices_B::list[l]) += A.values[k] * B.values[l];
+      for (std::size_t l = CSRPointers_B::list[CSRIndices_A::list[k]];
+           l < CSRPointers_B::list[CSRIndices_A::list[k] + 1]; ++l) {
+        Y_temp(j, CSRIndices_B::list[l]) += A.values[k] * B.values[l];
       }
     }
   }
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = RowPointers_Y::list[j]; k < RowPointers_Y::list[j + 1];
+    for (std::size_t k = CSRPointers_Y::list[j]; k < CSRPointers_Y::list[j + 1];
          ++k) {
-      Y.values[k] = Y_temp(j, RowIndices_Y::list[k]);
+      Y.values[k] = Y_temp(j, CSRIndices_Y::list[k]);
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplySparse::compute<T, M, N, RowIndices_A, RowPointers_A, K,
-                                      RowIndices_B, RowPointers_B, RowIndices_Y,
-                                      RowPointers_Y>(A, B, Y);
+  SparseMatrixMultiplySparse::compute<T, M, N, CSRIndices_A, CSRPointers_A, K,
+                                      CSRIndices_B, CSRPointers_B, CSRIndices_Y,
+                                      CSRPointers_Y>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -4134,8 +4150,8 @@ namespace SparseMatrixTransposeMultiplySparse {
 
 // Inner loop for Sparse Matrix Transpose multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t Start, std::size_t L, std::size_t LEnd>
 struct InnerLoop {
   /**
@@ -4147,13 +4163,13 @@ struct InnerLoop {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @tparam I Current row index (compile-time).
@@ -4162,28 +4178,28 @@ struct InnerLoop {
    * @tparam LEnd End index of the current segment.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Base::Matrix::set_sparse_matrix_value<RowIndices_A::list[Start],
-                                          RowIndices_B::list[L]>(
-        Y, Base::Matrix::get_sparse_matrix_value<RowIndices_A::list[Start],
-                                                 RowIndices_B::list[L]>(Y) +
+    Base::Matrix::set_sparse_matrix_value<CSRIndices_A::list[Start],
+                                          CSRIndices_B::list[L]>(
+        Y, Base::Matrix::get_sparse_matrix_value<CSRIndices_A::list[Start],
+                                                 CSRIndices_B::list[L]>(Y) +
                A.values[Start] * B.values[L]);
 
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, Start, L + 1, LEnd>::compute(A, B, Y);
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, Start, L + 1, LEnd>::compute(A, B, Y);
   }
 };
 
 // End of Inner loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t Start, std::size_t LEnd>
-struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                 RowPointers_B, Y_Type, I, Start, LEnd, LEnd> {
+struct InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                 CSRPointers_B, Y_Type, I, Start, LEnd, LEnd> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -4198,20 +4214,20 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @tparam I Current row index (compile-time).
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -4222,8 +4238,8 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Outer loop for Sparse Matrix Transpose multiply Sparse Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -4235,13 +4251,13 @@ struct Loop {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @tparam I Current row index (compile-time).
@@ -4249,25 +4265,25 @@ struct Loop {
    * @tparam End End index of the current segment.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, Start, RowPointers_B::list[I],
-              RowPointers_B::list[I + 1]>::compute(A, B, Y);
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, Start, CSRPointers_B::list[I],
+              CSRPointers_B::list[I + 1]>::compute(A, B, Y);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, I, Start + 1, End>::compute(A, B, Y);
   }
 };
 
 // End of Outer loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t End>
-struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-            RowPointers_B, Y_Type, I, End, End> {
+struct Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+            CSRPointers_B, Y_Type, I, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -4282,20 +4298,20 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @tparam I Current row index (compile-time).
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -4306,8 +4322,8 @@ struct Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I>
 struct Core {
   /**
    * @brief
@@ -4322,13 +4338,13 @@ struct Core {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -4336,20 +4352,20 @@ struct Core {
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Loop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         Y_Type, I, RowPointers_A::list[I],
-         RowPointers_A::list[I + 1]>::compute(A, B, Y);
+    Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+         Y_Type, I, CSRPointers_A::list[I],
+         CSRPointers_A::list[I + 1]>::compute(A, B, Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I>
 struct List {
   /**
    * @brief
@@ -4360,35 +4376,35 @@ struct List {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @tparam I Current row index (compile-time).
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, I>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, I - 1>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
-struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-            RowPointers_B, Y_Type, 0> {
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
+struct List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+            CSRPointers_B, Y_Type, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a sparse matrix with
@@ -4401,13 +4417,13 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    * @param[in]  A Input sparse matrix to be multiplied.
@@ -4415,19 +4431,19 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @param[out] Y Output sparse matrix where results are accumulated.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, 0>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
 struct Row {
   /**
    * @brief
@@ -4438,22 +4454,22 @@ struct Row {
    * @tparam M Number of rows in the sparse matrix.
    * @tparam N Number of columns in the sparse matrix.
    * @tparam K Number of rows in the dense matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the dense matrix.
-   * @tparam RowPointers_B Type representing the row pointers for dense storage
+   * @tparam CSRPointers_B Type representing the row pointers for dense storage
    * in the dense matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, N - 1>::compute(A, B, Y);
   }
 };
@@ -4469,53 +4485,53 @@ struct Row {
  * @tparam M Number of rows in the first sparse matrix.
  * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
  * @tparam K Number of columns in the second sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
 inline void
-compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
-  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         Y_Type>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+      Y_Type>::compute(A, B, Y);
 }
 
 } // namespace SparseMatrixTransposeMultiplySparse
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct SparseATransposeMulSparseB {
 
   using SparseAvailable_AT =
       SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
-          M, RowIndices_A, RowPointers_A>>;
+          M, CSRIndices_A, CSRPointers_A>>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<K, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<K, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_AT_mul_B =
       SparseAvailableMatrixMultiply<SparseAvailable_AT, SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_AT_mul_B>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_AT_mul_B>;
 
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<SparseAvailable_AT_mul_B>;
+  using CSRPointers_Y =
+      CSRPointersFromSparseAvailable<SparseAvailable_AT_mul_B>;
 
-  using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -4530,49 +4546,49 @@ struct SparseATransposeMulSparseB {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the first sparse matrix (A^T).
  * @tparam N Number of rows in the first sparse matrix (A^T).
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix (A^T).
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix (A^T).
  * @tparam K Number of columns in the second sparse matrix (B).
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix (B).
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix (B).
  * @return A new sparse matrix that is the result of A^T * B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto matrix_multiply_SparseATranspose_mul_SparseB(
-    const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) ->
+    const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) ->
     typename CompiledSparseOperation::SparseATransposeMulSparseB<
-        T, M, RowIndices_A, RowPointers_A, K, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
   /* Logic which realizes (A^T * B) without template */
   // for (std::size_t i = 0; i < N; i++) {
-  //   for (std::size_t k = RowPointers_A::list[i]; k < RowPointers_A::list[i +
+  //   for (std::size_t k = CSRPointers_A::list[i]; k < CSRPointers_A::list[i +
   //   1];
   //        k++) {
-  //     for (std::size_t j = RowPointers_B::list[i];
-  //          j < RowPointers_B::list[i + 1]; j++) {
-  //       Y(RowIndices_A::list[k], RowIndices_B::list[j]) +=
+  //     for (std::size_t j = CSRPointers_B::list[i];
+  //          j < CSRPointers_B::list[i + 1]; j++) {
+  //       Y(CSRIndices_A::list[k], CSRIndices_B::list[j]) +=
   //           A.values[k] * B.values[j];
   //     }
   //   }
   // }
 
   using Y_Type = typename CompiledSparseOperation::SparseATransposeMulSparseB<
-      T, M, RowIndices_A, RowPointers_A, K, RowIndices_B,
-      RowPointers_B>::Y_Type;
+      T, M, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+      CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
-  SparseMatrixTransposeMultiplySparse::compute<T, M, N, RowIndices_A,
-                                               RowPointers_A, K, RowIndices_B,
-                                               RowPointers_B, Y_Type>(A, B, Y);
+  SparseMatrixTransposeMultiplySparse::compute<T, M, N, CSRIndices_A,
+                                               CSRPointers_A, K, CSRIndices_B,
+                                               CSRPointers_B, Y_Type>(A, B, Y);
 
   return Y;
 }
@@ -4583,8 +4599,8 @@ namespace SparseMatrixMultiplySparseTranspose {
 // Core conditional operation for Sparse Matrix multiply Sparse Matrix
 // Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L, std::size_t O, std::size_t L_O>
 struct CoreConditional {
   /**
@@ -4597,19 +4613,19 @@ struct CoreConditional {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -4619,11 +4635,11 @@ struct CoreConditional {
 };
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L, std::size_t O>
-struct CoreConditional<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                       RowPointers_B, Y_Type, I, J, L, O, 0> {
+struct CoreConditional<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                       CSRPointers_B, Y_Type, I, J, L, O, 0> {
   /**
    * @brief
    * Computes the multiplication of a sparse matrix row with another sparse
@@ -4637,19 +4653,19 @@ struct CoreConditional<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
     Base::Matrix::set_sparse_matrix_value<I, J>(
@@ -4660,8 +4676,8 @@ struct CoreConditional<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Core inner loop for Sparse Matrix multiply Sparse Matrix Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L, std::size_t O, std::size_t O_End>
 struct InnerLoop {
   /**
@@ -4674,28 +4690,28 @@ struct InnerLoop {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    CoreConditional<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                    RowPointers_B, Y_Type, I, J, L, O,
-                    (RowIndices_A::list[L] -
-                     RowIndices_B::list[O])>::compute(A, B, Y);
+    CoreConditional<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                    CSRPointers_B, Y_Type, I, J, L, O,
+                    (CSRIndices_A::list[L] -
+                     CSRIndices_B::list[O])>::compute(A, B, Y);
 
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, J, L, (O + 1), (O_End - 1)>::compute(A,
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, J, L, (O + 1), (O_End - 1)>::compute(A,
                                                                              B,
                                                                              Y);
   }
@@ -4703,11 +4719,11 @@ struct InnerLoop {
 
 // Core inner loop for Sparse Matrix multiply Sparse Matrix Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L, std::size_t O>
-struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                 RowPointers_B, Y_Type, I, J, L, O, 0> {
+struct InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                 CSRPointers_B, Y_Type, I, J, L, O, 0> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -4723,19 +4739,19 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -4746,8 +4762,8 @@ struct InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Core outer loop for Sparse Matrix multiply Sparse Matrix Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L, std::size_t L_End>
 struct OuterLoop {
   /**
@@ -4760,38 +4776,38 @@ struct OuterLoop {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    InnerLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, J, L, RowPointers_B::list[J],
-              (RowPointers_B::list[J + 1] -
-               RowPointers_B::list[J])>::compute(A, B, Y);
+    InnerLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, J, L, CSRPointers_B::list[J],
+              (CSRPointers_B::list[J + 1] -
+               CSRPointers_B::list[J])>::compute(A, B, Y);
 
-    OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, J, (L + 1), (L_End - 1)>::compute(A, B,
+    OuterLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, J, (L + 1), (L_End - 1)>::compute(A, B,
                                                                           Y);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J,
           std::size_t L>
-struct OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-                 RowPointers_B, Y_Type, I, J, L, 0> {
+struct OuterLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                 CSRPointers_B, Y_Type, I, J, L, 0> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -4807,19 +4823,19 @@ struct OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -4830,8 +4846,8 @@ struct OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
 
 // Core loop for Sparse Matrix multiply Sparse Matrix Transpose
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J>
 struct Core {
   /**
    * @brief
@@ -4847,32 +4863,32 @@ struct Core {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    OuterLoop<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, I, J, RowPointers_A::list[I],
-              (RowPointers_A::list[I + 1] -
-               RowPointers_A::list[I])>::compute(A, B, Y);
+    OuterLoop<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+              CSRPointers_B, Y_Type, I, J, CSRPointers_A::list[I],
+              (CSRPointers_A::list[I + 1] -
+               CSRPointers_A::list[I])>::compute(A, B, Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I, std::size_t J>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I, std::size_t J>
 struct List {
   /**
    * @brief
@@ -4884,34 +4900,34 @@ struct List {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, I, J>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, I - 1, J>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J>
-struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-            RowPointers_B, Y_Type, 0, J> {
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J>
+struct List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+            CSRPointers_B, Y_Type, 0, J> {
   /**
    * @brief
    * Computes the multiplication of the first column of a sparse matrix with
@@ -4925,30 +4941,30 @@ struct List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    Core<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, 0, J>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J>
 struct Row {
   /**
    * @brief
@@ -4960,34 +4976,34 @@ struct Row {
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, M - 1, J>::compute(A, B, Y);
-    Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-           Y_Type, J - 1>::compute(A, B, Y);
+    Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+        Y_Type, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
-struct Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
-              RowPointers_B, Y_Type, 0> {
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
+struct Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+           Y_Type, 0> {
   /**
    * @brief
    * Computes the multiplication of the first row of a sparse matrix with
@@ -5001,22 +5017,22 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
    * @tparam N Number of columns in the first sparse matrix and rows in the
    * second sparse matrix.
    * @tparam K Number of columns in the second sparse matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the first sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the first sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the second sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the second sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-          const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    List<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
+    List<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
          Y_Type, M - 1, 0>::compute(A, B, Y);
   }
 };
@@ -5034,50 +5050,50 @@ struct Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B,
  * @tparam M Number of rows in the first sparse matrix.
  * @tparam N Number of columns in the first sparse matrix and rows in the
  * second sparse matrix.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix.
  * @tparam K Number of columns in the second sparse matrix.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-        const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+        const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
-  Row<T, M, N, K, RowIndices_A, RowPointers_A, RowIndices_B, RowPointers_B,
-         Y_Type, K - 1>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
+      Y_Type, K - 1>::compute(A, B, Y);
 }
 } // namespace SparseMatrixMultiplySparseTranspose
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct SparseAMulSparseBTranspose {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
   using SparseAvailable_BT =
       SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
-          N, RowIndices_B, RowPointers_B>>;
+          N, CSRIndices_B, CSRPointers_B>>;
 
   using SparseAvailable_A_mul_BT =
       SparseAvailableMatrixMultiply<SparseAvailable_A, SparseAvailable_BT>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_A_mul_BT>;
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<SparseAvailable_A_mul_BT>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_A_mul_BT>;
+  using CSRPointers_Y =
+      CSRPointersFromSparseAvailable<SparseAvailable_A_mul_BT>;
 
-  using Y_Type = CompiledSparseMatrix<T, M, K, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -5092,35 +5108,35 @@ struct SparseAMulSparseBTranspose {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the first sparse matrix (A).
  * @tparam N Number of rows in the first sparse matrix (A).
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the first sparse matrix (A).
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the first sparse matrix (A).
  * @tparam K Number of columns in the second sparse matrix (B^T).
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the second sparse matrix (B^T).
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the second sparse matrix (B^T).
  * @return A new sparse matrix that is the result of A * B^T.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, K, N, RowIndices_B, RowPointers_B> &B) ->
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B) ->
     typename CompiledSparseOperation::SparseAMulSparseBTranspose<
-        T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
   /* Logic which realizes (A * B^T) without template */
   // for (std::size_t i = 0; i < M; i++) {
   //   for (std::size_t j = 0; j < K; j++) {
-  //     for (std::size_t l = RowPointers_A::list[i];
-  //          l < RowPointers_A::list[i + 1]; l++) {
-  //       for (std::size_t o = RowPointers_B::list[j];
-  //            o < RowPointers_B::list[j + 1]; o++) {
-  //         if (RowIndices_A::list[l] == RowIndices_B::list[o]) {
+  //     for (std::size_t l = CSRPointers_A::list[i];
+  //          l < CSRPointers_A::list[i + 1]; l++) {
+  //       for (std::size_t o = CSRPointers_B::list[j];
+  //            o < CSRPointers_B::list[j + 1]; o++) {
+  //         if (CSRIndices_A::list[l] == CSRIndices_B::list[o]) {
   //           Y(i, j) += A.values[l] * B.values[o];
   //         }
   //       }
@@ -5129,14 +5145,14 @@ inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
   // }
 
   using Y_Type = typename CompiledSparseOperation::SparseAMulSparseBTranspose<
-      T, M, N, RowIndices_A, RowPointers_A, K, RowIndices_B,
-      RowPointers_B>::Y_Type;
+      T, M, N, CSRIndices_A, CSRPointers_A, K, CSRIndices_B,
+      CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
-  SparseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_A,
-                                               RowPointers_A, K, RowIndices_B,
-                                               RowPointers_B, Y_Type>(A, B, Y);
+  SparseMatrixMultiplySparseTranspose::compute<T, M, N, CSRIndices_A,
+                                               CSRPointers_A, K, CSRIndices_B,
+                                               CSRPointers_B, Y_Type>(A, B, Y);
 
   return Y;
 }
@@ -5145,8 +5161,8 @@ inline auto matrix_multiply_SparseA_mul_SparseBTranspose(
 namespace SparseMatrixMultiplyDiagMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K,
           std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -5158,26 +5174,26 @@ struct Loop {
    * @tparam M Number of columns in the sparse matrix.
    * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, N> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Y.values[Start] = A.values[Start] * B[RowIndices_A::list[Start]];
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, Start + 1, End>::compute(
+    Y.values[Start] = A.values[Start] * B[CSRIndices_A::list[Start]];
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, Start + 1, End>::compute(
         A, B, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, K, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -5192,15 +5208,15 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
    * @tparam M Number of columns in the sparse matrix.
    * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, N> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -5209,8 +5225,8 @@ struct Loop<T, M, N, RowIndices_A, RowPointers_A, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J>
 struct Column {
   /**
    * @brief
@@ -5221,26 +5237,26 @@ struct Column {
    * @tparam M Number of columns in the sparse matrix.
    * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, N> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, J, 0, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B, Y);
-    Column<T, M, N, RowIndices_A, RowPointers_A, J - 1>::compute(A, B, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, J, 0, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
-struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a sparse matrix with a
@@ -5253,18 +5269,18 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
    * @tparam M Number of columns in the sparse matrix.
    * @tparam N Number of rows in the sparse matrix and size of the diagonal
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, N> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Loop<T, M, N, RowIndices_A, RowPointers_A, 0, 0, RowPointers_A::list[0],
-         RowPointers_A::list[1]>::compute(A, B, Y);
+    Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, 0, CSRPointers_A::list[0],
+         CSRPointers_A::list[1]>::compute(A, B, Y);
   }
 };
 
@@ -5279,18 +5295,18 @@ struct Column<T, M, N, RowIndices_A, RowPointers_A, 0> {
  * @tparam M Number of columns in the sparse matrix A.
  * @tparam N Number of rows in the sparse matrix A and size of the diagonal
  * matrix B.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix A.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix A.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void
-compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const DiagMatrix<T, N> &B,
-        CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &Y) {
-  Column<T, M, N, RowIndices_A, RowPointers_A, M - 1>::compute(A, B, Y);
+        CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, B, Y);
 }
 } // namespace SparseMatrixMultiplyDiagMatrix
 
@@ -5305,33 +5321,33 @@ compute(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
  * @tparam M Number of columns in the sparse matrix (A).
  * @tparam N Number of rows in the sparse matrix (A) and size of the diagonal
  * matrix (B).
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix (A).
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix (A).
  * @return A new sparse matrix that is the result of A * B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto
-operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const DiagMatrix<T, N> &B)
-    -> CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> {
+    -> CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> {
 
-  CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> Y;
+  CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          k++) {
-      Y.values[k] = A.values[k] * B[RowIndices_A::list[k]];
+      Y.values[k] = A.values[k] * B[CSRIndices_A::list[k]];
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseMatrixMultiplyDiagMatrix::compute<T, M, N, RowIndices_A, RowPointers_A>(
+  SparseMatrixMultiplyDiagMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -5343,8 +5359,8 @@ operator*(const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
 namespace DiagMatrixMultiplySparseMatrix {
 
 // Core loop for addition
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t K,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J, std::size_t K,
           std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -5355,26 +5371,26 @@ struct Loop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
 
     Y.values[Start] = B.values[Start] * A[J];
-    Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, Start + 1, End>::compute(
+    Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, Start + 1, End>::compute(
         A, B, Y);
   }
 };
 
 // End of core loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J, std::size_t K, std::size_t End>
+struct Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in diagonal
@@ -5388,15 +5404,15 @@ struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
     static_cast<void>(Y);
@@ -5405,8 +5421,8 @@ struct Loop<T, M, N, RowIndices_B, RowPointers_B, J, K, End, End> {
 };
 
 // Column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t J>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t J>
 struct Column {
   /**
    * @brief
@@ -5416,26 +5432,26 @@ struct Column {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
 
-    Loop<T, M, N, RowIndices_B, RowPointers_B, J, 0, RowPointers_B::list[J],
-         RowPointers_B::list[J + 1]>::compute(A, B, Y);
-    Column<T, M, N, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, 0, CSRPointers_B::list[J],
+         CSRPointers_B::list[J + 1]>::compute(A, B, Y);
+    Column<T, M, N, CSRIndices_B, CSRPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of column loop
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B>
-struct Column<T, M, N, RowIndices_B, RowPointers_B, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B>
+struct Column<T, M, N, CSRIndices_B, CSRPointers_B, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a diagonal matrix with a
@@ -5447,18 +5463,18 @@ struct Column<T, M, N, RowIndices_B, RowPointers_B, 0> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam N Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-          CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
 
-    Loop<T, M, N, RowIndices_B, RowPointers_B, 0, 0, RowPointers_B::list[0],
-         RowPointers_B::list[1]>::compute(A, B, Y);
+    Loop<T, M, N, CSRIndices_B, CSRPointers_B, 0, 0, CSRPointers_B::list[0],
+         CSRPointers_B::list[1]>::compute(A, B, Y);
   }
 };
 
@@ -5472,19 +5488,19 @@ struct Column<T, M, N, RowIndices_B, RowPointers_B, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the diagonal matrix A.
  * @tparam N Number of rows in the sparse matrix B.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void
 compute(const DiagMatrix<T, M> &A,
-        const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B,
-        CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &Y) {
+        const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+        CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
 
-  Column<T, M, N, RowIndices_B, RowPointers_B, M - 1>::compute(A, B, Y);
+  Column<T, M, N, CSRIndices_B, CSRPointers_B, M - 1>::compute(A, B, Y);
 }
 
 } // namespace DiagMatrixMultiplySparseMatrix
@@ -5499,25 +5515,25 @@ compute(const DiagMatrix<T, M> &A,
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the diagonal matrix (A).
  * @tparam K Number of rows in the sparse matrix (B).
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix (B).
  * @return A new sparse matrix that is the result of A * B.
  */
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto
 operator*(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B)
-    -> CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> {
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B)
+    -> CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> {
 
-  CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> Y;
+  CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
          k++) {
       Y.values[k] = B.values[k] * A[j];
     }
@@ -5525,7 +5541,7 @@ operator*(const DiagMatrix<T, M> &A,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DiagMatrixMultiplySparseMatrix::compute<T, M, K, RowIndices_B, RowPointers_B>(
+  DiagMatrixMultiplySparseMatrix::compute<T, M, K, CSRIndices_B, CSRPointers_B>(
       A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -5537,8 +5553,8 @@ operator*(const DiagMatrix<T, M> &A,
 namespace TransposeOfDiagMatrixMultiplySparse {
 
 // Conditional operation False
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t KStart_End, std::size_t I_J>
 struct ConditionalOperation {
   /**
@@ -5552,15 +5568,15 @@ struct ConditionalOperation {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -5570,10 +5586,10 @@ struct ConditionalOperation {
 };
 
 // Conditional operation True
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t I,
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t I,
           std::size_t KStart_End>
-struct ConditionalOperation<T, M, K, RowIndices_B, RowPointers_B, Y_Type, I,
+struct ConditionalOperation<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, I,
                             KStart_End, 0> {
   /**
    * @brief
@@ -5586,26 +5602,26 @@ struct ConditionalOperation<T, M, K, RowIndices_B, RowPointers_B, Y_Type, I,
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    set_sparse_matrix_value<RowIndices_B::list[KStart_End], I>(
-        Y, get_sparse_matrix_value<RowIndices_B::list[KStart_End], I>(Y) +
+    set_sparse_matrix_value<CSRIndices_B::list[KStart_End], I>(
+        Y, get_sparse_matrix_value<CSRIndices_B::list[KStart_End], I>(Y) +
                B.values[KStart_End] * A[I]);
   }
 };
 
 // Core loop (Inner loop)
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I,
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J, std::size_t I,
           std::size_t KStart, std::size_t KEnd>
 struct InnerLoop {
   /**
@@ -5616,28 +5632,28 @@ struct InnerLoop {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    * @tparam Y_Type Type representing the output matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
-    ConditionalOperation<T, M, K, RowIndices_B, RowPointers_B, Y_Type, I,
+    ConditionalOperation<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, I,
                          KStart, (I - J)>::compute(A, B, Y);
-    InnerLoop<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I, KStart + 1,
+    InnerLoop<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, I, KStart + 1,
               KEnd>::compute(A, B, Y);
   }
 };
 
 // End of inner loop
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I,
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J, std::size_t I,
           std::size_t KEnd>
-struct InnerLoop<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I, KEnd,
+struct InnerLoop<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, I, KEnd,
                  KEnd> {
   /**
    * @brief
@@ -5652,24 +5668,24 @@ struct InnerLoop<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I, KEnd,
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    ConditionalOperation<T, M, K, RowIndices_B, RowPointers_B, Y_Type, I, KEnd,
+    ConditionalOperation<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, I, KEnd,
                          (I - J)>::compute(A, B, Y);
   }
 };
 
 // Core loop
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J, std::size_t I>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J, std::size_t I>
 struct Core {
   /**
    * @brief
@@ -5682,25 +5698,25 @@ struct Core {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix A.
    * @tparam K Number of rows in the sparse matrix B.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix B.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix B.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    InnerLoop<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, I,
-              RowPointers_B::list[J],
-              RowPointers_B::list[J + 1] - 1>::compute(A, B, Y);
+    InnerLoop<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, I,
+              CSRPointers_B::list[J],
+              CSRPointers_B::list[J + 1] - 1>::compute(A, B, Y);
   }
 };
 
 // List loop
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type, std::size_t J>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type, std::size_t J>
 struct List {
   /**
    * @brief
@@ -5710,25 +5726,25 @@ struct List {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J, J>::compute(A, B, Y);
-    List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, J - 1>::compute(A, B, Y);
+    Core<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, J>::compute(A, B, Y);
+    List<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of list loop
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
-struct List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0> {
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
+struct List<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a diagonal matrix with a
@@ -5740,17 +5756,17 @@ struct List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0> {
    * @tparam T Value type of the matrix.
    * @tparam M Number of columns in the diagonal matrix.
    * @tparam K Number of rows in the sparse matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    Core<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0, 0>::compute(A, B, Y);
+    Core<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, 0, 0>::compute(A, B, Y);
   }
 };
 
@@ -5765,38 +5781,38 @@ struct List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the diagonal matrix A.
  * @tparam K Number of rows in the sparse matrix B.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix B.
  */
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B, typename Y_Type>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B, typename Y_Type>
 inline void
 compute(const DiagMatrix<T, M> &A,
-        const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B,
+        const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
 
-  List<T, M, K, RowIndices_B, RowPointers_B, Y_Type, M - 1>::compute(A, B, Y);
+  List<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, M - 1>::compute(A, B, Y);
 }
 
 } // namespace TransposeOfDiagMatrixMultiplySparse
 
 namespace CompiledSparseOperation {
 
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct TransposeDiagAMulSparseB {
 
   using SparseAvailable_BT =
       SparseAvailableTranspose<CreateSparseAvailableFromIndicesAndPointers<
-          K, RowIndices_B, RowPointers_B>>;
+          K, CSRIndices_B, CSRPointers_B>>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_BT>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_BT>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_BT>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_BT>;
 
-  using Y_Type = CompiledSparseMatrix<T, K, M, RowIndices_Y, RowPointers_Y>;
+  using Y_Type = CompiledSparseMatrix<T, K, M, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace CompiledSparseOperation
@@ -5813,39 +5829,39 @@ struct TransposeDiagAMulSparseB {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the diagonal matrix A.
  * @tparam K Number of rows in the sparse matrix B.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix B.
  */
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto matrix_multiply_Transpose_DiagA_mul_SparseB(
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, K, RowIndices_B, RowPointers_B> &B) ->
+    const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B) ->
     typename CompiledSparseOperation::TransposeDiagAMulSparseB<
-        T, M, K, RowIndices_B, RowPointers_B>::Y_Type {
+        T, M, K, CSRIndices_B, CSRPointers_B>::Y_Type {
 
   /* Logic which realizes (A * B)^T without template */
   // for (std::size_t j = 0; j < M; j++) {
-  //   for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j +
+  //   for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j +
   //   1];
   //        k++) {
   //     for (std::size_t i = 0; i < M; i++) {
   //       if (i == j) {
-  //         Y(RowIndices_B::list[k], i) += B.values[k] * A[i];
+  //         Y(CSRIndices_B::list[k], i) += B.values[k] * A[i];
   //       }
   //     }
   //   }
   // }
 
   using Y_Type = typename CompiledSparseOperation::TransposeDiagAMulSparseB<
-      T, M, K, RowIndices_B, RowPointers_B>::Y_Type;
+      T, M, K, CSRIndices_B, CSRPointers_B>::Y_Type;
 
   Y_Type Y;
 
-  TransposeOfDiagMatrixMultiplySparse::compute<T, M, K, RowIndices_B,
-                                               RowPointers_B, Y_Type>(A, B, Y);
+  TransposeOfDiagMatrixMultiplySparse::compute<T, M, K, CSRIndices_B,
+                                               CSRPointers_B, Y_Type>(A, B, Y);
 
   return Y;
 }
@@ -5855,7 +5871,7 @@ namespace DenseMatrixMultiplySparseTranspose {
 
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t I,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t I,
           std::size_t J, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -5868,27 +5884,27 @@ struct Loop {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           T &sum) {
 
-    sum += B.values[Start] * A(I, RowIndices_B::list[Start]);
-    Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, Start + 1,
+    sum += B.values[Start] * A(I, CSRIndices_B::list[Start]);
+    Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, I, J, Start + 1,
          End>::compute(A, B, sum);
   }
 };
 
 // Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t I,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t I,
           std::size_t J, std::size_t End>
-struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, End, End> {
+struct Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, I, J, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in dense matrix
@@ -5904,14 +5920,14 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, End, End> {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           T &sum) {
     // End of loop, do nothing
     static_cast<void>(A);
@@ -5922,7 +5938,7 @@ struct Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, End, End> {
 
 // Core loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t I,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t I,
           std::size_t J>
 struct Core {
   /**
@@ -5938,26 +5954,26 @@ struct Core {
    * @tparam N Number of rows in the sparse matrix B.
    * @tparam K Number of rows in the dense matrix A and cols in the sparse
    * matrix B.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix B.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix B.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
 
     T sum = static_cast<T>(0);
-    Loop<T, M, N, K, RowIndices_B, RowPointers_B, I, J, RowPointers_B::list[J],
-         RowPointers_B::list[J + 1]>::compute(A, B, sum);
+    Loop<T, M, N, K, CSRIndices_B, CSRPointers_B, I, J, CSRPointers_B::list[J],
+         CSRPointers_B::list[J + 1]>::compute(A, B, sum);
     Y(I, J) = sum;
   }
 };
 
 // List loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t I,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t I,
           std::size_t J>
 struct List {
   /**
@@ -5970,25 +5986,25 @@ struct List {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
 
-    Core<T, M, N, K, RowIndices_B, RowPointers_B, I, J>::compute(A, B, Y);
-    List<T, M, N, K, RowIndices_B, RowPointers_B, I - 1, J>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, I, J>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, I - 1, J>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J>
-struct List<T, M, N, K, RowIndices_B, RowPointers_B, 0, J> {
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J>
+struct List<T, M, N, K, CSRIndices_B, CSRPointers_B, 0, J> {
   /**
    * @brief
    * Computes the multiplication of the first column of a dense matrix with a
@@ -6002,23 +6018,23 @@ struct List<T, M, N, K, RowIndices_B, RowPointers_B, 0, J> {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
 
-    Core<T, M, N, K, RowIndices_B, RowPointers_B, 0, J>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, 0, J>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J>
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J>
 struct Row {
   /**
    * @brief
@@ -6030,25 +6046,25 @@ struct Row {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, M - 1, J>::compute(A, B, Y);
-    Row<T, M, N, K, RowIndices_B, RowPointers_B, J - 1>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, M - 1, J>::compute(A, B, Y);
+    Row<T, M, N, K, CSRIndices_B, CSRPointers_B, J - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B>
-struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
+          typename CSRIndices_B, typename CSRPointers_B>
+struct Row<T, M, N, K, CSRIndices_B, CSRPointers_B, 0> {
   /**
    * @brief
    * Computes the multiplication of the first row of a dense matrix with a
@@ -6062,17 +6078,17 @@ struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, M, K> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
 
-    List<T, M, N, K, RowIndices_B, RowPointers_B, M - 1, 0>::compute(A, B, Y);
+    List<T, M, N, K, CSRIndices_B, CSRPointers_B, M - 1, 0>::compute(A, B, Y);
   }
 };
 
@@ -6087,19 +6103,19 @@ struct Row<T, M, N, K, RowIndices_B, RowPointers_B, 0> {
  * @tparam T Value type of the matrix.
  * @tparam M Number of columns in the dense matrix A.
  * @tparam N Number of rows in the sparse matrix B.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix B.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B, std::size_t K>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t K>
 inline void
 compute(const Matrix<T, M, K> &A,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, N> &Y) {
 
-  Row<T, M, N, K, RowIndices_B, RowPointers_B, N - 1>::compute(A, B, Y);
+  Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(A, B, Y);
 }
 
 } // namespace DenseMatrixMultiplySparseTranspose
@@ -6116,17 +6132,17 @@ compute(const Matrix<T, M, K> &A,
  * @tparam N Number of rows in the sparse matrix (B).
  * @tparam K Number of rows in the dense matrix (A) and cols in the sparse
  * matrix (B).
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix (B).
  * @return A new dense matrix that is the result of A * B^T.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
     const Matrix<T, M, K> &A,
-    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, N> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -6134,9 +6150,9 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = RowPointers_B::list[j];
-           k < RowPointers_B::list[j + 1]; ++k) {
-        sum += B.values[k] * A(i, RowIndices_B::list[k]);
+      for (std::size_t k = CSRPointers_B::list[j];
+           k < CSRPointers_B::list[j + 1]; ++k) {
+        sum += B.values[k] * A(i, CSRIndices_B::list[k]);
       }
       Y(i, j) = sum;
     }
@@ -6144,8 +6160,8 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DenseMatrixMultiplySparseTranspose::compute<T, M, N, RowIndices_B,
-                                              RowPointers_B, K>(A, B, Y);
+  DenseMatrixMultiplySparseTranspose::compute<T, M, N, CSRIndices_B,
+                                              CSRPointers_B, K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -6157,7 +6173,7 @@ namespace DenseMatrixTransposeMultiplySparse {
 
 // Inner loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t KIndex, std::size_t I, std::size_t Start, std::size_t End>
 struct InnerLoop {
   /**
@@ -6170,29 +6186,29 @@ struct InnerLoop {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    Y.template set<I, RowIndices_B::list[Start]>(
-        Y.template get<I, RowIndices_B::list[Start]>() +
+    Y.template set<I, CSRIndices_B::list[Start]>(
+        Y.template get<I, CSRIndices_B::list[Start]>() +
         B.values[Start] * A.template get<J, I>());
-    InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, Start + 1,
+    InnerLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex, I, Start + 1,
               End>::compute(A, B, Y);
   }
 };
 
 // End of inner loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t KIndex, std::size_t I, std::size_t End>
-struct InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, End,
+struct InnerLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex, I, End,
                  End> {
   /**
    * @brief
@@ -6209,14 +6225,14 @@ struct InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, End,
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -6227,7 +6243,7 @@ struct InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I, End,
 
 // Middle loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t KIndex, std::size_t I>
 struct MiddleLoop {
   /**
@@ -6240,29 +6256,29 @@ struct MiddleLoop {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, I,
-              RowPointers_B::list[J], RowPointers_B::list[J + 1]>::compute(A, B,
+    InnerLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex, I,
+              CSRPointers_B::list[J], CSRPointers_B::list[J + 1]>::compute(A, B,
                                                                            Y);
-    MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex,
+    MiddleLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex,
                I - 1>::compute(A, B, Y);
   }
 };
 
 // End of middle loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t KIndex>
-struct MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, 0> {
+struct MiddleLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex, 0> {
   /**
    * @brief
    * Computes the multiplication of the first column of a dense matrix with a
@@ -6276,25 +6292,25 @@ struct MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, 0> {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    InnerLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex, 0,
-              RowPointers_B::list[J], RowPointers_B::list[J + 1]>::compute(A, B,
+    InnerLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex, 0,
+              CSRPointers_B::list[J], CSRPointers_B::list[J + 1]>::compute(A, B,
                                                                            Y);
   }
 };
 
 // Outer loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t J,
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t J,
           std::size_t KIndex>
 struct OuterLoop {
   /**
@@ -6307,27 +6323,27 @@ struct OuterLoop {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, J, KIndex,
+    MiddleLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J, KIndex,
                M - 1>::compute(A, B, Y);
-    OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, J - 1, KIndex>::compute(
+    OuterLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, J - 1, KIndex>::compute(
         A, B, Y);
   }
 };
 
 // End of outer loop
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B, std::size_t KIndex>
-struct OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex> {
+          typename CSRIndices_B, typename CSRPointers_B, std::size_t KIndex>
+struct OuterLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, 0, KIndex> {
   /**
    * @brief
    * Computes the multiplication of the first row of a dense matrix with a
@@ -6341,17 +6357,17 @@ struct OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex> {
    * @tparam N Number of rows in the sparse matrix.
    * @tparam K Number of rows in the dense matrix and cols in the sparse
    * matrix.
-   * @tparam RowIndices_B Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_B Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_B Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_B Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
   compute(const Matrix<T, N, M> &A,
-          const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+          const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, K> &Y) {
 
-    MiddleLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex,
+    MiddleLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, 0, KIndex,
                M - 1>::compute(A, B, Y);
   }
 };
@@ -6369,19 +6385,19 @@ struct OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, 0, KIndex> {
  * @tparam N Number of rows in the sparse matrix B.
  * @tparam K Number of rows in the dense matrix A and cols in the sparse
  * matrix B.
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix B.
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix B.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline void
 compute(const Matrix<T, N, M> &A,
-        const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B,
+        const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, K> &Y) {
 
-  OuterLoop<T, M, N, K, RowIndices_B, RowPointers_B, N - 1, K - 1>::compute(
+  OuterLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1, K - 1>::compute(
       A, B, Y);
 }
 
@@ -6399,34 +6415,34 @@ compute(const Matrix<T, N, M> &A,
  * @tparam N Number of rows in the sparse matrix (B).
  * @tparam K Number of rows in the dense matrix (A) and cols in the sparse
  * matrix (B).
- * @tparam RowIndices_B Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_B Type representing the row indices of nonzero elements
  * in the sparse matrix (B).
- * @tparam RowPointers_B Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_B Type representing the row pointers for sparse storage
  * in the sparse matrix (B).
  * @return A new dense matrix that is the result of A^T * B.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
     const Matrix<T, N, M> &A,
-    const CompiledSparseMatrix<T, N, K, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, K> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = RowPointers_B::list[j]; k < RowPointers_B::list[j + 1];
+    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
          k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, RowIndices_B::list[k]) += B.values[k] * A(j, i);
+        Y(i, CSRIndices_B::list[k]) += B.values[k] * A(j, i);
       }
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  DenseMatrixTransposeMultiplySparse::compute<T, M, N, K, RowIndices_B,
-                                              RowPointers_B>(A, B, Y);
+  DenseMatrixTransposeMultiplySparse::compute<T, M, N, K, CSRIndices_B,
+                                              CSRPointers_B>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -6438,7 +6454,7 @@ namespace SparseTransposeMatrixMultiplyDenseMatrix {
 
 // Start < End (Core)
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Loop {
   /**
@@ -6451,28 +6467,28 @@ struct Loop {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Y.template set<RowIndices_A::list[Start], I>(
-        Y.template get<RowIndices_A::list[Start], I>() +
+    Y.template set<CSRIndices_A::list[Start], I>(
+        Y.template get<CSRIndices_A::list[Start], I>() +
         A.values[Start] * B.template get<J, I>());
-    Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, Start + 1,
+    Loop<T, N, M, K, CSRIndices_A, CSRPointers_A, J, I, Start + 1,
          End>::compute(A, B, Y);
   }
 };
 
 // Start == End (End of Core Loop)
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I, std::size_t End>
-struct Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, End, End> {
+struct Loop<T, N, M, K, CSRIndices_A, CSRPointers_A, J, I, End, End> {
   /**
    * @brief
    * End condition for the recursive multiplication computation in sparse matrix
@@ -6488,13 +6504,13 @@ struct Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, End, End> {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
     static_cast<void>(A);
     static_cast<void>(B);
@@ -6505,7 +6521,7 @@ struct Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, End, End> {
 
 // Core loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct Core {
   /**
@@ -6520,23 +6536,23 @@ struct Core {
    * @tparam M Number of rows in the dense matrix B.
    * @tparam K Number of rows in the sparse matrix A and cols in the dense
    * matrix B.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix A.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix A.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Loop<T, N, M, K, RowIndices_A, RowPointers_A, J, I, RowPointers_A::list[J],
-         RowPointers_A::list[J + 1]>::compute(A, B, Y);
+    Loop<T, N, M, K, CSRIndices_A, CSRPointers_A, J, I, CSRPointers_A::list[J],
+         CSRPointers_A::list[J + 1]>::compute(A, B, Y);
   }
 };
 
 // List loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t J,
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t J,
           std::size_t I>
 struct List {
   /**
@@ -6549,24 +6565,24 @@ struct List {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, N, M, K, RowIndices_A, RowPointers_A, J, I>::compute(A, B, Y);
-    List<T, N, M, K, RowIndices_A, RowPointers_A, J - 1, I>::compute(A, B, Y);
+    Core<T, N, M, K, CSRIndices_A, CSRPointers_A, J, I>::compute(A, B, Y);
+    List<T, N, M, K, CSRIndices_A, CSRPointers_A, J - 1, I>::compute(A, B, Y);
   }
 };
 
 // End of list loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
-struct List<T, N, M, K, RowIndices_A, RowPointers_A, 0, I> {
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
+struct List<T, N, M, K, CSRIndices_A, CSRPointers_A, 0, I> {
   /**
    * @brief
    * Computes the multiplication of the first row of a sparse matrix with a
@@ -6580,22 +6596,22 @@ struct List<T, N, M, K, RowIndices_A, RowPointers_A, 0, I> {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    Core<T, N, M, K, RowIndices_A, RowPointers_A, 0, I>::compute(A, B, Y);
+    Core<T, N, M, K, CSRIndices_A, CSRPointers_A, 0, I>::compute(A, B, Y);
   }
 };
 
 // Row loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A, std::size_t I>
+          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
 struct Row {
   /**
    * @brief
@@ -6607,24 +6623,24 @@ struct Row {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    List<T, N, M, K, RowIndices_A, RowPointers_A, N - 1, I>::compute(A, B, Y);
-    Row<T, N, M, K, RowIndices_A, RowPointers_A, I - 1>::compute(A, B, Y);
+    List<T, N, M, K, CSRIndices_A, CSRPointers_A, N - 1, I>::compute(A, B, Y);
+    Row<T, N, M, K, CSRIndices_A, CSRPointers_A, I - 1>::compute(A, B, Y);
   }
 };
 
 // End of row loop
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A>
-struct Row<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
+          typename CSRIndices_A, typename CSRPointers_A>
+struct Row<T, N, M, K, CSRIndices_A, CSRPointers_A, 0> {
   /**
    * @brief
    * Computes the multiplication of the first row of a sparse matrix with a
@@ -6638,16 +6654,16 @@ struct Row<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
    * @tparam M Number of rows in the dense matrix.
    * @tparam K Number of rows in the sparse matrix and cols in the dense
    * matrix.
-   * @tparam RowIndices_A Type representing the row indices of nonzero elements
+   * @tparam CSRIndices_A Type representing the row indices of nonzero elements
    * in the sparse matrix.
-   * @tparam RowPointers_A Type representing the row pointers for sparse storage
+   * @tparam CSRPointers_A Type representing the row pointers for sparse storage
    * in the sparse matrix.
    */
   static void
-  compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+  compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-    List<T, N, M, K, RowIndices_A, RowPointers_A, N - 1, 0>::compute(A, B, Y);
+    List<T, N, M, K, CSRIndices_A, CSRPointers_A, N - 1, 0>::compute(A, B, Y);
   }
 };
 
@@ -6662,18 +6678,18 @@ struct Row<T, N, M, K, RowIndices_A, RowPointers_A, 0> {
  * @tparam T Value type of the matrix.
  * @tparam N Number of columns in the sparse matrix A.
  * @tparam M Number of rows in the dense matrix B.
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix A.
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix A.
  */
-template <typename T, std::size_t N, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A, std::size_t K>
+template <typename T, std::size_t N, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t K>
 inline void
-compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
-  Row<T, N, M, K, RowIndices_A, RowPointers_A, K - 1>::compute(A, B, Y);
+  Row<T, N, M, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
 }
 
 } // namespace SparseTransposeMatrixMultiplyDenseMatrix
@@ -6690,34 +6706,34 @@ compute(const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
  * @tparam M Number of rows in the dense matrix (B).
  * @tparam K Number of rows in the sparse matrix (A) and cols in the dense
  * matrix (B).
- * @tparam RowIndices_A Type representing the row indices of nonzero elements
+ * @tparam CSRIndices_A Type representing the row indices of nonzero elements
  * in the sparse matrix (A).
- * @tparam RowPointers_A Type representing the row pointers for sparse storage
+ * @tparam CSRPointers_A Type representing the row pointers for sparse storage
  * in the sparse matrix (A).
  * @return A new dense matrix that is the result of A * B.
  */
 template <typename T, std::size_t N, std::size_t M, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A>
+          typename CSRIndices_A, typename CSRPointers_A>
 inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
-    const CompiledSparseMatrix<T, N, M, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          k++) {
       for (std::size_t i = 0; i < K; i++) {
-        Y(RowIndices_A::list[k], i) += A.values[k] * B(j, i);
+        Y(CSRIndices_A::list[k], i) += A.values[k] * B(j, i);
       }
     }
   }
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  SparseTransposeMatrixMultiplyDenseMatrix::compute<T, N, M, RowIndices_A,
-                                                    RowPointers_A, K>(A, B, Y);
+  SparseTransposeMatrixMultiplyDenseMatrix::compute<T, N, M, CSRIndices_A,
+                                                    CSRPointers_A, K>(A, B, Y);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 

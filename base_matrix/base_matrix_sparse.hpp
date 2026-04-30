@@ -59,23 +59,23 @@ public:
 
   SparseMatrix()
       : values(V, static_cast<T>(0)),
-        row_indices(V, static_cast<std::size_t>(0)),
-        row_pointers(M + 1, static_cast<std::size_t>(0)) {}
+        csr_indices(V, static_cast<std::size_t>(0)),
+        csr_pointers(M + 1, static_cast<std::size_t>(0)) {}
 
   SparseMatrix(const std::initializer_list<T> &values,
-               const std::initializer_list<std::size_t> &row_indices,
-               const std::initializer_list<std::size_t> &row_pointers)
-      : values(values), row_indices(row_indices), row_pointers(row_pointers) {}
+               const std::initializer_list<std::size_t> &csr_indices,
+               const std::initializer_list<std::size_t> &csr_pointers)
+      : values(values), csr_indices(csr_indices), csr_pointers(csr_pointers) {}
 
   SparseMatrix(const std::vector<T> &values,
-               const std::vector<std::size_t> &row_indices,
-               const std::vector<std::size_t> &row_pointers)
-      : values(values), row_indices(row_indices), row_pointers(row_pointers) {}
+               const std::vector<std::size_t> &csr_indices,
+               const std::vector<std::size_t> &csr_pointers)
+      : values(values), csr_indices(csr_indices), csr_pointers(csr_pointers) {}
 
   SparseMatrix(const Matrix<T, M, N> &input)
       : values(V, static_cast<T>(0)),
-        row_indices(V, static_cast<std::size_t>(0)),
-        row_pointers(M + 1, static_cast<std::size_t>(0)) {
+        csr_indices(V, static_cast<std::size_t>(0)),
+        csr_pointers(M + 1, static_cast<std::size_t>(0)) {
 
     std::size_t csr_index_index = 0;
     std::size_t row_pointer_count = 0;
@@ -85,59 +85,59 @@ public:
         if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[csr_index_index] = input(i, j);
-          this->row_indices[csr_index_index] = j;
+          this->csr_indices[csr_index_index] = j;
 
           row_pointer_count++;
           csr_index_index++;
 
           if (csr_index_index >= V) {
-            this->row_pointers[i + 1] = row_pointer_count;
+            this->csr_pointers[i + 1] = row_pointer_count;
             return;
           }
         }
       }
 
-      this->row_pointers[i + 1] = row_pointer_count;
+      this->csr_pointers[i + 1] = row_pointer_count;
     }
   }
 
 #else // __BASE_MATRIX_USE_STD_VECTOR__
 
-  SparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+  SparseMatrix() : values{}, csr_indices{}, csr_pointers{} {}
 
   SparseMatrix(const std::initializer_list<T> &values,
-               const std::initializer_list<std::size_t> &row_indices,
-               const std::initializer_list<std::size_t> &row_pointers)
-      : values{}, row_indices{}, row_pointers{} {
+               const std::initializer_list<std::size_t> &csr_indices,
+               const std::initializer_list<std::size_t> &csr_pointers)
+      : values{}, csr_indices{}, csr_pointers{} {
 
     // This may cause runtime error if the size of values is larger than V.
     std::copy(values.begin(), values.end(), this->values.begin());
-    std::copy(row_indices.begin(), row_indices.end(),
-              this->row_indices.begin());
-    std::copy(row_pointers.begin(), row_pointers.end(),
-              this->row_pointers.begin());
+    std::copy(csr_indices.begin(), csr_indices.end(),
+              this->csr_indices.begin());
+    std::copy(csr_pointers.begin(), csr_pointers.end(),
+              this->csr_pointers.begin());
   }
 
   SparseMatrix(const std::array<T, V> &values,
-               const std::array<std::size_t, V> &row_indices,
-               const std::array<std::size_t, (M + 1)> &row_pointers)
-      : values(values), row_indices(row_indices), row_pointers(row_pointers) {}
+               const std::array<std::size_t, V> &csr_indices,
+               const std::array<std::size_t, (M + 1)> &csr_pointers)
+      : values(values), csr_indices(csr_indices), csr_pointers(csr_pointers) {}
 
   SparseMatrix(const std::vector<T> &values,
-               const std::vector<std::size_t> &row_indices,
-               const std::vector<std::size_t> &row_pointers)
-      : values{}, row_indices{}, row_pointers{} {
+               const std::vector<std::size_t> &csr_indices,
+               const std::vector<std::size_t> &csr_pointers)
+      : values{}, csr_indices{}, csr_pointers{} {
 
     // This may cause runtime error if the size of values is larger than V.
     std::copy(values.begin(), values.end(), this->values.begin());
-    std::copy(row_indices.begin(), row_indices.end(),
-              this->row_indices.begin());
-    std::copy(row_pointers.begin(), row_pointers.end(),
-              this->row_pointers.begin());
+    std::copy(csr_indices.begin(), csr_indices.end(),
+              this->csr_indices.begin());
+    std::copy(csr_pointers.begin(), csr_pointers.end(),
+              this->csr_pointers.begin());
   }
 
   SparseMatrix(const Matrix<T, M, N> &input)
-      : values{}, row_indices{}, row_pointers{} {
+      : values{}, csr_indices{}, csr_pointers{} {
 
     std::size_t csr_index_index = 0;
     std::size_t row_pointer_count = 0;
@@ -147,19 +147,19 @@ public:
         if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
           this->values[csr_index_index] = input(i, j);
-          this->row_indices[csr_index_index] = j;
+          this->csr_indices[csr_index_index] = j;
 
           row_pointer_count++;
           csr_index_index++;
 
           if (csr_index_index >= V) {
-            this->row_pointers[i + 1] = row_pointer_count;
+            this->csr_pointers[i + 1] = row_pointer_count;
             return;
           }
         }
       }
 
-      this->row_pointers[i + 1] = row_pointer_count;
+      this->csr_pointers[i + 1] = row_pointer_count;
     }
   }
 
@@ -167,14 +167,14 @@ public:
 
   /* Copy Constructor */
   SparseMatrix(const SparseMatrix<T, M, N, V> &other)
-      : values(other.values), row_indices(other.row_indices),
-        row_pointers(other.row_pointers) {}
+      : values(other.values), csr_indices(other.csr_indices),
+        csr_pointers(other.csr_pointers) {}
 
   SparseMatrix<T, M, N, V> &operator=(const SparseMatrix<T, M, N, V> &other) {
     if (this != &other) {
       this->values = other.values;
-      this->row_indices = other.row_indices;
-      this->row_pointers = other.row_pointers;
+      this->csr_indices = other.csr_indices;
+      this->csr_pointers = other.csr_pointers;
     }
     return *this;
   }
@@ -182,15 +182,15 @@ public:
   /* Move Constructor */
   SparseMatrix(SparseMatrix<T, M, N, V> &&other) noexcept
       : values(std::move(other.values)),
-        row_indices(std::move(other.row_indices)),
-        row_pointers(std::move(other.row_pointers)) {}
+        csr_indices(std::move(other.csr_indices)),
+        csr_pointers(std::move(other.csr_pointers)) {}
 
   SparseMatrix<T, M, N, V> &
   operator=(SparseMatrix<T, M, N, V> &&other) noexcept {
     if (this != &other) {
       this->values = std::move(other.values);
-      this->row_indices = std::move(other.row_indices);
-      this->row_indices = std::move(other.row_indices);
+      this->csr_indices = std::move(other.csr_indices);
+      this->csr_indices = std::move(other.csr_indices);
     }
     return *this;
   }
@@ -210,9 +210,9 @@ public:
     Matrix<T, M, N> result;
 
     for (std::size_t j = 0; j < M; j++) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            k++) {
-        result(j, this->row_indices[k]) = this->values[k];
+        result(j, this->csr_indices[k]) = this->values[k];
       }
     }
 
@@ -249,10 +249,10 @@ public:
    * @param i The index of the value to retrieve the row index for.
    * @return The row index corresponding to the specified index.
    */
-  std::size_t csr_index(std::size_t i) { return this->row_indices[i]; }
+  std::size_t csr_index(std::size_t i) { return this->csr_indices[i]; }
 
   const std::size_t csr_index(std::size_t i) const {
-    return this->row_indices[i];
+    return this->csr_indices[i];
   }
 
   /**
@@ -264,7 +264,7 @@ public:
    * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
-  std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
+  std::size_t row_pointer(std::size_t i) { return this->csr_pointers[i]; }
 
   /**
    * @brief Returns the pointer to the start of the specified row.
@@ -276,7 +276,7 @@ public:
    * @return The starting index of the specified row.
    */
   const std::size_t row_pointer(std::size_t i) const {
-    return this->row_pointers[i];
+    return this->csr_pointers[i];
   }
 
   /**
@@ -291,9 +291,9 @@ public:
     Matrix<T, N, M> Y;
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            ++k) {
-        Y(this->row_indices[k], j) = this->values[k];
+        Y(this->csr_indices[k], j) = this->values[k];
       }
     }
 
@@ -312,9 +312,9 @@ public:
     Matrix<T, M, N> Y = B;
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            ++k) {
-        Y(j, this->row_indices[k]) += this->values[k];
+        Y(j, this->csr_indices[k]) += this->values[k];
       }
     }
 
@@ -334,9 +334,9 @@ public:
     Matrix<T, M, M> Y = B.create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            ++k) {
-        Y(j, this->row_indices[k]) += this->values[k];
+        Y(j, this->csr_indices[k]) += this->values[k];
       }
     }
 
@@ -378,9 +378,9 @@ public:
     Matrix<T, M, N> Y = -B;
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            ++k) {
-        Y(j, this->row_indices[k]) += this->values[k];
+        Y(j, this->csr_indices[k]) += this->values[k];
       }
     }
 
@@ -400,9 +400,9 @@ public:
     Matrix<T, M, M> Y = -(B.create_dense());
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = this->row_pointers[j]; k < this->row_pointers[j + 1];
+      for (std::size_t k = this->csr_pointers[j]; k < this->csr_pointers[j + 1];
            ++k) {
-        Y(j, this->row_indices[k]) += this->values[k];
+        Y(j, this->csr_indices[k]) += this->values[k];
       }
     }
 
@@ -471,12 +471,12 @@ public:
 /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
-  std::vector<std::size_t> row_indices;
-  std::vector<std::size_t> row_pointers;
+  std::vector<std::size_t> csr_indices;
+  std::vector<std::size_t> csr_pointers;
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, V> values;
-  std::array<std::size_t, V> row_indices;
-  std::array<std::size_t, M + 1> row_pointers;
+  std::array<std::size_t, V> csr_indices;
+  std::array<std::size_t, M + 1> csr_pointers;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
@@ -497,26 +497,26 @@ inline SparseMatrix<T, M, N, (M * N)> create_sparse(const Matrix<T, M, N> &A) {
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values(M * N);
-  std::vector<std::size_t> row_indices(M * N);
-  std::vector<std::size_t> row_pointers(M + 1);
+  std::vector<std::size_t> csr_indices(M * N);
+  std::vector<std::size_t> csr_pointers(M + 1);
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, (M * N)> values;
-  std::array<std::size_t, (M * N)> row_indices;
-  std::array<std::size_t, (M + 1)> row_pointers;
+  std::array<std::size_t, (M * N)> csr_indices;
+  std::array<std::size_t, (M + 1)> csr_pointers;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
-  row_pointers[0] = 0;
+  csr_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < N; j++) {
       values[consecutive_index] = A(i, j);
-      row_indices[consecutive_index] = j;
+      csr_indices[consecutive_index] = j;
 
       consecutive_index++;
     }
-    row_pointers[i + 1] = consecutive_index;
+    csr_pointers[i + 1] = consecutive_index;
   }
 
-  return SparseMatrix<T, M, N, (M * N)>(values, row_indices, row_pointers);
+  return SparseMatrix<T, M, N, (M * N)>(values, csr_indices, csr_pointers);
 }
 
 /* Create */
@@ -538,24 +538,24 @@ inline SparseMatrix<T, M, M, M> create_sparse(const DiagMatrix<T, M> &A) {
 
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values(M);
-  std::vector<std::size_t> row_indices(M);
-  std::vector<std::size_t> row_pointers(M + 1);
+  std::vector<std::size_t> csr_indices(M);
+  std::vector<std::size_t> csr_pointers(M + 1);
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M> values;
-  std::array<std::size_t, M> row_indices;
-  std::array<std::size_t, M + 1> row_pointers;
+  std::array<std::size_t, M> csr_indices;
+  std::array<std::size_t, M + 1> csr_pointers;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
-  row_pointers[0] = 0;
+  csr_pointers[0] = 0;
   for (std::size_t i = 0; i < M; i++) {
     values[consecutive_index] = A[i];
-    row_indices[consecutive_index] = i;
+    csr_indices[consecutive_index] = i;
 
     consecutive_index++;
-    row_pointers[i + 1] = consecutive_index;
+    csr_pointers[i + 1] = consecutive_index;
   }
 
-  return SparseMatrix<T, M, M, M>(values, row_indices, row_pointers);
+  return SparseMatrix<T, M, M, M>(values, csr_indices, csr_pointers);
 }
 
 /* Operator */

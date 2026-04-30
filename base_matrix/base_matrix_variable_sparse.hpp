@@ -57,23 +57,23 @@ public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
-        row_indices(M * N, static_cast<std::size_t>(0)),
-        row_pointers(M + 1, static_cast<std::size_t>(0)) {}
+        csr_indices(M * N, static_cast<std::size_t>(0)),
+        csr_pointers(M + 1, static_cast<std::size_t>(0)) {}
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
-  VariableSparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+  VariableSparseMatrix() : values{}, csr_indices{}, csr_pointers{} {}
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
-      : values(matrix.values), row_indices(matrix.row_indices),
-        row_pointers(matrix.row_pointers) {}
+      : values(matrix.values), csr_indices(matrix.csr_indices),
+        csr_pointers(matrix.csr_pointers) {}
 
   VariableSparseMatrix<T, M, N> &
   operator=(const VariableSparseMatrix<T, M, N> &matrix) {
     if (this != &matrix) {
       this->values = matrix.values;
-      this->row_indices = matrix.row_indices;
-      this->row_pointers = matrix.row_pointers;
+      this->csr_indices = matrix.csr_indices;
+      this->csr_pointers = matrix.csr_pointers;
     }
     return *this;
   }
@@ -81,15 +81,15 @@ public:
   /* Move Constructor */
   VariableSparseMatrix(VariableSparseMatrix<T, M, N> &&matrix) noexcept
       : values(std::move(matrix.values)),
-        row_indices(std::move(matrix.row_indices)),
-        row_pointers(std::move(matrix.row_pointers)) {}
+        csr_indices(std::move(matrix.csr_indices)),
+        csr_pointers(std::move(matrix.csr_pointers)) {}
 
   VariableSparseMatrix<T, M, N> &
   operator=(VariableSparseMatrix<T, M, N> &&matrix) noexcept {
     if (this != &matrix) {
       this->values = std::move(matrix.values);
-      this->row_indices = std::move(matrix.row_indices);
-      this->row_pointers = std::move(matrix.row_pointers);
+      this->csr_indices = std::move(matrix.csr_indices);
+      this->csr_pointers = std::move(matrix.csr_pointers);
     }
     return *this;
   }
@@ -128,7 +128,7 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  std::size_t csr_index(std::size_t i) { return this->row_indices[i]; }
+  std::size_t csr_index(std::size_t i) { return this->csr_indices[i]; }
 
   /**
    * @brief Const accessor for the row index at index i.
@@ -140,7 +140,7 @@ public:
    * @return The row index at index i.
    */
   const std::size_t csr_index(std::size_t i) const {
-    return this->row_indices[i];
+    return this->csr_indices[i];
   }
 
   /**
@@ -152,7 +152,7 @@ public:
    * @param i The index of the column pointer to access.
    * @return The row pointer at index i.
    */
-  std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
+  std::size_t row_pointer(std::size_t i) { return this->csr_pointers[i]; }
 
   /**
    * @brief Const accessor for the row pointer at index i.
@@ -164,18 +164,18 @@ public:
    * @return The row pointer at index i.
    */
   const std::size_t row_pointer(std::size_t i) const {
-    return this->row_pointers[i];
+    return this->csr_pointers[i];
   }
 
 /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
-  std::vector<std::size_t> row_indices;
-  std::vector<std::size_t> row_pointers;
+  std::vector<std::size_t> csr_indices;
+  std::vector<std::size_t> csr_pointers;
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M * N> values;
-  std::array<std::size_t, M * N> row_indices;
-  std::array<std::size_t, M + 1> row_pointers;
+  std::array<std::size_t, M * N> csr_indices;
+  std::array<std::size_t, M + 1> csr_pointers;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 

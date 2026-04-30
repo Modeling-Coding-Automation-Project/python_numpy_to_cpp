@@ -64,17 +64,17 @@ public:
 
   using UpperTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::ROWS, UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
-          UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
+          A_Type::ROWS, UpperTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>,
+          UpperTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>>;
 
 protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
-  using _CholeskyTriangularRowIndices =
-      UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
-  using _CholeskyTriangularRowPointers =
-      UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
+  using _CholeskyTriangularCSRIndices =
+      UpperTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>;
+  using _CholeskyTriangularCSRPointers =
+      UpperTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>;
 
 public:
   /* Constructor */
@@ -277,8 +277,8 @@ protected:
       _cholesky_decomposed_matrix;
 
   Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
-                                     _CholeskyTriangularRowIndices,
-                                     _CholeskyTriangularRowPointers>
+                                     _CholeskyTriangularCSRIndices,
+                                     _CholeskyTriangularCSRPointers>
       _cholesky_decomposed_triangular;
 
   bool _zero_div_flag;
