@@ -128,7 +128,7 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  std::size_t row_index(std::size_t i) { return this->row_indices[i]; }
+  std::size_t csr_index(std::size_t i) { return this->row_indices[i]; }
 
   /**
    * @brief Const accessor for the row index at index i.
@@ -139,7 +139,7 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  const std::size_t row_index(std::size_t i) const {
+  const std::size_t csr_index(std::size_t i) const {
     return this->row_indices[i];
   }
 
@@ -206,7 +206,7 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
       for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-        sum += A.value(k) * B(A.row_index(k), i);
+        sum += A.value(k) * B(A.csr_index(k), i);
       }
       Y(j, i) = sum;
     }
@@ -239,7 +239,7 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, B.row_index(k)) += B.value(k) * A(i, j);
+        Y(i, B.csr_index(k)) += B.value(k) * A(i, j);
       }
     }
   }
@@ -273,12 +273,12 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_row = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
       for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_row = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
         Y(j, b_row) += a_val * b_val;
@@ -314,12 +314,12 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_row = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
       for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_row = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
         Y(j, b_row) += a_val * b_val;
@@ -353,12 +353,12 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_row = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
       for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_row = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
         Y(j, b_row) += a_val * b_val;

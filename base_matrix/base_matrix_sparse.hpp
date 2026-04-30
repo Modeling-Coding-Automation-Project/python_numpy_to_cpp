@@ -77,20 +77,20 @@ public:
         row_indices(V, static_cast<std::size_t>(0)),
         row_pointers(M + 1, static_cast<std::size_t>(0)) {
 
-    std::size_t row_index_index = 0;
+    std::size_t csr_index_index = 0;
     std::size_t row_pointer_count = 0;
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
         if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
-          this->values[row_index_index] = input(i, j);
-          this->row_indices[row_index_index] = j;
+          this->values[csr_index_index] = input(i, j);
+          this->row_indices[csr_index_index] = j;
 
           row_pointer_count++;
-          row_index_index++;
+          csr_index_index++;
 
-          if (row_index_index >= V) {
+          if (csr_index_index >= V) {
             this->row_pointers[i + 1] = row_pointer_count;
             return;
           }
@@ -139,20 +139,20 @@ public:
   SparseMatrix(const Matrix<T, M, N> &input)
       : values{}, row_indices{}, row_pointers{} {
 
-    std::size_t row_index_index = 0;
+    std::size_t csr_index_index = 0;
     std::size_t row_pointer_count = 0;
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
         if (Base::Math::abs(input(i, j)) >
             static_cast<T>(SPARSE_MATRIX_JUDGE_ZERO_LIMIT_VALUE)) {
-          this->values[row_index_index] = input(i, j);
-          this->row_indices[row_index_index] = j;
+          this->values[csr_index_index] = input(i, j);
+          this->row_indices[csr_index_index] = j;
 
           row_pointer_count++;
-          row_index_index++;
+          csr_index_index++;
 
-          if (row_index_index >= V) {
+          if (csr_index_index >= V) {
             this->row_pointers[i + 1] = row_pointer_count;
             return;
           }
@@ -240,7 +240,8 @@ public:
   const T value(std::size_t i) const { return this->values[i]; }
 
   /**
-   * @brief Returns the index of the column corresponding to the specified index.
+   * @brief Returns the index of the column corresponding to the specified
+   * index.
    *
    * This function retrieves the row index for the given index in the sparse
    * matrix.
@@ -248,9 +249,9 @@ public:
    * @param i The index of the value to retrieve the row index for.
    * @return The row index corresponding to the specified index.
    */
-  std::size_t row_index(std::size_t i) { return this->row_indices[i]; }
+  std::size_t csr_index(std::size_t i) { return this->row_indices[i]; }
 
-  const std::size_t row_index(std::size_t i) const {
+  const std::size_t csr_index(std::size_t i) const {
     return this->row_indices[i];
   }
 
@@ -357,7 +358,7 @@ public:
     for (std::size_t j = 0; j < M; ++j) {
       for (std::size_t k = mat.row_pointer(j); k < mat.row_pointer(j + 1);
            ++k) {
-        Y(j, mat.row_index(k)) += mat.value(k);
+        Y(j, mat.csr_index(k)) += mat.value(k);
       }
     }
 
@@ -423,7 +424,7 @@ public:
     for (std::size_t j = 0; j < M; ++j) {
       for (std::size_t k = mat.row_pointer(j); k < mat.row_pointer(j + 1);
            ++k) {
-        Y(j, mat.row_index(k)) -= mat.value(k);
+        Y(j, mat.csr_index(k)) -= mat.value(k);
       }
     }
 
@@ -579,7 +580,7 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      Y(j, A.row_index(k)) += A.value(k);
+      Y(j, A.csr_index(k)) += A.value(k);
     }
   }
 
@@ -606,7 +607,7 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      Y(j, A.row_index(k)) -= A.value(k);
+      Y(j, A.csr_index(k)) -= A.value(k);
     }
   }
 
@@ -665,7 +666,7 @@ inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
   for (std::size_t j = 0; j < M; j++) {
     T sum = static_cast<T>(0);
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-      sum += A.value(k) * b[A.row_index(k)];
+      sum += A.value(k) * b[A.csr_index(k)];
     }
     y[j] = sum;
   }
@@ -696,7 +697,7 @@ colVector_a_mul_SparseB(const ColVector<T, N> &a,
 
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
-      y[B.row_index(k)] += B.value(k) * a[j];
+      y[B.csr_index(k)] += B.value(k) * a[j];
     }
   }
 
@@ -731,7 +732,7 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
       for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-        sum += A.value(k) * B(A.row_index(k), i);
+        sum += A.value(k) * B(A.csr_index(k), i);
       }
       Y(j, i) = sum;
     }
@@ -766,7 +767,7 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, B.row_index(k)) += B.value(k) * A(i, j);
+        Y(i, B.csr_index(k)) += B.value(k) * A(i, j);
       }
     }
   }
@@ -802,7 +803,7 @@ matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
       for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-        sum += A.value(k) * B(i, A.row_index(k));
+        sum += A.value(k) * B(i, A.csr_index(k));
       }
       Y(j, i) = sum;
     }
@@ -837,9 +838,9 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      for (std::size_t l = B.row_pointer(A.row_index(k));
-           l < B.row_pointer(A.row_index(k) + 1); ++l) {
-        Y(j, B.row_index(l)) += A.value(k) * B.value(l);
+      for (std::size_t l = B.row_pointer(A.csr_index(k));
+           l < B.row_pointer(A.csr_index(k) + 1); ++l) {
+        Y(j, B.csr_index(l)) += A.value(k) * B.value(l);
       }
     }
   }
@@ -875,7 +876,7 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
     for (std::size_t j = 0; j < K; j++) {
       for (std::size_t l = A.row_pointer(i); l < A.row_pointer(i + 1); l++) {
         for (std::size_t o = B.row_pointer(j); o < B.row_pointer(j + 1); o++) {
-          if (A.row_index(l) == B.row_index(o)) {
+          if (A.csr_index(l) == B.csr_index(o)) {
             Y(i, j) += A.value(l) * B.value(o);
           }
         }
@@ -914,7 +915,7 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
   for (std::size_t i = 0; i < N; i++) {
     for (std::size_t k = A.row_pointer(i); k < A.row_pointer(i + 1); k++) {
       for (std::size_t j = B.row_pointer(i); j < B.row_pointer(i + 1); j++) {
-        Y(A.row_index(k), B.row_index(j)) += A.value(k) * B.value(j);
+        Y(A.csr_index(k), B.csr_index(j)) += A.value(k) * B.value(j);
       }
     }
   }
@@ -932,8 +933,8 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
  *
  * @tparam T The type of elements in the matrices.
  * @tparam M The number of rows in the sparse matrix.
- * @tparam N The number of columns in the sparse matrix (and size of the diagonal
- * matrix).
+ * @tparam N The number of columns in the sparse matrix (and size of the
+ * diagonal matrix).
  * @tparam V The maximum number of non-zero values in the sparse matrix.
  * @param A The sparse matrix to multiply.
  * @param B The diagonal matrix to multiply with.
@@ -948,7 +949,7 @@ inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
       for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-        if (A.row_index(k) == i) {
+        if (A.csr_index(k) == i) {
           sum += A.value(k) * B[i];
         }
         Y(j, i) = sum;
@@ -982,7 +983,7 @@ inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         if (i == j) {
-          Y(i, B.row_index(k)) += B.value(k) * A[i];
+          Y(i, B.csr_index(k)) += B.value(k) * A[i];
         }
       }
     }
@@ -1016,7 +1017,7 @@ matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         if (i == j) {
-          Y(B.row_index(k), i) += B.value(k) * A[i];
+          Y(B.csr_index(k), i) += B.value(k) * A[i];
         }
       }
     }
@@ -1048,7 +1049,7 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = SA.row_pointer(j); k < SA.row_pointer(j + 1); ++k) {
-      Y(j, SA.row_index(k)) += SA.value(k);
+      Y(j, SA.csr_index(k)) += SA.value(k);
     }
   }
 
@@ -1076,7 +1077,7 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = SA.row_pointer(j); k < SA.row_pointer(j + 1); ++k) {
-      Y(j, SA.row_index(k)) -= SA.value(k);
+      Y(j, SA.csr_index(k)) -= SA.value(k);
     }
   }
 
@@ -1114,7 +1115,7 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
     for (std::size_t j = 0; j < K; ++j) {
       T sum = static_cast<T>(0);
       for (std::size_t k = SB.row_pointer(j); k < SB.row_pointer(j + 1); ++k) {
-        sum += SB.value(k) * A(i, SB.row_index(k));
+        sum += SB.value(k) * A(i, SB.csr_index(k));
       }
       Y(i, j) = sum;
     }
@@ -1151,7 +1152,7 @@ matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, B.row_index(k)) += B.value(k) * A(j, i);
+        Y(i, B.csr_index(k)) += B.value(k) * A(j, i);
       }
     }
   }
@@ -1187,7 +1188,7 @@ matrix_multiply_SparseAT_mul_B(const SparseMatrix<T, N, M, V> &A,
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(A.row_index(k), i) += A.value(k) * B(j, i);
+        Y(A.csr_index(k), i) += A.value(k) * B(j, i);
       }
     }
   }
