@@ -67,8 +67,8 @@ struct Row {
     Out.template set<I, J_idx>(A.template get<I, J_idx>() *
                                B.template get<I, J_idx>());
 
-    Row<Out_Type, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(Out,
-                                                                          A, B);
+    Row<Out_Type, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(Out, A,
+                                                                       B);
   }
 };
 
@@ -120,9 +120,10 @@ struct Column {
    * @param B Reference to the second input object.
    */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    Row<Out_Type, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(Out,
-                                                                          A, B);
-    Column<Out_Type, In_A_Type, In_B_Type, M, N, (I_idx - 1)>::compute(Out, A, B);
+    Row<Out_Type, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(Out, A,
+                                                                       B);
+    Column<Out_Type, In_A_Type, In_B_Type, M, N, (I_idx - 1)>::compute(Out, A,
+                                                                       B);
   }
 };
 
@@ -130,8 +131,7 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N>
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, 0> {
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
-    Row<Out_Type, In_A_Type, In_B_Type, M, N, 0, (N - 1)>::compute(Out, A,
-                                                                      B);
+    Row<Out_Type, In_A_Type, In_B_Type, M, N, 0, (N - 1)>::compute(Out, A, B);
   }
 };
 
@@ -229,8 +229,7 @@ struct Row {
 
     result += A.template get<I, J_idx>() * B.template get<I, J_idx>();
 
-    Row<T, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(result, A,
-                                                                   B);
+    Row<T, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(result, A, B);
   }
 };
 
@@ -281,8 +280,7 @@ struct Column {
    * @param B Reference to the second input object.
    */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
-    Row<T, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(result, A,
-                                                                   B);
+    Row<T, In_A_Type, In_B_Type, M, N, I_idx, (N - 1)>::compute(result, A, B);
     Column<T, In_A_Type, In_B_Type, M, N, (I_idx - 1)>::compute(result, A, B);
   }
 };
@@ -908,8 +906,8 @@ struct SubstituteRow<Row_Offset, Col_Offset, All_Type, Part_Type, M, N, 0> {
    * @brief Computes a specific operation on the input part matrix and
    * substitutes its values into the corresponding position in the All matrix.
    *
-   * This static function assigns the first column (index 0) from the part matrix
-   * to the All matrix at the position (Row_Offset, Col_Offset).
+   * This static function assigns the first column (index 0) from the part
+   * matrix to the All matrix at the position (Row_Offset, Col_Offset).
    *
    * @tparam Row_Offset The column offset for substitution.
    * @tparam Col_Offset The row offset for substitution.
@@ -1599,8 +1597,7 @@ struct Row {
     to_matrix.template set<TO_MATRIX_COL_INDEX, TO_MATRIX_ROW_INDEX>(
         from_matrix
             .template get<FROM_MATRIX_COL_INDEX, FROM_MATRIX_ROW_INDEX>());
-    Row<To_Type, From_Type, I, J_idx - 1>::substitute(to_matrix,
-                                                         from_matrix);
+    Row<To_Type, From_Type, I, J_idx - 1>::substitute(to_matrix, from_matrix);
   }
 };
 
@@ -1669,10 +1666,9 @@ struct Column {
    * @param from_matrix The source matrix containing values to substitute.
    */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
-    Row<To_Type, From_Type, I_idx, N - 1>::substitute(to_matrix,
-                                                         from_matrix);
+    Row<To_Type, From_Type, I_idx, N - 1>::substitute(to_matrix, from_matrix);
     Column<To_Type, From_Type, M, N, I_idx - 1>::substitute(to_matrix,
-                                                         from_matrix);
+                                                            from_matrix);
   }
 };
 
@@ -1682,8 +1678,8 @@ struct Column<To_Type, From_Type, M, N, 0> {
   /**
    * @brief Substitutes the first column of the from_matrix into the to_matrix.
    *
-   * This static function substitutes the values from the first column (index 0) of
-   * the from_matrix into the to_matrix at the corresponding position.
+   * This static function substitutes the values from the first column (index 0)
+   * of the from_matrix into the to_matrix at the corresponding position.
    *
    * @tparam To_Type The type of the destination matrix.
    * @tparam From_Type The type of the source matrix.
@@ -1710,7 +1706,7 @@ struct Column<To_Type, From_Type, M, N, 0> {
 template <typename To_Type, typename From_Type>
 inline void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
   Column<To_Type, From_Type, From_Type::ROWS, From_Type::COLS,
-      (From_Type::ROWS - 1)>::substitute(to_matrix, from_matrix);
+         (From_Type::ROWS - 1)>::substitute(to_matrix, from_matrix);
 }
 
 } // namespace ReshapeOperation

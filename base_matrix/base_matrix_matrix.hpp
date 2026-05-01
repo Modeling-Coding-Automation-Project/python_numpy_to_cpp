@@ -1139,9 +1139,9 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   /**
    * @brief Base case for the row subtraction.
    *
-   * This function subtracts the elements of the first column in both matrices and
-   * stores the result in the result matrix when the recursion reaches the base
-   * case (I_idx == 0).
+   * This function subtracts the elements of the first column in both matrices
+   * and stores the result in the result matrix when the recursion reaches the
+   * base case (I_idx == 0).
    *
    * @tparam T The type of the matrix elements.
    * @tparam M The number of rows in the matrix.
@@ -1592,7 +1592,8 @@ struct Core<T, M, N, I, 0> {
 };
 
 // column recursion
-template <typename T, std::size_t M, std::size_t N, std::size_t I> struct Column {
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct Column {
   /**
    * @brief Recursively computes the dot product of a matrix row and a vector.
    *
@@ -1619,9 +1620,9 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   /**
    * @brief Base case for the row multiplication.
    *
-   * This function computes the dot product for the first column of the matrix and
-   * stores the result in the result vector when the recursion reaches the base
-   * case (I == 0).
+   * This function computes the dot product for the first column of the matrix
+   * and stores the result in the result vector when the recursion reaches the
+   * base case (I == 0).
    *
    * @tparam T The type of the matrix and vector elements.
    * @tparam M The number of rows in the matrix.
@@ -1752,8 +1753,7 @@ struct Core<T, L, N, J, 0> {
 };
 
 // row recursion
-template <typename T, std::size_t L, std::size_t N, std::size_t J>
-struct Row {
+template <typename T, std::size_t L, std::size_t N, std::size_t J> struct Row {
   /**
    * @brief Recursively computes the product of a vector and a matrix column.
    *
@@ -1912,8 +1912,7 @@ struct Core<T, M, N, J, 0> {
 };
 
 // row recursion
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Row {
+template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
   /**
    * @brief Recursively computes the product of a column vector and a matrix
    * row by row.
@@ -3365,9 +3364,9 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
   /**
    * @brief Base case for the row conversion in matrix real to complex context.
    *
-   * This function computes the conversion for the first column of the real matrix
-   * and stores the result in the complex matrix when the recursion reaches the
-   * base case (I_idx == 0).
+   * This function computes the conversion for the first column of the real
+   * matrix and stores the result in the complex matrix when the recursion
+   * reaches the base case (I_idx == 0).
    *
    * @tparam T The type of the matrix elements.
    * @tparam M The number of rows in the matrix.

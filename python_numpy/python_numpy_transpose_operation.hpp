@@ -60,8 +60,8 @@ inline auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of A and the transpose of a
  * diagonal matrix B, i.e., it returns the result of A * B^T. The resulting
- * matrix will have the same number of columns as A (M) and the same number of columns
- * as B (K).
+ * matrix will have the same number of columns as A (M) and the same number of
+ * columns as B (K).
  *
  * @tparam T The data type of the matrix elements.
  * @tparam M The number of rows in matrix A.
@@ -84,7 +84,8 @@ inline auto A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of A and the transpose of a sparse
  * matrix B, i.e., it returns the result of A * B^T. The resulting matrix will
- * have the same number of columns as A (M) and the same number of columns as B (N).
+ * have the same number of columns as A (M) and the same number of columns as B
+ * (N).
  *
  * @tparam T The data type of the matrix elements.
  * @tparam M The number of rows in matrix A.
@@ -111,8 +112,8 @@ A_mul_BTranspose(const Matrix<DefDense, T, M, K> &A,
  *
  * This function computes the matrix product of a diagonal matrix A and the
  * transpose of matrix B, i.e., it returns the result of A * B^T. The resulting
- * matrix will have the same number of columns as A (M) and the same number of columns
- * as B (N).
+ * matrix will have the same number of columns as A (M) and the same number of
+ * columns as B (N).
  *
  * @tparam T The data type of the matrix elements.
  * @tparam M The number of columns in matrix A and rows in B.
@@ -207,8 +208,8 @@ A_mul_BTranspose(const Matrix<DefSparse, T, M, K, SparseAvailable> &A,
  *
  * This function computes the matrix product of a sparse matrix A and the
  * transpose of a diagonal matrix B, i.e., it returns the result of A * B^T.
- * The resulting matrix will have the same number of columns as A (M) and the same
- * number of columns as B (K).
+ * The resulting matrix will have the same number of columns as A (M) and the
+ * same number of columns as B (K).
  *
  * @tparam T The data type of the matrix elements.
  * @tparam M The number of rows in matrix A.

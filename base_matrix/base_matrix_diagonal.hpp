@@ -1193,8 +1193,7 @@ struct Core<T, M, N, J, 0> {
 };
 
 // Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Row {
+template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
   /**
    * @brief Computes the multiplication of a diagonal matrix with a dense
    * matrix, column by column.
@@ -1333,8 +1332,7 @@ struct Core<T, L, M, I, 0> {
 };
 
 // Column-wise multiplication
-template <typename T, std::size_t L, std::size_t M, std::size_t I>
-struct Row {
+template <typename T, std::size_t L, std::size_t M, std::size_t I> struct Row {
   /**
    * @brief Computes the multiplication of a dense matrix with a diagonal
    * matrix, column by column.
@@ -1765,7 +1763,8 @@ struct Row<T, M, N, J, 0> {
 };
 
 // Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Column {
+template <typename T, std::size_t M, std::size_t N, std::size_t J>
+struct Column {
   /**
    * @brief Computes the element-wise division of a dense matrix by a diagonal
    * matrix, row by row.
@@ -1793,9 +1792,9 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
    * matrix by a diagonal matrix.
    *
    * This function serves as the base case for the recursive division of each
-   * element in the first column of a dense matrix B by the corresponding diagonal
-   * element in a diagonal matrix A, storing the result in the provided result
-   * matrix.
+   * element in the first column of a dense matrix B by the corresponding
+   * diagonal element in a diagonal matrix A, storing the result in the provided
+   * result matrix.
    *
    * @param A The diagonal matrix.
    * @param B The dense matrix to divide.

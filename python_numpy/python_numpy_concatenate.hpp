@@ -582,9 +582,9 @@ concatenate_vertically(const Matrix<DefSparse, T, M, N, SparseAvailable_A> &A,
  * @brief Updates a matrix Y to be the horizontal concatenation of matrices A
  * and B.
  *
- * This function takes two input matrices, A and B, with the same number of columns
- * (M) and concatenates them horizontally to form the output matrix Y. The
- * resulting matrix Y will have M cols and (N + L) rows, where N and L are
+ * This function takes two input matrices, A and B, with the same number of
+ * columns (M) and concatenates them horizontally to form the output matrix Y.
+ * The resulting matrix Y will have M cols and (N + L) rows, where N and L are
  * the number of rows in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
@@ -609,10 +609,10 @@ update_horizontally_concatenated_matrix(Matrix<DefDense, T, M, (N + L)> &Y,
 /**
  * @brief Concatenates two matrices A and B horizontally to form a new matrix.
  *
- * This function takes two input matrices, A and B, with the same number of columns
- * (M) and concatenates them horizontally to form a new matrix. The resulting
- * matrix will have M cols and (N + L) rows, where N and L are the number of
- * rows in A and B, respectively.
+ * This function takes two input matrices, A and B, with the same number of
+ * columns (M) and concatenates them horizontally to form a new matrix. The
+ * resulting matrix will have M cols and (N + L) rows, where N and L are the
+ * number of rows in A and B, respectively.
  *
  * @tparam T The data type of the matrix elements.
  * @tparam M The number of rows in matrices A, B, and the result.
