@@ -182,15 +182,15 @@ namespace ConcatenateVertically {
 
 template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
 
-  using RowIndices =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+  using CSRIndices =
+      CSRIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
           DenseAvailable<M, N>, DiagAvailable<N>>>;
 
-  using RowPointers =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+  using CSRPointers =
+      CSRPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
           DenseAvailable<M, N>, DiagAvailable<N>>>;
 
-  using Y_Type = CompiledSparseMatrix<T, (M + N), N, RowIndices, RowPointers>;
+  using Y_Type = CompiledSparseMatrix<T, (M + N), N, CSRIndices, CSRPointers>;
 };
 
 } // namespace ConcatenateVertically
@@ -256,25 +256,25 @@ inline auto concatenate_vertically(const Matrix<T, M, N> &A,
 namespace ConcatenateVertically {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 struct DenseAndSparse {
 
   using SparseAvailable_A = DenseAvailable<M, N>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_A_v_B =
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_A_v_B>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_A_v_B>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_A_v_B>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_A_v_B>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + P), N, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + P), N, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -296,21 +296,21 @@ struct DenseAndSparse {
  * @param B The second input matrix (bottom part of the result).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline void update_vertically_concatenated_matrix(
-    typename ConcatenateVertically::DenseAndSparse<T, M, N, P, RowIndices_B,
-                                                   RowPointers_B>::Y_Type &Y,
+    typename ConcatenateVertically::DenseAndSparse<T, M, N, P, CSRIndices_B,
+                                                   CSRPointers_B>::Y_Type &Y,
     const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, P, N, CSRIndices_B, CSRPointers_B> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
   Base::Utility::copy<T, 0, (M * N), 0, (M * N),
-                      ((M * N) + RowPointers_B::list[P])>(sparse_A.values,
+                      ((M * N) + CSRPointers_B::list[P])>(sparse_A.values,
                                                           Y.values);
 
-  Base::Utility::copy<T, 0, RowPointers_B::list[P], (M * N),
-                      RowPointers_B::list[P],
-                      ((M * N) + RowPointers_B::list[P])>(B.values, Y.values);
+  Base::Utility::copy<T, 0, CSRPointers_B::list[P], (M * N),
+                      CSRPointers_B::list[P],
+                      ((M * N) + CSRPointers_B::list[P])>(B.values, Y.values);
 }
 
 /**
@@ -332,15 +332,15 @@ inline void update_vertically_concatenated_matrix(
  * concatenated result.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline auto concatenate_vertically(
     const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) ->
-    typename ConcatenateVertically::DenseAndSparse<T, M, N, P, RowIndices_B,
-                                                   RowPointers_B>::Y_Type {
+    const CompiledSparseMatrix<T, P, N, CSRIndices_B, CSRPointers_B> &B) ->
+    typename ConcatenateVertically::DenseAndSparse<T, M, N, P, CSRIndices_B,
+                                                   CSRPointers_B>::Y_Type {
 
-  typename ConcatenateVertically::DenseAndSparse<T, M, N, P, RowIndices_B,
-                                                 RowPointers_B>::Y_Type Y;
+  typename ConcatenateVertically::DenseAndSparse<T, M, N, P, CSRIndices_B,
+                                                 CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
@@ -359,12 +359,12 @@ template <typename T, std::size_t M, std::size_t P> struct DiagAndDense {
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + P), M, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + P), M, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -434,16 +434,16 @@ template <typename T, std::size_t M> struct DiagAndDiag {
 
   using SparseAvailable_B = DiagAvailable<M>;
 
-  using RowIndices_Y =
-      RowIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
+  using CSRIndices_Y =
+      CSRIndicesFromSparseAvailable<ConcatenateSparseAvailableVertically<
           SparseAvailable_A, SparseAvailable_B>>;
 
-  using RowPointers_Y =
-      RowPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
+  using CSRPointers_Y =
+      CSRPointersFromSparseAvailable<ConcatenateSparseAvailableVertically<
           SparseAvailable_A, SparseAvailable_B>>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (2 * M), M, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (2 * M), M, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -502,26 +502,26 @@ inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateVertically {
 
-template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t P, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct DiagAndSparse {
 
   using SparseAvailable_A = DiagAvailable<M>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<M, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<M, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_Y =
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + P), M, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + P), M, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -541,20 +541,20 @@ struct DiagAndSparse {
  * @param A The first input matrix (top part of the result).
  * @param B The second input matrix (bottom part of the result).
  */
-template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t P, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void update_vertically_concatenated_matrix(
-    typename ConcatenateVertically::DiagAndSparse<T, M, P, RowIndices_B,
-                                                  RowPointers_B>::Y_Type &Y,
+    typename ConcatenateVertically::DiagAndSparse<T, M, P, CSRIndices_B,
+                                                  CSRPointers_B>::Y_Type &Y,
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, P, M, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, P, M, CSRIndices_B, CSRPointers_B> &B) {
 
   auto sparse_A = Base::Matrix::create_compiled_sparse(A);
-  Base::Utility::copy<T, 0, M, 0, M, (M + RowPointers_B::list[P])>(
+  Base::Utility::copy<T, 0, M, 0, M, (M + CSRPointers_B::list[P])>(
       sparse_A.values, Y.values);
 
-  Base::Utility::copy<T, 0, RowPointers_B::list[P], M, RowPointers_B::list[P],
-                      (M + RowPointers_B::list[P])>(B.values, Y.values);
+  Base::Utility::copy<T, 0, CSRPointers_B::list[P], M, CSRPointers_B::list[P],
+                      (M + CSRPointers_B::list[P])>(B.values, Y.values);
 }
 
 /**
@@ -574,16 +574,16 @@ inline void update_vertically_concatenated_matrix(
  * @return A new matrix Y with M + P cols and M rows, containing the
  * concatenated result.
  */
-template <typename T, std::size_t M, std::size_t P, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t P, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto concatenate_vertically(
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, P, M, RowIndices_B, RowPointers_B> &B) ->
-    typename ConcatenateVertically::DiagAndSparse<T, M, P, RowIndices_B,
-                                                  RowPointers_B>::Y_Type {
+    const CompiledSparseMatrix<T, P, M, CSRIndices_B, CSRPointers_B> &B) ->
+    typename ConcatenateVertically::DiagAndSparse<T, M, P, CSRIndices_B,
+                                                  CSRPointers_B>::Y_Type {
 
-  typename ConcatenateVertically::DiagAndSparse<T, M, P, RowIndices_B,
-                                                RowPointers_B>::Y_Type Y;
+  typename ConcatenateVertically::DiagAndSparse<T, M, P, CSRIndices_B,
+                                                CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
@@ -592,13 +592,13 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t P>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t P>
 struct SparseAndDense {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B = DenseAvailable<P, N>;
 
@@ -606,12 +606,12 @@ struct SparseAndDense {
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + P), N, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + P), N, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -632,20 +632,20 @@ struct SparseAndDense {
  * @param A The first input matrix (top part of the result).
  * @param B The second input matrix (bottom part of the result).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t P>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t P>
 inline void update_vertically_concatenated_matrix(
-    typename ConcatenateVertically::SparseAndDense<T, M, N, RowIndices_A,
-                                                   RowPointers_A, P>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    typename ConcatenateVertically::SparseAndDense<T, M, N, CSRIndices_A,
+                                                   CSRPointers_A, P>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, P, N> &B) {
 
-  Base::Utility::copy<T, 0, RowPointers_A::list[P], 0, RowPointers_A::list[P],
-                      (RowPointers_A::list[P] + (P * N))>(A.values, Y.values);
+  Base::Utility::copy<T, 0, CSRPointers_A::list[P], 0, CSRPointers_A::list[P],
+                      (CSRPointers_A::list[P] + (P * N))>(A.values, Y.values);
 
   auto sparse_B = Base::Matrix::create_compiled_sparse(B);
-  Base::Utility::copy<T, 0, (P * N), RowPointers_A::list[P], (P * N),
-                      (RowPointers_A::list[P] + (P * N))>(sparse_B.values,
+  Base::Utility::copy<T, 0, (P * N), CSRPointers_A::list[P], (P * N),
+                      (CSRPointers_A::list[P] + (P * N))>(sparse_B.values,
                                                           Y.values);
 }
 
@@ -667,16 +667,16 @@ inline void update_vertically_concatenated_matrix(
  * @return A new matrix Y with M + P cols and N rows, containing the
  * concatenated result.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t P>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t P>
 inline auto concatenate_vertically(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, P, N> &B) ->
-    typename ConcatenateVertically::SparseAndDense<T, M, N, RowIndices_A,
-                                                   RowPointers_A, P>::Y_Type {
+    typename ConcatenateVertically::SparseAndDense<T, M, N, CSRIndices_A,
+                                                   CSRPointers_A, P>::Y_Type {
 
-  typename ConcatenateVertically::SparseAndDense<T, M, N, RowIndices_A,
-                                                 RowPointers_A, P>::Y_Type Y;
+  typename ConcatenateVertically::SparseAndDense<T, M, N, CSRIndices_A,
+                                                 CSRPointers_A, P>::Y_Type Y;
 
   Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
@@ -685,13 +685,13 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 struct SparseAndDiag {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B = DiagAvailable<N>;
 
@@ -699,12 +699,12 @@ struct SparseAndDiag {
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + N), N, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + N), N, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -724,20 +724,20 @@ struct SparseAndDiag {
  * @param A The first input matrix (top part of the result).
  * @param B The second input matrix (bottom part of the result).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void update_vertically_concatenated_matrix(
-    typename ConcatenateVertically::SparseAndDiag<T, M, N, RowIndices_A,
-                                                  RowPointers_A>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    typename ConcatenateVertically::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                  CSRPointers_A>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const DiagMatrix<T, N> &B) {
 
-  Base::Utility::copy<T, 0, RowPointers_A::list[M], 0, RowPointers_A::list[M],
-                      (RowPointers_A::list[M] + N)>(A.values, Y.values);
+  Base::Utility::copy<T, 0, CSRPointers_A::list[M], 0, CSRPointers_A::list[M],
+                      (CSRPointers_A::list[M] + N)>(A.values, Y.values);
 
   auto sparse_B = Base::Matrix::create_compiled_sparse(B);
-  Base::Utility::copy<T, 0, N, RowPointers_A::list[M], N,
-                      (RowPointers_A::list[M] + N)>(sparse_B.values, Y.values);
+  Base::Utility::copy<T, 0, N, CSRPointers_A::list[M], N,
+                      (CSRPointers_A::list[M] + N)>(sparse_B.values, Y.values);
 }
 
 /**
@@ -757,16 +757,16 @@ inline void update_vertically_concatenated_matrix(
  * @return A new matrix Y with M + N cols and N rows, containing the
  * concatenated result.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto concatenate_vertically(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const DiagMatrix<T, N> &B) ->
-    typename ConcatenateVertically::SparseAndDiag<T, M, N, RowIndices_A,
-                                                  RowPointers_A>::Y_Type {
+    typename ConcatenateVertically::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                  CSRPointers_A>::Y_Type {
 
-  typename ConcatenateVertically::SparseAndDiag<T, M, N, RowIndices_A,
-                                                RowPointers_A>::Y_Type Y;
+  typename ConcatenateVertically::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                CSRPointers_A>::Y_Type Y;
 
   Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
@@ -776,28 +776,28 @@ inline auto concatenate_vertically(
 namespace ConcatenateVertically {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct SparseAndSparse {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_Y =
       ConcatenateSparseAvailableVertically<SparseAvailable_A,
                                            SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, (M + P), N, RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, (M + P), N, CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateVertically
@@ -819,22 +819,22 @@ struct SparseAndSparse {
  * @param B The second input matrix (bottom part of the result).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void update_vertically_concatenated_matrix(
-    typename ConcatenateVertically::SparseAndSparse<T, M, N, P, RowIndices_A,
-                                                    RowPointers_A, RowIndices_B,
-                                                    RowPointers_B>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) {
+    typename ConcatenateVertically::SparseAndSparse<T, M, N, P, CSRIndices_A,
+                                                    CSRPointers_A, CSRIndices_B,
+                                                    CSRPointers_B>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, P, N, CSRIndices_B, CSRPointers_B> &B) {
 
-  Base::Utility::copy<T, 0, RowPointers_A::list[M], 0, RowPointers_A::list[M],
-                      (RowPointers_A::list[M] + RowPointers_B::list[P])>(
+  Base::Utility::copy<T, 0, CSRPointers_A::list[M], 0, CSRPointers_A::list[M],
+                      (CSRPointers_A::list[M] + CSRPointers_B::list[P])>(
       A.values, Y.values);
 
-  Base::Utility::copy<T, 0, RowPointers_B::list[P], RowPointers_A::list[M],
-                      RowPointers_B::list[P],
-                      (RowPointers_A::list[M] + RowPointers_B::list[P])>(
+  Base::Utility::copy<T, 0, CSRPointers_B::list[P], CSRPointers_A::list[M],
+                      CSRPointers_B::list[P],
+                      (CSRPointers_A::list[M] + CSRPointers_B::list[P])>(
       B.values, Y.values);
 }
 
@@ -856,18 +856,18 @@ inline void update_vertically_concatenated_matrix(
  * concatenated result.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto concatenate_vertically(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, P, N, RowIndices_B, RowPointers_B> &B) ->
-    typename ConcatenateVertically::SparseAndSparse<T, M, N, P, RowIndices_A,
-                                                    RowPointers_A, RowIndices_B,
-                                                    RowPointers_B>::Y_Type {
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, P, N, CSRIndices_B, CSRPointers_B> &B) ->
+    typename ConcatenateVertically::SparseAndSparse<T, M, N, P, CSRIndices_A,
+                                                    CSRPointers_A, CSRIndices_B,
+                                                    CSRPointers_B>::Y_Type {
 
-  typename ConcatenateVertically::SparseAndSparse<T, M, N, P, RowIndices_A,
-                                                  RowPointers_A, RowIndices_B,
-                                                  RowPointers_B>::Y_Type Y;
+  typename ConcatenateVertically::SparseAndSparse<T, M, N, P, CSRIndices_A,
+                                                  CSRPointers_A, CSRIndices_B,
+                                                  CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_vertically_concatenated_matrix(Y, A, B);
 
@@ -1082,9 +1082,9 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 
 /* Copy DenseMatrix to horizontally concatenated matrix */
 // when J_idx < N
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromDenseColumn {
   /**
@@ -1099,36 +1099,36 @@ struct ConcatMatrixSetFromDenseColumn {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I The current row index being processed.
    * @tparam J_idx The current column index being processed.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
 
     Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Row_Offset)>(Y, A(I, J_idx));
+                                          (J_idx + Col_Offset)>(Y, A(I, J_idx));
 
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, I,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, I,
                                    J_idx - 1>::compute(Y, A);
   }
 };
 
 // column recursion termination
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I>
-struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                      Row_Offset, RowIndices_Y, RowPointers_Y,
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I>
+struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                      Col_Offset, CSRIndices_Y, CSRPointers_Y,
                                       I, 0> {
   /**
    * @brief Copies the first row of a dense matrix into a horizontally
@@ -1141,28 +1141,28 @@ struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
 
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
         Y, A(I, 0));
   }
 };
 
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDenseRow {
   /**
    * @brief Copies a dense matrix row into a horizontally concatenated sparse
@@ -1176,34 +1176,34 @@ struct ConcatMatrixSetFromDenseRow {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, CSRIndices_Y, CSRPointers_Y,
                                    I_idx, N - 1>::compute(Y, A);
-    ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                Row_Offset, RowIndices_Y, RowPointers_Y,
+    ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                Col_Offset, CSRIndices_Y, CSRPointers_Y,
                                 I_idx - 1>::compute(Y, A);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Col,
-          std::size_t Y_Row, std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, 0> {
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y>
+struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, 0> {
   /**
    * @brief Copies the first column of a dense matrix into a horizontally
    * concatenated sparse matrix.
@@ -1215,29 +1215,29 @@ struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Col, Y_Row, Column_Offset,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the dense matrix A.
    * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input dense matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Col, Y_Row, Column_Offset,
-                                   Row_Offset, RowIndices_Y, RowPointers_Y, 0,
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, 0,
                                    N - 1>::compute(Y, A);
   }
 };
 
 /* Copy DiagMatrix to horizontally concatenated matrix */
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromDiagRow {
   /**
    * @brief Copies a diagonal matrix row into a horizontally concatenated sparse
@@ -1250,35 +1250,35 @@ struct ConcatMatrixSetFromDiagRow {
    *
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
    * @param Y The output sparse matrix to be updated with the value from B.
    * @param B The input diagonal matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
     Base::Matrix::set_sparse_matrix_value<(I_idx + Column_Offset),
-                                          (I_idx + Row_Offset)>(Y, B[I_idx]);
+                                          (I_idx + Col_Offset)>(Y, B[I_idx]);
 
-    ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
-                               RowIndices_Y, RowPointers_Y,
+    ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
+                               CSRIndices_Y, CSRPointers_Y,
                                I_idx - 1>::compute(Y, B);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
-                                  RowIndices_Y, RowPointers_Y, 0> {
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y>
+struct ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
+                                  CSRIndices_Y, CSRPointers_Y, 0> {
   /**
    * @brief Copies the first column of a diagonal matrix into a horizontally
    * concatenated sparse matrix.
@@ -1289,20 +1289,20 @@ struct ConcatMatrixSetFromDiagRow<T, M, Y_Col, Y_Row, Column_Offset, Row_Offset,
    *
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from B.
    * @param B The input diagonal matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
 
-    Base::Matrix::set_sparse_matrix_value<Column_Offset, Row_Offset>(Y, B[0]);
+    Base::Matrix::set_sparse_matrix_value<Column_Offset, Col_Offset>(Y, B[0]);
   }
 };
 
@@ -1318,12 +1318,12 @@ template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (M + N), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -1372,17 +1372,17 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::RowIndices_Y;
+  using CSRIndices_Y =
+      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::CSRIndices_Y;
 
-  using RowPointers_Y =
-      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::RowPointers_Y;
+  using CSRPointers_Y =
+      typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::CSRPointers_Y;
 
-  ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, 0, RowIndices_Y,
-                              RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, 0, CSRIndices_Y,
+                              CSRPointers_Y, M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -1418,10 +1418,10 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 
 /* Copy SparseMatrix to horizontally concatenated matrix */
 // when J_idx < N
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
           std::size_t J_idx>
 struct ConcatMatrixSetFromSparseColumn {
   /**
@@ -1436,41 +1436,41 @@ struct ConcatMatrixSetFromSparseColumn {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam RowIndices_A The row indices for the sparse matrix A.
-   * @tparam RowPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam CSRIndices_A The row indices for the sparse matrix A.
+   * @tparam CSRPointers_A The row pointers for the sparse matrix A.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I The current row index being processed.
    * @tparam J_idx The current column index being processed.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
 
     Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Row_Offset)>(
+                                          (J_idx + Col_Offset)>(
         Y, Base::Matrix::get_sparse_matrix_value<I, J_idx>(A));
 
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, I, J_idx - 1>::compute(Y, A);
+        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, I, J_idx - 1>::compute(Y, A);
   }
 };
 
 // column recursion termination
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I>
-struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
-                                       Y_Col, Y_Row, Column_Offset, Row_Offset,
-                                       RowIndices_Y, RowPointers_Y, I, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I>
+struct ConcatMatrixSetFromSparseColumn<T, M, N, CSRIndices_A, CSRPointers_A,
+                                       Y_Row, Y_Col, Column_Offset, Col_Offset,
+                                       CSRIndices_Y, CSRPointers_Y, I, 0> {
   /**
    * @brief Copies the first row of a sparse matrix into a horizontally
    * concatenated sparse matrix.
@@ -1482,29 +1482,29 @@ struct ConcatMatrixSetFromSparseColumn<T, M, N, RowIndices_A, RowPointers_A,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with the value from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
 
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Row_Offset>(
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
         Y, Base::Matrix::get_sparse_matrix_value<I, 0>(A));
   }
 };
 
 // when I_idx < M
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y, std::size_t I_idx>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
 struct ConcatMatrixSetFromSparseRow {
   /**
    * @brief Copies a sparse matrix row into a horizontally concatenated sparse
@@ -1518,38 +1518,38 @@ struct ConcatMatrixSetFromSparseRow {
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam RowIndices_A The row indices for the sparse matrix A.
-   * @tparam RowPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam CSRIndices_A The row indices for the sparse matrix A.
+   * @tparam CSRPointers_A The row pointers for the sparse matrix A.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @tparam I_idx The current row index being processed.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, I_idx, N - 1>::compute(Y, A);
-    ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
-                                 Y_Row, Column_Offset, Row_Offset, RowIndices_Y,
-                                 RowPointers_Y, I_idx - 1>::compute(Y, A);
+        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, I_idx, N - 1>::compute(Y, A);
+    ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, Y_Row,
+                                 Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+                                 CSRPointers_Y, I_idx - 1>::compute(Y, A);
   }
 };
 
 // row recursion termination
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A, std::size_t Y_Col, std::size_t Y_Row,
-          std::size_t Column_Offset, std::size_t Row_Offset,
-          typename RowIndices_Y, typename RowPointers_Y>
-struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
-                                    Y_Row, Column_Offset, Row_Offset,
-                                    RowIndices_Y, RowPointers_Y, 0> {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y>
+struct ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, Y_Row,
+                                    Y_Col, Column_Offset, Col_Offset,
+                                    CSRIndices_Y, CSRPointers_Y, 0> {
   /**
    * @brief Copies the first column of a sparse matrix into a horizontally
    * concatenated sparse matrix.
@@ -1561,46 +1561,46 @@ struct ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, Y_Col,
    * @tparam T The data type of the matrix elements.
    * @tparam M The number of rows in the sparse matrix A.
    * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Col The number of rows in the sparse matrix Y.
-   * @tparam Y_Row The number of columns in the sparse matrix Y.
+   * @tparam Y_Row The number of rows in the sparse matrix Y.
+   * @tparam Y_Col The number of columns in the sparse matrix Y.
    * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Row_Offset The offset for cols in the sparse matrix Y.
-   * @tparam RowIndices_Y The row indices for the sparse matrix Y.
-   * @tparam RowPointers_Y The row pointers for the sparse matrix Y.
+   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
+   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
+   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
    * @param Y The output sparse matrix to be updated with values from A.
    * @param A The input sparse matrix from which values are copied.
    */
   static void
-  compute(CompiledSparseMatrix<T, Y_Col, Y_Row, RowIndices_Y, RowPointers_Y> &Y,
-          const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A) {
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     ConcatMatrixSetFromSparseColumn<
-        T, M, N, RowIndices_A, RowPointers_A, Y_Col, Y_Row, Column_Offset,
-        Row_Offset, RowIndices_Y, RowPointers_Y, 0, N - 1>::compute(Y, A);
+        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, 0, N - 1>::compute(Y, A);
   }
 };
 
 namespace ConcatenateHorizontally {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 struct DenseAndSparse {
 
   using SparseAvailable_A = DenseAvailable<M, N>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<L, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_Y =
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (N + L), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -1623,12 +1623,12 @@ struct DenseAndSparse {
  * @param B The second input matrix (right part of the result).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline void update_horizontally_concatenated_matrix(
-    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
-                                                     RowPointers_B>::Y_Type &Y,
+    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, CSRIndices_B,
+                                                     CSRPointers_B>::Y_Type &Y,
     const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1642,11 +1642,11 @@ inline void update_horizontally_concatenated_matrix(
         Y.values[value_count] = A(i, j);
         value_count++;
 
-      } else if ((RowPointers_B::list[i + 1] - RowPointers_B::list[i] >
+      } else if ((CSRPointers_B::list[i + 1] - CSRPointers_B::list[i] >
                   sparse_row_count) &&
-                 (sparse_value_count < RowIndices_B::size)) {
+                 (sparse_value_count < CSRIndices_B::size)) {
 
-        if ((j - N) == RowIndices_B::list[sparse_value_count]) {
+        if ((j - N) == CSRIndices_B::list[sparse_value_count]) {
           Y.values[value_count] = B.values[sparse_value_count];
 
           value_count++;
@@ -1660,17 +1660,17 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y = typename ConcatenateHorizontally::DenseAndSparse<
-      T, M, N, L, RowIndices_B, RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename ConcatenateHorizontally::DenseAndSparse<
+      T, M, N, L, CSRIndices_B, CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename ConcatenateHorizontally::DenseAndSparse<
-      T, M, N, L, RowIndices_B, RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename ConcatenateHorizontally::DenseAndSparse<
+      T, M, N, L, CSRIndices_B, CSRPointers_B>::CSRPointers_Y;
 
-  ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, RowIndices_Y,
-                              RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, CSRIndices_Y,
+                              CSRPointers_Y, M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_B, RowPointers_B, M, (N + L),
-                               0, N, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_B, CSRPointers_B, M, (N + L),
+                               0, N, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -1695,15 +1695,15 @@ inline void update_horizontally_concatenated_matrix(
  * concatenated result.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_B, typename RowPointers_B>
+          typename CSRIndices_B, typename CSRPointers_B>
 inline auto concatenate_horizontally(
     const Matrix<T, M, N> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) ->
-    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
-                                                     RowPointers_B>::Y_Type {
+    const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) ->
+    typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, CSRIndices_B,
+                                                     CSRPointers_B>::Y_Type {
 
-  typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, RowIndices_B,
-                                                   RowPointers_B>::Y_Type Y;
+  typename ConcatenateHorizontally::DenseAndSparse<T, M, N, L, CSRIndices_B,
+                                                   CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
@@ -1722,12 +1722,12 @@ template <typename T, std::size_t M, std::size_t N> struct DiagAndDense {
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (M + N), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -1775,17 +1775,17 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::RowIndices_Y;
+  using CSRIndices_Y =
+      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::CSRIndices_Y;
 
-  using RowPointers_Y =
-      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::RowPointers_Y;
+  using CSRPointers_Y =
+      typename ConcatenateHorizontally::DiagAndDense<T, M, N>::CSRPointers_Y;
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, M, RowIndices_Y,
-                              RowPointers_Y, M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, M, CSRIndices_Y,
+                              CSRPointers_Y, M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -1831,12 +1831,12 @@ template <typename T, std::size_t M> struct DiagAndDiag {
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (2 * M), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (2 * M), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -1882,17 +1882,17 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y =
-      typename ConcatenateHorizontally::DiagAndDiag<T, M>::RowIndices_Y;
+  using CSRIndices_Y =
+      typename ConcatenateHorizontally::DiagAndDiag<T, M>::CSRIndices_Y;
 
-  using RowPointers_Y =
-      typename ConcatenateHorizontally::DiagAndDiag<T, M>::RowPointers_Y;
+  using CSRPointers_Y =
+      typename ConcatenateHorizontally::DiagAndDiag<T, M>::CSRPointers_Y;
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, 0, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, 0, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, M, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, M, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -1926,26 +1926,26 @@ inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateHorizontally {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct DiagAndSparse {
 
   using SparseAvailable_A = DiagAvailable<M>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_Y =
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (M + N), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -1966,13 +1966,13 @@ struct DiagAndSparse {
  * @param A The first input matrix (left part of the result).
  * @param B The second input matrix (right part of the result).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void update_horizontally_concatenated_matrix(
-    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
-                                                    RowPointers_B>::Y_Type &Y,
+    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, CSRIndices_B,
+                                                    CSRPointers_B>::Y_Type &Y,
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) {
+    const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -1987,11 +1987,11 @@ inline void update_horizontally_concatenated_matrix(
           Y.values[value_count] = A[i];
           value_count++;
         }
-      } else if ((RowPointers_B::list[i + 1] - RowPointers_B::list[i] >
+      } else if ((CSRPointers_B::list[i + 1] - CSRPointers_B::list[i] >
                   sparse_row_count) &&
-                 (sparse_value_count < RowIndices_B::size)) {
+                 (sparse_value_count < CSRIndices_B::size)) {
 
-        if ((j - M) == RowIndices_B::list[sparse_value_count]) {
+        if ((j - M) == CSRIndices_B::list[sparse_value_count]) {
           Y.values[value_count] = B.values[sparse_value_count];
 
           value_count++;
@@ -2005,17 +2005,17 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y = typename ConcatenateHorizontally::DiagAndSparse<
-      T, M, N, RowIndices_B, RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename ConcatenateHorizontally::DiagAndSparse<
+      T, M, N, CSRIndices_B, CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename ConcatenateHorizontally::DiagAndSparse<
-      T, M, N, RowIndices_B, RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename ConcatenateHorizontally::DiagAndSparse<
+      T, M, N, CSRIndices_B, CSRPointers_B>::CSRPointers_Y;
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, A);
+  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_B, RowPointers_B, M, (M + N),
-                               0, M, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_B, CSRPointers_B, M, (M + N),
+                               0, M, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2038,16 +2038,16 @@ inline void update_horizontally_concatenated_matrix(
  * @return A new matrix Y with M cols and M + N rows, containing the
  * concatenated result.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_B,
-          typename RowPointers_B>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto concatenate_horizontally(
     const DiagMatrix<T, M> &A,
-    const CompiledSparseMatrix<T, M, N, RowIndices_B, RowPointers_B> &B) ->
-    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
-                                                    RowPointers_B>::Y_Type {
+    const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B) ->
+    typename ConcatenateHorizontally::DiagAndSparse<T, M, N, CSRIndices_B,
+                                                    CSRPointers_B>::Y_Type {
 
-  typename ConcatenateHorizontally::DiagAndSparse<T, M, N, RowIndices_B,
-                                                  RowPointers_B>::Y_Type Y;
+  typename ConcatenateHorizontally::DiagAndSparse<T, M, N, CSRIndices_B,
+                                                  CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
@@ -2057,12 +2057,12 @@ inline auto concatenate_horizontally(
 namespace ConcatenateHorizontally {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A>
+          typename CSRIndices_A, typename CSRPointers_A>
 struct SparseAndDense {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<L, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<L, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B = DenseAvailable<M, N>;
 
@@ -2070,12 +2070,12 @@ struct SparseAndDense {
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (N + L), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -2098,11 +2098,11 @@ struct SparseAndDense {
  * @param B The second input matrix (right part of the result).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A>
+          typename CSRIndices_A, typename CSRPointers_A>
 inline void update_horizontally_concatenated_matrix(
-    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
-                                                     RowPointers_A>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, L, RowIndices_A, RowPointers_A> &A,
+    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, CSRIndices_A,
+                                                     CSRPointers_A>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, L, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, M, N> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2114,11 +2114,11 @@ inline void update_horizontally_concatenated_matrix(
     for (std::size_t j = 0; j < (N + L); j++) {
       if (j < N) {
 
-        if ((RowPointers_A::list[i + 1] - RowPointers_A::list[i] >
+        if ((CSRPointers_A::list[i + 1] - CSRPointers_A::list[i] >
              sparse_row_count) &&
-            (sparse_value_count < RowIndices_A::size)) {
+            (sparse_value_count < CSRIndices_A::size)) {
 
-          if (j == RowIndices_A::list[sparse_value_count]) {
+          if (j == CSRIndices_A::list[sparse_value_count]) {
             Y.values[value_count] = A.values[sparse_value_count];
 
             value_count++;
@@ -2137,18 +2137,18 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndDense<
-      T, M, N, L, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndDense<
+      T, M, N, L, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndDense<
-      T, M, N, L, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename ConcatenateHorizontally::SparseAndDense<
+      T, M, N, L, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
-  ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_A, RowPointers_A, M, (N + L),
-                               0, 0, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_A, CSRPointers_A, M, (N + L),
+                               0, 0, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, N, RowIndices_Y,
-                              RowPointers_Y, M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, N, CSRIndices_Y,
+                              CSRPointers_Y, M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -2172,15 +2172,15 @@ inline void update_horizontally_concatenated_matrix(
  * concatenated result.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A>
+          typename CSRIndices_A, typename CSRPointers_A>
 inline auto concatenate_horizontally(
-    const CompiledSparseMatrix<T, M, L, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, M, L, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, M, N> &B) ->
-    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
-                                                     RowPointers_A>::Y_Type {
+    typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, CSRIndices_A,
+                                                     CSRPointers_A>::Y_Type {
 
-  typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, RowIndices_A,
-                                                   RowPointers_A>::Y_Type Y;
+  typename ConcatenateHorizontally::SparseAndDense<T, M, N, L, CSRIndices_A,
+                                                   CSRPointers_A>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
@@ -2189,13 +2189,13 @@ inline auto concatenate_horizontally(
 
 namespace ConcatenateHorizontally {
 
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 struct SparseAndDiag {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B = DiagAvailable<M>;
 
@@ -2203,12 +2203,12 @@ struct SparseAndDiag {
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (M + N), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (M + N), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -2229,12 +2229,12 @@ struct SparseAndDiag {
  * @param A The first input matrix (left part of the result).
  * @param B The second input matrix (right part of the result).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline void update_horizontally_concatenated_matrix(
-    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
-                                                    RowPointers_A>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                    CSRPointers_A>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const DiagMatrix<T, M> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2246,11 +2246,11 @@ inline void update_horizontally_concatenated_matrix(
     for (std::size_t j = 0; j < (N + M); j++) {
       if (j < N) {
 
-        if ((RowPointers_A::list[i + 1] - RowPointers_A::list[i] >
+        if ((CSRPointers_A::list[i + 1] - CSRPointers_A::list[i] >
              sparse_row_count) &&
-            (sparse_value_count < RowIndices_A::size)) {
+            (sparse_value_count < CSRIndices_A::size)) {
 
-          if (j == RowIndices_A::list[sparse_value_count]) {
+          if (j == CSRIndices_A::list[sparse_value_count]) {
             Y.values[value_count] = A.values[sparse_value_count];
 
             value_count++;
@@ -2272,18 +2272,18 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndDiag<
-      T, M, N, RowIndices_A, RowPointers_A>::RowIndices_Y;
+  using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndDiag<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
 
-  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndDiag<
-      T, M, N, RowIndices_A, RowPointers_A>::RowPointers_Y;
+  using CSRPointers_Y = typename ConcatenateHorizontally::SparseAndDiag<
+      T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
-  ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, M, (M + N),
-                               0, 0, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, M, (M + N),
+                               0, 0, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, RowIndices_Y,
-                             RowPointers_Y, M - 1>::compute(Y, B);
+  ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
+                             CSRPointers_Y, M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -2305,16 +2305,16 @@ inline void update_horizontally_concatenated_matrix(
  * @return A new matrix Y with M cols and M + N rows, containing the
  * concatenated result.
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline auto concatenate_horizontally(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const DiagMatrix<T, M> &B) ->
-    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
-                                                    RowPointers_A>::Y_Type {
+    typename ConcatenateHorizontally::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                    CSRPointers_A>::Y_Type {
 
-  typename ConcatenateHorizontally::SparseAndDiag<T, M, N, RowIndices_A,
-                                                  RowPointers_A>::Y_Type Y;
+  typename ConcatenateHorizontally::SparseAndDiag<T, M, N, CSRIndices_A,
+                                                  CSRPointers_A>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 
@@ -2324,28 +2324,28 @@ inline auto concatenate_horizontally(
 namespace ConcatenateHorizontally {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 struct SparseAndSparse {
 
   using SparseAvailable_A =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_A,
-                                                  RowPointers_A>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_A,
+                                                  CSRPointers_A>;
 
   using SparseAvailable_B =
-      CreateSparseAvailableFromIndicesAndPointers<N, RowIndices_B,
-                                                  RowPointers_B>;
+      CreateSparseAvailableFromIndicesAndPointers<N, CSRIndices_B,
+                                                  CSRPointers_B>;
 
   using SparseAvailable_Y =
       ConcatenateSparseAvailableHorizontally<SparseAvailable_A,
                                              SparseAvailable_B>;
 
-  using RowIndices_Y = RowIndicesFromSparseAvailable<SparseAvailable_Y>;
+  using CSRIndices_Y = CSRIndicesFromSparseAvailable<SparseAvailable_Y>;
 
-  using RowPointers_Y = RowPointersFromSparseAvailable<SparseAvailable_Y>;
+  using CSRPointers_Y = CSRPointersFromSparseAvailable<SparseAvailable_Y>;
 
   using Y_Type =
-      CompiledSparseMatrix<T, M, (N + L), RowIndices_Y, RowPointers_Y>;
+      CompiledSparseMatrix<T, M, (N + L), CSRIndices_Y, CSRPointers_Y>;
 };
 
 } // namespace ConcatenateHorizontally
@@ -2366,14 +2366,14 @@ struct SparseAndSparse {
  * @param B The second input matrix (right part of the result).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::SparseAndSparse<
-        T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
-        RowPointers_B>::Y_Type &Y,
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) {
+        T, M, N, L, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+        CSRPointers_B>::Y_Type &Y,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) {
 
 #ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
@@ -2386,22 +2386,22 @@ inline void update_horizontally_concatenated_matrix(
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < (N + M); j++) {
       if ((j < N) &&
-          (RowPointers_A::list[i + 1] - RowPointers_A::list[i] >
+          (CSRPointers_A::list[i + 1] - CSRPointers_A::list[i] >
            sparse_row_count_A) &&
-          (sparse_value_count_A < RowIndices_A::size)) {
+          (sparse_value_count_A < CSRIndices_A::size)) {
 
-        if (j == RowIndices_A::list[sparse_value_count_A]) {
+        if (j == CSRIndices_A::list[sparse_value_count_A]) {
           Y.values[value_count] = A.values[sparse_value_count_A];
 
           value_count++;
           sparse_value_count_A++;
           sparse_row_count_A++;
         }
-      } else if ((RowPointers_B::list[i + 1] - RowPointers_B::list[i] >
+      } else if ((CSRPointers_B::list[i + 1] - CSRPointers_B::list[i] >
                   sparse_row_count_B) &&
-                 (sparse_value_count_B < RowIndices_B::size)) {
+                 (sparse_value_count_B < CSRIndices_B::size)) {
 
-        if ((j - N) == RowIndices_B::list[sparse_value_count_B]) {
+        if ((j - N) == CSRIndices_B::list[sparse_value_count_B]) {
           Y.values[value_count] = B.values[sparse_value_count_B];
 
           value_count++;
@@ -2416,20 +2416,20 @@ inline void update_horizontally_concatenated_matrix(
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  using RowIndices_Y = typename ConcatenateHorizontally::SparseAndSparse<
-      T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowIndices_Y;
+  using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndSparse<
+      T, M, N, L, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRIndices_Y;
 
-  using RowPointers_Y = typename ConcatenateHorizontally::SparseAndSparse<
-      T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
-      RowPointers_B>::RowPointers_Y;
+  using CSRPointers_Y = typename ConcatenateHorizontally::SparseAndSparse<
+      T, M, N, L, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+      CSRPointers_B>::CSRPointers_Y;
 
-  ConcatMatrixSetFromSparseRow<T, M, N, RowIndices_A, RowPointers_A, M, (N + L),
-                               0, 0, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, M, (N + L),
+                               0, 0, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, A);
 
-  ConcatMatrixSetFromSparseRow<T, M, L, RowIndices_B, RowPointers_B, M, (N + L),
-                               0, N, RowIndices_Y, RowPointers_Y,
+  ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_B, CSRPointers_B, M, (N + L),
+                               0, N, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
@@ -2453,18 +2453,18 @@ inline void update_horizontally_concatenated_matrix(
  * concatenated result.
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
-          typename RowIndices_A, typename RowPointers_A, typename RowIndices_B,
-          typename RowPointers_B>
+          typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
+          typename CSRPointers_B>
 inline auto concatenate_horizontally(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &A,
-    const CompiledSparseMatrix<T, M, L, RowIndices_B, RowPointers_B> &B) ->
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+    const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) ->
     typename ConcatenateHorizontally::SparseAndSparse<
-        T, M, N, L, RowIndices_A, RowPointers_A, RowIndices_B,
-        RowPointers_B>::Y_Type {
+        T, M, N, L, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+        CSRPointers_B>::Y_Type {
 
-  typename ConcatenateHorizontally::SparseAndSparse<T, M, N, L, RowIndices_A,
-                                                    RowPointers_A, RowIndices_B,
-                                                    RowPointers_B>::Y_Type Y;
+  typename ConcatenateHorizontally::SparseAndSparse<T, M, N, L, CSRIndices_A,
+                                                    CSRPointers_A, CSRIndices_B,
+                                                    CSRPointers_B>::Y_Type Y;
 
   Base::Matrix::update_horizontally_concatenated_matrix(Y, A, B);
 

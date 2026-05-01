@@ -57,23 +57,23 @@ public:
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
-        row_indices(M * N, static_cast<std::size_t>(0)),
-        row_pointers(M + 1, static_cast<std::size_t>(0)) {}
+        csr_indices(M * N, static_cast<std::size_t>(0)),
+        csr_pointers(M + 1, static_cast<std::size_t>(0)) {}
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
-  VariableSparseMatrix() : values{}, row_indices{}, row_pointers{} {}
+  VariableSparseMatrix() : values{}, csr_indices{}, csr_pointers{} {}
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
-      : values(matrix.values), row_indices(matrix.row_indices),
-        row_pointers(matrix.row_pointers) {}
+      : values(matrix.values), csr_indices(matrix.csr_indices),
+        csr_pointers(matrix.csr_pointers) {}
 
   VariableSparseMatrix<T, M, N> &
   operator=(const VariableSparseMatrix<T, M, N> &matrix) {
     if (this != &matrix) {
       this->values = matrix.values;
-      this->row_indices = matrix.row_indices;
-      this->row_pointers = matrix.row_pointers;
+      this->csr_indices = matrix.csr_indices;
+      this->csr_pointers = matrix.csr_pointers;
     }
     return *this;
   }
@@ -81,15 +81,15 @@ public:
   /* Move Constructor */
   VariableSparseMatrix(VariableSparseMatrix<T, M, N> &&matrix) noexcept
       : values(std::move(matrix.values)),
-        row_indices(std::move(matrix.row_indices)),
-        row_pointers(std::move(matrix.row_pointers)) {}
+        csr_indices(std::move(matrix.csr_indices)),
+        csr_pointers(std::move(matrix.csr_pointers)) {}
 
   VariableSparseMatrix<T, M, N> &
   operator=(VariableSparseMatrix<T, M, N> &&matrix) noexcept {
     if (this != &matrix) {
       this->values = std::move(matrix.values);
-      this->row_indices = std::move(matrix.row_indices);
-      this->row_pointers = std::move(matrix.row_pointers);
+      this->csr_indices = std::move(matrix.csr_indices);
+      this->csr_pointers = std::move(matrix.csr_pointers);
     }
     return *this;
   }
@@ -128,7 +128,7 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  std::size_t row_index(std::size_t i) { return this->row_indices[i]; }
+  std::size_t csr_index(std::size_t i) { return this->csr_indices[i]; }
 
   /**
    * @brief Const accessor for the row index at index i.
@@ -139,8 +139,8 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  const std::size_t row_index(std::size_t i) const {
-    return this->row_indices[i];
+  const std::size_t csr_index(std::size_t i) const {
+    return this->csr_indices[i];
   }
 
   /**
@@ -152,7 +152,7 @@ public:
    * @param i The index of the column pointer to access.
    * @return The row pointer at index i.
    */
-  std::size_t row_pointer(std::size_t i) { return this->row_pointers[i]; }
+  std::size_t row_pointer(std::size_t i) { return this->csr_pointers[i]; }
 
   /**
    * @brief Const accessor for the row pointer at index i.
@@ -164,18 +164,18 @@ public:
    * @return The row pointer at index i.
    */
   const std::size_t row_pointer(std::size_t i) const {
-    return this->row_pointers[i];
+    return this->csr_pointers[i];
   }
 
 /* Variable */
 #ifdef __BASE_MATRIX_USE_STD_VECTOR__
   std::vector<T> values;
-  std::vector<std::size_t> row_indices;
-  std::vector<std::size_t> row_pointers;
+  std::vector<std::size_t> csr_indices;
+  std::vector<std::size_t> csr_pointers;
 #else  // __BASE_MATRIX_USE_STD_VECTOR__
   std::array<T, M * N> values;
-  std::array<std::size_t, M * N> row_indices;
-  std::array<std::size_t, M + 1> row_pointers;
+  std::array<std::size_t, M * N> csr_indices;
+  std::array<std::size_t, M + 1> csr_pointers;
 #endif // __BASE_MATRIX_USE_STD_VECTOR__
 };
 
@@ -206,7 +206,7 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
       for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
-        sum += A.value(k) * B(A.row_index(k), i);
+        sum += A.value(k) * B(A.csr_index(k), i);
       }
       Y(j, i) = sum;
     }
@@ -239,7 +239,7 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
-        Y(i, B.row_index(k)) += B.value(k) * A(i, j);
+        Y(i, B.csr_index(k)) += B.value(k) * A(i, j);
       }
     }
   }
@@ -273,15 +273,15 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }
@@ -314,15 +314,15 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }
@@ -353,15 +353,15 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      std::size_t a_col = A.row_index(k);
+      std::size_t a_row = A.csr_index(k);
       T a_val = A.value(k);
 
-      for (std::size_t l = B.row_pointer(a_col); l < B.row_pointer(a_col + 1);
+      for (std::size_t l = B.row_pointer(a_row); l < B.row_pointer(a_row + 1);
            ++l) {
-        std::size_t b_col = B.row_index(l);
+        std::size_t b_row = B.csr_index(l);
         T b_val = B.value(l);
 
-        Y(j, b_col) += a_val * b_val;
+        Y(j, b_row) += a_val * b_val;
       }
     }
   }

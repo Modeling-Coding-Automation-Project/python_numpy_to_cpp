@@ -53,27 +53,27 @@ public:
 
   using UpperTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::ROWS, UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
-          UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
+          A_Type::ROWS, UpperTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>,
+          UpperTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>>;
 
   using LowerTriangular_SparseAvailable_Type =
       CreateSparseAvailableFromIndicesAndPointers<
-          A_Type::ROWS, LowerTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>,
-          LowerTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>>;
+          A_Type::ROWS, LowerTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>,
+          LowerTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>>;
 
 protected:
   /* Type */
   using _T = typename A_Type::Value_Type;
 
-  using _L_RowIndices =
-      Base::Matrix::LowerTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
-  using _L_RowPointers =
-      Base::Matrix::LowerTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
+  using _L_CSRIndices =
+      Base::Matrix::LowerTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>;
+  using _L_CSRPointers =
+      Base::Matrix::LowerTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>;
 
-  using _U_RowIndices =
-      Base::Matrix::UpperTriangularRowIndices<A_Type::ROWS, A_Type::ROWS>;
-  using _U_RowPointers =
-      Base::Matrix::UpperTriangularRowPointers<A_Type::ROWS, A_Type::ROWS>;
+  using _U_CSRIndices =
+      Base::Matrix::UpperTriangularCSRIndices<A_Type::ROWS, A_Type::ROWS>;
+  using _U_CSRPointers =
+      Base::Matrix::UpperTriangularCSRPointers<A_Type::ROWS, A_Type::ROWS>;
 
 public:
   /* Constructor */
@@ -279,11 +279,11 @@ protected:
   Base::Matrix::LUDecomposition<_T, A_Type::ROWS> _LU_decomposer;
 
   Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
-                                     _L_RowIndices, _L_RowPointers>
+                                     _L_CSRIndices, _L_CSRPointers>
       _L_triangular;
 
   Base::Matrix::CompiledSparseMatrix<_T, A_Type::ROWS, A_Type::ROWS,
-                                     _U_RowIndices, _U_RowPointers>
+                                     _U_CSRIndices, _U_CSRPointers>
       _U_triangular;
 };
 

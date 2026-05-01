@@ -158,9 +158,9 @@ cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
  * @tparam T             The numeric type of the matrix elements (e.g., float,
  * double).
  * @tparam M             The dimension of the square matrix.
- * @tparam RowIndices_U  The type used for row indices in the sparse matrix
+ * @tparam CSRIndices_U  The type used for row indices in the sparse matrix
  * representation.
- * @tparam RowPointers_U The type used for row pointers in the sparse matrix
+ * @tparam CSRPointers_U The type used for row pointers in the sparse matrix
  * representation.
  * @param U              The input sparse matrix in compiled format.
  * @param Y_b            The fallback matrix to return if decomposition fails.
@@ -170,10 +170,10 @@ cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
  * matrix resulting from the Cholesky decomposition (or Y_b if failed) and a
  * boolean flag that is true if a zero or negative pivot is encountered.
  */
-template <typename T, std::size_t M, typename RowIndices_U,
-          typename RowPointers_U>
+template <typename T, std::size_t M, typename CSRIndices_U,
+          typename CSRPointers_U>
 inline std::tuple<Matrix<T, M, M>, bool> cholesky_decomposition_sparse(
-    const CompiledSparseMatrix<T, M, M, RowIndices_U, RowPointers_U> &U,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_U, CSRPointers_U> &U,
     const Matrix<T, M, M> &Y_b, const T &division_min) {
   Matrix<T, M, M> U_dense = Base::Matrix::output_dense_matrix(U);
   Matrix<T, M, M> Y;

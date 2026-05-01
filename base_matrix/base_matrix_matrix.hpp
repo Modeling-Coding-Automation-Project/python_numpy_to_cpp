@@ -654,7 +654,7 @@ public:
 };
 
 /* swap rows */
-namespace MatrixSwapColumns {
+namespace MatrixSwapRows {
 
 // Swap N_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx>
@@ -723,7 +723,7 @@ inline void compute(std::size_t row_1, std::size_t row_2, Matrix<T, M, N> &mat,
   Core<T, M, N, N - 1>::compute(row_1, row_2, mat, temp);
 }
 
-} // namespace MatrixSwapColumns
+} // namespace MatrixSwapRows
 
 /**
  * @brief Swaps two rows in a matrix.
@@ -740,7 +740,7 @@ inline void compute(std::size_t row_1, std::size_t row_2, Matrix<T, M, N> &mat,
  * @param mat The matrix in which the rows are swapped.
  */
 template <typename T, std::size_t M, std::size_t N>
-inline void matrix_col_swap(std::size_t row_1, std::size_t row_2,
+inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
                             Matrix<T, M, N> &mat) {
   T temp = static_cast<T>(0);
 
@@ -762,7 +762,7 @@ inline void matrix_col_swap(std::size_t row_1, std::size_t row_2,
 
 #else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 
-  MatrixSwapColumns::compute<T, M, N>(row_1, row_2, mat, temp);
+  MatrixSwapRows::compute<T, M, N>(row_1, row_2, mat, temp);
 
 #endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
 }
@@ -784,7 +784,7 @@ inline void matrix_col_swap(std::size_t row_1, std::size_t row_2,
  * @param mat The matrix in which the cols are swapped.
  */
 template <typename T, std::size_t M, std::size_t N>
-inline void matrix_row_swap(std::size_t col_1, std::size_t col_2,
+inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
                             Matrix<T, M, N> &mat) {
   Vector<T, M> temp_vec;
 

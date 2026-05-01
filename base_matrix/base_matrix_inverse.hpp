@@ -697,8 +697,8 @@ namespace InverseOperation {
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam RowIndices_A The type representing row indices of the sparse matrix.
- * @tparam RowPointers_A The type representing row pointers of the sparse
+ * @tparam CSRIndices_A The type representing row indices of the sparse matrix.
+ * @tparam CSRPointers_A The type representing row pointers of the sparse
  * matrix.
  * @param SA The compiled sparse matrix A.
  * @param b The right-hand side vector b.
@@ -709,12 +709,12 @@ namespace InverseOperation {
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline typename std::enable_if<(M > 1),
                                std::tuple<Vector<T, M>, T, std::size_t>>::type
 sparse_gmres_k_core(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
@@ -736,12 +736,12 @@ sparse_gmres_k_core(
   Vector<T, M> b_ax;
   for (std::size_t j = 0; j < matrix_size; j++) {
     T sum = static_cast<T>(0);
-    for (std::size_t k = RowPointers_A::list[j]; k < RowPointers_A::list[j + 1];
+    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
          k++) {
 
-      if (RowIndices_A::list[k] < matrix_size) {
+      if (CSRIndices_A::list[k] < matrix_size) {
 
-        sum += SA.values[k] * x_1[RowIndices_A::list[k]];
+        sum += SA.values[k] * x_1[CSRIndices_A::list[k]];
       }
     }
     b_ax[j] = b[j] - sum;
@@ -760,12 +760,12 @@ sparse_gmres_k_core(
     Vector<T, M> q_row_vector = q.create_row_vector(n - 1);
     for (std::size_t j = 0; j < matrix_size; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = RowPointers_A::list[j];
-           k < RowPointers_A::list[j + 1]; k++) {
+      for (std::size_t k = CSRPointers_A::list[j];
+           k < CSRPointers_A::list[j + 1]; k++) {
 
-        if (RowIndices_A::list[k] < matrix_size) {
+        if (CSRIndices_A::list[k] < matrix_size) {
 
-          sum += SA.values[k] * q_row_vector[RowIndices_A::list[k]];
+          sum += SA.values[k] * q_row_vector[CSRIndices_A::list[k]];
         }
       }
       v[j] = sum;
@@ -862,12 +862,12 @@ sparse_gmres_k_core(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline typename std::enable_if<(M <= 1),
                                std::tuple<Vector<T, M>, T, std::size_t>>::type
 sparse_gmres_k_core(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
   static_assert(M == 1,
@@ -904,10 +904,10 @@ sparse_gmres_k_core(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min) {
 
@@ -933,10 +933,10 @@ inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k_partition(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
 
@@ -963,11 +963,11 @@ inline std::tuple<Vector<T, M>, T, std::size_t> sparse_gmres_k_partition(
  * @return A tuple of (solution matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
 sparse_gmres_k_matrix(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Matrix<T, M, K> &B, const Matrix<T, M, K> &X_1, const T &decay_rate,
     const T &division_min) {
 
@@ -1007,11 +1007,11 @@ sparse_gmres_k_matrix(
  * @return A tuple of (solution matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, std::size_t K, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t K, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<T, M, K>, std::array<T, K>, std::array<std::size_t, K>>
 sparse_gmres_k_partition_matrix(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &SA,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Matrix<T, M, K> &B, const Matrix<T, M, K> &X_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
 
@@ -1057,10 +1057,10 @@ sparse_gmres_k_partition_matrix(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
     const T &division_min) {
   static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
@@ -1085,9 +1085,9 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
   Matrix<T, N, N> A = Base::Matrix::matrix_multiply_ATranspose_mul_SparseB(
       Base::Matrix::output_dense_matrix(In_SA), In_SA);
 
-  ColVector<T, M> b_ax_temp_col(b_ax_temp);
+  ColVector<T, M> b_ax_temp_row(b_ax_temp);
   ColVector<T, N> b_SA =
-      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_col, In_SA);
+      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_row, In_SA);
   Vector<T, N> b_ax = b_SA.transpose();
 
   // Normalize b_Ax
@@ -1202,10 +1202,10 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
  * rep_num).
  */
 template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename RowIndices_A, typename RowPointers_A>
+          typename CSRIndices_A, typename CSRPointers_A>
 inline std::tuple<Matrix<T, N, K>, std::array<T, K>, std::array<std::size_t, K>>
 sparse_gmres_k_rect_matrix(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &In_SA,
     const Matrix<T, M, K> &B, const Matrix<T, N, K> &X_1, const T &decay_rate,
     const T &division_min) {
 
@@ -1236,8 +1236,8 @@ sparse_gmres_k_rect_matrix(
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The number of rows in the matrix A.
  * @tparam N The number of columns in the matrix A.
- * @tparam RowIndices_A The type representing row indices of the sparse matrix.
- * @tparam RowPointers_A The type representing row pointers of the sparse
+ * @tparam CSRIndices_A The type representing row indices of the sparse matrix.
+ * @tparam CSRPointers_A The type representing row pointers of the sparse
  * matrix.
  * @param In_SA The compiled sparse matrix A.
  * @param B The right-hand side matrix B.
@@ -1247,11 +1247,11 @@ sparse_gmres_k_rect_matrix(
  * @return A tuple of (solution matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, std::size_t N, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<T, N, M>, std::array<T, M>, std::array<std::size_t, M>>
 sparse_gmres_k_rect_matrix(
-    const CompiledSparseMatrix<T, M, N, RowIndices_A, RowPointers_A> &In_SA,
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &In_SA,
     const DiagMatrix<T, M> &B, const Matrix<T, N, M> &X_1, const T &decay_rate,
     const T &division_min) {
 
@@ -1281,8 +1281,8 @@ sparse_gmres_k_rect_matrix(
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M).
- * @tparam RowIndices_A The type representing row indices of the sparse matrix.
- * @tparam RowPointers_A The type representing row pointers of the sparse
+ * @tparam CSRIndices_A The type representing row indices of the sparse matrix.
+ * @tparam CSRPointers_A The type representing row pointers of the sparse
  * matrix.
  * @param In_A The compiled sparse matrix A.
  * @param decay_rate The convergence criterion for the GMRES method.
@@ -1291,11 +1291,11 @@ sparse_gmres_k_rect_matrix(
  * @return A tuple of (inverse matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
 sparse_gmres_k_matrix_inv(
-    const CompiledSparseMatrix<T, M, M, RowIndices_A, RowPointers_A> &In_A,
+    const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &In_A,
     const T &decay_rate, const T &division_min, const Matrix<T, M, M> X_1) {
   Matrix<T, M, M> B = Matrix<T, M, M>::identity();
   Matrix<T, M, M> X;
@@ -1593,12 +1593,12 @@ complex_gmres_k_matrix(const Matrix<Complex<T>, M, M> &A,
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline typename std::enable_if<
     (M > 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
 complex_sparse_gmres_k(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+    const CompiledSparseMatrix<Complex<T>, M, M, CSRIndices_A, CSRPointers_A>
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     const T &decay_rate, const T &division_min) {
@@ -1723,12 +1723,12 @@ complex_sparse_gmres_k(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline typename std::enable_if<
     (M <= 1), std::tuple<Vector<Complex<T>, M>, T, std::size_t>>::type
 complex_sparse_gmres_k(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+    const CompiledSparseMatrix<Complex<T>, M, M, CSRIndices_A, CSRPointers_A>
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     const T &decay_rate, const T &division_min) {
@@ -1766,12 +1766,12 @@ complex_sparse_gmres_k(
  * @return A tuple of (solution matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
                   std::array<std::size_t, M>>
 complex_sparse_gmres_k_matrix(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+    const CompiledSparseMatrix<Complex<T>, M, M, CSRIndices_A, CSRPointers_A>
         &In_A,
     const T &decay_rate, const T &division_min,
     const Matrix<Complex<T>, M, M> &X_1) {
@@ -1845,12 +1845,12 @@ complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> In_A,
  * @return A tuple of (inverse matrix X, residual norms rho, iteration counts
  * rep_num).
  */
-template <typename T, std::size_t M, typename RowIndices_A,
-          typename RowPointers_A>
+template <typename T, std::size_t M, typename CSRIndices_A,
+          typename CSRPointers_A>
 inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
                   std::array<std::size_t, M>>
 complex_sparse_gmres_k_matrix_inv(
-    const CompiledSparseMatrix<Complex<T>, M, M, RowIndices_A, RowPointers_A>
+    const CompiledSparseMatrix<Complex<T>, M, M, CSRIndices_A, CSRPointers_A>
         In_A,
     const T &decay_rate, const T &division_min,
     const Matrix<Complex<T>, M, M> X_1) {

@@ -245,8 +245,8 @@ struct GetImagFromComplexDiagMatrix<T, Complex_T, M, false> {
  */
 template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
 using BaseMatrixSparseMatrix_Type = Base::Matrix::CompiledSparseMatrix<
-    T, M, N, RowIndicesFromSparseAvailable<SparseAvailable>,
-    RowPointersFromSparseAvailable<SparseAvailable>>;
+    T, M, N, CSRIndicesFromSparseAvailable<SparseAvailable>,
+    CSRPointersFromSparseAvailable<SparseAvailable>>;
 
 template <typename T, typename Complex_T, std::size_t M, std::size_t N,
           typename SparseAvailable, bool IsComplex>

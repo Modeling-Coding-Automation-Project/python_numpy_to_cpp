@@ -393,7 +393,7 @@ public:
 public:
   /* Function */
 
-  template <typename U, std::size_t P, std::size_t I_Col, std::size_t I_Col_Row>
+  template <typename U, std::size_t P, std::size_t I_Row, std::size_t I_Row_Col>
   struct GetSetDiagMatrix {
     /** @brief Gets the value at the specified column and row indices from the
      * diagonal matrix.
@@ -422,8 +422,8 @@ public:
     }
   };
 
-  template <typename U, std::size_t P, std::size_t I_Col>
-  struct GetSetDiagMatrix<U, P, I_Col, 0> {
+  template <typename U, std::size_t P, std::size_t I_Row>
+  struct GetSetDiagMatrix<U, P, I_Row, 0> {
     /**
      * @brief Gets the value at the specified column index from the diagonal
      * matrix.
@@ -436,7 +436,7 @@ public:
      */
     static T get_value(const Base::Matrix::DiagMatrix<U, P> &matrix) {
 
-      return matrix.data[I_Col];
+      return matrix.data[I_Row];
     }
 
     /**
@@ -451,7 +451,7 @@ public:
      */
     static void set_value(Base::Matrix::DiagMatrix<U, P> &matrix, T value) {
 
-      matrix.data[I_Col] = value;
+      matrix.data[I_Row] = value;
     }
   };
 
@@ -690,7 +690,7 @@ public:
  *
  * @note
  * - The underlying storage is provided by Base::Matrix::CompiledSparseMatrix<T,
- * M, N, RowIndices_Type, RowPointers_Type>.
+ * M, N, CSRIndices_Type, CSRPointers_Type>.
  * - Provides compile-time dimension checks for element access.
  * - Supports creation of full-valued matrices.
  * - Supports conversion to complex, and extraction of real/imaginary parts.
@@ -707,12 +707,12 @@ public:
 protected:
   /* Type */
   using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
-  using _RowIndices_Type = RowIndicesFromSparseAvailable<SparseAvailable>;
-  using _RowPointers_Type = RowPointersFromSparseAvailable<SparseAvailable>;
+  using _CSRIndices_Type = CSRIndicesFromSparseAvailable<SparseAvailable>;
+  using _CSRPointers_Type = CSRPointersFromSparseAvailable<SparseAvailable>;
 
   using _BaseMatrix_Type =
-      Base::Matrix::CompiledSparseMatrix<T, M, N, _RowIndices_Type,
-                                         _RowPointers_Type>;
+      Base::Matrix::CompiledSparseMatrix<T, M, N, _CSRIndices_Type,
+                                         _CSRPointers_Type>;
 
 public:
   /* Constructor */
@@ -996,7 +996,7 @@ public:
   static constexpr std::size_t COLS = N;
   static constexpr std::size_t ROWS = M;
 
-  static constexpr std::size_t NumberOfValues = _RowPointers_Type::list[M];
+  static constexpr std::size_t NumberOfValues = _CSRPointers_Type::list[M];
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
