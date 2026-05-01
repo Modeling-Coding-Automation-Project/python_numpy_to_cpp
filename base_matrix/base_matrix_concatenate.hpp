@@ -878,7 +878,7 @@ inline auto concatenate_vertically(
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Row>
-struct CopyRowsFirstLoop {
+struct CopyColumnsFirstLoop {
   /**
    * @brief Concatenates matrix A into the first N rows of matrix Y.
    *
@@ -898,12 +898,12 @@ struct CopyRowsFirstLoop {
    */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(A(Row), Y(Row));
-    CopyRowsFirstLoop<T, M, N, P, Row - 1>::compute(A, Y);
+    CopyColumnsFirstLoop<T, M, N, P, Row - 1>::compute(A, Y);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-struct CopyRowsFirstLoop<T, M, N, P, 0> {
+struct CopyColumnsFirstLoop<T, M, N, P, 0> {
   /**
    * @brief Base case for the recursive copy of cols from matrix A to matrix Y.
    *
@@ -941,12 +941,12 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1(const Matrix<T, M, N> &A,
                                          Matrix<T, M, N + P> &Y) {
-  CopyRowsFirstLoop<T, M, N, P, N - 1>::compute(A, Y);
+  CopyColumnsFirstLoop<T, M, N, P, N - 1>::compute(A, Y);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Row>
-struct CopyRowsSecondLoop {
+struct CopyColumnsSecondLoop {
   /**
    * @brief Concatenates matrix B into the last P rows of matrix Y.
    *
@@ -966,12 +966,12 @@ struct CopyRowsSecondLoop {
    */
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(B(Row), Y(N + Row));
-    CopyRowsSecondLoop<T, M, N, P, Row - 1>::compute(B, Y);
+    CopyColumnsSecondLoop<T, M, N, P, Row - 1>::compute(B, Y);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P>
-struct CopyRowsSecondLoop<T, M, N, P, 0> {
+struct CopyColumnsSecondLoop<T, M, N, P, 0> {
   /**
    * @brief Base case for the recursive copy of cols from matrix B to matrix Y.
    *
@@ -1009,7 +1009,7 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2(const Matrix<T, M, P> &B,
                                          Matrix<T, M, N + P> &Y) {
-  CopyRowsSecondLoop<T, M, N, P, P - 1>::compute(B, Y);
+  CopyColumnsSecondLoop<T, M, N, P, P - 1>::compute(B, Y);
 }
 
 /**

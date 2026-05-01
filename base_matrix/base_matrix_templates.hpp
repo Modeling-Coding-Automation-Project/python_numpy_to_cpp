@@ -1423,20 +1423,20 @@ namespace TemplatesOperation {
  * @tparam SparseAvailable_B The second SparseAvailable type.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_B,
-          std::size_t ColumnCount>
+          std::size_t RowCount>
 struct ConcatenateSparseAvailableHorizontallyLoop {
   using type = typename ConcatenateSparseAvailable<
       typename ConcatenateSparseAvailableHorizontallyLoop<
-          SparseAvailable_A, SparseAvailable_B, (ColumnCount - 1)>::type,
+          SparseAvailable_A, SparseAvailable_B, (RowCount - 1)>::type,
       SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
-          typename GetColumnAvailable<ColumnCount, SparseAvailable_A>::type,
-          typename GetColumnAvailable<ColumnCount,
+          typename GetColumnAvailable<RowCount, SparseAvailable_A>::type,
+          typename GetColumnAvailable<RowCount,
                                       SparseAvailable_B>::type>::type>>::type;
 };
 
 /**
  * @brief Specialization of ConcatenateSparseAvailableHorizontallyLoop for the
- * base case when ColumnCount is 0.
+ * base case when RowCount is 0.
  *
  * This specialization defines a type alias 'type' that is set to
  * SparseAvailableColumns, effectively creating a SparseAvailableColumns type
@@ -3199,7 +3199,7 @@ namespace TemplatesOperation {
  * validating the SparseAvailable type for each column.
  *
  * @tparam SparseAvailable The SparseAvailable type to be validated.
- * @tparam NumberOfRowsFirst The number of columns in the first row.
+ * @tparam NumberOfRowsFirst The number of rows in the first row.
  * @tparam ColumnIndex The index of the row being processed.
  */
 template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
@@ -3207,8 +3207,6 @@ template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
 struct ValidateSparseAvailableLoop {
   static_assert(SparseAvailable::row_size == NumberOfRowsFirst,
                 "Each ColumnAvailable size of SparseAvailable is not the same");
-
-  // static_assert(NumberOfRowsFirst > 3, "NumberOfRowsFirst value");
 
   using type = typename ValidateSparseAvailableLoop<
       GetRestOfSparseAvailable<SparseAvailable, 1>, NumberOfRowsFirst,
@@ -3224,7 +3222,7 @@ struct ValidateSparseAvailableLoop {
  * for the first row.
  *
  * @tparam SparseAvailable The SparseAvailable type to be validated.
- * @tparam NumberOfRowsFirst The number of columns in the first row.
+ * @tparam NumberOfRowsFirst The number of rows in the first row.
  */
 template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
 struct ValidateSparseAvailableLoop<SparseAvailable, NumberOfRowsFirst, 0> {

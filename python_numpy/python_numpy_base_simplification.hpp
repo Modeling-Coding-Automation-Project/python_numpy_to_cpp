@@ -177,25 +177,25 @@ namespace MakeDenseMatrixOperation {
  * This function template assigns values to a dense matrix at specified
  * indices. It supports variadic arguments for multiple values.
  *
- * @tparam ColumnCount The current column index for assignment.
  * @tparam RowCount The current row index for assignment.
+ * @tparam ColumnCount The current column index for assignment.
  * @tparam DenseMatrix_Type The type of the dense matrix.
  * @tparam T The type of the first value to assign.
  * @param matrix The dense matrix to which values are assigned.
  * @param value_1 The first value to assign.
  */
-template <std::size_t ColumnCount, std::size_t RowCount,
+template <std::size_t RowCount, std::size_t ColumnCount,
           typename DenseMatrix_Type, typename T>
 inline void assign_values(DenseMatrix_Type &matrix, T value_1) {
 
-  static_assert(ColumnCount < DenseMatrix_Type::ROWS,
+  static_assert(RowCount < DenseMatrix_Type::ROWS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
-  static_assert(RowCount < DenseMatrix_Type::COLS,
+  static_assert(ColumnCount < DenseMatrix_Type::COLS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
-  matrix.template set<ColumnCount, RowCount>(value_1);
+  matrix.template set<RowCount, ColumnCount>(value_1);
 }
 
 /**
@@ -205,8 +205,8 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1) {
  * specified indices. It supports variadic arguments for multiple values and
  * ensures that all values are of the same type.
  *
- * @tparam ColumnCount The current column index for assignment.
  * @tparam RowCount The current row index for assignment.
+ * @tparam ColumnCount The current column index for assignment.
  * @tparam DenseMatrix_Type The type of the dense matrix.
  * @tparam T The type of the first value to assign.
  * @tparam U The type of the second value to assign.
@@ -215,23 +215,24 @@ inline void assign_values(DenseMatrix_Type &matrix, T value_1) {
  * @param value_2 The second value to assign.
  * @param args Additional values to assign, if any.
  */
-template <std::size_t ColumnCount, std::size_t RowCount,
+template <std::size_t RowCount, std::size_t ColumnCount,
           typename DenseMatrix_Type, typename T, typename U, typename... Args>
 inline void assign_values(DenseMatrix_Type &matrix, T value_1, U value_2,
                           Args... args) {
 
   static_assert(std::is_same<T, U>::value, "Arguments must be the same type.");
-  static_assert(ColumnCount < DenseMatrix_Type::ROWS,
+  static_assert(RowCount < DenseMatrix_Type::ROWS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
-  static_assert(RowCount < DenseMatrix_Type::COLS,
+  static_assert(ColumnCount < DenseMatrix_Type::COLS,
                 "Number of arguments must be less than the number of elements "
                 "of Dense Matrix.");
 
-  matrix.template set<ColumnCount, RowCount>(value_1);
+  matrix.template set<RowCount, ColumnCount>(value_1);
 
-  assign_values<ColumnCount + 1 * (RowCount == (DenseMatrix_Type::COLS - 1)),
-                ((RowCount + 1) * (RowCount != (DenseMatrix_Type::COLS - 1)))>(
+  assign_values<RowCount + 1 * (ColumnCount == (DenseMatrix_Type::COLS - 1)),
+                ((ColumnCount + 1) *
+                 (ColumnCount != (DenseMatrix_Type::COLS - 1)))>(
       matrix, value_2, args...);
 }
 

@@ -1156,47 +1156,46 @@ namespace ConcatenateBlockOperation {
 
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Col_Index>
-struct ConcatenateBlockRows {
+struct ConcatenateBlockColumns {
 
   using Arg_Type = typename std::tuple_element<(Row_Offset + Col_Index),
                                                ArgsTuple_Type>::type;
 
   using type = ConcatenateHorizontally_Type<
-      typename ConcatenateBlockRows<Row_Offset, N, ArgsTuple_Type,
-                                    (Col_Index - 1)>::type,
+      typename ConcatenateBlockColumns<Row_Offset, N, ArgsTuple_Type,
+                                       (Col_Index - 1)>::type,
       Arg_Type>;
 };
 
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type>
-struct ConcatenateBlockRows<Row_Offset, N, ArgsTuple_Type, 0> {
+struct ConcatenateBlockColumns<Row_Offset, N, ArgsTuple_Type, 0> {
 
   using type = typename std::tuple_element<Row_Offset, ArgsTuple_Type>::type;
 };
 
 template <std::size_t N, typename ArgsTuple_Type, std::size_t Row_Index>
-struct ConcatenateBlockColumns {
+struct ConcatenateBlockRows {
 
-  using Arg_Type = typename ConcatenateBlockRows<(Row_Index * N), N,
-                                                 ArgsTuple_Type, (N - 1)>::type;
+  using Arg_Type =
+      typename ConcatenateBlockColumns<(Row_Index * N), N, ArgsTuple_Type,
+                                       (N - 1)>::type;
 
-  using type =
-      ConcatenateVertically_Type<typename ConcatenateBlockColumns<
-                                     N, ArgsTuple_Type, (Row_Index - 1)>::type,
-                                 Arg_Type>;
+  using type = ConcatenateVertically_Type<
+      typename ConcatenateBlockRows<N, ArgsTuple_Type, (Row_Index - 1)>::type,
+      Arg_Type>;
 };
 
 template <std::size_t N, typename ArgsTuple_Type>
-struct ConcatenateBlockColumns<N, ArgsTuple_Type, 0> {
+struct ConcatenateBlockRows<N, ArgsTuple_Type, 0> {
 
   using type =
-      typename ConcatenateBlockRows<0, N, ArgsTuple_Type, (N - 1)>::type;
+      typename ConcatenateBlockColumns<0, N, ArgsTuple_Type, (N - 1)>::type;
 };
 
 template <std::size_t M, std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlock {
 
-  using type =
-      typename ConcatenateBlockColumns<N, ArgsTuple_Type, (M - 1)>::type;
+  using type = typename ConcatenateBlockRows<N, ArgsTuple_Type, (M - 1)>::type;
 };
 
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
