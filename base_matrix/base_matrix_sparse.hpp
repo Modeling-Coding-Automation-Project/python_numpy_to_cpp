@@ -78,7 +78,7 @@ public:
         csr_pointers(M + 1, static_cast<std::size_t>(0)) {
 
     std::size_t csr_index_index = 0;
-    std::size_t row_pointer_count = 0;
+    std::size_t csr_pointer_count = 0;
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
@@ -87,17 +87,17 @@ public:
           this->values[csr_index_index] = input(i, j);
           this->csr_indices[csr_index_index] = j;
 
-          row_pointer_count++;
+          csr_pointer_count++;
           csr_index_index++;
 
           if (csr_index_index >= V) {
-            this->csr_pointers[i + 1] = row_pointer_count;
+            this->csr_pointers[i + 1] = csr_pointer_count;
             return;
           }
         }
       }
 
-      this->csr_pointers[i + 1] = row_pointer_count;
+      this->csr_pointers[i + 1] = csr_pointer_count;
     }
   }
 
@@ -140,7 +140,7 @@ public:
       : values{}, csr_indices{}, csr_pointers{} {
 
     std::size_t csr_index_index = 0;
-    std::size_t row_pointer_count = 0;
+    std::size_t csr_pointer_count = 0;
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
@@ -149,17 +149,17 @@ public:
           this->values[csr_index_index] = input(i, j);
           this->csr_indices[csr_index_index] = j;
 
-          row_pointer_count++;
+          csr_pointer_count++;
           csr_index_index++;
 
           if (csr_index_index >= V) {
-            this->csr_pointers[i + 1] = row_pointer_count;
+            this->csr_pointers[i + 1] = csr_pointer_count;
             return;
           }
         }
       }
 
-      this->csr_pointers[i + 1] = row_pointer_count;
+      this->csr_pointers[i + 1] = csr_pointer_count;
     }
   }
 
@@ -190,7 +190,7 @@ public:
     if (this != &other) {
       this->values = std::move(other.values);
       this->csr_indices = std::move(other.csr_indices);
-      this->csr_indices = std::move(other.csr_indices);
+      this->csr_pointers = std::move(other.csr_pointers);
     }
     return *this;
   }
@@ -264,7 +264,7 @@ public:
    * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
-  std::size_t row_pointer(std::size_t i) { return this->csr_pointers[i]; }
+  std::size_t csr_pointer(std::size_t i) { return this->csr_pointers[i]; }
 
   /**
    * @brief Returns the pointer to the start of the specified row.
@@ -275,7 +275,7 @@ public:
    * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
-  const std::size_t row_pointer(std::size_t i) const {
+  const std::size_t csr_pointer(std::size_t i) const {
     return this->csr_pointers[i];
   }
 
@@ -356,7 +356,7 @@ public:
     Matrix<T, M, N> Y = this->create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = mat.row_pointer(j); k < mat.row_pointer(j + 1);
+      for (std::size_t k = mat.csr_pointer(j); k < mat.csr_pointer(j + 1);
            ++k) {
         Y(j, mat.csr_index(k)) += mat.value(k);
       }
@@ -422,7 +422,7 @@ public:
     Matrix<T, M, N> Y = this->create_dense();
 
     for (std::size_t j = 0; j < M; ++j) {
-      for (std::size_t k = mat.row_pointer(j); k < mat.row_pointer(j + 1);
+      for (std::size_t k = mat.csr_pointer(j); k < mat.csr_pointer(j + 1);
            ++k) {
         Y(j, mat.csr_index(k)) -= mat.value(k);
       }
@@ -579,7 +579,7 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &B,
   Matrix<T, M, M> Y = B.create_dense();
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
+    for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); ++k) {
       Y(j, A.csr_index(k)) += A.value(k);
     }
   }
@@ -606,7 +606,7 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &B,
   Matrix<T, M, M> Y = B.create_dense();
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
+    for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); ++k) {
       Y(j, A.csr_index(k)) -= A.value(k);
     }
   }
@@ -665,7 +665,7 @@ inline Vector<T, M> operator*(const SparseMatrix<T, M, N, V> &A,
 
   for (std::size_t j = 0; j < M; j++) {
     T sum = static_cast<T>(0);
-    for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
+    for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); k++) {
       sum += A.value(k) * b[A.csr_index(k)];
     }
     y[j] = sum;
@@ -696,7 +696,7 @@ colVector_a_mul_SparseB(const ColVector<T, N> &a,
   ColVector<T, K> y;
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
+    for (std::size_t k = B.csr_pointer(j); k < B.csr_pointer(j + 1); k++) {
       y[B.csr_index(k)] += B.value(k) * a[j];
     }
   }
@@ -731,7 +731,7 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
+      for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); k++) {
         sum += A.value(k) * B(A.csr_index(k), i);
       }
       Y(j, i) = sum;
@@ -765,7 +765,7 @@ inline Matrix<T, M, K> operator*(const Matrix<T, M, N> &A,
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
+    for (std::size_t k = B.csr_pointer(j); k < B.csr_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         Y(i, B.csr_index(k)) += B.value(k) * A(i, j);
       }
@@ -802,7 +802,7 @@ matrix_multiply_SparseA_mul_BTranspose(const SparseMatrix<T, M, N, V> &A,
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
+      for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); k++) {
         sum += A.value(k) * B(i, A.csr_index(k));
       }
       Y(j, i) = sum;
@@ -837,9 +837,9 @@ inline Matrix<T, M, K> operator*(const SparseMatrix<T, M, N, V> &A,
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); ++k) {
-      for (std::size_t l = B.row_pointer(A.csr_index(k));
-           l < B.row_pointer(A.csr_index(k) + 1); ++l) {
+    for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); ++k) {
+      for (std::size_t l = B.csr_pointer(A.csr_index(k));
+           l < B.csr_pointer(A.csr_index(k) + 1); ++l) {
         Y(j, B.csr_index(l)) += A.value(k) * B.value(l);
       }
     }
@@ -874,8 +874,8 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_SparseBTranspose(
 
   for (std::size_t i = 0; i < M; i++) {
     for (std::size_t j = 0; j < K; j++) {
-      for (std::size_t l = A.row_pointer(i); l < A.row_pointer(i + 1); l++) {
-        for (std::size_t o = B.row_pointer(j); o < B.row_pointer(j + 1); o++) {
+      for (std::size_t l = A.csr_pointer(i); l < A.csr_pointer(i + 1); l++) {
+        for (std::size_t o = B.csr_pointer(j); o < B.csr_pointer(j + 1); o++) {
           if (A.csr_index(l) == B.csr_index(o)) {
             Y(i, j) += A.value(l) * B.value(o);
           }
@@ -913,8 +913,8 @@ inline Matrix<T, M, K> matrix_multiply_SparseATranspose_mul_SparseB(
   Matrix<T, M, K> Y;
 
   for (std::size_t i = 0; i < N; i++) {
-    for (std::size_t k = A.row_pointer(i); k < A.row_pointer(i + 1); k++) {
-      for (std::size_t j = B.row_pointer(i); j < B.row_pointer(i + 1); j++) {
+    for (std::size_t k = A.csr_pointer(i); k < A.csr_pointer(i + 1); k++) {
+      for (std::size_t j = B.csr_pointer(i); j < B.csr_pointer(i + 1); j++) {
         Y(A.csr_index(k), B.csr_index(j)) += A.value(k) * B.value(j);
       }
     }
@@ -948,7 +948,7 @@ inline Matrix<T, M, N> operator*(const SparseMatrix<T, M, N, V> &A,
   for (std::size_t i = 0; i < N; i++) {
     for (std::size_t j = 0; j < M; j++) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
+      for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); k++) {
         if (A.csr_index(k) == i) {
           sum += A.value(k) * B[i];
         }
@@ -980,7 +980,7 @@ inline Matrix<T, M, K> operator*(const DiagMatrix<T, M> &A,
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
+    for (std::size_t k = B.csr_pointer(j); k < B.csr_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         if (i == j) {
           Y(i, B.csr_index(k)) += B.value(k) * A[i];
@@ -1014,7 +1014,7 @@ matrix_multiply_Transpose_DiagA_mul_SparseB(const DiagMatrix<T, M> &A,
   Matrix<T, K, M> Y;
 
   for (std::size_t j = 0; j < M; j++) {
-    for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
+    for (std::size_t k = B.csr_pointer(j); k < B.csr_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         if (i == j) {
           Y(B.csr_index(k), i) += B.value(k) * A[i];
@@ -1048,7 +1048,7 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &B,
   Matrix<T, M, N> Y = B;
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = SA.row_pointer(j); k < SA.row_pointer(j + 1); ++k) {
+    for (std::size_t k = SA.csr_pointer(j); k < SA.csr_pointer(j + 1); ++k) {
       Y(j, SA.csr_index(k)) += SA.value(k);
     }
   }
@@ -1076,7 +1076,7 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &B,
   Matrix<T, M, N> Y = B;
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = SA.row_pointer(j); k < SA.row_pointer(j + 1); ++k) {
+    for (std::size_t k = SA.csr_pointer(j); k < SA.csr_pointer(j + 1); ++k) {
       Y(j, SA.csr_index(k)) -= SA.value(k);
     }
   }
@@ -1114,7 +1114,7 @@ matrix_multiply_A_mul_SparseBTranspose(const Matrix<T, M, N> &A,
   for (std::size_t i = 0; i < N; ++i) {
     for (std::size_t j = 0; j < K; ++j) {
       T sum = static_cast<T>(0);
-      for (std::size_t k = SB.row_pointer(j); k < SB.row_pointer(j + 1); ++k) {
+      for (std::size_t k = SB.csr_pointer(j); k < SB.csr_pointer(j + 1); ++k) {
         sum += SB.value(k) * A(i, SB.csr_index(k));
       }
       Y(i, j) = sum;
@@ -1150,7 +1150,7 @@ matrix_multiply_ATranspose_mul_SparseB(const Matrix<T, N, M> &A,
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = B.row_pointer(j); k < B.row_pointer(j + 1); k++) {
+    for (std::size_t k = B.csr_pointer(j); k < B.csr_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         Y(i, B.csr_index(k)) += B.value(k) * A(j, i);
       }
@@ -1186,7 +1186,7 @@ matrix_multiply_SparseAT_mul_B(const SparseMatrix<T, N, M, V> &A,
   Matrix<T, M, K> Y;
 
   for (std::size_t j = 0; j < N; j++) {
-    for (std::size_t k = A.row_pointer(j); k < A.row_pointer(j + 1); k++) {
+    for (std::size_t k = A.csr_pointer(j); k < A.csr_pointer(j + 1); k++) {
       for (std::size_t i = 0; i < M; i++) {
         Y(A.csr_index(k), i) += A.value(k) * B(j, i);
       }
