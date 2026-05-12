@@ -26,8 +26,8 @@ tparam N is the number of columns in the matrix.
 Somehow programming custom is vice versa,
 but in this project, we use the mathematical custom.
 ********************************************************************************/
-#ifndef __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
-#define __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
+#ifndef BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP_
+#define BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -216,7 +216,7 @@ inline CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers>
 operator-(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A) {
   CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
@@ -225,11 +225,11 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMinus::compute<T, M, N, CSRIndices, CSRPointers>(A, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -548,7 +548,7 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
@@ -561,12 +561,12 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                            K>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -891,7 +891,7 @@ operator*(const Matrix<T, M, N> &A,
           const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, K> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
@@ -902,12 +902,12 @@ operator*(const Matrix<T, M, N> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DenseMatrixMultiplySparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
                                            K>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1183,7 +1183,7 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -1192,12 +1192,12 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1229,7 +1229,7 @@ operator+(const Matrix<T, M, N> &B,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
   Matrix<T, M, N> Y = B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -1238,12 +1238,12 @@ operator+(const Matrix<T, M, N> &B,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1593,7 +1593,7 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
@@ -1611,7 +1611,7 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
                                              CSRPointers_Y>(Y, B);
@@ -1619,7 +1619,7 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                        CSRIndices_Y, CSRPointers_Y>(A, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1667,7 +1667,7 @@ operator+(const DiagMatrix<T, M> &B,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
@@ -1685,7 +1685,7 @@ operator+(const DiagMatrix<T, M> &B,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
                                              CSRPointers_Y>(Y, B);
@@ -1693,7 +1693,7 @@ operator+(const DiagMatrix<T, M> &B,
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                        CSRIndices_Y, CSRPointers_Y>(A, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1767,7 +1767,7 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
@@ -1785,14 +1785,14 @@ operator+(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                        CSRIndices_Y, CSRPointers_Y>(A, Y);
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
                                        CSRIndices_Y, CSRPointers_Y>(B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -1824,7 +1824,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, M, N> &B) {
   Matrix<T, M, N> Y = -B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -1833,12 +1833,12 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixAddDenseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2040,7 +2040,7 @@ operator-(const Matrix<T, M, N> &B,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
   Matrix<T, M, N> Y = B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -2049,12 +2049,12 @@ operator-(const Matrix<T, M, N> &B,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DenseMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                             Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2101,7 +2101,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = -(Base::Matrix::output_dense_matrix(B));
 
@@ -2119,7 +2119,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
                                              CSRPointers_Y>(Y, -B);
@@ -2127,7 +2127,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                        CSRIndices_Y, CSRPointers_Y>(A, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2369,7 +2369,7 @@ operator-(const DiagMatrix<T, M> &B,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(B);
 
@@ -2387,7 +2387,7 @@ operator-(const DiagMatrix<T, M> &B,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SetDiagMatrixToValuesSparseMatrix::compute<T, M, N, CSRIndices_Y,
                                              CSRPointers_Y>(Y, B);
@@ -2395,7 +2395,7 @@ operator-(const DiagMatrix<T, M> &B,
   DiagMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(A,
                                                                            Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2639,7 +2639,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, M> Y_temp = Base::Matrix::output_dense_matrix(A);
 
@@ -2657,7 +2657,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixAddSparseMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A,
                                        CSRIndices_Y, CSRPointers_Y>(A, Y);
@@ -2665,7 +2665,7 @@ operator-(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
   SparseMatrixSubSparseMatrix::compute<T, M, N, CSRIndices_B, CSRPointers_B,
                                        CSRIndices_Y, CSRPointers_Y>(B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2797,18 +2797,18 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &scalar) {
   CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y = A;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyScalar::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, scalar, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -2840,18 +2840,18 @@ operator*(const T &scalar,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
   CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y = A;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyScalar::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, scalar, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -3078,7 +3078,7 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Vector<T, N> &b) {
   Vector<T, M> y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; j++) {
     T sum = static_cast<T>(0);
@@ -3089,12 +3089,12 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     y[j] = sum;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyVector::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, b, y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return y;
 }
@@ -3300,7 +3300,7 @@ inline ColVector<T, K> colVector_a_mul_SparseB(
     const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   ColVector<T, K> y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
@@ -3309,12 +3309,12 @@ inline ColVector<T, K> colVector_a_mul_SparseB(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   ColVectorMultiplySparseMatrix::compute<T, N, K, CSRIndices_B, CSRPointers_B>(
       a, B, y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return y;
 }
@@ -3601,7 +3601,7 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
     const Matrix<T, K, N> &B) {
   Matrix<T, M, K> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < M; j++) {
@@ -3614,12 +3614,12 @@ inline Matrix<T, M, K> matrix_multiply_SparseA_mul_BTranspose(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyDenseTranspose::compute<T, M, N, CSRIndices_A,
                                               CSRPointers_A, K>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -4113,7 +4113,7 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   Y_Type Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<T, M, K> Y_temp;
 
@@ -4134,13 +4134,13 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplySparse::compute<T, M, N, CSRIndices_A, CSRPointers_A, K,
                                       CSRIndices_B, CSRPointers_B, CSRIndices_Y,
                                       CSRPointers_Y>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -5336,7 +5336,7 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
   CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -5345,12 +5345,12 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseMatrixMultiplyDiagMatrix::compute<T, M, N, CSRIndices_A, CSRPointers_A>(
       A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -5530,7 +5530,7 @@ operator*(const DiagMatrix<T, M> &A,
 
   CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; j++) {
     for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
@@ -5539,12 +5539,12 @@ operator*(const DiagMatrix<T, M> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplySparseMatrix::compute<T, M, K, CSRIndices_B, CSRPointers_B>(
       A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -6145,7 +6145,7 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
     const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, N> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -6158,12 +6158,12 @@ inline Matrix<T, M, N> matrix_multiply_A_mul_SparseBTranspose(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DenseMatrixMultiplySparseTranspose::compute<T, M, N, CSRIndices_B,
                                               CSRPointers_B, K>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -6428,7 +6428,7 @@ inline Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
     const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B) {
   Matrix<T, M, K> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
@@ -6439,12 +6439,12 @@ inline Matrix<T, M, K> matrix_multiply_ATranspose_mul_SparseB(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DenseMatrixTransposeMultiplySparse::compute<T, M, N, K, CSRIndices_B,
                                               CSRPointers_B>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -6719,7 +6719,7 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
     const Matrix<T, N, K> &B) {
   Matrix<T, M, K> Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; j++) {
     for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
@@ -6730,12 +6730,12 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   SparseTransposeMatrixMultiplyDenseMatrix::compute<T, N, M, CSRIndices_A,
                                                     CSRPointers_A, K>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -6743,4 +6743,4 @@ inline Matrix<T, M, K> matrix_multiply_SparseAT_mul_B(
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP__
+#endif // BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP_

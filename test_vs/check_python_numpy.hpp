@@ -1,5 +1,5 @@
-﻿#ifndef __CHECK_PYTHON_NUMPY_HPP__
-#define __CHECK_PYTHON_NUMPY_HPP__
+﻿#ifndef CHECK_PYTHON_NUMPY_HPP_
+#define CHECK_PYTHON_NUMPY_HPP_
 
 #include <type_traits>
 #include <iostream>
@@ -3744,4 +3744,4 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 }
 
 
-#endif // __CHECK_PYTHON_NUMPY_HPP__
+#endif // CHECK_PYTHON_NUMPY_HPP_

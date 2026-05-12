@@ -14,8 +14,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_LINALG_EIG_HPP__
-#define __PYTHON_NUMPY_LINALG_EIG_HPP__
+#ifndef PYTHON_NUMPY_LINALG_EIG_HPP_
+#define PYTHON_NUMPY_LINALG_EIG_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -1310,4 +1310,4 @@ using LinalgSolverEig_Type = decltype(make_LinalgSolverEig<A_Type>());
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_LINALG_EIG_HPP__
+#endif // PYTHON_NUMPY_LINALG_EIG_HPP_

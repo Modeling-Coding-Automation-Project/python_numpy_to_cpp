@@ -17,8 +17,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_LINALG_CHOLESKY_HPP__
-#define __PYTHON_NUMPY_LINALG_CHOLESKY_HPP__
+#ifndef PYTHON_NUMPY_LINALG_CHOLESKY_HPP_
+#define PYTHON_NUMPY_LINALG_CHOLESKY_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -308,4 +308,4 @@ using LinalgSolverCholesky_Type = LinalgSolverCholesky<A_Type>;
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_LINALG_CHOLESKY_HPP__
+#endif // PYTHON_NUMPY_LINALG_CHOLESKY_HPP_

@@ -6,7 +6,7 @@
  * This file provides template metaprogramming utilities and classes for
  * constructing and manipulating upper and lower triangular sparse matrices. The
  * implementation supports both compile-time recursion and runtime for-loop
- * approaches (controlled by the __BASE_MATRIX_USE_FOR_LOOP_OPERATION__ macro).
+ * approaches (controlled by the BASE_MATRIX_USE_FOR_LOOP_OPERATION_ macro).
  * The code is designed for high-performance scenarios where matrix dimensions
  * are known at compile time.
  *
@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
-#define __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
+#ifndef BASE_MATRIX_TRIANGULAR_SPARSE_HPP_
+#define BASE_MATRIX_TRIANGULAR_SPARSE_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -61,7 +61,7 @@ inline auto create_UpperTriangularSparseMatrix(const Matrix<T, M, N> &A)
                        UpperTriangularCSRPointers<M, N>>
       Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t consecutive_index = 0;
 
@@ -73,11 +73,11 @@ inline auto create_UpperTriangularSparseMatrix(const Matrix<T, M, N> &A)
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   substitute_dense_to_sparse(Y, A);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -90,7 +90,7 @@ inline void set_values_UpperTriangularSparseMatrix(
   // Currently, only support M >= N.
   static_assert(M >= N, "M must be greater than or equal to N");
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t consecutive_index = 0;
 
@@ -101,11 +101,11 @@ inline void set_values_UpperTriangularSparseMatrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   substitute_dense_to_sparse(A, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /* Lower */
@@ -135,7 +135,7 @@ inline auto create_LowerTriangularSparseMatrix(const Matrix<T, M, N> &A)
                        LowerTriangularCSRPointers<M, N>>
       Y;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t consecutive_index = 0;
 
@@ -147,11 +147,11 @@ inline auto create_LowerTriangularSparseMatrix(const Matrix<T, M, N> &A)
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   substitute_dense_to_sparse(Y, A);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Y;
 }
@@ -164,7 +164,7 @@ inline void set_values_LowerTriangularSparseMatrix(
   // Currently, only support M <= N.
   static_assert(M <= N, "M must be smaller than or equal to N");
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t consecutive_index = 0;
 
@@ -175,14 +175,14 @@ inline void set_values_LowerTriangularSparseMatrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   substitute_dense_to_sparse(A, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_TRIANGULAR_SPARSE_HPP__
+#endif // BASE_MATRIX_TRIANGULAR_SPARSE_HPP_

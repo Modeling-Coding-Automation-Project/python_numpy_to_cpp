@@ -14,8 +14,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_LINALG_QR_HPP__
-#define __PYTHON_NUMPY_LINALG_QR_HPP__
+#ifndef PYTHON_NUMPY_LINALG_QR_HPP_
+#define PYTHON_NUMPY_LINALG_QR_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -899,4 +899,4 @@ using LinalgSolverQR_Type = decltype(make_LinalgSolverQR<A_Type>());
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_LINALG_QR_HPP__
+#endif // PYTHON_NUMPY_LINALG_QR_HPP_

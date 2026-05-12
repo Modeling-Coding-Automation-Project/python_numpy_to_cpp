@@ -18,8 +18,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
-#define __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
+#ifndef PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP_
+#define PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP_
 
 #include "python_math.hpp"
 #include "python_numpy_base.hpp"
@@ -1970,4 +1970,4 @@ inline auto norm(const Matrix_Type &matrix) ->
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP__
+#endif // PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP_

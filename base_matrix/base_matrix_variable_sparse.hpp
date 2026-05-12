@@ -20,8 +20,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_VARIABLE_SPARSE_HPP__
-#define __BASE_MATRIX_VARIABLE_SPARSE_HPP__
+#ifndef BASE_MATRIX_VARIABLE_SPARSE_HPP_
+#define BASE_MATRIX_VARIABLE_SPARSE_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -42,7 +42,7 @@ namespace Matrix {
  *
  * This class template provides a sparse matrix representation that can be
  * configured to use either `std::vector` or fixed-size `std::array` for
- * storage, depending on the compile-time flag `__BASE_MATRIX_USE_STD_VECTOR__`.
+ * storage, depending on the compile-time flag `BASE_MATRIX_USE_STD_VECTOR_`.
  *
  * It supports basic operations such as copy and move semantics, and provides
  * access to matrix values, row indices, and row pointers.
@@ -54,14 +54,14 @@ namespace Matrix {
 template <typename T, std::size_t M, std::size_t N> class VariableSparseMatrix {
 public:
 /* Constructor */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   VariableSparseMatrix()
       : values(M * N, static_cast<T>(0)),
         csr_indices(M * N, static_cast<std::size_t>(0)),
         csr_pointers(M + 1, static_cast<std::size_t>(0)) {}
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   VariableSparseMatrix() : values{}, csr_indices{}, csr_pointers{} {}
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   VariableSparseMatrix(const VariableSparseMatrix<T, M, N> &matrix)
@@ -168,15 +168,15 @@ public:
   }
 
 /* Variable */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<T> values;
   std::vector<std::size_t> csr_indices;
   std::vector<std::size_t> csr_pointers;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<T, M * N> values;
   std::array<std::size_t, M * N> csr_indices;
   std::array<std::size_t, M + 1> csr_pointers;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 };
 
 /* SparseMatrix * Matrix */
@@ -372,4 +372,4 @@ inline Matrix<T, M, K> operator*(const VariableSparseMatrix<T, M, N> &A,
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_VARIABLE_SPARSE_HPP__
+#endif // BASE_MATRIX_VARIABLE_SPARSE_HPP_

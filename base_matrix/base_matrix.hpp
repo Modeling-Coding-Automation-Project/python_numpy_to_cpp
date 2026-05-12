@@ -1,5 +1,5 @@
-#ifndef __BASE_MATRIX_HPP__
-#define __BASE_MATRIX_HPP__
+#ifndef BASE_MATRIX_HPP_
+#define BASE_MATRIX_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -20,4 +20,4 @@
 #include "base_matrix_variable_sparse.hpp"
 #include "base_matrix_vector.hpp"
 
-#endif // __BASE_MATRIX_HPP__
+#endif // BASE_MATRIX_HPP_

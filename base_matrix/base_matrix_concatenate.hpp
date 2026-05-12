@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_CONCATENATE_HPP__
-#define __BASE_MATRIX_CONCATENATE_HPP__
+#ifndef BASE_MATRIX_CONCATENATE_HPP_
+#define BASE_MATRIX_CONCATENATE_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -136,18 +136,18 @@ inline void update_vertically_concatenated_matrix(Matrix<T, M + P, N> &Y,
                                                   const Matrix<T, M, N> &A,
                                                   const Matrix<T, P, N> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t row = 0; row < N; row++) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[row], Y.data[row]);
     Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[row], Y.data[row]);
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Base::Matrix::COMPILED_SPARSE_VERTICAL_CONCATENATE<T, M, N, P>(A, B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1032,7 +1032,7 @@ inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
                                                     const Matrix<T, M, N> &A,
                                                     const Matrix<T, M, P> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t row = 0; row < N; row++) {
     std::copy(A(row).begin(), A(row).end(), Y(row).begin());
@@ -1044,12 +1044,12 @@ inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
     B_row++;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Base::Matrix::COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1<T, M, N, P>(A, Y);
   Base::Matrix::COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2<T, M, N, P>(B, Y);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1349,7 +1349,7 @@ inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::Y_Type &Y,
     const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -1370,7 +1370,7 @@ inline void update_horizontally_concatenated_matrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y =
       typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::CSRIndices_Y;
@@ -1384,7 +1384,7 @@ inline void update_horizontally_concatenated_matrix(
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
                              CSRPointers_Y, M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1630,7 +1630,7 @@ inline void update_horizontally_concatenated_matrix(
     const Matrix<T, M, N> &A,
     const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
@@ -1658,7 +1658,7 @@ inline void update_horizontally_concatenated_matrix(
     sparse_row_count = 0;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y = typename ConcatenateHorizontally::DenseAndSparse<
       T, M, N, L, CSRIndices_B, CSRPointers_B>::CSRIndices_Y;
@@ -1673,7 +1673,7 @@ inline void update_horizontally_concatenated_matrix(
                                0, N, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1753,7 +1753,7 @@ inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DiagAndDense<T, M, N>::Y_Type &Y,
     const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -1773,7 +1773,7 @@ inline void update_horizontally_concatenated_matrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y =
       typename ConcatenateHorizontally::DiagAndDense<T, M, N>::CSRIndices_Y;
@@ -1787,7 +1787,7 @@ inline void update_horizontally_concatenated_matrix(
   ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, M, CSRIndices_Y,
                               CSRPointers_Y, M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1859,7 +1859,7 @@ inline void update_horizontally_concatenated_matrix(
     typename ConcatenateHorizontally::DiagAndDiag<T, M>::Y_Type &Y,
     const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   for (std::size_t i = 0; i < M; i++) {
@@ -1880,7 +1880,7 @@ inline void update_horizontally_concatenated_matrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y =
       typename ConcatenateHorizontally::DiagAndDiag<T, M>::CSRIndices_Y;
@@ -1894,7 +1894,7 @@ inline void update_horizontally_concatenated_matrix(
   ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, M, CSRIndices_Y,
                              CSRPointers_Y, M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1974,7 +1974,7 @@ inline void update_horizontally_concatenated_matrix(
     const DiagMatrix<T, M> &A,
     const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
@@ -2003,7 +2003,7 @@ inline void update_horizontally_concatenated_matrix(
     sparse_row_count = 0;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y = typename ConcatenateHorizontally::DiagAndSparse<
       T, M, N, CSRIndices_B, CSRPointers_B>::CSRIndices_Y;
@@ -2018,7 +2018,7 @@ inline void update_horizontally_concatenated_matrix(
                                0, M, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -2105,7 +2105,7 @@ inline void update_horizontally_concatenated_matrix(
     const CompiledSparseMatrix<T, M, L, CSRIndices_A, CSRPointers_A> &A,
     const Matrix<T, M, N> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
@@ -2135,7 +2135,7 @@ inline void update_horizontally_concatenated_matrix(
     sparse_row_count = 0;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndDense<
       T, M, N, L, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
@@ -2150,7 +2150,7 @@ inline void update_horizontally_concatenated_matrix(
   ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, N, CSRIndices_Y,
                               CSRPointers_Y, M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -2237,7 +2237,7 @@ inline void update_horizontally_concatenated_matrix(
     const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const DiagMatrix<T, M> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count = 0;
@@ -2270,7 +2270,7 @@ inline void update_horizontally_concatenated_matrix(
     sparse_row_count = 0;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndDiag<
       T, M, N, CSRIndices_A, CSRPointers_A>::CSRIndices_Y;
@@ -2285,7 +2285,7 @@ inline void update_horizontally_concatenated_matrix(
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
                              CSRPointers_Y, M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -2375,7 +2375,7 @@ inline void update_horizontally_concatenated_matrix(
     const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
     const CompiledSparseMatrix<T, M, L, CSRIndices_B, CSRPointers_B> &B) {
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   std::size_t value_count = 0;
   std::size_t sparse_value_count_A = 0;
@@ -2414,7 +2414,7 @@ inline void update_horizontally_concatenated_matrix(
     sparse_row_count_B = 0;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using CSRIndices_Y = typename ConcatenateHorizontally::SparseAndSparse<
       T, M, N, L, CSRIndices_A, CSRPointers_A, CSRIndices_B,
@@ -2432,7 +2432,7 @@ inline void update_horizontally_concatenated_matrix(
                                0, N, CSRIndices_Y, CSRPointers_Y,
                                M - 1>::compute(Y, B);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -2474,4 +2474,4 @@ inline auto concatenate_horizontally(
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_CONCATENATE_HPP__
+#endif // BASE_MATRIX_CONCATENATE_HPP_

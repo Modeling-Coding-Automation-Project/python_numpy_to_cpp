@@ -1,5 +1,5 @@
-﻿#ifndef __CHECK_BASE_MATRIX_HPP__
-#define __CHECK_BASE_MATRIX_HPP__
+﻿#ifndef CHECK_BASE_MATRIX_HPP_
+#define CHECK_BASE_MATRIX_HPP_
 
 #include <type_traits>
 #include <iostream>
@@ -1995,7 +1995,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     eigen_solver.solve_eigen_values(A0);
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values = eigen_solver.get_eigen_values();
 #else
     std::array<T, 3> eigen_values = eigen_solver.get_eigen_values();
@@ -2007,7 +2007,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     //}
     //std::cout << std::endl << std::endl;
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values_answer(
 #else
     std::array<T, 3> eigen_values_answer(
@@ -2082,7 +2082,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     eigen_solver_comp.solve_eigen_values(A1);
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<Complex<T>> eigen_values_comp
 #else
     std::array<Complex<T>, 3> eigen_values_comp
@@ -2092,13 +2092,13 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     decltype(eigen_values_comp) eigen_values_comp_sorted = eigen_values_comp;
     Base::Utility::sort(eigen_values_comp_sorted);
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values_comp_answer_real(
 #else
     std::array<T, 3> eigen_values_comp_answer_real(
 #endif
         { -1.5F, -1.5F, 6.0F });
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #else
     std::array<T, 3> eigen_values_comp_real = get_real_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
@@ -2107,14 +2107,14 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     tester.expect_near(eigen_values_comp_real, eigen_values_comp_answer_real, NEAR_LIMIT_SOFT,
         "check EigenSolverComplex real eigen values.");
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values_comp_answer_imag(
 #else
     std::array<T, 3> eigen_values_comp_answer_imag(
 #endif
         { -0.8660254F, 0.8660254F, 0.0F });
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
     std::vector<T> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
 #else
     std::array<T, 3> eigen_values_comp_imag = get_imag_vector_from_complex_vector<T, 3>(eigen_values_comp_sorted);
@@ -2211,4 +2211,4 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
     tester.throw_error_if_test_failed();
 }
 
-#endif // __CHECK_BASE_MATRIX_HPP__
+#endif // CHECK_BASE_MATRIX_HPP_

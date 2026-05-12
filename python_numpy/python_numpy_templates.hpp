@@ -31,8 +31,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_TEMPLATES_HPP__
-#define __PYTHON_NUMPY_TEMPLATES_HPP__
+#ifndef PYTHON_NUMPY_TEMPLATES_HPP_
+#define PYTHON_NUMPY_TEMPLATES_HPP_
 
 #include "base_matrix.hpp"
 
@@ -126,4 +126,4 @@ using SparseAvailableGetRow =
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_TEMPLATES_HPP__
+#endif // PYTHON_NUMPY_TEMPLATES_HPP_

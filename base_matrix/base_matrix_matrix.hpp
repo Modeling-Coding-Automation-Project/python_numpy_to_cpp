@@ -18,8 +18,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_MATRIX_HPP__
-#define __BASE_MATRIX_MATRIX_HPP__
+#ifndef BASE_MATRIX_MATRIX_HPP_
+#define BASE_MATRIX_MATRIX_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -44,7 +44,7 @@ namespace Matrix {
  *
  * This Matrix class supports both std::vector and std::array as underlying
  storage,
- * controlled by the preprocessor macro __BASE_MATRIX_USE_STD_VECTOR__.
+ * controlled by the preprocessor macro BASE_MATRIX_USE_STD_VECTOR_.
  *
  * @tparam T The type of the matrix elements.
  * @tparam M The number of rows in the matrix.
@@ -58,7 +58,7 @@ public:
 
 public:
   /* Constructor */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   Matrix() : data(N, std::vector<T>(M, static_cast<T>(0))) {}
 
@@ -91,7 +91,7 @@ public:
     }
   }
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   Matrix() : data{} {}
 
@@ -129,7 +129,7 @@ public:
     }
   }
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   Matrix(const Matrix<T, M, N> &other) : data(other.data) {}
@@ -216,17 +216,17 @@ public:
   static inline Matrix<T, M, M> identity() {
     Matrix<T, M, M> identity;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     for (std::size_t i = 0; i < M; i++) {
       identity(i, i) = static_cast<T>(1);
     }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     COMPILED_MATRIX_IDENTITY<T, M>(identity);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     return identity;
   }
@@ -336,7 +336,7 @@ public:
   static inline Matrix<T, M, N> ones() {
     Matrix<T, M, N> Ones;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
@@ -344,11 +344,11 @@ public:
       }
     }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     COMPILED_MATRIX_FULL<T, M, N>(Ones, static_cast<T>(1));
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     return Ones;
   }
@@ -367,7 +367,7 @@ public:
   static inline Matrix<T, M, N> full(const T &value) {
     Matrix<T, M, N> Full;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
@@ -375,11 +375,11 @@ public:
       }
     }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     COMPILED_MATRIX_FULL<T, M, N>(Full, value);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     return Full;
   }
@@ -434,7 +434,7 @@ public:
     return this->data[row][col];
   }
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   /**
    * @brief Accesses a row of the matrix.
@@ -474,7 +474,7 @@ public:
     return this->data[row];
   }
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   /**
    * @brief Accesses a row of the matrix.
@@ -514,7 +514,7 @@ public:
     return this->data[row];
   }
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /**
    * @brief Returns the number of columns in the matrix.
@@ -646,11 +646,11 @@ public:
   inline T get_trace() const { return output_matrix_trace(*this); }
 
 /* Variable */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<std::vector<T>> data;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<std::array<T, M>, N> data;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 };
 
 /* swap rows */
@@ -751,7 +751,7 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
     row_2 = M - 1;
   }
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; i++) {
 
@@ -760,11 +760,11 @@ inline void matrix_row_swap(std::size_t row_1, std::size_t row_2,
     mat.data[i][row_2] = temp;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixSwapRows::compute<T, M, N>(row_1, row_2, mat, temp);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /* swap cols */
@@ -877,17 +877,17 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
   static_assert(M == N, "Matrix must be square matrix");
   T trace = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; i++) {
     trace += mat(i, i);
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   trace = MatrixTrace::compute<T, M, N>(mat);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return trace;
 }
@@ -1035,7 +1035,7 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
                                  const Matrix<T, M, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -1043,11 +1043,11 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixAddMatrix::compute<T, M, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1195,7 +1195,7 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
                                  const Matrix<T, M, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -1203,11 +1203,11 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixSubMatrix::compute<T, M, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1341,7 +1341,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -1349,11 +1349,11 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMinus::compute<T, M, N>(A, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1501,7 +1501,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
@@ -1509,11 +1509,11 @@ inline Matrix<T, M, N> operator*(const T &scalar, const Matrix<T, M, N> &mat) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyScalar::compute<T, M, N>(scalar, mat, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1536,7 +1536,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
@@ -1544,11 +1544,11 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyScalar::compute<T, M, N>(scalar, mat, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1678,7 +1678,7 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
                               const Vector<T, N> &vec) {
   Vector<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     T sum = 0;
@@ -1688,11 +1688,11 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
     result[i] = sum;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyVector::compute<T, M, N>(mat, vec, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1841,7 +1841,7 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
   static_assert(M == 1, "Invalid size.");
   Matrix<T, L, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; ++j) {
     for (std::size_t k = 0; k < L; ++k) {
@@ -1849,11 +1849,11 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorMultiplyMatrix::compute<T, L, M, N>(vec, mat, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1998,7 +1998,7 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
                                  const Matrix<T, M, N> &mat) {
   ColVector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < N; ++j) {
     T sum = 0;
@@ -2008,11 +2008,11 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
     result[j] = sum;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   ColumnVectorMultiplyMatrix::compute<T, M, N>(vec, mat, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -2223,7 +2223,7 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
                                  const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -2235,11 +2235,11 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -2373,7 +2373,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
   Matrix<T, N, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -2381,11 +2381,11 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixTranspose::compute<T, M, N>(mat, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -2629,7 +2629,7 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
                                          const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -2641,11 +2641,11 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   UpperTriangularMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -2861,7 +2861,7 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
                                                 const Matrix<T, K, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -2873,11 +2873,11 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixTransposeMultiplyMatrix::compute<T, M, K, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -3024,7 +3024,7 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
                                              const Vector<T, M> &b) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t n = 0; n < N; ++n) {
     T sum = 0;
@@ -3034,11 +3034,11 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
     result[n] = sum;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixTransposeMultiplyVector::compute<T, M, N>(A, b, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -3256,7 +3256,7 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
                                  const Matrix<T, N, K> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -3268,11 +3268,11 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyTransposeMatrix::compute<T, M, K, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -3422,7 +3422,7 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 
   Matrix<Complex<T>, M, N> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -3430,11 +3430,11 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixRealToComplex::compute<T, M, N>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -3579,7 +3579,7 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
 
   Matrix<T, M, N> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -3587,11 +3587,11 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixRealFromComplex::compute<T, M, N>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -3743,7 +3743,7 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 
   Matrix<T, M, N> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     for (std::size_t j = 0; j < N; ++j) {
@@ -3751,11 +3751,11 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixImagFromComplex::compute<T, M, N>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -3763,4 +3763,4 @@ inline Matrix<T, M, N> get_imag_matrix_from_complex_matrix(
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_MATRIX_HPP__
+#endif // BASE_MATRIX_MATRIX_HPP_

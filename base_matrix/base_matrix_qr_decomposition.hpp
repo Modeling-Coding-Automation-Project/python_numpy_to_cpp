@@ -13,8 +13,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_QR_DECOMPOSITION_HPP__
-#define __BASE_MATRIX_QR_DECOMPOSITION_HPP__
+#ifndef BASE_MATRIX_QR_DECOMPOSITION_HPP_
+#define BASE_MATRIX_QR_DECOMPOSITION_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -481,4 +481,4 @@ protected:
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_QR_DECOMPOSITION_HPP__
+#endif // BASE_MATRIX_QR_DECOMPOSITION_HPP_

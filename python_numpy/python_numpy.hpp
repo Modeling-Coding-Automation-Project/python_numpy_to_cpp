@@ -1,5 +1,5 @@
-#ifndef __PYTHON_NUMPY_HPP__
-#define __PYTHON_NUMPY_HPP__
+#ifndef PYTHON_NUMPY_HPP_
+#define PYTHON_NUMPY_HPP_
 
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
@@ -14,4 +14,4 @@
 #include "python_numpy_templates.hpp"
 #include "python_numpy_transpose_operation.hpp"
 
-#endif // __PYTHON_NUMPY_HPP__
+#endif // PYTHON_NUMPY_HPP_
