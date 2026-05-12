@@ -9,8 +9,8 @@
  * the matrix element type and matrix size, and supports copy and move
  * semantics.
  */
-#ifndef __BASE_MATRIX_LU_DECOMPOSITION_HPP__
-#define __BASE_MATRIX_LU_DECOMPOSITION_HPP__
+#ifndef BASE_MATRIX_LU_DECOMPOSITION_HPP_
+#define BASE_MATRIX_LU_DECOMPOSITION_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -264,4 +264,4 @@ protected:
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_LU_DECOMPOSITION_HPP__
+#endif // BASE_MATRIX_LU_DECOMPOSITION_HPP_

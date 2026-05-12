@@ -26,8 +26,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_CONCATENATE_HPP__
-#define __PYTHON_NUMPY_CONCATENATE_HPP__
+#ifndef PYTHON_NUMPY_CONCATENATE_HPP_
+#define PYTHON_NUMPY_CONCATENATE_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -1195,4 +1195,4 @@ inline auto concatenate_block_2x2(const A_Type &A, const B_Type &B,
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_CONCATENATE_HPP__
+#endif // PYTHON_NUMPY_CONCATENATE_HPP_

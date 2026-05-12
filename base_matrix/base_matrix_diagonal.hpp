@@ -17,8 +17,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_DIAGONAL_HPP__
-#define __BASE_MATRIX_DIAGONAL_HPP__
+#ifndef BASE_MATRIX_DIAGONAL_HPP_
+#define BASE_MATRIX_DIAGONAL_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -40,7 +40,7 @@ namespace Matrix {
  * This class represents a diagonal matrix of size MxM, storing only the
  * diagonal elements. The storage can be either std::vector<T> or std::array<T,
  * M> depending on the
- * __BASE_MATRIX_USE_STD_VECTOR__ macro.
+ * BASE_MATRIX_USE_STD_VECTOR_ macro.
  *
  * @tparam T Type of the matrix elements.
  * @tparam M Size of the matrix (number of columns and rows).
@@ -54,7 +54,7 @@ public:
   static constexpr std::size_t COLS = M;
 
 public:
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   DiagMatrix() : data(M, static_cast<T>(0)) {}
 
@@ -69,7 +69,7 @@ public:
     }
   }
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   DiagMatrix() : data{} {}
 
@@ -94,7 +94,7 @@ public:
     }
   }
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   DiagMatrix(const DiagMatrix<T, M> &other) : data(other.data) {}
@@ -251,11 +251,11 @@ public:
   }
 
 /* Variable */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<T> data;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<T, M> data;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 };
 
 /**
@@ -351,17 +351,17 @@ inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] + B[j];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixAddDiagMatrix::compute<T, M>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -442,17 +442,17 @@ inline Matrix<T, M, M> operator+(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, M> &B) {
   Matrix<T, M, M> result = B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result(i, i) += A[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixAddMatrix::compute<T, M>(A, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -473,17 +473,17 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
                                  const DiagMatrix<T, M> &B) {
   Matrix<T, M, M> result = A;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result(i, i) += B[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixAddMatrix::compute<T, M>(B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -554,17 +554,17 @@ template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result[i] = -A[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMinus::compute<T, M>(A, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -645,17 +645,17 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] - B[j];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixSubDiagMatrix::compute<T, M>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -736,17 +736,17 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, M> &B) {
   Matrix<T, M, M> result = -B;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result(i, i) += A[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixAddMatrix::compute<T, M>(A, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -825,17 +825,17 @@ inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
                                  const DiagMatrix<T, M> &B) {
   Matrix<T, M, M> result = A;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result(i, i) -= B[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixSubDiagMatrix::compute<T, M>(B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -918,17 +918,17 @@ template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A, const T &scalar) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result[i] = A[i] * scalar;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplyScalar::compute<T, M>(A, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -948,17 +948,17 @@ template <typename T, std::size_t M>
 inline DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result[i] = A[i] * scalar;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplyScalar::compute<T, M>(A, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1039,17 +1039,17 @@ inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
                               const Vector<T, M> &vec) {
   Vector<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     result[i] = A[i] * vec[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplyVector::compute<T, M>(A, vec, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1129,17 +1129,17 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
                                   const DiagMatrix<T, M> &B) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] * B[j];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplyDiagMatrix::compute<T, M>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1267,7 +1267,7 @@ inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
                                  const Matrix<T, M, N> &B) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
@@ -1275,11 +1275,11 @@ inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixMultiplyMatrix::compute<T, M, N>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1406,7 +1406,7 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
                                  const DiagMatrix<T, M> &B) {
   Matrix<T, L, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < L; ++j) {
     for (std::size_t k = 0; k < M; ++k) {
@@ -1414,11 +1414,11 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   MatrixMultiplyDiagMatrix::compute<T, L, M>(A, B, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1485,17 +1485,17 @@ template <typename T, std::size_t M>
 inline T output_trace(const DiagMatrix<T, M> &A) {
   T trace = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; i++) {
     trace += A[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   trace = DiagMatrixTrace::compute<T, M>(A);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return trace;
 }
@@ -1570,17 +1570,17 @@ template <typename T, std::size_t M>
 inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
   Matrix<T, M, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; i++) {
     result(i, i) = A[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixToDense::compute<T, M>(A, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1667,17 +1667,17 @@ inline DiagMatrix<T, M> diag_divide_diag(const DiagMatrix<T, M> &A,
                                          const T division_min) {
   DiagMatrix<T, M> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     result[j] = A[j] / Base::Utility::avoid_zero_divide(B[j], division_min);
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixDivideDiagMatrix::compute<T, M>(A, B, result, division_min);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1847,7 +1847,7 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
                                                const T division_min) {
   Matrix<T, M, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
     for (std::size_t k = 0; k < N; ++k) {
@@ -1856,11 +1856,11 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
     }
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixInverseMultiplyMatrix::compute<T, M, N>(A, B, result, division_min);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1974,17 +1974,17 @@ convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
 
   DiagMatrix<Complex<T>, M> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     To_matrix[i].real = From_matrix[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   DiagMatrixRealToComplex::compute<T, M>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -2066,17 +2066,17 @@ inline auto get_real_matrix_from_complex_matrix(
 
   DiagMatrix<T, M> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     To_matrix[i] = From_matrix[i].real;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetRealDiagMatrixFromComplex::compute<T, M>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -2158,17 +2158,17 @@ inline auto get_imag_matrix_from_complex_matrix(
 
   DiagMatrix<T, M> To_matrix;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < M; ++i) {
     To_matrix[i] = From_matrix[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetImagDiagMatrixFromComplex::compute<T, M>(From_matrix, To_matrix);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_matrix;
 }
@@ -2176,4 +2176,4 @@ inline auto get_imag_matrix_from_complex_matrix(
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_DIAGONAL_HPP__
+#endif // BASE_MATRIX_DIAGONAL_HPP_

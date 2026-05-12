@@ -19,8 +19,8 @@
  * - Is_Complex_Type<T>: Type trait to determine if a type is a specialization
  * of Complex<T>.
  */
-#ifndef __BASE_MATRIX_COMPLEX_HPP__
-#define __BASE_MATRIX_COMPLEX_HPP__
+#ifndef BASE_MATRIX_COMPLEX_HPP_
+#define BASE_MATRIX_COMPLEX_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -706,4 +706,4 @@ template <typename T> struct Is_Complex_Type<Complex<T>> : std::true_type {};
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_COMPLEX_HPP__
+#endif // BASE_MATRIX_COMPLEX_HPP_

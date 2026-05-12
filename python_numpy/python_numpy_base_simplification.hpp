@@ -19,8 +19,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
-#define __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
+#ifndef PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP_
+#define PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP_
 
 #include "python_numpy_base.hpp"
 #include "python_numpy_complex.hpp"
@@ -540,4 +540,4 @@ using SparseMatrixEmpty_Type = decltype(make_SparseMatrixEmpty<T, M, N>());
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP__
+#endif // PYTHON_NUMPY_BASE_SIMPLIFICATION_HPP_

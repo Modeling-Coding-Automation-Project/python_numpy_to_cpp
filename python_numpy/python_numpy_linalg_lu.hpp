@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_LINALG_LU_HPP__
-#define __PYTHON_NUMPY_LINALG_LU_HPP__
+#ifndef PYTHON_NUMPY_LINALG_LU_HPP_
+#define PYTHON_NUMPY_LINALG_LU_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -310,4 +310,4 @@ template <typename A_Type> using LinalgSolverLU_Type = LinalgSolverLU<A_Type>;
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_LINALG_LU_HPP__
+#endif // PYTHON_NUMPY_LINALG_LU_HPP_

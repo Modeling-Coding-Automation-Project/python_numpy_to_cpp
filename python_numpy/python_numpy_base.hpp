@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __PYTHON_NUMPY_BASE_HPP__
-#define __PYTHON_NUMPY_BASE_HPP__
+#ifndef PYTHON_NUMPY_BASE_HPP_
+#define PYTHON_NUMPY_BASE_HPP_
 
 #include "base_matrix.hpp"
 #include "python_numpy_complex.hpp"
@@ -1894,4 +1894,4 @@ using Is_Sparse_Matrix =
 
 } // namespace PythonNumpy
 
-#endif // __PYTHON_NUMPY_BASE_HPP__
+#endif // PYTHON_NUMPY_BASE_HPP_

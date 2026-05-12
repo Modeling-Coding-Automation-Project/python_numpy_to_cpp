@@ -8,7 +8,7 @@
  * Wilkinson shift) for eigenvalue computation, and the inverse iteration method
  * for eigenvector computation. The implementation is compatible with both
  * std::vector and std::array storage, controlled by the
- * __BASE_MATRIX_USE_STD_VECTOR__ macro.
+ * BASE_MATRIX_USE_STD_VECTOR_ macro.
  *
  * @note
  * tparam M is the number of rows in the matrix.
@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_EIGEN_SOLVER_HPP__
-#define __BASE_MATRIX_EIGEN_SOLVER_HPP__
+#ifndef BASE_MATRIX_EIGEN_SOLVER_HPP_
+#define BASE_MATRIX_EIGEN_SOLVER_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -58,7 +58,7 @@ template <typename T, std::size_t M> class EigenSolverReal {
 public:
   /* Constructor */
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   EigenSolverReal()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
@@ -70,7 +70,7 @@ public:
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   EigenSolverReal()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
@@ -81,7 +81,7 @@ public:
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   EigenSolverReal(const EigenSolverReal<T, M> &other)
@@ -199,7 +199,7 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   /**
    * @brief Retrieves the computed eigenvalues.
    * This function returns the eigenvalues computed by the QR method as a
@@ -207,7 +207,7 @@ public:
    * @return std::vector<T> A vector containing the eigenvalues.
    * */
   inline std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   /**
    * @brief Retrieves the computed eigenvalues.
    * This function returns the eigenvalues computed by the QR method as an
@@ -215,7 +215,7 @@ public:
    * @return std::array<T, M> An array containing the eigenvalues.
    * */
   inline std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /**
    * @brief Retrieves the computed eigenvectors.
@@ -293,11 +293,11 @@ protected:
   /* Variable */
   VariableSparseMatrix<T, M, M> _House;
   Matrix<T, M, M> _Hessen;
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<T> _eigen_values;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<T, M> _eigen_values;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   Matrix<T, M, M> _eigen_vectors;
 
@@ -596,7 +596,7 @@ protected:
 template <typename T, std::size_t M> class EigenSolverComplex {
 public:
 /* Constructor */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   EigenSolverComplex()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
@@ -608,7 +608,7 @@ public:
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   EigenSolverComplex()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
@@ -620,7 +620,7 @@ public:
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   EigenSolverComplex(const EigenSolverComplex<T, M> &other)
@@ -753,7 +753,7 @@ public:
     this->_solve_vectors_with_inverse_iteration_method(matrix);
   }
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   /**
    * @brief Retrieves the computed eigenvalues.
    * This function returns the eigenvalues computed by the QR method as a
@@ -763,7 +763,7 @@ public:
   inline std::vector<Complex<T>> get_eigen_values(void) {
     return this->_eigen_values;
   }
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   /**
    * @brief Retrieves the computed eigenvalues.
    * This function returns the eigenvalues computed by the QR method as an
@@ -773,7 +773,7 @@ public:
   inline std::array<Complex<T>, M> get_eigen_values(void) {
     return this->_eigen_values;
   }
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /**
    * @brief Retrieves the computed eigenvectors.
@@ -867,11 +867,11 @@ protected:
   VariableSparseMatrix<T, M, M> _House;
   VariableSparseMatrix<Complex<T>, M, M> _House_comp;
   Matrix<Complex<T>, M, M> _Hessen;
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<Complex<T>> _eigen_values;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<Complex<T>, M> _eigen_values;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
   Matrix<Complex<T>, M, M> _eigen_vectors;
   T _gmres_k_rho = static_cast<T>(0);
   std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
@@ -1166,4 +1166,4 @@ protected:
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_EIGEN_SOLVER_HPP__
+#endif // BASE_MATRIX_EIGEN_SOLVER_HPP_

@@ -12,8 +12,8 @@
  * All functions include error handling for non-positive-definite matrices and
  * return a fallback matrix if decomposition fails.
  */
-#ifndef __BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP__
-#define __BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP__
+#ifndef BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP_
+#define BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -230,4 +230,4 @@ inline std::tuple<Matrix<T, M, M>, bool> cholesky_decomposition_sparse(
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP__
+#endif // BASE_MATRIX_CHOLESKY_DECOMPOSITION_HPP_

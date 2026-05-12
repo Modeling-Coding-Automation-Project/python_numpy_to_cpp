@@ -16,8 +16,8 @@
  * vectors and normalization routines.
  *
  */
-#ifndef __BASE_MATRIX_VECTOR_HPP__
-#define __BASE_MATRIX_VECTOR_HPP__
+#ifndef BASE_MATRIX_VECTOR_HPP_
+#define BASE_MATRIX_VECTOR_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -49,7 +49,7 @@ namespace Matrix {
 template <typename T, std::size_t N> class Vector {
 public:
 /* Constructor */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
   Vector() : data(N, static_cast<T>(0)) {}
 
@@ -57,7 +57,7 @@ public:
 
   Vector(const std::vector<T> &input) : data(input) {}
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
   Vector() : data{} {}
 
@@ -75,7 +75,7 @@ public:
     std::copy(input.begin(), input.end(), this->data.begin());
   }
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
   /* Copy Constructor */
   Vector(const Vector<T, N> &vector) : data(vector.data) {}
@@ -222,17 +222,17 @@ public:
   inline T dot(const Vector<T, N> &other) const {
     T result = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     for (std::size_t i = 0; i < N; ++i) {
       result += this->data[i] * other[i];
     }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     result = VECTOR_DOT<T, N>(*this, other);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     return result;
   }
@@ -308,11 +308,11 @@ public:
   }
 
 /* Variable */
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<T> data;
-#else  // __BASE_MATRIX_USE_STD_VECTOR__
+#else  // BASE_MATRIX_USE_STD_VECTOR_
   std::array<T, N> data;
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 };
 
 /**
@@ -442,17 +442,17 @@ template <typename T, std::size_t N>
 inline void vector_normalize(Vector<T, N> &vec) {
   T norm_inv = vec.norm_inv();
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorNormalize::compute<T, N>(vec, norm_inv);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -474,17 +474,17 @@ template <typename T, std::size_t N>
 inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
   T norm_inv = vec.norm_inv(division_min);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorNormalize::compute<T, N>(vec, norm_inv);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /* Scalar Addition */
@@ -561,17 +561,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator+(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec.data[i] + scalar;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorAddScalar::compute<T, N>(vec, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -593,17 +593,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar + vec[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorAddScalar::compute<T, N>(vec, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -684,17 +684,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec[i] - scalar;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorSubScalar::compute<T, N>(vec, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -778,17 +778,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar - vec[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   ScalarSubVector::compute<T, N>(scalar, vec, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -870,17 +870,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] + b[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorAddVector::compute<T, N>(a, b, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -962,17 +962,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] - b[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorSubVector::compute<T, N>(a, b, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1052,17 +1052,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator*(const Vector<T, N> &vec, const T &scalar) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = vec[i] * scalar;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorMultiplyScalar::compute<T, N>(vec, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1084,17 +1084,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = scalar * vec[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorMultiplyScalar::compute<T, N>(vec, scalar, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1175,17 +1175,17 @@ template <typename T, std::size_t N>
 inline Vector<T, N> operator*(const Vector<T, N> &a, const Vector<T, N> &b) {
   Vector<T, N> result;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     result[i] = a[i] * b[i];
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   VectorMultiply::compute<T, N>(a, b, result);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1261,18 +1261,18 @@ template <typename T, std::size_t N>
 inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     sum += vec_comp[i].real * vec_comp[i].real +
            vec_comp[i].imag * vec_comp[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   sum = ComplexVectorNorm::compute<T, N>(vec_comp);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Base::Math::sqrt<T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
       sum);
@@ -1295,18 +1295,18 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp,
                              const T &division_min) {
   T sum = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     sum += vec_comp[i].real * vec_comp[i].real +
            vec_comp[i].imag * vec_comp[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   sum = ComplexVectorNorm::compute<T, N>(vec_comp);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Base::Math::sqrt<T>(sum, division_min);
 }
@@ -1327,18 +1327,18 @@ template <typename T, std::size_t N>
 inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp) {
   T sum = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     sum += vec_comp[i].real * vec_comp[i].real +
            vec_comp[i].imag * vec_comp[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   sum = ComplexVectorNorm::compute<T, N>(vec_comp);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Base::Math::rsqrt<T>(sum);
 }
@@ -1362,18 +1362,18 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
                                  const T &division_min) {
   T sum = static_cast<T>(0);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     sum += vec_comp[i].real * vec_comp[i].real +
            vec_comp[i].imag * vec_comp[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   sum = ComplexVectorNorm::compute<T, N>(vec_comp);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return Base::Math::rsqrt<T>(sum, division_min);
 }
@@ -1448,17 +1448,17 @@ template <typename T, std::size_t N>
 inline void complex_vector_normalize(Vector<Complex<T>, N> &vec) {
   T norm_inv = complex_vector_norm_inv(vec);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   ComplexVectorNormalize::compute<T, N>(vec, norm_inv);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /**
@@ -1478,17 +1478,17 @@ inline void complex_vector_normalize(Vector<Complex<T>, N> &vec,
                                      const T &division_min) {
   T norm_inv = complex_vector_norm_inv(vec, division_min);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     vec[i] *= norm_inv;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   ComplexVectorNormalize::compute<T, N>(vec, norm_inv);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /* Get Real and Imaginary Vector from Complex Vector */
@@ -1823,7 +1823,7 @@ inline void compute(Vector<T, N> &To_vector,
 
 } // namespace GetImagFromComplexVector
 
-#ifdef __BASE_MATRIX_USE_STD_VECTOR__
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
 
 /**
  * @brief Extracts the real part from a complex vector and stores it in a
@@ -1845,17 +1845,17 @@ inline std::vector<T> get_real_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetRealFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
@@ -1881,22 +1881,22 @@ inline std::vector<T> get_imag_vector_from_complex_vector(
 
   std::vector<T> To_vector(N);
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetImagFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
 
-#else // __BASE_MATRIX_USE_STD_VECTOR__
+#else // BASE_MATRIX_USE_STD_VECTOR_
 
 /**
  * @brief Extracts the real part from a complex vector and stores it in an
@@ -1918,17 +1918,17 @@ inline std::array<T, N> get_real_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetRealFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
@@ -1954,22 +1954,22 @@ inline std::array<T, N> get_imag_vector_from_complex_vector(
 
   std::array<T, N> To_vector;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetImagFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
 
-#endif // __BASE_MATRIX_USE_STD_VECTOR__
+#endif // BASE_MATRIX_USE_STD_VECTOR_
 
 /**
  * @brief Extracts the real part from a complex vector and stores it in a
@@ -1991,17 +1991,17 @@ get_real_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].real;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetRealFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
@@ -2026,17 +2026,17 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 
   Vector<T, N> To_vector;
 
-#ifdef __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t i = 0; i < N; ++i) {
     To_vector[i] = From_vector[i].imag;
   }
 
-#else // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   GetImagFromComplexVector::compute<T, N>(To_vector, From_vector);
 
-#endif // __BASE_MATRIX_USE_FOR_LOOP_OPERATION__
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return To_vector;
 }
@@ -2044,4 +2044,4 @@ get_imag_vector_from_complex_vector(const Vector<Complex<T>, N> &From_vector) {
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_VECTOR_HPP__
+#endif // BASE_MATRIX_VECTOR_HPP_

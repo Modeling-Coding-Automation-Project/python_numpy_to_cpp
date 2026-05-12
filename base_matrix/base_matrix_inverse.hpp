@@ -16,8 +16,8 @@
  * Somehow Programming custom is vice versa,
  * but in this project, we use the mathematical custom.
  */
-#ifndef __BASE_MATRIX_INVERSE_HPP__
-#define __BASE_MATRIX_INVERSE_HPP__
+#ifndef BASE_MATRIX_INVERSE_HPP_
+#define BASE_MATRIX_INVERSE_HPP_
 
 #include "base_matrix_macros.hpp"
 
@@ -1926,4 +1926,4 @@ inverse_complex_diag_matrix(const DiagMatrix<Complex<T>, M> &input,
 } // namespace Matrix
 } // namespace Base
 
-#endif // __BASE_MATRIX_INVERSE_HPP__
+#endif // BASE_MATRIX_INVERSE_HPP_
