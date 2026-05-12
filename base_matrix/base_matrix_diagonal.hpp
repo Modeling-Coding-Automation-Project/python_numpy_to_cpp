@@ -291,7 +291,7 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after addition.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] + B[M_idx];
     Core<T, M, M_idx - 1>::compute(A, B, result);
@@ -311,7 +311,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after addition.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] + B[0];
   }
@@ -584,7 +584,7 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after subtraction.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] - B[M_idx];
     Core<T, M, M_idx - 1>::compute(A, B, result);
@@ -604,7 +604,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after subtraction.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] - B[0];
   }
@@ -1069,7 +1069,7 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after multiplication.
    */
-  static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[M_idx] = A[M_idx] * B[M_idx];
     Core<T, M, M_idx - 1>::compute(A, B, result);
@@ -1089,7 +1089,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
    * @param B The second diagonal matrix.
    * @param result The resulting diagonal matrix after multiplication.
    */
-  static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[0] = A[0] * B[0];
   }
@@ -1601,7 +1601,7 @@ template <typename T, std::size_t M, std::size_t M_idx> struct Core {
    * @param result The resulting diagonal matrix after division.
    * @param division_min The minimum value to avoid division by zero.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[M_idx] =
         A[M_idx] / Base::Utility::avoid_zero_divide(B[M_idx], division_min);
@@ -1624,7 +1624,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
    * @param result The resulting diagonal matrix after division.
    * @param division_min The minimum value to avoid division by zero.
    */
-  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> B,
+  static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[0] = A[0] / Base::Utility::avoid_zero_divide(B[0], division_min);
   }

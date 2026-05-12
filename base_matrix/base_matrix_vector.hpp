@@ -808,7 +808,7 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    * @param b The second vector to add.
    * @param result The resulting vector after adding the two vectors.
    */
-  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[N_idx] = a[N_idx] + b[N_idx];
     Core<T, N, N_idx - 1>::compute(a, b, result);
@@ -828,7 +828,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    * @param result The resulting vector after adding the first elements of the
    * two vectors.
    */
-  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[0] = a[0] + b[0];
   }
@@ -900,7 +900,7 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    * @param b The second vector to subtract from the first vector.
    * @param result The resulting vector after subtracting the two vectors.
    */
-  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[N_idx] = a[N_idx] - b[N_idx];
     Core<T, N, N_idx - 1>::compute(a, b, result);
@@ -920,7 +920,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    * @param b The second vector to subtract from the first vector.
    * @param result The resulting vector after subtracting the two vectors.
    */
-  static void compute(const Vector<T, N> &a, const Vector<T, N> b,
+  static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[0] = a[0] - b[0];
   }
