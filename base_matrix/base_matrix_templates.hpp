@@ -2339,14 +2339,14 @@ struct AccumulateTriangularElementNumberStruct {
 template <typename TriangularCountNumbers, std::size_t M, std::size_t N,
           std::size_t Dif>
 struct AccumulateTriangularElementNumberStructExtend {
-  using _Sequence =
+  using Sequence_ =
       typename TemplatesOperation::AccumulateTriangularElementNumberStruct<
           typename TemplatesOperation::TriangularCountNumbers<N, N>::type,
           N>::type;
 
   using type = typename Concatenate<
-      _Sequence, typename RepeatConcatenateIndexSequence<
-                     Dif, IndexSequence<_Sequence::list[N]>>::type>::type;
+      Sequence_, typename RepeatConcatenateIndexSequence<
+                     Dif, IndexSequence<Sequence_::list[N]>>::type>::type;
 };
 
 /**

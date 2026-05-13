@@ -393,39 +393,39 @@ public:
 
 protected:
   /* Type */
-  using _R_TriangluarCSRIndices = Base::Matrix::UpperTriangularCSRIndices<M, N>;
-  using _R_TriangluarCSRPointers =
+  using R_TriangluarCSRIndices_ = Base::Matrix::UpperTriangularCSRIndices<M, N>;
+  using R_TriangluarCSRPointers_ =
       Base::Matrix::UpperTriangularCSRPointers<M, N>;
 
 public:
   /* Constructor */
   LinalgSolverQR()
-      : _QR_decomposer(),
-        _R_triangular(
+      : QR_decomposer_(),
+        R_triangular_(
             Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>()) {}
 
   /* Copy Constructor */
   LinalgSolverQR(const LinalgSolverQR<T, M, N> &other)
-      : _QR_decomposer(other._QR_decomposer),
-        _R_triangular(other._R_triangular) {}
+      : QR_decomposer_(other.QR_decomposer_),
+        R_triangular_(other.R_triangular_) {}
 
   LinalgSolverQR<T, M, N> &operator=(const LinalgSolverQR<T, M, N> &other) {
     if (this != &other) {
-      this->_QR_decomposer = other._QR_decomposer;
-      this->_R_triangular = other._R_triangular;
+      this->QR_decomposer_ = other.QR_decomposer_;
+      this->R_triangular_ = other.R_triangular_;
     }
     return *this;
   }
 
   /* Move Constructor */
   LinalgSolverQR(LinalgSolverQR<T, M, N> &&other) noexcept
-      : _QR_decomposer(std::move(other._QR_decomposer)),
-        _R_triangular(std::move(other._R_triangular)) {}
+      : QR_decomposer_(std::move(other.QR_decomposer_)),
+        R_triangular_(std::move(other.R_triangular_)) {}
 
   LinalgSolverQR<T, M, N> &operator=(LinalgSolverQR<T, M, N> &&other) noexcept {
     if (this != &other) {
-      this->_QR_decomposer = std::move(other._QR_decomposer);
-      this->_R_triangular = std::move(other._R_triangular);
+      this->QR_decomposer_ = std::move(other.QR_decomposer_);
+      this->R_triangular_ = std::move(other.R_triangular_);
     }
     return *this;
   }
@@ -458,8 +458,8 @@ public:
     Backward_Substitution_Out_Type matrix_out;
 
     LinalgQR_Operation::backward_substitution(
-        this->_R_triangular, matrix_in, matrix_out,
-        this->_QR_decomposer.division_min);
+        this->R_triangular_, matrix_in, matrix_out,
+        this->QR_decomposer_.division_min);
 
     return matrix_out;
   }
@@ -474,10 +474,10 @@ public:
    * @param A The input matrix to decompose and solve.
    */
   inline void solve(const Matrix<DefDense, T, M, N> &A) {
-    this->_QR_decomposer.solve(A.matrix);
+    this->QR_decomposer_.solve(A.matrix);
 
     Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
-        this->_R_triangular, this->_QR_decomposer.get_R());
+        this->R_triangular_, this->QR_decomposer_.get_R());
   }
 
   /* Get Q, R */
@@ -494,12 +494,12 @@ public:
   inline auto get_R(void) -> Matrix<
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
-          N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>> const {
+          N, R_TriangluarCSRIndices_, R_TriangluarCSRPointers_>> const {
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
-                      N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>>(
-        this->_R_triangular);
+                      N, R_TriangluarCSRIndices_, R_TriangluarCSRPointers_>>(
+        this->R_triangular_);
   }
 
   /**
@@ -511,7 +511,7 @@ public:
    * @return A dense matrix representing the orthogonal part of Q.
    */
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
-    return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
+    return Matrix<DefDense, T, M, M>(this->QR_decomposer_.get_Q());
   }
 
   /**
@@ -524,7 +524,7 @@ public:
    * @param division_min The minimum division threshold to set.
    */
   inline void set_division_min(const T &division_min) {
-    this->_QR_decomposer.division_min = division_min;
+    this->QR_decomposer_.division_min = division_min;
   }
 
 public:
@@ -537,11 +537,11 @@ public:
 
 protected:
   /* Properties */
-  Base::Matrix::QRDecomposition<T, M, N> _QR_decomposer;
+  Base::Matrix::QRDecomposition<T, M, N> QR_decomposer_;
 
-  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarCSRIndices,
-                                     _R_TriangluarCSRPointers>
-      _R_triangular;
+  Base::Matrix::CompiledSparseMatrix<T, M, N, R_TriangluarCSRIndices_,
+                                     R_TriangluarCSRPointers_>
+      R_triangular_;
 };
 
 /**
@@ -557,26 +557,26 @@ protected:
 template <typename T, std::size_t M> class LinalgSolverQRDiag {
 public:
   /* Constructor */
-  LinalgSolverQRDiag() : _R() {}
+  LinalgSolverQRDiag() : R_() {}
 
   /* Copy Constructor */
-  LinalgSolverQRDiag(const LinalgSolverQRDiag<T, M> &other) : _R(other._R) {}
+  LinalgSolverQRDiag(const LinalgSolverQRDiag<T, M> &other) : R_(other.R_) {}
 
   LinalgSolverQRDiag<T, M> &operator=(const LinalgSolverQRDiag<T, M> &other) {
     if (this != &other) {
-      this->_R = other._R;
+      this->R_ = other.R_;
     }
     return *this;
   }
 
   /* Move Constructor */
   LinalgSolverQRDiag(LinalgSolverQRDiag<T, M> &&other) noexcept
-      : _R(std::move(other._R)) {}
+      : R_(std::move(other.R_)) {}
 
   LinalgSolverQRDiag<T, M> &
   operator=(LinalgSolverQRDiag<T, M> &&other) noexcept {
     if (this != &other) {
-      this->_R = std::move(other._R);
+      this->R_ = std::move(other.R_);
     }
     return *this;
   }
@@ -605,9 +605,9 @@ public:
 
     Backward_Substitution_Out_Type matrix_out;
 
-    auto solver = make_LinalgSolver<decltype(this->_R), Matrix_In_Type>();
+    auto solver = make_LinalgSolver<decltype(this->R_), Matrix_In_Type>();
 
-    matrix_out = solver.solve(this->_R, matrix_in);
+    matrix_out = solver.solve(this->R_, matrix_in);
 
     return matrix_out;
   }
@@ -619,7 +619,7 @@ public:
    *
    * @param A The input diagonal matrix to decompose.
    */
-  inline void solve(const Matrix<DefDiag, T, M> &A) { this->_R = A; }
+  inline void solve(const Matrix<DefDiag, T, M> &A) { this->R_ = A; }
 
   /**
    * @brief Returns the diagonal matrix R from the QR decomposition.
@@ -630,7 +630,7 @@ public:
    *
    * @return A diagonal matrix representing R.
    */
-  inline auto get_R(void) -> Matrix<DefDiag, T, M> const { return this->_R; }
+  inline auto get_R(void) -> Matrix<DefDiag, T, M> const { return this->R_; }
 
   /**
    * @brief Returns the identity matrix Q from the QR decomposition.
@@ -646,7 +646,7 @@ public:
 
 protected:
   /* Properties */
-  Matrix<DefDiag, T, M> _R;
+  Matrix<DefDiag, T, M> R_;
 };
 
 /**
@@ -675,8 +675,8 @@ public:
 
 protected:
   /* Type */
-  using _R_TriangluarCSRIndices = Base::Matrix::UpperTriangularCSRIndices<M, N>;
-  using _R_TriangluarCSRPointers =
+  using R_TriangluarCSRIndices_ = Base::Matrix::UpperTriangularCSRIndices<M, N>;
+  using R_TriangluarCSRPointers_ =
       Base::Matrix::UpperTriangularCSRPointers<M, N>;
 
 public:
@@ -686,14 +686,14 @@ public:
   /* Copy Constructor */
   LinalgSolverQRSparse(
       const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other)
-      : _QR_decomposer(other._QR_decomposer),
-        _R_triangular(other._R_triangular) {}
+      : QR_decomposer_(other.QR_decomposer_),
+        R_triangular_(other.R_triangular_) {}
 
   LinalgSolverQRSparse<T, M, N, SparseAvailable> &
   operator=(const LinalgSolverQRSparse<T, M, N, SparseAvailable> &other) {
     if (this != &other) {
-      this->_QR_decomposer = other._QR_decomposer;
-      this->_R_triangular = other._R_triangular;
+      this->QR_decomposer_ = other.QR_decomposer_;
+      this->R_triangular_ = other.R_triangular_;
     }
     return *this;
   }
@@ -701,14 +701,14 @@ public:
   /* Move Constructor */
   LinalgSolverQRSparse(
       LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept
-      : _QR_decomposer(std::move(other._QR_decomposer)),
-        _R_triangular(std::move(other._R_triangular)) {}
+      : QR_decomposer_(std::move(other.QR_decomposer_)),
+        R_triangular_(std::move(other.R_triangular_)) {}
 
   LinalgSolverQRSparse<T, M, N, SparseAvailable> &
   operator=(LinalgSolverQRSparse<T, M, N, SparseAvailable> &&other) noexcept {
     if (this != &other) {
-      this->_QR_decomposer = std::move(other._QR_decomposer);
-      this->_R_triangular = std::move(other._R_triangular);
+      this->QR_decomposer_ = std::move(other.QR_decomposer_);
+      this->R_triangular_ = std::move(other.R_triangular_);
     }
     return *this;
   }
@@ -740,8 +740,8 @@ public:
     Backward_Substitution_Out_Type matrix_out;
 
     LinalgQR_Operation::backward_substitution(
-        this->_R_triangular, matrix_in, matrix_out,
-        this->_QR_decomposer.division_min);
+        this->R_triangular_, matrix_in, matrix_out,
+        this->QR_decomposer_.division_min);
 
     return matrix_out;
   }
@@ -755,10 +755,10 @@ public:
    * @param A The input sparse matrix to decompose.
    */
   inline void solve(const Matrix<DefSparse, T, M, N, SparseAvailable> &A) {
-    this->_QR_decomposer.solve(A.matrix);
+    this->QR_decomposer_.solve(A.matrix);
 
     Base::Matrix::set_values_UpperTriangularSparseMatrix<T, M, N>(
-        this->_R_triangular, this->_QR_decomposer.get_R());
+        this->R_triangular_, this->QR_decomposer_.get_R());
   }
 
   /**
@@ -773,12 +773,12 @@ public:
   inline auto get_R(void) -> Matrix<
       DefSparse, T, M, N,
       CreateSparseAvailableFromIndicesAndPointers<
-          N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>> const {
+          N, R_TriangluarCSRIndices_, R_TriangluarCSRPointers_>> const {
 
     return Matrix<DefSparse, T, M, N,
                   CreateSparseAvailableFromIndicesAndPointers<
-                      N, _R_TriangluarCSRIndices, _R_TriangluarCSRPointers>>(
-        this->_R_triangular);
+                      N, R_TriangluarCSRIndices_, R_TriangluarCSRPointers_>>(
+        this->R_triangular_);
   }
 
   /**
@@ -790,7 +790,7 @@ public:
    * @return A dense matrix representing the orthogonal part of Q.
    */
   inline auto get_Q(void) -> Matrix<DefDense, T, M, M> const {
-    return Matrix<DefDense, T, M, M>(this->_QR_decomposer.get_Q());
+    return Matrix<DefDense, T, M, M>(this->QR_decomposer_.get_Q());
   }
 
   /**
@@ -803,7 +803,7 @@ public:
    * @param division_min The minimum division threshold to set.
    */
   inline void set_division_min(const T &division_min) {
-    this->_QR_decomposer.division_min = division_min;
+    this->QR_decomposer_.division_min = division_min;
   }
 
 public:
@@ -819,11 +819,11 @@ protected:
   Base::Matrix::QRDecompositionSparse<
       T, M, N, Base::Matrix::CSRIndicesFromSparseAvailable<SparseAvailable>,
       Base::Matrix::CSRPointersFromSparseAvailable<SparseAvailable>>
-      _QR_decomposer;
+      QR_decomposer_;
 
-  Base::Matrix::CompiledSparseMatrix<T, M, N, _R_TriangluarCSRIndices,
-                                     _R_TriangluarCSRPointers>
-      _R_triangular =
+  Base::Matrix::CompiledSparseMatrix<T, M, N, R_TriangluarCSRIndices_,
+                                     R_TriangluarCSRPointers_>
+      R_triangular_ =
           Base::Matrix::create_UpperTriangularSparseMatrix<T, M, N>();
 };
 

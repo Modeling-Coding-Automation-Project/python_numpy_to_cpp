@@ -42,20 +42,20 @@ public:
 
   LUDecomposition(const DiagMatrix<T, M> &matrix)
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION)) {
-    this->_Lower = Matrix<T, M, M>::identity();
-    this->_Upper = Base::Matrix::output_dense_matrix(matrix);
+    this->Lower_ = Matrix<T, M, M>::identity();
+    this->Upper_ = Base::Matrix::output_dense_matrix(matrix);
   }
 
   /* Copy Constructor */
   LUDecomposition(const LUDecomposition<T, M> &other)
-      : division_min(other.division_min), _Lower(other._Lower),
-        _Upper(other._Upper), _pivot_index_vec(other._pivot_index_vec) {}
+      : division_min(other.division_min), Lower_(other.Lower_),
+        Upper_(other.Upper_), _pivot_index_vec(other._pivot_index_vec) {}
 
   LUDecomposition<T, M> &operator=(const LUDecomposition<T, M> &other) {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Lower = other._Lower;
-      this->_Upper = other._Upper;
+      this->Lower_ = other.Lower_;
+      this->Upper_ = other.Upper_;
       this->_pivot_index_vec = other._pivot_index_vec;
     }
     return *this;
@@ -64,14 +64,14 @@ public:
   /* Move Constructor */
   LUDecomposition(LUDecomposition<T, M> &&other) noexcept
       : division_min(std::move(other.division_min)),
-        _Lower(std::move(other._Lower)), _Upper(std::move(other._Upper)),
+        Lower_(std::move(other.Lower_)), Upper_(std::move(other.Upper_)),
         _pivot_index_vec(std::move(other._pivot_index_vec)) {}
 
   LUDecomposition<T, M> &operator=(LUDecomposition<T, M> &&other) noexcept {
     if (this != &other) {
       this->division_min = std::move(other.division_min);
-      this->_Lower = std::move(other._Lower);
-      this->_Upper = std::move(other._Upper);
+      this->Lower_ = std::move(other.Lower_);
+      this->Upper_ = std::move(other.Upper_);
       this->_pivot_index_vec = std::move(other._pivot_index_vec);
     }
     return *this;
@@ -85,14 +85,14 @@ public:
    *
    * @return Matrix<T, M, M> The lower triangular matrix of the decomposition.
    */
-  inline Matrix<T, M, M> get_L() const { return _Lower; }
+  inline Matrix<T, M, M> get_L() const { return Lower_; }
 
   /**
    * @brief Returns the upper triangular matrix (U) from the LU decomposition.
    *
    * @return Matrix<T, M, M> The upper triangular matrix of the decomposition.
    */
-  inline Matrix<T, M, M> get_U() const { return _Upper; }
+  inline Matrix<T, M, M> get_U() const { return Upper_; }
 
   /**
    * @brief Solves the linear system Ax = b using LU decomposition.
@@ -143,7 +143,7 @@ public:
     T det = static_cast<T>(1);
 
     for (std::size_t i = 0; i < M; i++) {
-      det *= this->_Lower(i, i) * this->_Upper(i, i);
+      det *= this->Lower_(i, i) * this->Upper_(i, i);
     }
 
     return det;
@@ -155,8 +155,8 @@ public:
 
 protected:
   /* Variable */
-  Matrix<T, M, M> _Lower;
-  Matrix<T, M, M> _Upper;
+  Matrix<T, M, M> Lower_;
+  Matrix<T, M, M> Upper_;
   Vector<std::size_t, M> _pivot_index_vec;
 
 protected:
@@ -167,28 +167,28 @@ protected:
    * matrices.
    *
    * This function performs LU decomposition of the input square matrix, storing
-   * the results in the _Lower and _Upper member variables. It also handles
+   * the results in the Lower_ and Upper_ member variables. It also handles
    * pivoting to ensure numerical stability.
    *
    * @param matrix The input square matrix to be decomposed.
    */
   inline void _decompose(const Matrix<T, M, M> &matrix) {
-    this->_Lower = Matrix<T, M, M>();
-    this->_Upper = matrix;
+    this->Lower_ = Matrix<T, M, M>();
+    this->Upper_ = matrix;
 
     for (std::size_t i = 0; i < M; ++i) {
       this->_pivot_index_vec[i] = i;
     }
 
     for (std::size_t i = 0; i < M; ++i) {
-      this->_Lower(i, i) = 1;
+      this->Lower_(i, i) = 1;
 
       // Pivoting
-      if (Base::Utility::near_zero(this->_Upper(i, i), this->division_min)) {
+      if (Base::Utility::near_zero(this->Upper_(i, i), this->division_min)) {
         std::size_t maxCol = i;
-        T maxVal = Base::Math::abs(this->_Upper(i, i));
+        T maxVal = Base::Math::abs(this->Upper_(i, i));
         for (std::size_t k = i + 1; k < M; ++k) {
-          T absVal = Base::Math::abs(this->_Upper(k, i));
+          T absVal = Base::Math::abs(this->Upper_(k, i));
           if (absVal > maxVal) {
             maxVal = absVal;
             maxCol = k;
@@ -197,18 +197,18 @@ protected:
         if (maxCol != i) {
           Base::Utility::swap_value(this->_pivot_index_vec[i],
                                     this->_pivot_index_vec[maxCol]);
-          Base::Matrix::matrix_row_swap(i, maxCol, this->_Upper);
-          Base::Matrix::matrix_row_swap(i, maxCol, this->_Lower);
+          Base::Matrix::matrix_row_swap(i, maxCol, this->Upper_);
+          Base::Matrix::matrix_row_swap(i, maxCol, this->Lower_);
         }
       }
 
       for (std::size_t j = i + 1; j < M; ++j) {
-        T factor = this->_Upper(j, i) /
-                   Base::Utility::avoid_zero_divide(this->_Upper(i, i),
+        T factor = this->Upper_(j, i) /
+                   Base::Utility::avoid_zero_divide(this->Upper_(i, i),
                                                     this->division_min);
-        this->_Lower(j, i) = factor;
+        this->Lower_(j, i) = factor;
         for (std::size_t k = i; k < M; ++k) {
-          this->_Upper(j, k) -= factor * this->_Upper(i, k);
+          this->Upper_(j, k) -= factor * this->Upper_(i, k);
         }
       }
     }
@@ -229,7 +229,7 @@ protected:
     for (std::size_t i = 0; i < M; ++i) {
       T sum = b[i];
       for (std::size_t j = 0; j < i; ++j) {
-        sum -= this->_Lower(i, j) * y[j];
+        sum -= this->Lower_(i, j) * y[j];
       }
       y[i] = sum;
     }
@@ -252,9 +252,9 @@ protected:
     for (std::size_t i = M; i-- > 0;) {
       T sum = y[i];
       for (std::size_t j = i + 1; j < M; ++j) {
-        sum -= this->_Upper(i, j) * x[j];
+        sum -= this->Upper_(i, j) * x[j];
       }
-      x[i] = sum / Base::Utility::avoid_zero_divide(this->_Upper(i, i),
+      x[i] = sum / Base::Utility::avoid_zero_divide(this->Upper_(i, i),
                                                     this->division_min);
     }
     return x;
