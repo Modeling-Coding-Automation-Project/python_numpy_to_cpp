@@ -706,13 +706,13 @@ public:
 
 protected:
   /* Type */
-  using _ValidateSparseAvailable = ValidateSparseAvailable<SparseAvailable>;
-  using _CSRIndices_Type = CSRIndicesFromSparseAvailable<SparseAvailable>;
-  using _CSRPointers_Type = CSRPointersFromSparseAvailable<SparseAvailable>;
+  using ValidateSparseAvailable_ = ValidateSparseAvailable<SparseAvailable>;
+  using CSRIndices_Type_ = CSRIndicesFromSparseAvailable<SparseAvailable>;
+  using CSRPointers_Type_ = CSRPointersFromSparseAvailable<SparseAvailable>;
 
-  using _BaseMatrix_Type =
-      Base::Matrix::CompiledSparseMatrix<T, M, N, _CSRIndices_Type,
-                                         _CSRPointers_Type>;
+  using BaseMatrix_Type_ =
+      Base::Matrix::CompiledSparseMatrix<T, M, N, CSRIndices_Type_,
+                                         CSRPointers_Type_>;
 
 public:
   /* Constructor */
@@ -720,9 +720,9 @@ public:
 
   Matrix(const std::initializer_list<T> &values) : matrix(values) {}
 
-  Matrix(_BaseMatrix_Type &input) : matrix(input) {}
+  Matrix(BaseMatrix_Type_ &input) : matrix(input) {}
 
-  Matrix(_BaseMatrix_Type &&input) noexcept : matrix(std::move(input)) {}
+  Matrix(BaseMatrix_Type_ &&input) noexcept : matrix(std::move(input)) {}
 
   /* Copy Constructor */
   Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
@@ -840,7 +840,7 @@ public:
   /**
    * @brief Retrieves the underlying sparse matrix data.
    *
-   * @return _BaseMatrix_Type The underlying sparse matrix data.
+   * @return BaseMatrix_Type_ The underlying sparse matrix data.
    */
   constexpr std::size_t cols() const { return COLS; }
 
@@ -919,7 +919,7 @@ public:
   static inline auto full(const T &value)
       -> Matrix<DefSparse, T, M, N, SparseAvailable> {
     return Matrix<DefSparse, T, M, N, SparseAvailable>(
-        _BaseMatrix_Type::full(value));
+        BaseMatrix_Type_::full(value));
   }
 
   /**
@@ -996,13 +996,13 @@ public:
   static constexpr std::size_t COLS = N;
   static constexpr std::size_t ROWS = M;
 
-  static constexpr std::size_t NumberOfValues = _CSRPointers_Type::list[M];
+  static constexpr std::size_t NumberOfValues = CSRPointers_Type_::list[M];
 
   static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
 public:
   /* Variable */
-  _BaseMatrix_Type matrix;
+  BaseMatrix_Type_ matrix;
 };
 
 /* Matrix Addition */

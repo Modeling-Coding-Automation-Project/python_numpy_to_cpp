@@ -64,7 +64,7 @@ public:
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),
+        gmres_k_decay_rate(static_cast<T>(0)), House_(), Hessen_(),
         _eigen_values(M, static_cast<T>(0)),
         _eigen_vectors(Matrix<T, M, M>::ones()),
         _gmres_k_rho(static_cast<std::size_t>(0)),
@@ -76,7 +76,7 @@ public:
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), _House(), _Hessen(),
+        gmres_k_decay_rate(static_cast<T>(0)), House_(), Hessen_(),
         _eigen_values(), _eigen_vectors(Matrix<T, M, M>::ones()),
         _gmres_k_rho(static_cast<std::size_t>(0)),
         _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
@@ -87,8 +87,8 @@ public:
   EigenSolverReal(const EigenSolverReal<T, M> &other)
       : iteration_max(other.iteration_max), division_min(other.division_min),
         small_value(other.small_value),
-        gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
-        _Hessen(other._Hessen), _eigen_values(other._eigen_values),
+        gmres_k_decay_rate(other.gmres_k_decay_rate), House_(other.House_),
+        Hessen_(other.Hessen_), _eigen_values(other._eigen_values),
         _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
         _gmres_k_rep_num(other._gmres_k_rep_num) {}
 
@@ -98,8 +98,8 @@ public:
       this->division_min = other.division_min;
       this->small_value = other.small_value;
       this->gmres_k_decay_rate = other.gmres_k_decay_rate;
-      this->_House = other._House;
-      this->_Hessen = other._Hessen;
+      this->House_ = other.House_;
+      this->Hessen_ = other.Hessen_;
       this->_eigen_values = other._eigen_values;
       this->_eigen_vectors = other._eigen_vectors;
       this->_gmres_k_rho = other._gmres_k_rho;
@@ -114,7 +114,7 @@ public:
         division_min(std::move(other.division_min)),
         small_value(std::move(other.small_value)),
         gmres_k_decay_rate(std::move(other.gmres_k_decay_rate)),
-        _House(std::move(other._House)), _Hessen(std::move(other._Hessen)),
+        House_(std::move(other.House_)), Hessen_(std::move(other.Hessen_)),
         _eigen_values(std::move(other._eigen_values)),
         _eigen_vectors(std::move(other._eigen_vectors)),
         _gmres_k_rho(std::move(other._gmres_k_rho)),
@@ -126,8 +126,8 @@ public:
       this->division_min = std::move(other.division_min);
       this->small_value = std::move(other.small_value);
       this->gmres_k_decay_rate = std::move(other.gmres_k_decay_rate);
-      this->_House = std::move(other._House);
-      this->_Hessen = std::move(other._Hessen);
+      this->House_ = std::move(other.House_);
+      this->Hessen_ = std::move(other.Hessen_);
       this->_eigen_values = std::move(other._eigen_values);
       this->_eigen_vectors = std::move(other._eigen_vectors);
       this->_gmres_k_rho = std::move(other._gmres_k_rho);
@@ -291,8 +291,8 @@ public:
 
 protected:
   /* Variable */
-  VariableSparseMatrix<T, M, M> _House;
-  Matrix<T, M, M> _Hessen;
+  VariableSparseMatrix<T, M, M> House_;
+  Matrix<T, M, M> Hessen_;
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<T> _eigen_values;
 #else  // BASE_MATRIX_USE_STD_VECTOR_
@@ -334,43 +334,43 @@ protected:
         u_abs += u[i] * u[i];
       }
 
-      std::fill(this->_House.values.begin(), this->_House.values.end(),
+      std::fill(this->House_.values.begin(), this->House_.values.end(),
                 static_cast<T>(0));
-      std::fill(this->_House.csr_indices.begin(),
-                this->_House.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->_House.csr_pointers.begin(),
-                this->_House.csr_pointers.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_indices.begin(),
+                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_pointers.begin(),
+                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
-        this->_House.values[H_value_count] = static_cast<T>(1);
-        this->_House.csr_indices[H_value_count] = i;
+        this->House_.values[H_value_count] = static_cast<T>(1);
+        this->House_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k + 1; i < M; ++i) {
         for (std::size_t j = k + 1; j < M; ++j) {
 
           if (i == j) {
-            this->_House.values[H_value_count] = static_cast<T>(1);
+            this->House_.values[H_value_count] = static_cast<T>(1);
           }
 
-          this->_House.values[H_value_count] -=
+          this->House_.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
               Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
-          this->_House.csr_indices[H_value_count] = j;
+          this->House_.csr_indices[H_value_count] = j;
           H_value_count++;
         }
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
-      R = this->_House * R * this->_House;
+      R = this->House_ * R * this->House_;
     }
 
-    this->_Hessen = R;
+    this->Hessen_ = R;
   }
 
   /**
@@ -401,49 +401,49 @@ protected:
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
-      std::fill(this->_House.values.begin(), this->_House.values.end(),
+      std::fill(this->House_.values.begin(), this->House_.values.end(),
                 static_cast<T>(0));
-      std::fill(this->_House.csr_indices.begin(),
-                this->_House.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->_House.csr_pointers.begin(),
-                this->_House.csr_pointers.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_indices.begin(),
+                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_pointers.begin(),
+                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
-        this->_House.values[H_value_count] = static_cast<T>(1);
-        this->_House.csr_indices[H_value_count] = i;
+        this->House_.values[H_value_count] = static_cast<T>(1);
+        this->House_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k; i < k + 2; ++i) {
         for (std::size_t j = k; j < k + 2; ++j) {
 
           if (i == j) {
-            this->_House.values[H_value_count] = static_cast<T>(1);
+            this->House_.values[H_value_count] = static_cast<T>(1);
           }
 
-          this->_House.values[H_value_count] -=
+          this->House_.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
               Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
-          this->_House.csr_indices[H_value_count] = j;
+          this->House_.csr_indices[H_value_count] = j;
           H_value_count++;
         }
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k + 2; i < M; i++) {
-        this->_House.values[H_value_count] = static_cast<T>(1);
-        this->_House.csr_indices[H_value_count] = i;
+        this->House_.values[H_value_count] = static_cast<T>(1);
+        this->House_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
-      R = this->_House * R;
-      Q = Q * this->_House;
+      R = this->House_ * R;
+      Q = Q * this->House_;
     }
 
     return std::make_tuple(Q, R);
@@ -487,7 +487,7 @@ protected:
    */
   inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
-      Matrix<T, M, M> A = this->_Hessen;
+      Matrix<T, M, M> A = this->Hessen_;
 
       for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
         T mu = this->_wilkinson_shift(A);
@@ -513,7 +513,7 @@ protected:
       if (k == 2) {
         this->_eigen_values[0] = A(0, 0);
       }
-      this->_Hessen = A;
+      this->Hessen_ = A;
     }
   }
 
@@ -603,8 +603,8 @@ public:
         iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
-        _Hessen(), _eigen_values(M, static_cast<Complex<T>>(0)),
+        gmres_k_decay_rate(static_cast<T>(0)), House_(), House_comp_(),
+        Hessen_(), _eigen_values(M, static_cast<Complex<T>>(0)),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
@@ -615,8 +615,8 @@ public:
         iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), _House(), _House_comp(),
-        _Hessen(), _eigen_values(),
+        gmres_k_decay_rate(static_cast<T>(0)), House_(), House_comp_(),
+        Hessen_(), _eigen_values(),
         _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
         _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
 
@@ -627,8 +627,8 @@ public:
       : iteration_max(other.iteration_max),
         iteration_max_for_eigen_vector(other.iteration_max_for_eigen_vector),
         division_min(other.division_min), small_value(other.small_value),
-        gmres_k_decay_rate(other.gmres_k_decay_rate), _House(other._House),
-        _House_comp(other._House_comp), _Hessen(other._Hessen),
+        gmres_k_decay_rate(other.gmres_k_decay_rate), House_(other.House_),
+        House_comp_(other.House_comp_), Hessen_(other.Hessen_),
         _eigen_values(other._eigen_values),
         _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
         _gmres_k_rep_num(other._gmres_k_rep_num) {}
@@ -641,9 +641,9 @@ public:
       this->division_min = other.division_min;
       this->small_value = other.small_value;
       this->gmres_k_decay_rate = other.gmres_k_decay_rate;
-      this->_House = other._House;
-      this->_House_comp = other._House_comp;
-      this->_Hessen = other._Hessen;
+      this->House_ = other.House_;
+      this->House_comp_ = other.House_comp_;
+      this->Hessen_ = other.Hessen_;
       this->_eigen_values = other._eigen_values;
       this->_eigen_vectors = other._eigen_vectors;
       this->_gmres_k_rho = other._gmres_k_rho;
@@ -660,9 +660,9 @@ public:
         division_min(std::move(other.division_min)),
         small_value(std::move(other.small_value)),
         gmres_k_decay_rate(std::move(other.gmres_k_decay_rate)),
-        _House(std::move(other._House)),
-        _House_comp(std::move(other._House_comp)),
-        _Hessen(std::move(other._Hessen)),
+        House_(std::move(other.House_)),
+        House_comp_(std::move(other.House_comp_)),
+        Hessen_(std::move(other.Hessen_)),
         _eigen_values(std::move(other._eigen_values)),
         _eigen_vectors(std::move(other._eigen_vectors)),
         _gmres_k_rho(std::move(other._gmres_k_rho)),
@@ -676,9 +676,9 @@ public:
       this->division_min = std::move(other.division_min);
       this->small_value = std::move(other.small_value);
       this->gmres_k_decay_rate = std::move(other.gmres_k_decay_rate);
-      this->_House = std::move(other._House);
-      this->_House_comp = std::move(other._House_comp);
-      this->_Hessen = std::move(other._Hessen);
+      this->House_ = std::move(other.House_);
+      this->House_comp_ = std::move(other.House_comp_);
+      this->Hessen_ = std::move(other.Hessen_);
       this->_eigen_values = std::move(other._eigen_values);
       this->_eigen_vectors = std::move(other._eigen_vectors);
       this->_gmres_k_rho = std::move(other._gmres_k_rho);
@@ -864,9 +864,9 @@ public:
 
 protected:
   /* Variable */
-  VariableSparseMatrix<T, M, M> _House;
-  VariableSparseMatrix<Complex<T>, M, M> _House_comp;
-  Matrix<Complex<T>, M, M> _Hessen;
+  VariableSparseMatrix<T, M, M> House_;
+  VariableSparseMatrix<Complex<T>, M, M> House_comp_;
+  Matrix<Complex<T>, M, M> Hessen_;
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
   std::vector<Complex<T>> _eigen_values;
 #else  // BASE_MATRIX_USE_STD_VECTOR_
@@ -906,43 +906,43 @@ protected:
         u_abs += u[i] * u[i];
       }
 
-      std::fill(this->_House.values.begin(), this->_House.values.end(),
+      std::fill(this->House_.values.begin(), this->House_.values.end(),
                 static_cast<T>(0));
-      std::fill(this->_House.csr_indices.begin(),
-                this->_House.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->_House.csr_pointers.begin(),
-                this->_House.csr_pointers.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_indices.begin(),
+                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
+      std::fill(this->House_.csr_pointers.begin(),
+                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
-        this->_House.values[H_value_count] = static_cast<T>(1);
-        this->_House.csr_indices[H_value_count] = i;
+        this->House_.values[H_value_count] = static_cast<T>(1);
+        this->House_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k + 1; i < M; ++i) {
         for (std::size_t j = k + 1; j < M; ++j) {
 
           if (i == j) {
-            this->_House.values[H_value_count] = static_cast<T>(1);
+            this->House_.values[H_value_count] = static_cast<T>(1);
           }
 
-          this->_House.values[H_value_count] -=
+          this->House_.values[H_value_count] -=
               static_cast<T>(2) * u[i] * u[j] /
               Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
-          this->_House.csr_indices[H_value_count] = j;
+          this->House_.csr_indices[H_value_count] = j;
           H_value_count++;
         }
-        this->_House.csr_pointers[i + 1] = H_value_count;
+        this->House_.csr_pointers[i + 1] = H_value_count;
       }
 
-      R = this->_House * R * this->_House;
+      R = this->House_ * R * this->House_;
     }
 
-    this->_Hessen = Base::Matrix::convert_matrix_real_to_complex(R);
+    this->Hessen_ = Base::Matrix::convert_matrix_real_to_complex(R);
   }
 
   /**
@@ -973,52 +973,52 @@ protected:
       T u_abs = Base::Matrix::complex_abs_sq(u[k]) +
                 Base::Matrix::complex_abs_sq(u[k + 1]);
 
-      std::fill(this->_House_comp.values.begin(),
-                this->_House_comp.values.end(), Complex<T>());
-      std::fill(this->_House_comp.csr_indices.begin(),
-                this->_House_comp.csr_indices.end(),
+      std::fill(this->House_comp_.values.begin(),
+                this->House_comp_.values.end(), Complex<T>());
+      std::fill(this->House_comp_.csr_indices.begin(),
+                this->House_comp_.csr_indices.end(),
                 static_cast<std::size_t>(0));
-      std::fill(this->_House_comp.csr_pointers.begin(),
-                this->_House_comp.csr_pointers.end(),
+      std::fill(this->House_comp_.csr_pointers.begin(),
+                this->House_comp_.csr_pointers.end(),
                 static_cast<std::size_t>(0));
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
-        this->_House_comp.values[H_value_count] = static_cast<T>(1);
-        this->_House_comp.csr_indices[H_value_count] = i;
+        this->House_comp_.values[H_value_count] = static_cast<T>(1);
+        this->House_comp_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House_comp.csr_pointers[i + 1] = H_value_count;
+        this->House_comp_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k; i < k + 2; ++i) {
         for (std::size_t j = k; j < k + 2; ++j) {
 
           if (i == j) {
-            this->_House_comp.values[H_value_count] = static_cast<T>(1);
+            this->House_comp_.values[H_value_count] = static_cast<T>(1);
           }
 
-          this->_House_comp.values[H_value_count] -=
+          this->House_comp_.values[H_value_count] -=
               static_cast<T>(2) *
               (u[i] * Base::Matrix::complex_conjugate(u[j])) /
               Base::Utility::avoid_zero_divide(u_abs, this->division_min);
 
-          this->_House_comp.csr_indices[H_value_count] = j;
+          this->House_comp_.csr_indices[H_value_count] = j;
           H_value_count++;
         }
-        this->_House_comp.csr_pointers[i + 1] = H_value_count;
+        this->House_comp_.csr_pointers[i + 1] = H_value_count;
       }
 
       for (std::size_t i = k + 2; i < M; i++) {
-        this->_House_comp.values[H_value_count] = static_cast<T>(1);
-        this->_House_comp.csr_indices[H_value_count] = i;
+        this->House_comp_.values[H_value_count] = static_cast<T>(1);
+        this->House_comp_.csr_indices[H_value_count] = i;
         H_value_count++;
 
-        this->_House_comp.csr_pointers[i + 1] = H_value_count;
+        this->House_comp_.csr_pointers[i + 1] = H_value_count;
       }
 
-      R = this->_House_comp * R;
-      Q = Q * this->_House_comp;
+      R = this->House_comp_ * R;
+      Q = Q * this->House_comp_;
     }
   }
 
@@ -1071,7 +1071,7 @@ protected:
    */
   inline void _continue_solving_values_with_qr_method(void) {
     for (std::size_t k = M; k > 1; --k) {
-      Matrix<Complex<T>, M, M> A = this->_Hessen;
+      Matrix<Complex<T>, M, M> A = this->Hessen_;
 
       for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
         Complex<T> mu = this->_wilkinson_shift(A);
@@ -1097,7 +1097,7 @@ protected:
       if (k == 2) {
         this->_eigen_values[0] = A(0, 0);
       }
-      this->_Hessen = A;
+      this->Hessen_ = A;
     }
   }
 

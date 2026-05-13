@@ -58,28 +58,28 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigRealDense() : _Eigen_solver() {}
+  LinalgSolverEigRealDense() : Eigen_solver_() {}
 
   /* Copy Constructor */
   LinalgSolverEigRealDense(const LinalgSolverEigRealDense<T, M> &other)
-      : _Eigen_solver(other._Eigen_solver) {}
+      : Eigen_solver_(other.Eigen_solver_) {}
 
   LinalgSolverEigRealDense<T, M> &
   operator=(const LinalgSolverEigRealDense<T, M> &other) {
     if (this != &other) {
-      this->_Eigen_solver = other._Eigen_solver;
+      this->Eigen_solver_ = other.Eigen_solver_;
     }
     return *this;
   }
 
   /* Move Constructor */
   LinalgSolverEigRealDense(LinalgSolverEigRealDense<T, M> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)) {}
+      : Eigen_solver_(std::move(other.Eigen_solver_)) {}
 
   LinalgSolverEigRealDense<T, M> &
   operator=(LinalgSolverEigRealDense<T, M> &&other) noexcept {
     if (this != &other) {
-      this->_Eigen_solver = std::move(other._Eigen_solver);
+      this->Eigen_solver_ = std::move(other.Eigen_solver_);
     }
     return *this;
   }
@@ -99,7 +99,7 @@ public:
    * computed.
    */
   inline void solve_eigen_values(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_values(A.matrix);
+    this->Eigen_solver_.solve_eigen_values(A.matrix);
   }
 
   /**
@@ -109,7 +109,7 @@ public:
    * has not yet completed the process. It is useful for iterative solvers.
    */
   inline void continue_solving_eigen_values(void) {
-    this->_Eigen_solver.continue_solving_eigen_values();
+    this->Eigen_solver_.continue_solving_eigen_values();
   }
 
   /**
@@ -124,7 +124,7 @@ public:
    * computed.
    */
   inline void solve_eigen_vectors(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix);
+    this->Eigen_solver_.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
@@ -141,7 +141,7 @@ public:
   inline auto get_eigen_values(void)
       -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
     return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
-        Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
+        Base::Matrix::Matrix<T, M, 1>(this->Eigen_solver_.get_eigen_values()));
   }
 
   /**
@@ -156,7 +156,7 @@ public:
   inline auto get_eigen_vectors(void)
       -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
     return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.get_eigen_vectors());
+        this->Eigen_solver_.get_eigen_vectors());
   }
 
   /**
@@ -168,7 +168,7 @@ public:
    * @return The maximum number of iterations.
    */
   inline std::size_t get_iteration_max(void) {
-    return this->_Eigen_solver.iteration_max;
+    return this->Eigen_solver_.iteration_max;
   }
 
   /* Set */
@@ -183,7 +183,7 @@ public:
    * @param iteration_max The maximum number of iterations to set.
    */
   inline void set_iteration_max(std::size_t iteration_max) {
-    this->_Eigen_solver.iteration_max = iteration_max;
+    this->Eigen_solver_.iteration_max = iteration_max;
   }
 
   /**
@@ -199,7 +199,7 @@ public:
    * Eigen solver.
    */
   inline void set_division_min(const T &division_min_in) {
-    this->_Eigen_solver.division_min = division_min_in;
+    this->Eigen_solver_.division_min = division_min_in;
   }
 
   /**
@@ -212,7 +212,7 @@ public:
    * @param small_value_in The small value to set for numerical stability.
    */
   inline void set_small_value(const T &small_value_in) {
-    this->_Eigen_solver.small_value = small_value_in;
+    this->Eigen_solver_.small_value = small_value_in;
   }
 
   /* Check */
@@ -233,7 +233,7 @@ public:
       -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
 
     return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.check_validity(A.matrix));
+        this->Eigen_solver_.check_validity(A.matrix));
   }
 
 public:
@@ -246,7 +246,7 @@ public:
 
 protected:
   /* Variable */
-  EigenSolver_Type _Eigen_solver;
+  EigenSolver_Type Eigen_solver_;
 };
 
 /* Linalg solver for Real Eigen values and vectors of Diag Matrix */
@@ -394,17 +394,17 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigRealSparse() : _Eigen_solver() {}
+  LinalgSolverEigRealSparse() : Eigen_solver_() {}
 
   /* Copy Constructor */
   LinalgSolverEigRealSparse(
       const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other)
-      : _Eigen_solver(other._Eigen_solver) {}
+      : Eigen_solver_(other.Eigen_solver_) {}
 
   LinalgSolverEigRealSparse<T, M, SparseAvailable> &
   operator=(const LinalgSolverEigRealSparse<T, M, SparseAvailable> &other) {
     if (this != &other) {
-      this->_Eigen_solver = other._Eigen_solver;
+      this->Eigen_solver_ = other.Eigen_solver_;
     }
     return *this;
   }
@@ -412,12 +412,12 @@ public:
   /* Move Constructor */
   LinalgSolverEigRealSparse(
       LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)) {}
+      : Eigen_solver_(std::move(other.Eigen_solver_)) {}
 
   LinalgSolverEigRealSparse<T, M, SparseAvailable> &
   operator=(LinalgSolverEigRealSparse<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
-      this->_Eigen_solver = std::move(other._Eigen_solver);
+      this->Eigen_solver_ = std::move(other.Eigen_solver_);
     }
     return *this;
   }
@@ -435,7 +435,7 @@ public:
    * to be computed.
    */
   inline void solve_eigen_values(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_values(
+    this->Eigen_solver_.solve_eigen_values(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
@@ -446,7 +446,7 @@ public:
    * has not yet completed the process. It is useful for iterative solvers.
    */
   inline void continue_solving_eigen_values(void) {
-    this->_Eigen_solver.continue_solving_eigen_values();
+    this->Eigen_solver_.continue_solving_eigen_values();
   }
 
   /**
@@ -460,7 +460,7 @@ public:
    * to be computed.
    */
   inline void solve_eigen_vectors(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_vectors(
+    this->Eigen_solver_.solve_eigen_vectors(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
@@ -478,7 +478,7 @@ public:
   inline auto get_eigen_values(void)
       -> ForLinalgSolverEigReal::EigenValues_Type<T, M> {
     return ForLinalgSolverEigReal::EigenValues_Type<T, M>(
-        Base::Matrix::Matrix<T, M, 1>(this->_Eigen_solver.get_eigen_values()));
+        Base::Matrix::Matrix<T, M, 1>(this->Eigen_solver_.get_eigen_values()));
   }
 
   /**
@@ -493,7 +493,7 @@ public:
   inline auto get_eigen_vectors(void)
       -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
     return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.get_eigen_vectors());
+        this->Eigen_solver_.get_eigen_vectors());
   }
 
   /* Set */
@@ -508,7 +508,7 @@ public:
    * @param iteration_max The maximum number of iterations to set.
    */
   inline void set_iteration_max(std::size_t iteration_max) {
-    this->_Eigen_solver.iteration_max = iteration_max;
+    this->Eigen_solver_.iteration_max = iteration_max;
   }
 
   /**
@@ -523,7 +523,7 @@ public:
    * Eigen solver.
    */
   inline void set_division_min(const T &division_min_in) {
-    this->_Eigen_solver.division_min = division_min_in;
+    this->Eigen_solver_.division_min = division_min_in;
   }
 
   /**
@@ -536,7 +536,7 @@ public:
    * @param small_value_in The small value to set for numerical stability.
    */
   inline void set_small_value(const T &small_value_in) {
-    this->_Eigen_solver.small_value = small_value_in;
+    this->Eigen_solver_.small_value = small_value_in;
   }
 
   /* Check */
@@ -557,7 +557,7 @@ public:
       -> ForLinalgSolverEigReal::EigenVectors_Type<T, M> {
 
     return ForLinalgSolverEigReal::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.check_validity(
+        this->Eigen_solver_.check_validity(
             Base::Matrix::output_dense_matrix(A.matrix)));
   }
 
@@ -571,7 +571,7 @@ public:
 
 protected:
   /* Variable */
-  Base::Matrix::EigenSolverReal<T, M> _Eigen_solver;
+  Base::Matrix::EigenSolverReal<T, M> Eigen_solver_;
 };
 
 /* make LinalgSolverEig Real */
@@ -679,28 +679,28 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigDense() : _Eigen_solver() {}
+  LinalgSolverEigDense() : Eigen_solver_() {}
 
   /* Copy Constructor */
   LinalgSolverEigDense(const LinalgSolverEigDense<T, M> &other)
-      : _Eigen_solver(other._Eigen_solver) {}
+      : Eigen_solver_(other.Eigen_solver_) {}
 
   LinalgSolverEigDense<T, M> &
   operator=(const LinalgSolverEigDense<T, M> &other) {
     if (this != &other) {
-      this->_Eigen_solver = other._Eigen_solver;
+      this->Eigen_solver_ = other.Eigen_solver_;
     }
     return *this;
   }
 
   /* Move Constructor */
   LinalgSolverEigDense(LinalgSolverEigDense<T, M> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)) {}
+      : Eigen_solver_(std::move(other.Eigen_solver_)) {}
 
   LinalgSolverEigDense<T, M> &
   operator=(LinalgSolverEigDense<T, M> &&other) noexcept {
     if (this != &other) {
-      this->_Eigen_solver = std::move(other._Eigen_solver);
+      this->Eigen_solver_ = std::move(other.Eigen_solver_);
     }
     return *this;
   }
@@ -718,7 +718,7 @@ public:
    * computed.
    */
   inline void solve_eigen_values(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_values(A.matrix);
+    this->Eigen_solver_.solve_eigen_values(A.matrix);
   }
 
   /**
@@ -728,7 +728,7 @@ public:
    * has not yet completed the process. It is useful for iterative solvers.
    */
   inline void continue_solving_eigen_values(void) {
-    this->_Eigen_solver.continue_solving_eigen_values();
+    this->Eigen_solver_.continue_solving_eigen_values();
   }
 
   /**
@@ -742,7 +742,7 @@ public:
    * computed.
    */
   inline void solve_eigen_vectors(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_vectors(A.matrix);
+    this->Eigen_solver_.solve_eigen_vectors(A.matrix);
   }
 
   /* Get */
@@ -760,7 +760,7 @@ public:
       -> ForLinalgSolverEig::EigenValues_Type<T, M> {
     return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
-            this->_Eigen_solver.get_eigen_values()));
+            this->Eigen_solver_.get_eigen_values()));
   }
 
   /**
@@ -775,7 +775,7 @@ public:
   inline auto get_eigen_vectors(void)
       -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
     return ForLinalgSolverEig::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.get_eigen_vectors());
+        this->Eigen_solver_.get_eigen_vectors());
   }
 
   /**
@@ -787,7 +787,7 @@ public:
    * @return The maximum number of iterations.
    */
   inline std::size_t get_iteration_max(void) {
-    return this->_Eigen_solver.iteration_max;
+    return this->Eigen_solver_.iteration_max;
   }
 
   /* Set */
@@ -802,7 +802,7 @@ public:
    * @param iteration_max The maximum number of iterations to set.
    */
   inline void set_iteration_max(std::size_t iteration_max) {
-    this->_Eigen_solver.iteration_max = iteration_max;
+    this->Eigen_solver_.iteration_max = iteration_max;
   }
 
   /**
@@ -816,7 +816,7 @@ public:
    */
   inline void set_iteration_max_for_eigen_vector(
       std::size_t iteration_max_for_eigen_vector) {
-    this->_Eigen_solver.iteration_max_for_eigen_vector =
+    this->Eigen_solver_.iteration_max_for_eigen_vector =
         iteration_max_for_eigen_vector;
   }
 
@@ -832,7 +832,7 @@ public:
    * Eigen solver.
    */
   inline void set_division_min(const T &division_min_in) {
-    this->_Eigen_solver.division_min = division_min_in;
+    this->Eigen_solver_.division_min = division_min_in;
   }
 
   /**
@@ -845,7 +845,7 @@ public:
    * @param small_value_in The small value to set for numerical stability.
    */
   inline void set_small_value(const T &small_value_in) {
-    this->_Eigen_solver.small_value = small_value_in;
+    this->Eigen_solver_.small_value = small_value_in;
   }
 
   /**
@@ -858,7 +858,7 @@ public:
    * @param gmres_k_decay_rate_in The decay rate to set for the GMRES method.
    */
   inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
-    this->_Eigen_solver.gmres_k_decay_rate = gmres_k_decay_rate_in;
+    this->Eigen_solver_.gmres_k_decay_rate = gmres_k_decay_rate_in;
   }
 
   /* Check */
@@ -879,7 +879,7 @@ public:
       -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
 
     return ForLinalgSolverEig::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.check_validity(A.matrix));
+        this->Eigen_solver_.check_validity(A.matrix));
   }
 
 public:
@@ -892,7 +892,7 @@ public:
 
 protected:
   /* Variable */
-  EigenSolver_Type _Eigen_solver;
+  EigenSolver_Type Eigen_solver_;
 };
 
 /* Linalg solver for Complex Eigen values and vectors of Diag Matrix */
@@ -1042,17 +1042,17 @@ public:
 
 public:
   /* Constructor */
-  LinalgSolverEigSparse() : _Eigen_solver() {}
+  LinalgSolverEigSparse() : Eigen_solver_() {}
 
   /* Copy Constructor */
   LinalgSolverEigSparse(
       const LinalgSolverEigSparse<T, M, SparseAvailable> &other)
-      : _Eigen_solver(other._Eigen_solver) {}
+      : Eigen_solver_(other.Eigen_solver_) {}
 
   LinalgSolverEigSparse<T, M, SparseAvailable> &
   operator=(const LinalgSolverEigSparse<T, M, SparseAvailable> &other) {
     if (this != &other) {
-      this->_Eigen_solver = other._Eigen_solver;
+      this->Eigen_solver_ = other.Eigen_solver_;
     }
     return *this;
   }
@@ -1060,12 +1060,12 @@ public:
   /* Move Constructor */
   LinalgSolverEigSparse(
       LinalgSolverEigSparse<T, M, SparseAvailable> &&other) noexcept
-      : _Eigen_solver(std::move(other._Eigen_solver)) {}
+      : Eigen_solver_(std::move(other.Eigen_solver_)) {}
 
   LinalgSolverEigSparse<T, M, SparseAvailable> &
   operator=(LinalgSolverEigSparse<T, M, SparseAvailable> &&other) noexcept {
     if (this != &other) {
-      this->_Eigen_solver = std::move(other._Eigen_solver);
+      this->Eigen_solver_ = std::move(other.Eigen_solver_);
     }
     return *this;
   }
@@ -1084,7 +1084,7 @@ public:
    * to be computed.
    */
   inline void solve_eigen_values(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_values(
+    this->Eigen_solver_.solve_eigen_values(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
@@ -1095,7 +1095,7 @@ public:
    * has not yet completed the process. It is useful for iterative solvers.
    */
   inline void continue_solving_eigen_values(void) {
-    this->_Eigen_solver.continue_solving_eigen_values();
+    this->Eigen_solver_.continue_solving_eigen_values();
   }
 
   /**
@@ -1109,7 +1109,7 @@ public:
    * to be computed.
    */
   inline void solve_eigen_vectors(const A_Type &A) {
-    this->_Eigen_solver.solve_eigen_vectors(
+    this->Eigen_solver_.solve_eigen_vectors(
         Base::Matrix::output_dense_matrix(A.matrix));
   }
 
@@ -1128,7 +1128,7 @@ public:
       -> ForLinalgSolverEig::EigenValues_Type<T, M> {
     return ForLinalgSolverEig::EigenValues_Type<T, M>(
         Base::Matrix::Matrix<Base::Matrix::Complex<T>, M, 1>(
-            this->_Eigen_solver.get_eigen_values()));
+            this->Eigen_solver_.get_eigen_values()));
   }
 
   /**
@@ -1143,7 +1143,7 @@ public:
   inline auto get_eigen_vectors(void)
       -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
     return ForLinalgSolverEig::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.get_eigen_vectors());
+        this->Eigen_solver_.get_eigen_vectors());
   }
 
   /* Set */
@@ -1158,7 +1158,7 @@ public:
    * @param iteration_max The maximum number of iterations to set.
    */
   inline void set_iteration_max(const std::size_t &iteration_max) {
-    this->_Eigen_solver.iteration_max = iteration_max;
+    this->Eigen_solver_.iteration_max = iteration_max;
   }
 
   /**
@@ -1172,7 +1172,7 @@ public:
    */
   inline void set_iteration_max_for_eigen_vector(
       const std::size_t &iteration_max_for_eigen_vector) {
-    this->_Eigen_solver.iteration_max_for_eigen_vector =
+    this->Eigen_solver_.iteration_max_for_eigen_vector =
         iteration_max_for_eigen_vector;
   }
 
@@ -1188,7 +1188,7 @@ public:
    * Eigen solver.
    */
   inline void set_division_min(const T &division_min_in) {
-    this->_Eigen_solver.division_min = division_min_in;
+    this->Eigen_solver_.division_min = division_min_in;
   }
 
   /**
@@ -1201,7 +1201,7 @@ public:
    * @param small_value_in The small value to set for numerical stability.
    */
   inline void set_small_value(const T &small_value_in) {
-    this->_Eigen_solver.small_value = small_value_in;
+    this->Eigen_solver_.small_value = small_value_in;
   }
 
   /* Check */
@@ -1222,7 +1222,7 @@ public:
       -> ForLinalgSolverEig::EigenVectors_Type<T, M> {
 
     return ForLinalgSolverEig::EigenVectors_Type<T, M>(
-        this->_Eigen_solver.check_validity(
+        this->Eigen_solver_.check_validity(
             Base::Matrix::output_dense_matrix(A.matrix)));
   }
 
@@ -1236,7 +1236,7 @@ public:
 
 protected:
   /* Variable */
-  EigenSolver_Type _Eigen_solver;
+  EigenSolver_Type Eigen_solver_;
 };
 
 /* make LinalgSolverEig Complex */

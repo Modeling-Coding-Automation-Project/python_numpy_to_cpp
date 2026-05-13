@@ -123,18 +123,18 @@ public:
   /* Constructor */
   QRDecomposition()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix() {}
+        Q_matrix_(Matrix<T, M, M>::identity()), R_matrix_() {}
 
   /* Copy Constructor */
   QRDecomposition(const QRDecomposition<T, M, N> &other)
-      : division_min(other.division_min), _Q_matrix(other._Q_matrix),
-        _R_matrix(other._R_matrix) {}
+      : division_min(other.division_min), Q_matrix_(other.Q_matrix_),
+        R_matrix_(other.R_matrix_) {}
 
   QRDecomposition<T, M, N> &operator=(const QRDecomposition<T, M, N> &other) {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = other._Q_matrix;
-      this->_R_matrix = other._R_matrix;
+      this->Q_matrix_ = other.Q_matrix_;
+      this->R_matrix_ = other.R_matrix_;
     }
 
     return *this;
@@ -142,15 +142,15 @@ public:
 
   /* Move Constructor */
   QRDecomposition(QRDecomposition<T, M, N> &&other) noexcept
-      : division_min(other.division_min), _Q_matrix(std::move(other._Q_matrix)),
-        _R_matrix(std::move(other._R_matrix)) {}
+      : division_min(other.division_min), Q_matrix_(std::move(other.Q_matrix_)),
+        R_matrix_(std::move(other.R_matrix_)) {}
 
   QRDecomposition<T, M, N> &
   operator=(QRDecomposition<T, M, N> &&other) noexcept {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = std::move(other._Q_matrix);
-      this->_R_matrix = std::move(other._R_matrix);
+      this->Q_matrix_ = std::move(other.Q_matrix_);
+      this->R_matrix_ = std::move(other.R_matrix_);
     }
 
     return *this;
@@ -168,7 +168,7 @@ public:
    * @param A The input matrix to decompose.
    */
   inline void solve(const Matrix<T, M, N> &A) {
-    this->_R_matrix = A;
+    this->R_matrix_ = A;
     this->_decompose();
   }
 
@@ -180,7 +180,7 @@ public:
    *
    * @return The orthogonal matrix Q.
    */
-  inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+  inline Matrix<T, M, M> get_Q() const { return this->Q_matrix_; }
 
   /**
    * @brief Returns the upper triangular matrix R from the QR decomposition.
@@ -190,7 +190,7 @@ public:
    *
    * @return The upper triangular matrix R.
    */
-  inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
+  inline Matrix<T, M, N> get_R() const { return this->R_matrix_; }
 
 public:
   /* Variable */
@@ -198,8 +198,8 @@ public:
 
 protected:
   /* Variable */
-  Matrix<T, M, M> _Q_matrix;
-  Matrix<T, M, N> _R_matrix;
+  Matrix<T, M, M> Q_matrix_;
+  Matrix<T, M, N> R_matrix_;
 
 protected:
   /* Function */
@@ -216,7 +216,7 @@ protected:
     for (std::size_t j = 0; j < N; ++j) {
       for (std::size_t i = j + 1; i < M; ++i) {
 
-        if (!Base::Utility::near_zero(this->_R_matrix(i, j),
+        if (!Base::Utility::near_zero(this->R_matrix_(i, j),
                                       this->division_min)) {
           this->_givensRotation(i, j);
         }
@@ -235,9 +235,9 @@ protected:
    * @param j The index of the second column to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
-    std::tie(this->_Q_matrix, this->_R_matrix) =
-        Base::Matrix::qr_givensRotation(i, j, std::move(this->_Q_matrix),
-                                        std::move(this->_R_matrix),
+    std::tie(this->Q_matrix_, this->R_matrix_) =
+        Base::Matrix::qr_givensRotation(i, j, std::move(this->Q_matrix_),
+                                        std::move(this->R_matrix_),
                                         this->division_min);
   }
 };
@@ -257,31 +257,31 @@ public:
   /* Constructor */
   QRDecompositionDiag()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(DiagMatrix<T, M>::identity()), _R_matrix() {}
+        Q_matrix_(DiagMatrix<T, M>::identity()), R_matrix_() {}
 
   /* Copy Constructor */
   QRDecompositionDiag(const QRDecompositionDiag<T, M> &other)
-      : division_min(other.division_min), _Q_matrix(other._Q_matrix),
-        _R_matrix(other._R_matrix) {}
+      : division_min(other.division_min), Q_matrix_(other.Q_matrix_),
+        R_matrix_(other.R_matrix_) {}
   QRDecompositionDiag<T, M> &operator=(const QRDecompositionDiag<T, M> &other) {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = other._Q_matrix;
-      this->_R_matrix = other._R_matrix;
+      this->Q_matrix_ = other.Q_matrix_;
+      this->R_matrix_ = other.R_matrix_;
     }
     return *this;
   }
 
   /* Move Constructor */
   QRDecompositionDiag(QRDecompositionDiag<T, M> &&other) noexcept
-      : division_min(other.division_min), _Q_matrix(std::move(other._Q_matrix)),
-        _R_matrix(std::move(other._R_matrix)) {}
+      : division_min(other.division_min), Q_matrix_(std::move(other.Q_matrix_)),
+        R_matrix_(std::move(other.R_matrix_)) {}
   QRDecompositionDiag<T, M> &
   operator=(QRDecompositionDiag<T, M> &&other) noexcept {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = std::move(other._Q_matrix);
-      this->_R_matrix = std::move(other._R_matrix);
+      this->Q_matrix_ = std::move(other.Q_matrix_);
+      this->R_matrix_ = std::move(other.R_matrix_);
     }
     return *this;
   }
@@ -297,7 +297,7 @@ public:
    *
    * @param A The input diagonal matrix to decompose.
    */
-  inline void solve(const DiagMatrix<T, M> &A) { this->_R_matrix = A; }
+  inline void solve(const DiagMatrix<T, M> &A) { this->R_matrix_ = A; }
 
   /**
    * @brief Returns the orthogonal matrix Q from the QR decomposition.
@@ -307,7 +307,7 @@ public:
    *
    * @return The orthogonal matrix Q.
    */
-  inline DiagMatrix<T, M> get_Q() const { return this->_Q_matrix; }
+  inline DiagMatrix<T, M> get_Q() const { return this->Q_matrix_; }
 
   /**
    * @brief Returns the upper triangular matrix R from the QR decomposition.
@@ -317,7 +317,7 @@ public:
    *
    * @return The upper triangular matrix R.
    */
-  inline DiagMatrix<T, M> get_R() const { return this->_R_matrix; }
+  inline DiagMatrix<T, M> get_R() const { return this->R_matrix_; }
 
 public:
   /* Variable */
@@ -325,8 +325,8 @@ public:
 
 protected:
   /* Variable */
-  DiagMatrix<T, M> _Q_matrix;
-  DiagMatrix<T, M> _R_matrix;
+  DiagMatrix<T, M> Q_matrix_;
+  DiagMatrix<T, M> R_matrix_;
 };
 
 /**
@@ -353,20 +353,20 @@ public:
   /* Constructor */
   QRDecompositionSparse()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        _Q_matrix(Matrix<T, M, M>::identity()), _R_matrix() {}
+        Q_matrix_(Matrix<T, M, M>::identity()), R_matrix_() {}
 
   /* Copy Constructor */
   QRDecompositionSparse(
       const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &other)
-      : division_min(other.division_min), _Q_matrix(other._Q_matrix),
-        _R_matrix(other._R_matrix) {}
+      : division_min(other.division_min), Q_matrix_(other.Q_matrix_),
+        R_matrix_(other.R_matrix_) {}
   QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
   operator=(const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
                 &other) {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = other._Q_matrix;
-      this->_R_matrix = other._R_matrix;
+      this->Q_matrix_ = other.Q_matrix_;
+      this->R_matrix_ = other.R_matrix_;
     }
     return *this;
   }
@@ -374,15 +374,15 @@ public:
   /* Move Constructor */
   QRDecompositionSparse(QRDecompositionSparse<T, M, N, CSRIndices_A,
                                               CSRPointers_A> &&other) noexcept
-      : division_min(other.division_min), _Q_matrix(std::move(other._Q_matrix)),
-        _R_matrix(std::move(other._R_matrix)) {}
+      : division_min(other.division_min), Q_matrix_(std::move(other.Q_matrix_)),
+        R_matrix_(std::move(other.R_matrix_)) {}
   QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
   operator=(QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
                 &&other) noexcept {
     if (this != &other) {
       this->division_min = other.division_min;
-      this->_Q_matrix = std::move(other._Q_matrix);
-      this->_R_matrix = std::move(other._R_matrix);
+      this->Q_matrix_ = std::move(other.Q_matrix_);
+      this->R_matrix_ = std::move(other.R_matrix_);
     }
     return *this;
   }
@@ -400,7 +400,7 @@ public:
    */
   inline void
   solve(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
-    this->_R_matrix = Base::Matrix::output_dense_matrix(A);
+    this->R_matrix_ = Base::Matrix::output_dense_matrix(A);
     this->_decompose(A);
   }
 
@@ -412,7 +412,7 @@ public:
    *
    * @return The orthogonal matrix Q.
    */
-  inline Matrix<T, M, M> get_Q() const { return this->_Q_matrix; }
+  inline Matrix<T, M, M> get_Q() const { return this->Q_matrix_; }
 
   /**
    * @brief Returns the upper triangular matrix R from the QR decomposition.
@@ -422,7 +422,7 @@ public:
    *
    * @return The upper triangular matrix R.
    */
-  inline Matrix<T, M, N> get_R() const { return this->_R_matrix; }
+  inline Matrix<T, M, N> get_R() const { return this->R_matrix_; }
 
 public:
   /* Variable */
@@ -430,8 +430,8 @@ public:
 
 protected:
   /* Variable */
-  Matrix<T, M, M> _Q_matrix;
-  Matrix<T, M, N> _R_matrix;
+  Matrix<T, M, M> Q_matrix_;
+  Matrix<T, M, N> R_matrix_;
 
 protected:
   /* Function */
@@ -471,9 +471,9 @@ protected:
    * @param j The index of the second column to rotate.
    */
   inline void _givensRotation(std::size_t i, std::size_t j) {
-    std::tie(this->_Q_matrix, this->_R_matrix) =
-        Base::Matrix::qr_givensRotation(i, j, std::move(this->_Q_matrix),
-                                        std::move(this->_R_matrix),
+    std::tie(this->Q_matrix_, this->R_matrix_) =
+        Base::Matrix::qr_givensRotation(i, j, std::move(this->Q_matrix_),
+                                        std::move(this->R_matrix_),
                                         this->division_min);
   }
 };

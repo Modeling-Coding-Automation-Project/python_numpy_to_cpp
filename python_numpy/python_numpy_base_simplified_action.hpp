@@ -1960,11 +1960,11 @@ inline auto norm(const Matrix_Type &matrix) ->
   using IsComplexTrait =
       Base::Matrix::Is_Complex_Type<typename Matrix_Type::Value_Complex_Type>;
 
-  using _Is_Complex_Type =
+  using Is_Complex_Type_ =
       typename std::conditional<IsComplexTrait::value, std::true_type,
                                 std::false_type>::type;
 
-  return NormalizationOperation::Normalizer<Matrix_Type, _Is_Complex_Type>()
+  return NormalizationOperation::Normalizer<Matrix_Type, Is_Complex_Type_>()
       .norm(matrix);
 }
 
