@@ -1,0 +1,137 @@
+name: Run samples
+
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  run_samples:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        define:
+        - ''
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Install dependencies
+      run: 'sudo apt update
+
+        sudo apt install -y build-essential
+
+        sudo apt install -y python3.12
+
+        sudo apt install -y python3.12-dev
+
+        sudo apt install -y python3.12-venv
+
+        '
+    - name: Set up Python environment
+      run: 'python3.12 -m venv /opt/venv_py_sim_manager
+
+        /opt/venv_py_sim_manager/bin/pip install --upgrade pip
+
+        /opt/venv_py_sim_manager/bin/pip install --upgrade setuptools
+
+        /opt/venv_py_sim_manager/bin/pip install numpy
+
+        '
+    - name: Run samples
+      env:
+        MPLBACKEND: Agg
+      run: '/opt/venv_py_sim_manager/bin/python3 ./sample/arithmetic_operation.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/arithmetic_operation.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/cholesky.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/cholesky.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/concatenation.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/concatenation.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/eigen_values_vectors_complex.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/eigen_values_vectors_complex.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/eigen_values_vectors_real.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/eigen_values_vectors_real.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/inverse.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/inverse.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/left_divide.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/left_divide.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/matrix_action.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/matrix_action.cpp
+
+        ./sample/app
+
+        /opt/venv_py_sim_manager/bin/python3 ./sample/qr.py
+
+        g++ -std=c++11 -Wall -I ./python_numpy -I
+          ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
+          ./external_libraries/python_math_to_cpp/python_math -I
+          ./external_libraries/base_utility_cpp/base_utility
+          -o ./sample/app ./sample/qr.cpp
+
+        ./sample/app
+
+        '
