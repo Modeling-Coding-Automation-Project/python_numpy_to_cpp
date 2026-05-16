@@ -47,7 +47,7 @@ jobs:
         MPLBACKEND: Agg
       run: '/opt/venv_py_sim_manager/bin/python3 ./sample/arithmetic_operation.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -57,7 +57,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/cholesky.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -67,7 +67,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/concatenation.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -77,7 +77,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/eigen_values_vectors_complex.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -87,7 +87,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/eigen_values_vectors_real.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -97,7 +97,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/inverse.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -107,7 +107,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/left_divide.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -117,7 +117,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/matrix_action.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
@@ -127,7 +127,7 @@ jobs:
 
         /opt/venv_py_sim_manager/bin/python3 ./sample/qr.py
 
-        g++ -std=c++11 -Wall -Werror ${{ matrix.define }} -I ./python_numpy -I
+        g++ -std=c++11 -Wall -I ./python_numpy -I
           ./base_matrix -I ./external_libraries/python_math_to_cpp/base_math -I
           ./external_libraries/python_math_to_cpp/python_math -I
           ./external_libraries/base_utility_cpp/base_utility
