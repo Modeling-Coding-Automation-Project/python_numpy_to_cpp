@@ -1154,6 +1154,17 @@ inline void substitute_part_matrix(Large_Type &Large, const Small_Type &Small) {
 /* Concatenate block, any size */
 namespace ConcatenateBlockOperation {
 
+/**
+ * @brief Concatenates two matrices horizontally.
+ *
+ * This type alias defines the type of the resulting matrix when two matrices
+ * are concatenated horizontally. The resulting matrix has the same number of
+ * rows as the input matrices and a number of columns equal to the sum of the
+ * columns of the input matrices.
+ *
+ * @tparam Left_Type The type of the left matrix to concatenate.
+ * @tparam Right_Type The type of the right matrix to concatenate.
+ */
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Col_Index>
 struct ConcatenateBlockColumns {
@@ -1167,12 +1178,35 @@ struct ConcatenateBlockColumns {
       Arg_Type>;
 };
 
+/**
+ * @brief Concatenates two matrices horizontally.
+ *
+ * This type alias defines the type of the resulting matrix when two matrices
+ * are concatenated horizontally. The resulting matrix has the same number of
+ * rows as the input matrices and a number of columns equal to the sum of the
+ * columns of the input matrices.
+ *
+ * @tparam Row_Offset The column offset for concatenation.
+ * @tparam N The total number of columns to concatenate.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+ */
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlockColumns<Row_Offset, N, ArgsTuple_Type, 0> {
 
   using type = typename std::tuple_element<Row_Offset, ArgsTuple_Type>::type;
 };
 
+/**
+ * @brief Concatenates two matrices vertically.
+ *
+ * This type alias defines the type of the resulting matrix when two matrices
+ * are concatenated vertically. The resulting matrix has the same number of
+ * columns as the input matrices and a number of rows equal to the sum of the
+ * rows of the input matrices.
+ *
+ * @tparam Top_Type The type of the top matrix to concatenate.
+ * @tparam Bottom_Type The type of the bottom matrix to concatenate.
+ */
 template <std::size_t N, typename ArgsTuple_Type, std::size_t Row_Index>
 struct ConcatenateBlockRows {
 
@@ -1185,6 +1219,17 @@ struct ConcatenateBlockRows {
       Arg_Type>;
 };
 
+/**
+ * @brief Concatenates two matrices vertically.
+ *
+ * This type alias defines the type of the resulting matrix when two matrices
+ * are concatenated vertically. The resulting matrix has the same number of
+ * columns as the input matrices and a number of rows equal to the sum of the
+ * rows of the input matrices.
+ *
+ * @tparam N The total number of columns to concatenate.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments.
+ */
 template <std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlockRows<N, ArgsTuple_Type, 0> {
 
@@ -1192,12 +1237,38 @@ struct ConcatenateBlockRows<N, ArgsTuple_Type, 0> {
       typename ConcatenateBlockColumns<0, N, ArgsTuple_Type, (N - 1)>::type;
 };
 
+/**
+ * @brief Concatenates a block of matrices based on the provided arguments.
+ *
+ * This type alias defines the type of the resulting matrix when a block of
+ * matrices is concatenated based on the specified M, N, and ArgsTuple_Type.
+ * The resulting matrix has M rows and N columns, where each element is
+ * determined by the corresponding argument in the tuple.
+ *
+ * @tparam M The number of rows in the block.
+ * @tparam N The number of columns in the block.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments for
+ * concatenation.
+ */
 template <std::size_t M, std::size_t N, typename ArgsTuple_Type>
 struct ConcatenateBlock {
 
   using type = typename ConcatenateBlockRows<N, ArgsTuple_Type, (M - 1)>::type;
 };
 
+/**
+ * @brief Concatenates a block of matrices based on the provided arguments.
+ *
+ * This type alias defines the type of the resulting matrix when a block of
+ * matrices is concatenated based on the specified M, N, and ArgsTuple_Type.
+ * The resulting matrix has M rows and N columns, where each element is
+ * determined by the corresponding argument in the tuple.
+ *
+ * @tparam M The number of rows in the block.
+ * @tparam N The number of columns in the block.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments for
+ * concatenation.
+ */
 template <std::size_t M, std::size_t N, typename Tuple, typename... Args>
 struct ConcatenateArgsType {
   using type = typename ConcatenateBlock<
@@ -1361,6 +1432,20 @@ using ConcatenateBlock_Type =
 /* tile */
 namespace TileOperation {
 
+/**
+ * @brief Generates tile types for a block of matrices.
+ *
+ * This struct recursively generates a type that represents a block of
+ * matrices (tiles) based on the specified dimensions M and N, and the
+ * matrix type. It uses the ConcatenateBlock_Type to create the appropriate
+ * tile type.
+ *
+ * @tparam M The number of rows in the tile.
+ * @tparam N The number of columns in the tile.
+ * @tparam Count The number of matrices to concatenate (used in recursion).
+ * @tparam MATRIX_Type The type of the matrix used in the tile.
+ * @tparam Args The types of the arguments to include in the tuple.
+ */
 template <std::size_t M, std::size_t N, std::size_t Count, typename MATRIX_Type,
           typename... Args>
 struct GenerateTileTypes {
@@ -1778,6 +1863,19 @@ struct RealSumSquaresTemplate {};
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
 struct RealSumSquaresTemplate<T, Matrix_Type, I, J, false> {
+  /**
+   * @brief Adds the square of a non-existent value to the sum of squares.
+   *
+   * This static function is a specialization for the case when the value at
+   * position (I, J) does not exist in the matrix. In this case, it does not
+   * contribute to the sum of squares, and the function simply returns without
+   * modifying the sum_of_squares variable.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J The column index being processed.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     static_cast<void>(sum_of_squares);
@@ -1788,6 +1886,18 @@ struct RealSumSquaresTemplate<T, Matrix_Type, I, J, false> {
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
 struct RealSumSquaresTemplate<T, Matrix_Type, I, J, true> {
+  /**
+   * @brief Adds the square of an existing value to the sum of squares.
+   *
+   * This static function is a specialization for the case when the value at
+   * position (I, J) exists in the matrix. It retrieves the value, computes its
+   * square, and adds it to the sum_of_squares variable.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J The column index being processed.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     T value = matrix.template get<I, J>();
@@ -1798,6 +1908,23 @@ struct RealSumSquaresTemplate<T, Matrix_Type, I, J, true> {
 // when J_idx < N
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
 struct RealColumn {
+  /**
+   * @brief Recursively sums the squares of values in a specific column of the
+   * matrix.
+   *
+   * This static function recursively processes a specific column of the matrix
+   * (indexed by I and J_idx) to compute the sum of squares of its values. It
+   * first adds the square of the value at (I, J_idx) to the sum_of_squares
+   * variable, and then continues to process the remaining columns by invoking
+   * sum_squares with a decremented column index.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     RealSumSquaresTemplate<T, Matrix_Type, I, J_idx,
@@ -1812,6 +1939,20 @@ struct RealColumn {
 // column recursion termination
 template <typename T, typename Matrix_Type, std::size_t I>
 struct RealColumn<T, Matrix_Type, I, 0> {
+  /**
+   * @brief Sums the square of the value in the first column of the matrix.
+   *
+   * This static function is a specialization for the case when the column index
+   * is 0. It adds the square of the value at (I, 0) to the sum_of_squares
+   * variable, and does not continue to process any further columns since this
+   * is the base case for the recursion.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     RealSumSquaresTemplate<T, Matrix_Type, I, 0,
@@ -1824,6 +1965,24 @@ struct RealColumn<T, Matrix_Type, I, 0> {
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t I_idx>
 struct RealRow {
+  /**
+   * @brief Recursively sums the squares of values in a specific row of the
+   * matrix.
+   *
+   * This static function recursively processes a specific row of the matrix
+   * (indexed by I_idx) to compute the sum of squares of its values. It first
+   * processes the columns of the current row by invoking RealColumn, and then
+   * continues to process the remaining rows by invoking sum_squares with a
+   * decremented row index.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
+   * @tparam I_idx The current row index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     RealColumn<T, Matrix_Type, I_idx, N - 1>::sum_squares(sum_of_squares,
@@ -1836,6 +1995,21 @@ struct RealRow {
 // row recursion termination
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N>
 struct RealRow<T, Matrix_Type, M, N, 0> {
+  /**
+   * @brief Sums the squares of values in the first row of the matrix.
+   *
+   * This static function is a specialization for the case when the row index is
+   * 0. It processes the columns of the first row by invoking RealColumn, and
+   * does not continue to process any further rows since this is the base case
+   * for the recursion.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam M The number of rows in the matrix (not used here).
+   * @tparam N The number of columns in the matrix.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     RealColumn<T, Matrix_Type, 0, N - 1>::sum_squares(sum_of_squares, matrix);
@@ -1850,6 +2024,20 @@ struct ComplexSumSquaresTemplate {};
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
 struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, false> {
+  /**
+   * @brief Adds the square of a non-existent complex value to the sum of
+   * squares.
+   *
+   * This static function is a specialization for the case when the complex
+   * value at position (I, J) does not exist in the matrix. In this case, it
+   * does not contribute to the sum of squares, and the function simply returns
+   * without modifying the sum_of_squares variable.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J The column index being processed.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     static_cast<void>(sum_of_squares);
@@ -1860,6 +2048,19 @@ struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, false> {
 
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J>
 struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, true> {
+  /**
+   * @brief Adds the square of an existing complex value to the sum of squares.
+   *
+   * This static function is a specialization for the case when the complex
+   * value at position (I, J) exists in the matrix. It retrieves the complex
+   * value, computes the sum of squares of its real and imaginary parts, and
+   * adds it to the sum_of_squares variable.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J The column index being processed.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     using Value_Complex_Type = typename Matrix_Type::Value_Complex_Type;
@@ -1872,6 +2073,23 @@ struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, true> {
 // when J_idx < N
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t J_idx>
 struct ComplexColumn {
+  /**
+   * @brief Recursively sums the squares of complex values in a specific column
+   * of the matrix.
+   *
+   * This static function recursively processes a specific column of the matrix
+   * (indexed by I and J_idx) to compute the sum of squares of its complex
+   * values. It first adds the square of the complex value at (I, J_idx) to
+   * the sum_of_squares variable, and then continues to process the remaining
+   * columns by invoking sum_squares with a decremented column index.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @tparam J_idx The current column index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     ComplexSumSquaresTemplate<T, Matrix_Type, I, J_idx,
@@ -1887,6 +2105,21 @@ struct ComplexColumn {
 // column recursion termination
 template <typename T, typename Matrix_Type, std::size_t I>
 struct ComplexColumn<T, Matrix_Type, I, 0> {
+  /**
+   * @brief Sums the squares of complex values in the first column of the
+   * matrix.
+   *
+   * This static function is a specialization for the case when the column index
+   * is 0. It adds the square of the complex value at (I, 0) to the
+   * sum_of_squares variable, and does not continue to process any further
+   * columns since this is the base case for the recursion.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam I The row index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     ComplexSumSquaresTemplate<T, Matrix_Type, I, 0,
@@ -1899,6 +2132,24 @@ struct ComplexColumn<T, Matrix_Type, I, 0> {
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t I_idx>
 struct ComplexRow {
+  /**
+   * @brief Recursively sums the squares of complex values in a specific row of
+   * the matrix.
+   *
+   * This static function recursively processes a specific row of the matrix
+   * (indexed by I_idx) to compute the sum of squares of its complex values. It
+   * first processes the columns of the current row by invoking ComplexColumn,
+   * and then continues to process the remaining rows by invoking sum_squares
+   * with a decremented row index.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
+   * @tparam I_idx The current row index being processed.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     ComplexColumn<T, Matrix_Type, I_idx, N - 1>::sum_squares(sum_of_squares,
@@ -1911,6 +2162,21 @@ struct ComplexRow {
 // row recursion termination
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N>
 struct ComplexRow<T, Matrix_Type, M, N, 0> {
+  /**
+   * @brief Sums the squares of complex values in the first row of the matrix.
+   *
+   * This static function is a specialization for the case when the row index is
+   * 0. It processes the columns of the first row by invoking ComplexColumn, and
+   * does not continue to process any further rows since this is the base case
+   * for the recursion.
+   *
+   * @tparam T The type of the sum of squares variable.
+   * @tparam Matrix_Type The type of the matrix being processed.
+   * @tparam M The number of rows in the matrix (not used here).
+   * @tparam N The number of columns in the matrix.
+   * @param sum_of_squares The variable that accumulates the sum of squares.
+   * @param matrix The matrix being processed to compute the sum of squares.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
 
     ComplexColumn<T, Matrix_Type, 0, N - 1>::sum_squares(sum_of_squares,
@@ -1922,6 +2188,16 @@ template <typename Matrix_Type, typename isComplex> struct Normalizer {};
 
 template <typename Matrix_Type>
 struct Normalizer<Matrix_Type, std::false_type> {
+  /**
+   * @brief Computes the norm of a matrix with real values.
+   *
+   * This static function computes the norm of a matrix by calculating the sum
+   * of squares of its real values and then taking the square root of that sum.
+   *
+   * @tparam Matrix_Type The type of the matrix for which to compute the norm.
+   * @param matrix The matrix for which to compute the norm.
+   * @return typename Matrix_Type::Value_Type The computed norm of the matrix.
+   */
   static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Type {
 
@@ -1937,6 +2213,17 @@ struct Normalizer<Matrix_Type, std::false_type> {
 };
 
 template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
+  /**
+   * @brief Computes the norm of a matrix with complex values.
+   *
+   * This static function computes the norm of a matrix by calculating the sum
+   * of squares of its complex values (considering both real and imaginary
+   * parts) and then taking the square root of that sum.
+   *
+   * @tparam Matrix_Type The type of the matrix for which to compute the norm.
+   * @param matrix The matrix for which to compute the norm.
+   * @return typename Matrix_Type::Value_Type The computed norm of the matrix.
+   */
   static auto norm(const Matrix_Type &matrix) ->
       typename Matrix_Type::Value_Type {
 
@@ -1953,6 +2240,18 @@ template <typename Matrix_Type> struct Normalizer<Matrix_Type, std::true_type> {
 
 } // namespace NormalizationOperation
 
+/**
+ * @brief Computes the norm of a matrix.
+ *
+ * This function template computes the norm of a matrix by determining whether
+ * the matrix contains complex values or not, and then invoking the appropriate
+ * normalization operation to calculate the norm based on the type of values in
+ * the matrix.
+ *
+ * @tparam Matrix_Type The type of the matrix for which to compute the norm.
+ * @param matrix The matrix for which to compute the norm.
+ * @return typename Matrix_Type::Value_Type The computed norm of the matrix.
+ */
 template <typename Matrix_Type>
 inline auto norm(const Matrix_Type &matrix) ->
     typename Matrix_Type::Value_Type {
