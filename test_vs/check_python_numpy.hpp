@@ -699,6 +699,14 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(Diag_i_Dense_Ones.matrix.data, Diag_i_Dense_Ones_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check Diag Matrix initialize from Dense Matrix Ones.");
 
+    /* 対角行列をスパース行列で初期化 */
+    //Matrix<DefDiag, T, 3> Diag_i_Sparse(C);
+
+    //Matrix<DefDiag, T, 3> Diag_i_Sparse_answer({ 1, 0, 4 });
+
+    //tester.expect_near(Diag_i_Sparse.matrix.data, Diag_i_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+    //    "check Diag Matrix initialize from Sparse Matrix.");
+
 
     tester.throw_error_if_test_failed();
 }
