@@ -630,6 +630,123 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
             "check Sparse Matrix create complex imag.");
     }
 
+    /* 密行列を対角行列で初期化 */
+    Matrix<DefDense, T, 3, 3> Dense_i_Diag(DiagJ);
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Diag_answer({
+        {10, 0, 0},
+        {0, 20, 0},
+        {0, 0, 30}
+        });
+
+    tester.expect_near(Dense_i_Diag.matrix.data, Dense_i_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
+                "check Dense Matrix initialize from Diag Matrix.");
+
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Diag_Identity(make_DiagMatrixIdentity<T, 3>());
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Diag_Identity_answer({
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+        });
+
+    tester.expect_near(Dense_i_Diag_Identity.matrix.data, Dense_i_Diag_Identity_answer.matrix.data, NEAR_LIMIT_STRICT,
+                "check Dense Matrix initialize from Diag Matrix Identity.");
+
+
+    /* 密行列をスパース行列で初期化 */
+    Matrix<DefDense, T, 3, 3> Dense_i_Sparse(C);
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Sparse_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(Dense_i_Sparse.matrix.data, Dense_i_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Dense Matrix initialize from Sparse Matrix.");
+
+    using SparseAvailable_C = SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<true, false, true>,
+        ColumnAvailable<false, true, true>>;
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Sparse_Full(make_SparseMatrixFull<SparseAvailable_C, T>(
+        static_cast<T>(1)));
+
+    Matrix<DefDense, T, 3, 3> Dense_i_Sparse_Full_answer({
+        {1, 0, 0},
+        {1, 0, 1},
+        {0, 1, 1}
+        });
+
+    tester.expect_near(Dense_i_Sparse_Full.matrix.data, Dense_i_Sparse_Full_answer.matrix.data, NEAR_LIMIT_STRICT,
+                "check Dense Matrix initialize from Sparse Matrix Full.");
+
+    /* 対角行列を密行列で初期化 */
+    Matrix<DefDiag, T, 3> Diag_i_Dense(A);
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_answer({ 1, 4, 7 });
+
+    tester.expect_near(Diag_i_Dense.matrix.data, Diag_i_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Dense Matrix.");
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_Ones(make_DenseMatrixOnes<T, 3, 3>());
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_Ones_answer({ 1, 1, 1 });
+
+    tester.expect_near(Diag_i_Dense_Ones.matrix.data, Diag_i_Dense_Ones_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Dense Matrix Ones.");
+
+    /* 対角行列をスパース行列で初期化 */
+    Matrix<DefDiag, T, 3> Diag_i_Sparse(C);
+
+    Matrix<DefDiag, T, 3> Diag_i_Sparse_answer({ 1, 0, 4 });
+
+    tester.expect_near(Diag_i_Sparse.matrix.data, Diag_i_Sparse_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Sparse Matrix.");
+
+    Matrix<DefDiag, T, 3> Diag_i_Sparse_Full(make_SparseMatrixFull<SparseAvailable_C, T>(
+        static_cast<T>(1)));
+
+    Matrix<DefDiag, T, 3> Diag_i_Sparse_Full_answer({ 1, 0, 1 });
+
+    tester.expect_near(Diag_i_Sparse_Full.matrix.data, Diag_i_Sparse_Full_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Sparse Matrix Full.");
+
+
+    /* スパース行列を密行列で初期化 */
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Dense(A);
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Dense_answer({ 1, 5, 6, 8, 7 });
+
+    tester.expect_near(Sparse_i_Dense.matrix.values, Sparse_i_Dense_answer.matrix.values, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix initialize from Dense Matrix.");
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Dense_Ones(make_DenseMatrixOnes<T, 3, 3>());
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Dense_Ones_answer({ 1, 1, 1, 1, 1 });
+
+    tester.expect_near(Sparse_i_Dense_Ones.matrix.values, Sparse_i_Dense_Ones_answer.matrix.values, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix initialize from Dense Matrix Ones.");
+
+
+    /* スパース行列を対角行列で初期化 */
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Diag(B);
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Diag_answer({ 1, 0, 0, 0, 3 });
+
+    tester.expect_near(Sparse_i_Diag.matrix.values, Sparse_i_Diag_answer.matrix.values, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix initialize from Diag Matrix.");
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Diag_Identity(make_DiagMatrixIdentity<T, 3>());
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> Sparse_i_Diag_Identity_answer({ 1, 0, 0, 0, 1 });
+
+    tester.expect_near(Sparse_i_Diag_Identity.matrix.values, Sparse_i_Diag_Identity_answer.matrix.values, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix initialize from Diag Matrix Identity.");
+
 
     tester.throw_error_if_test_failed();
 }
