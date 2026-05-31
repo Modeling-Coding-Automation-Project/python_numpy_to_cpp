@@ -232,12 +232,8 @@ class NumpyDeploy:
             for i in range(matrix.shape[0]):
                 code_text += "    "
                 for j in range(matrix.shape[1]):
-                    if i == matrix.shape[0] - 1 and j == matrix.shape[1] - 1:
-                        code_text += NumpyDeploy.value_to_string_with_type(
-                            matrix[i, j], type_name)
-                    else:
-                        code_text += NumpyDeploy.value_to_string_with_type(
-                            matrix[i, j], type_name)
+                    code_text += NumpyDeploy.value_to_string_with_type(
+                        matrix[i, j], type_name)
 
                     if j != matrix.shape[1] - 1:
                         code_text += ", "
