@@ -20,6 +20,7 @@
 #define PYTHON_NUMPY_BASE_HPP_
 
 #include "base_matrix.hpp"
+#include "python_numpy_base_simplified_action.hpp"
 #include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"
 
@@ -97,36 +98,44 @@ public:
   template <
       typename DiagMatrix,
       typename std::enable_if<Is_Diag_Matrix<DiagMatrix>::value, int>::type = 0>
-  Matrix(DiagMatrix &input) : matrix(input.create_dense().matrix) {
+  Matrix(DiagMatrix &input) : matrix() {
     static_assert(DiagMatrix::COLS == M && DiagMatrix::ROWS == N,
                   "Diagonal matrix dimensions must match the dense matrix.");
     static_assert(M == N, "Diagonal matrix must be square.");
+
+    substitute_matrix(*this, input);
   }
 
   template <
       typename DiagMatrix,
       typename std::enable_if<Is_Diag_Matrix<DiagMatrix>::value, int>::type = 0>
-  Matrix(DiagMatrix &&input) : matrix(input.create_dense().matrix) {
+  Matrix(DiagMatrix &&input) : matrix() {
     static_assert(DiagMatrix::COLS == M && DiagMatrix::ROWS == N,
                   "Diagonal matrix dimensions must match the dense matrix.");
     static_assert(M == N, "Diagonal matrix must be square.");
+
+    substitute_matrix(*this, input);
   }
 
   // initialize with sparse matrix
   template <typename SparseMatrix,
             typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
                                     int>::type = 0>
-  Matrix(SparseMatrix &input) : matrix(input.create_dense().matrix) {
+  Matrix(SparseMatrix &input) : matrix() {
     static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == N,
                   "Sparse matrix dimensions must match the dense matrix.");
+
+    substitute_matrix(*this, input);
   }
 
   template <typename SparseMatrix,
             typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
                                     int>::type = 0>
-  Matrix(SparseMatrix &&input) : matrix(input.create_dense().matrix) {
+  Matrix(SparseMatrix &&input) : matrix() {
     static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == N,
                   "Sparse matrix dimensions must match the dense matrix.");
+
+    substitute_matrix(*this, input);
   }
 
   /* Copy Constructor */
@@ -416,6 +425,27 @@ public:
 
   Matrix(Base::Matrix::DiagMatrix<T, M> &&input) noexcept
       : matrix(std::move(input)) {}
+
+  // initialize with dense matrix
+  template <typename DenseMatrix,
+            typename std::enable_if<Is_Dense_Matrix<DenseMatrix>::value,
+                                    int>::type = 0>
+  Matrix(DenseMatrix &input) : matrix() {
+    static_assert(DenseMatrix::COLS == M && DenseMatrix::ROWS == M,
+                  "Dense matrix dimensions must match the diagonal matrix.");
+
+    substitute_matrix(*this, input);
+  }
+
+  template <typename DenseMatrix,
+            typename std::enable_if<Is_Dense_Matrix<DenseMatrix>::value,
+                                    int>::type = 0>
+  Matrix(DenseMatrix &&input) : matrix() {
+    static_assert(DenseMatrix::COLS == M && DenseMatrix::ROWS == M,
+                  "Dense matrix dimensions must match the diagonal matrix.");
+
+    substitute_matrix(*this, input);
+  }
 
   /* Copy Constructor */
   Matrix(const Matrix<DefDiag, T, M> &input) : matrix(input.matrix) {}

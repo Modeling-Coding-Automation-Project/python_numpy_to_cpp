@@ -22,7 +22,6 @@
 #define PYTHON_NUMPY_BASE_SIMPLIFIED_ACTION_HPP_
 
 #include "python_math.hpp"
-#include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
 #include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"

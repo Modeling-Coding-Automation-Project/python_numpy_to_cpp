@@ -630,7 +630,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
             "check Sparse Matrix create complex imag.");
     }
 
-    /* 他の行列クラスで初期化 */
+    /* 密行列を対角行列で初期化 */
     Matrix<DefDense, T, 3, 3> Dense_i_Diag(DiagJ);
 
     Matrix<DefDense, T, 3, 3> Dense_i_Diag_answer({
@@ -655,6 +655,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
                 "check Dense Matrix initialize from Diag Matrix Identity.");
 
 
+    /* 密行列をスパース行列で初期化 */
     Matrix<DefDense, T, 3, 3> Dense_i_Sparse(C);
 
     Matrix<DefDense, T, 3, 3> Dense_i_Sparse_answer({
@@ -683,6 +684,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(Dense_i_Sparse_Full.matrix.data, Dense_i_Sparse_Full_answer.matrix.data, NEAR_LIMIT_STRICT,
                 "check Dense Matrix initialize from Sparse Matrix Full.");
 
+    /* 対角行列を密行列で初期化 */
+    Matrix<DefDiag, T, 3> Diag_i_Dense(A);
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_answer({ 1, 4, 7 });
+
+    tester.expect_near(Diag_i_Dense.matrix.data, Diag_i_Dense_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Dense Matrix.");
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_Ones(make_DenseMatrixOnes<T, 3, 3>());
+
+    Matrix<DefDiag, T, 3> Diag_i_Dense_Ones_answer({ 1, 1, 1 });
+
+    tester.expect_near(Diag_i_Dense_Ones.matrix.data, Diag_i_Dense_Ones_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix initialize from Dense Matrix Ones.");
 
 
     tester.throw_error_if_test_failed();
