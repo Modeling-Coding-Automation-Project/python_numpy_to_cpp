@@ -447,28 +447,26 @@ public:
     substitute_matrix(*this, input);
   }
 
-  // // initialize with sparse matrix
-  // template <typename SparseMatrix,
-  //           typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
-  //                                   int>::type = 0>
-  // Matrix(SparseMatrix &input) : matrix() {
-  //   static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == M,
-  //                 "Sparse matrix dimensions must match the diagonal
-  //                 matrix.");
+  // initialize with sparse matrix
+  template <typename SparseMatrix,
+            typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
+                                    int>::type = 0>
+  Matrix(SparseMatrix &input) : matrix() {
+    static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == M,
+                  "Sparse matrix dimensions must match the diagonal matrix.");
 
-  //   substitute_matrix(*this, input);
-  // }
+    substitute_matrix(*this, input);
+  }
 
-  // template <typename SparseMatrix,
-  //           typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
-  //                                   int>::type = 0>
-  // Matrix(SparseMatrix &&input) : matrix() {
-  //   static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == M,
-  //                 "Sparse matrix dimensions must match the diagonal
-  //                 matrix.");
+  template <typename SparseMatrix,
+            typename std::enable_if<Is_Sparse_Matrix<SparseMatrix>::value,
+                                    int>::type = 0>
+  Matrix(SparseMatrix &&input) : matrix() {
+    static_assert(SparseMatrix::COLS == M && SparseMatrix::ROWS == M,
+                  "Sparse matrix dimensions must match the diagonal matrix.");
 
-  //   substitute_matrix(*this, input);
-  // }
+    substitute_matrix(*this, input);
+  }
 
   /* Copy Constructor */
   Matrix(const Matrix<DefDiag, T, M> &input) : matrix(input.matrix) {}
