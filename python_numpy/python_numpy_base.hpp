@@ -36,6 +36,18 @@ class DefDiag {};
 
 class DefSparse {};
 
+/* Matrix Type Checker */
+template <typename MatrixInput>
+using Is_Dense_Matrix =
+    std::is_same<typename MatrixInput::Matrix_Type, DefDense>;
+
+template <typename MatrixInput>
+using Is_Diag_Matrix = std::is_same<typename MatrixInput::Matrix_Type, DefDiag>;
+
+template <typename MatrixInput>
+using Is_Sparse_Matrix =
+    std::is_same<typename MatrixInput::Matrix_Type, DefSparse>;
+
 template <typename C, typename T, std::size_t M, std::size_t N = 1,
           typename SparseAvailable = void>
 class Matrix;
@@ -1915,18 +1927,6 @@ using A_Multiply_B_Type =
 
 template <typename A_Type>
 using Transpose_Type = decltype(std::declval<A_Type>().transpose());
-
-/* Matrix Type Checker */
-template <typename MatrixInput>
-using Is_Dense_Matrix =
-    std::is_same<typename MatrixInput::Matrix_Type, DefDense>;
-
-template <typename MatrixInput>
-using Is_Diag_Matrix = std::is_same<typename MatrixInput::Matrix_Type, DefDiag>;
-
-template <typename MatrixInput>
-using Is_Sparse_Matrix =
-    std::is_same<typename MatrixInput::Matrix_Type, DefSparse>;
 
 } // namespace PythonNumpy
 
