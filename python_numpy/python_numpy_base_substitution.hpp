@@ -1,4 +1,15 @@
-
+/**
+ * @file python_numpy_base_substitution.hpp
+ *
+ * @brief Substitution operations for matrix manipulation in the PythonNumpy C++
+ * library.
+ * This file defines the substitution operations for matrix manipulation,
+ * allowing parts of a matrix to be replaced with values from another matrix.
+ *
+ * @note
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
+ */
 #ifndef PYTHON_NUMPY_BASE_SUBSTITUTION_HPP_
 #define PYTHON_NUMPY_BASE_SUBSTITUTION_HPP_
 
