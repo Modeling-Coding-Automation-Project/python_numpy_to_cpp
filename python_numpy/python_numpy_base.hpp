@@ -823,6 +823,48 @@ public:
 
   Matrix(BaseMatrix_Type_ &&input) noexcept : matrix(std::move(input)) {}
 
+  // initialize with dense matrix
+  template <typename DenseMatrix_In,
+            typename std::enable_if<Is_Dense_Matrix<DenseMatrix_In>::value,
+                                    int>::type = 0>
+  Matrix(DenseMatrix_In &input) : matrix() {
+    static_assert(DenseMatrix_In::COLS == N && DenseMatrix_In::ROWS == M,
+                  "Dense matrix dimensions must match the sparse matrix.");
+
+    substitute_matrix(*this, input);
+  }
+
+  template <typename DenseMatrix_In,
+            typename std::enable_if<Is_Dense_Matrix<DenseMatrix_In>::value,
+                                    int>::type = 0>
+  Matrix(DenseMatrix_In &&input) : matrix() {
+    static_assert(DenseMatrix_In::COLS == N && DenseMatrix_In::ROWS == M,
+                  "Dense matrix dimensions must match the sparse matrix.");
+
+    substitute_matrix(*this, input);
+  }
+
+  // initialize with diag matrix
+  template <typename DiagMatrix_In,
+            typename std::enable_if<Is_Diag_Matrix<DiagMatrix_In>::value,
+                                    int>::type = 0>
+  Matrix(DiagMatrix_In &input) : matrix() {
+    static_assert(DiagMatrix_In::COLS == M && DiagMatrix_In::ROWS == N,
+                  "Diagonal matrix dimensions must match the sparse matrix.");
+
+    substitute_matrix(*this, input);
+  }
+
+  template <typename DiagMatrix_In,
+            typename std::enable_if<Is_Diag_Matrix<DiagMatrix_In>::value,
+                                    int>::type = 0>
+  Matrix(DiagMatrix_In &&input) : matrix() {
+    static_assert(DiagMatrix_In::COLS == M && DiagMatrix_In::ROWS == N,
+                  "Diagonal matrix dimensions must match the sparse matrix.");
+
+    substitute_matrix(*this, input);
+  }
+
   /* Copy Constructor */
   Matrix(const Matrix<DefSparse, T, M, N, SparseAvailable> &input)
       : matrix(input.matrix) {}
