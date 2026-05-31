@@ -28,8 +28,6 @@
 #include "python_numpy_complex.hpp"
 #include "python_numpy_templates.hpp"
 
-#include "python_numpy_concatenate.hpp"
-
 #include <initializer_list>
 #include <tuple>
 #include <type_traits>

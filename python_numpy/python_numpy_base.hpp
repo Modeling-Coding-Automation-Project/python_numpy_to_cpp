@@ -418,8 +418,12 @@ public:
 
   Matrix(const Base::Matrix::Matrix<T, M, 1> &input) : matrix(input.data[0]) {}
 
+  Matrix(Base::Matrix::Matrix<T, M, 1> &input) : matrix(input.data[0]) {}
+
   Matrix(const Matrix<DefDense, T, M, 1> &input)
       : matrix(input.matrix.data[0]) {}
+
+  Matrix(Matrix<DefDense, T, M, 1> &input) : matrix(input.matrix.data[0]) {}
 
   Matrix(Base::Matrix::DiagMatrix<T, M> &input) : matrix(input) {}
 
