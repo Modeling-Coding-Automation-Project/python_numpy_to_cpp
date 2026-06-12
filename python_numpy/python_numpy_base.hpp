@@ -692,7 +692,9 @@ public:
     }
 
     if (col != row) {
-      return static_cast<const T &>(0);
+      static thread_local T dummy{};
+      dummy = static_cast<T>(0);
+      return dummy;
     } else {
       return this->matrix[col];
     }

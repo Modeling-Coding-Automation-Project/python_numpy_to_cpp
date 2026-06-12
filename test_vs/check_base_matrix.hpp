@@ -1235,6 +1235,32 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(G_s_d.data, G_s_d_answer.data, NEAR_LIMIT_STRICT,
         "check create_sparse command.");
 
+    /* スパース行列要素の有効判定 */
+    bool valid_3_3 = SparseCc.is_valid_indices(3, 3);
+
+    tester.expect_near(static_cast<T>(valid_3_3), static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check valid indices 3, 3.");
+
+    bool valid_3_2 = SparseCc.is_valid_indices(3, 2);
+
+    tester.expect_near(static_cast<T>(valid_3_2), static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check valid indices 3, 2.");
+
+    bool valid_2_3 = SparseCc.is_valid_indices(2, 3);
+
+    tester.expect_near(static_cast<T>(valid_2_3), static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check valid indices 2, 3.");
+
+    bool valid_2_2 = SparseCc.is_valid_indices(2, 2);
+
+    tester.expect_near(static_cast<T>(valid_2_2), static_cast<T>(1), NEAR_LIMIT_STRICT,
+        "check valid indices 2, 2.");
+
+    bool valid_1_1 = SparseCc.is_valid_indices(1, 1);
+
+    tester.expect_near(static_cast<T>(valid_1_1), static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check valid indices 1, 1.");
+
 
     tester.throw_error_if_test_failed();
 }

@@ -204,6 +204,23 @@ public:
     return full;
   }
 
+  bool is_valid_indices(const std::size_t &col, const std::size_t &row) const {
+    if (col >= M || row >= N) {
+      return false;
+    }
+
+    for (std::size_t j = 0; j < M; j++) {
+      for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
+           k++) {
+        if (row == j && col == CSRIndices::list[k]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   /* Constant */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = N;
