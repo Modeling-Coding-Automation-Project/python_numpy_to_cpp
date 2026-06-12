@@ -772,22 +772,28 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         "check Diag Matrix access diagonal value.");
 
     /* スパース行列の要素に動的アクセス */
-    //T value_of_sparse = C(1, 1);
+    T value_of_sparse = C(1, 1);
 
-    //tester.expect_near(value_of_sparse, static_cast<T>(0), NEAR_LIMIT_STRICT,
-    //    "check Sparse Matrix access zero value.");
+    tester.expect_near(value_of_sparse, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix access zero value.");
 
-    //C(1, 1) = static_cast<T>(100);
-    //T value_of_sparse_set = C(1, 1);
-    //
-    //tester.expect_near(value_of_sparse_set, static_cast<T>(0), NEAR_LIMIT_STRICT,
-    //    "check Sparse Matrix set value.");
-    //
-    //const Matrix<DefSparse, T, 3, 3, SparseAvailable_C>& C_const = C;
-    //T value_of_sparse_const = C_const(1, 1);
-    //
-    //tester.expect_near(value_of_sparse_const, static_cast<T>(0), NEAR_LIMIT_STRICT,
-    //    "check Sparse Matrix access const value.");
+    C(1, 1) = static_cast<T>(100);
+    T value_of_sparse_set = C(1, 1);
+    
+    tester.expect_near(value_of_sparse_set, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix set value.");
+    
+    const Matrix<DefSparse, T, 3, 3, SparseAvailable_C>& C_const = C;
+    T value_of_sparse_const = C_const(1, 1);
+    
+    tester.expect_near(value_of_sparse_const, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix access const value.");
+
+    C(2, 1) = static_cast<T>(8);
+    value_of_sparse_set = C(2, 1);
+
+    tester.expect_near(value_of_sparse_set, static_cast<T>(8), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix set value.");
 
 
     tester.throw_error_if_test_failed();

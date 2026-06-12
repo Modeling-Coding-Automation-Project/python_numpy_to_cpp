@@ -1089,6 +1089,20 @@ public:
     return this->matrix[value_index];
   }
 
+  /**
+   * @brief Accesses the element at the specified column and row in the sparse
+   * matrix.
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than N).
+   * @return T& A reference to the value at the specified column and row.
+   *
+   * @note If the column or row index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1 for columns, N - 1 for rows). If the indices
+   * are valid but do not correspond to a non-zero element in the sparse matrix,
+   * this function returns a reference to a static thread-local variable
+   * initialized to zero.
+   */
   T &operator()(std::size_t col, std::size_t row) {
     if (col >= M) {
       col = M - 1;
@@ -1103,10 +1117,25 @@ public:
       return dummy;
 
     } else {
-      return this->matrix(col, row);
+      return this->matrix[this->matrix.get_value_index(col, row)];
     }
   }
 
+  /**
+   * @brief Accesses the element at the specified column and row in the sparse
+   * matrix.
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than N).
+   * @return const T& A constant reference to the value at the specified column
+   * and row.
+   *
+   * @note If the column or row index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1 for columns, N - 1 for rows). For valid indices
+   * that do not correspond to a non-zero element in the sparse matrix, this
+   * function returns a reference to a static thread-local variable initialized
+   * to zero.
+   */
   const T &operator()(std::size_t col, std::size_t row) const {
     if (col >= M) {
       col = M - 1;
@@ -1120,7 +1149,7 @@ public:
       dummy = static_cast<T>(0);
       return dummy;
     } else {
-      return this->matrix[col];
+      return this->matrix[this->matrix.get_value_index(col, row)];
     }
   }
 
