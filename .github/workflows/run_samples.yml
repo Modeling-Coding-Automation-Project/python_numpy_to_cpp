@@ -4,7 +4,7 @@ on:
   push:
     branches:
     - develop
-    - feature/*
+    - featre/*
 
 jobs:
   run_samples:
