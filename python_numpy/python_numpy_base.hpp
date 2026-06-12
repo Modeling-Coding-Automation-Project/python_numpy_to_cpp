@@ -26,6 +26,7 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <thread>
 #include <utility>
 
 namespace PythonNumpy {
@@ -638,6 +639,63 @@ public:
     }
 
     return this->matrix[index];
+  }
+
+  /**
+   * @brief Accesses the element at the specified row and column in the diagonal
+   * matrix.
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than M).
+   * @return T& A reference to the value at the specified row and column.
+   *
+   * @note If the row or column index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1).
+   */
+  T &operator()(std::size_t col, std::size_t row) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= M) {
+      row = M - 1;
+    }
+
+    if (col != row) {
+      static thread_local T dummy{};
+      dummy = static_cast<T>(0);
+      return dummy;
+
+    } else {
+      return this->matrix[col];
+    }
+  }
+
+  /**
+   * @brief Accesses the element at the specified row and column in the diagonal
+   * matrix.
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than M).
+   * @return const T& A constant reference to the value at the specified row and
+   * column.
+   *
+   * @note If the row or column index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1). For non-diagonal elements, this function
+   * returns a reference to a static thread-local variable initialized to zero.
+   */
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= M) {
+      row = M - 1;
+    }
+
+    if (col != row) {
+      return static_cast<const T &>(0);
+    } else {
+      return this->matrix[col];
+    }
   }
 
   /**

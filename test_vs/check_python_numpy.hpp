@@ -748,6 +748,25 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         "check Sparse Matrix initialize from Diag Matrix Identity.");
 
 
+    /* 対角行列の対角以外にアクセス */
+    T value_of_diag = DiagJ(1, 2);
+
+    tester.expect_near(value_of_diag, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Diag Matrix access off-diagonal value.");
+
+    DiagJ(2, 1) = static_cast<T>(100);
+    T value_of_diag_set = DiagJ(2, 1);
+
+    tester.expect_near(value_of_diag_set, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Diag Matrix set off-diagonal value.");
+
+    const Matrix<DefDiag, T, 3>& DiagJ_const = DiagJ;
+    T value_of_diag_set_const = DiagJ_const(2, 1);
+
+    tester.expect_near(value_of_diag_set_const, static_cast<T>(0), NEAR_LIMIT_STRICT,
+        "check Diag Matrix set off-diagonal value const.");
+
+
     tester.throw_error_if_test_failed();
 }
 
