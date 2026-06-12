@@ -215,6 +215,46 @@ public:
   constexpr std::size_t rows() const { return ROWS; }
 
   /**
+   * @brief Retrieves the element at the specified index in the matrix.
+   *
+   * @param index The zero-based index (must be less than M * N).
+   * @return T The value at the specified index.
+   *
+   * @note If the index is out of bounds, it is clamped to the maximum valid
+   * index (M * N - 1).
+   */
+  T &operator()(std::size_t index) {
+    if (index >= M * N) {
+      index = M * N - 1;
+    }
+
+    std::size_t row = index / N;
+    std::size_t col = index % N;
+
+    return this->matrix(row, col);
+  }
+
+  /**
+   * @brief Retrieves the element at the specified index in the matrix.
+   *
+   * @param index The zero-based index (must be less than M * N).
+   * @return const T& The value at the specified index.
+   *
+   * @note If the index is out of bounds, it is clamped to the maximum valid
+   * index (M * N - 1).
+   */
+  const T &operator()(std::size_t index) const {
+    if (index >= M * N) {
+      index = M * N - 1;
+    }
+
+    std::size_t row = index / N;
+    std::size_t col = index % N;
+
+    return this->matrix(row, col);
+  }
+
+  /**
    * @brief Retrieves the number of elements in the matrix.
    *
    * @return std::size_t The total number of elements in the matrix (M * N).
