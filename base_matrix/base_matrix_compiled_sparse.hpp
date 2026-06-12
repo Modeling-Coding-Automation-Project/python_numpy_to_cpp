@@ -204,6 +204,20 @@ public:
     return full;
   }
 
+  /**
+   * @brief Checks if the given column and row indices correspond to a non-zero
+   * element in the sparse matrix.
+   *
+   * This function verifies whether the specified column and row indices are
+   * valid and correspond to a non-zero element in the sparse matrix. It checks
+   * the bounds of the indices and then iterates through the non-zero elements
+   * of the specified row to find a match for the column index.
+   *
+   * @param col The zero-based column index to check (must be less than M).
+   * @param row The zero-based row index to check (must be less than N).
+   * @return true if the indices correspond to a non-zero element; false
+   * otherwise.
+   */
   bool is_valid_indices(const std::size_t &col, const std::size_t &row) const {
     if (col >= M || row >= N) {
       return false;
