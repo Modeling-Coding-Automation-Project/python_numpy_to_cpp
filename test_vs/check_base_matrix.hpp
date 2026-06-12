@@ -1241,25 +1241,50 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(static_cast<T>(valid_3_3), static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check valid indices 3, 3.");
 
+    std::size_t value_index_3_3 = SparseCc.get_value_index(3, 3);
+
+    tester.expect_near(static_cast<T>(value_index_3_3), static_cast<T>(static_cast<std::size_t>(-1)), NEAR_LIMIT_STRICT,
+        "check value index 3, 3.");
+
     bool valid_3_2 = SparseCc.is_valid_indices(3, 2);
 
     tester.expect_near(static_cast<T>(valid_3_2), static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check valid indices 3, 2.");
+
+    std::size_t value_index_3_2 = SparseCc.get_value_index(3, 2);
+
+    tester.expect_near(static_cast<T>(value_index_3_2), static_cast<T>(static_cast<std::size_t>(-1)), NEAR_LIMIT_STRICT,
+        "check value index 3, 2.");
 
     bool valid_2_3 = SparseCc.is_valid_indices(2, 3);
 
     tester.expect_near(static_cast<T>(valid_2_3), static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check valid indices 2, 3.");
 
+    std::size_t value_index_2_3 = SparseCc.get_value_index(2, 3);
+
+    tester.expect_near(static_cast<T>(value_index_2_3), static_cast<T>(static_cast<std::size_t>(-1)), NEAR_LIMIT_STRICT,
+        "check value index 2, 3.");
+
     bool valid_2_2 = SparseCc.is_valid_indices(2, 2);
 
     tester.expect_near(static_cast<T>(valid_2_2), static_cast<T>(1), NEAR_LIMIT_STRICT,
         "check valid indices 2, 2.");
 
+    std::size_t value_index_2_2 = SparseCc.get_value_index(2, 2);
+
+    tester.expect_near(static_cast<T>(value_index_2_2), static_cast<T>(4), NEAR_LIMIT_STRICT,
+        "check value index 2, 2.");
+
     bool valid_1_1 = SparseCc.is_valid_indices(1, 1);
 
     tester.expect_near(static_cast<T>(valid_1_1), static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check valid indices 1, 1.");
+
+    std::size_t value_index_1_1 = SparseCc.get_value_index(1, 1);
+
+    tester.expect_near(static_cast<T>(value_index_1_1), static_cast<T>(static_cast<std::size_t>(-1)), NEAR_LIMIT_STRICT,
+        "check value index 1, 1.");
 
 
     tester.throw_error_if_test_failed();

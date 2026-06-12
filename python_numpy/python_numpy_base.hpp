@@ -1089,6 +1089,41 @@ public:
     return this->matrix[value_index];
   }
 
+  T &operator()(std::size_t col, std::size_t row) {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    if (!this->matrix.is_valid_indices(col, row)) {
+      static thread_local T dummy{};
+      dummy = static_cast<T>(0);
+      return dummy;
+
+    } else {
+      return this->matrix(col, row);
+    }
+  }
+
+  const T &operator()(std::size_t col, std::size_t row) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+    if (row >= N) {
+      row = N - 1;
+    }
+
+    if (!this->matrix.is_valid_indices(col, row)) {
+      static thread_local T dummy{};
+      dummy = static_cast<T>(0);
+      return dummy;
+    } else {
+      return this->matrix[col];
+    }
+  }
+
   /**
    * @brief Accesses the element at the specified index in the sparse matrix.
    *

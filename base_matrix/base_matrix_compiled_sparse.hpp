@@ -235,6 +235,24 @@ public:
     return false;
   }
 
+  std::size_t get_value_index(const std::size_t &col,
+                              const std::size_t &row) const {
+    if (col >= M || row >= N) {
+      return static_cast<std::size_t>(-1);
+    }
+
+    for (std::size_t j = 0; j < M; j++) {
+      for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
+           k++) {
+        if (row == j && col == CSRIndices::list[k]) {
+          return k;
+        }
+      }
+    }
+
+    return static_cast<std::size_t>(-1);
+  }
+
   /* Constant */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = N;
