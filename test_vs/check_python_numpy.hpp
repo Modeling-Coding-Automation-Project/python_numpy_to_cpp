@@ -240,7 +240,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         {1.0F},
         {2.0F},
         {3.0F}
-    });
+        });
 
     tester.expect_near(B_diagonal_vector.matrix.data, B_diagonal_vector_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check Diag Matrix diagonal vector.");
@@ -640,7 +640,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         });
 
     tester.expect_near(Dense_i_Diag.matrix.data, Dense_i_Diag_answer.matrix.data, NEAR_LIMIT_STRICT,
-                "check Dense Matrix initialize from Diag Matrix.");
+        "check Dense Matrix initialize from Diag Matrix.");
 
 
     Matrix<DefDense, T, 3, 3> Dense_i_Diag_Identity(make_DiagMatrixIdentity<T, 3>());
@@ -652,7 +652,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         });
 
     tester.expect_near(Dense_i_Diag_Identity.matrix.data, Dense_i_Diag_Identity_answer.matrix.data, NEAR_LIMIT_STRICT,
-                "check Dense Matrix initialize from Diag Matrix Identity.");
+        "check Dense Matrix initialize from Diag Matrix Identity.");
 
 
     /* 密行列をスパース行列で初期化 */
@@ -682,7 +682,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         });
 
     tester.expect_near(Dense_i_Sparse_Full.matrix.data, Dense_i_Sparse_Full_answer.matrix.data, NEAR_LIMIT_STRICT,
-                "check Dense Matrix initialize from Sparse Matrix Full.");
+        "check Dense Matrix initialize from Sparse Matrix Full.");
 
     /* 対角行列を密行列で初期化 */
     Matrix<DefDiag, T, 3> Diag_i_Dense(A);
@@ -748,6 +748,38 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         "check Sparse Matrix initialize from Diag Matrix Identity.");
 
 
+    /* 密行列の要素に1個のインデックスでアクセス */
+    T value_of_dense = A(5);
+
+    tester.expect_near(value_of_dense, static_cast<T>(6), NEAR_LIMIT_STRICT,
+        "check Dense Matrix access value.");
+
+    A(4) = static_cast<T>(100);
+    value_of_dense = A(4);
+
+    tester.expect_near(value_of_dense, static_cast<T>(100), NEAR_LIMIT_STRICT,
+        "check Dense Matrix set value.");
+
+    value_of_dense = A(10);
+
+    tester.expect_near(value_of_dense, static_cast<T>(7), NEAR_LIMIT_STRICT,
+        "check Dense Matrix access value out of range.");
+
+    Matrix<DefDense, T, 4, 1> VectorV({ {1}, {2}, {3}, {4} });
+
+    value_of_dense = VectorV(2);
+
+    tester.expect_near(value_of_dense, static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Dense Vector access value.");
+
+    Matrix<DefDense, T, 1, 4> VectorW({ {1, 2, 3, 4} });
+
+    value_of_dense = VectorW(1);
+
+    tester.expect_near(value_of_dense, static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Dense Vector access value row vector.");
+
+
     /* 対角行列の要素に動的アクセス */
     T value_of_diag = DiagJ(1, 2);
 
@@ -779,13 +811,13 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
 
     C(1, 1) = static_cast<T>(100);
     T value_of_sparse_set = C(1, 1);
-    
+
     tester.expect_near(value_of_sparse_set, static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check Sparse Matrix set value.");
-    
+
     const Matrix<DefSparse, T, 3, 3, SparseAvailable_C>& C_const = C;
     T value_of_sparse_const = C_const(1, 1);
-    
+
     tester.expect_near(value_of_sparse_const, static_cast<T>(0), NEAR_LIMIT_STRICT,
         "check Sparse Matrix access const value.");
 
@@ -1006,7 +1038,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         { 0 },
         { 2 },
         { 0 }
-    });
+        });
 
     tester.expect_near(Diag_Full_row_dense.matrix.data, Diag_Full_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check get_row DiagMatrix.");
@@ -1018,7 +1050,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         { 0 },
         { 0 },
         { 2 }
-    });
+        });
 
     tester.expect_near(Sparse_row_dense.matrix.data, Sparse_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check get_row SparseMatrix.");
@@ -1035,7 +1067,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {1, 1, 3},
         {5, 2, 6},
         {9, 3, 7}
-    });
+        });
 
     tester.expect_near(Dense_set_row.matrix.data, Dense_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check set_row.");
@@ -1049,7 +1081,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {2, 0, 0},
         {0, 2, 0},
         {0, 0, 3}
-    });
+        });
 
     tester.expect_near(Diag_set_row_dense.matrix.data, Diag_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check set_row DiagMatrix.");
@@ -1063,7 +1095,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {1, 0, 0},
         {3, 0, 8},
         {0, 3, 4}
-    });
+        });
 
     tester.expect_near(Sparse_set_row_dense.matrix.data, Sparse_set_row_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check set_row SparseMatrix.");
@@ -1073,7 +1105,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {1.0F, 2.0F, 3.0F, 4.0F,
         5.0F, 6.0F, 7.0F, 8.0F,
         9.0F, 10.0F, 11.0F, 12.0F}
-    });
+        });
     Matrix<DefDense, T, 3, 4> B_reshape;
 
     update_reshaped_matrix(B_reshape, A_reshape);
@@ -1090,15 +1122,15 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     Matrix<DefDense, T, 12, 1> A_reshape_2({
         {1.0F}, {2.0F}, {3.0F}, {4.0F},
         {5.0F}, {6.0F}, {7.0F}, {8.0F},
-        {9.0F}, {10.0F}, {11.0F}, {12.0F} 
-    });
+        {9.0F}, {10.0F}, {11.0F}, {12.0F}
+        });
     Matrix<DefDense, T, 3, 4> B_reshape_2;
 
     Matrix<DefDense, T, 3, 4> B_reshape_answer_2({
         {1.0F, 4.0F, 7.0F, 10.0F},
         {2.0F, 5.0F, 8.0F, 11.0F},
         {3.0F, 6.0F, 9.0F, 12.0F}
-    });
+        });
 
     update_reshaped_matrix(B_reshape_2, A_reshape_2);
 
@@ -1110,7 +1142,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         {4.0F, 5.0F, 6.0F},
         {7.0F, 8.0F, 9.0F},
         {10.0F, 11.0F, 12.0F}
-    });
+        });
     Matrix<DefDense, T, 3, 4> B_reshape_3;
 
     update_reshaped_matrix(B_reshape_3, A_reshape_3);
@@ -1227,7 +1259,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
         Complex<T>(5, 6),
         Complex<T>(7, 8),
         Complex<T>(9, 10)
-        });
+            });
 
     auto C_complex_norm = norm(C_complex);
     T C_complex_norm_answer = static_cast<T>(19.621416870348583);
@@ -1302,7 +1334,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         { 1.0F, 0.0F, 0.0F },
         { 0.0F, 1.0F, 0.0F },
         { 0.0F, 0.0F, 1.0F }
-    });
+        });
 
     Matrix<DefDense, T, 3, 1> b_1({
         { 2.0F },
@@ -1321,7 +1353,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
         { 2.0F },
         { 3.0F },
         { 1.0F }
-    });
+        });
 
     tester.expect_near(I_b_x.matrix.data, I_b_x_answer.matrix.data, NEAR_LIMIT_SOFT,
         "check LinalgSolver solve Dense Identity and Vector.");
@@ -1686,7 +1718,7 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     tester.expect_near(CL_AL_x.matrix.data, CL_AL_x_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgLstsqSolver solve Sparse and Dense.");
 
-    LinalgLstsqSolver_Type<decltype(CL), decltype(CL )> CL_CL_lstsq_solver
+    LinalgLstsqSolver_Type<decltype(CL), decltype(CL)> CL_CL_lstsq_solver
         = make_LinalgLstsqSolver<decltype(CL), decltype(CL)>();
 
     LinalgLstsqSolver_Type<decltype(CL), decltype(CL)> CL_CL_lstsq_solver_copy = CL_CL_lstsq_solver;
@@ -1799,8 +1831,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     auto B_comp_Inv_real = B_comp_Inv.real();
 
     Matrix<DefDiag, T, 3> B_comp_Inv_answer_real(
-        {1.0F, 0.5F, 0.33333333F}
-        );
+        { 1.0F, 0.5F, 0.33333333F }
+    );
 
     tester.expect_near(B_comp_Inv_real.matrix.data,
         B_comp_Inv_answer_real.matrix.data, NEAR_LIMIT_STRICT,
@@ -1809,8 +1841,8 @@ void CheckPythonNumpy<T>::check_python_numpy_left_divide_and_inv(void) {
     auto B_comp_Inv_imag = B_comp_Inv.imag();
 
     Matrix<DefDiag, T, 3> B_comp_Inv_answer_imag(
-        {0.0F, 0.0F, 0.0F}
-        );
+        { 0.0F, 0.0F, 0.0F }
+    );
 
     tester.expect_near(B_comp_Inv_imag.matrix.data,
         B_comp_Inv_answer_imag.matrix.data, NEAR_LIMIT_STRICT,
@@ -2814,7 +2846,7 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
     tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check concatenate block Dense, Diag, Sparse and Empty.");
 
-    update_block_concatenated_matrix<2, 2>(ABCE_block_2, A, static_cast<T>(2)* B, C, Empty);
+    update_block_concatenated_matrix<2, 2>(ABCE_block_2, A, static_cast<T>(2) * B, C, Empty);
 
     auto ABCE_block_dense_2 = ABCE_block_2.create_dense();
 
@@ -3438,7 +3470,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         {1, 2, 3, 10},
         {5, 4, 6, 11},
         {9, 8, 7, 12}
-    });
+        });
 
     Matrix<DefDense, T, 3, 4> R_1_A_2 = QR_solver_dense.backward_substitution(A_2);
 
@@ -3446,7 +3478,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         {-4.26873404F, -3.57425466F, -5.09101295F, -9.72349365F},
         {8.52639051F, 7.20611792F, 8.40289246F, 15.00425545F},
         {-3.6986484F, -3.28768747F, -2.87672653F, -4.9315312F}
-    });
+        });
 
     tester.expect_near(R_1_A_2.matrix.data, R_1_A_2_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgQR backward_substitution Dense.");
@@ -3483,7 +3515,7 @@ void CheckPythonNumpy<T>::check_python_numpy_qr(void) {
         {8.22192192F, 6.95701085F, 5.69209979F },
         { 4.61512474F, 4.32455532F, 2.53398591F },
         { -3.55756237F, -3.16227766F, -2.76699295F }
-    });
+        });
 
     tester.expect_near(R_1_C.matrix.data, R_1_C_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverQR backward_substitution Sparse.");
@@ -3750,7 +3782,7 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     auto eigen_vectors_comp_sparse = eig_solver_comp_sparse.get_eigen_vectors();
 
     auto A_mul_V_comp_sparse = Matrix<DefDense, Base::Matrix::Complex<T>, 3, 3>(
-        Base::Matrix::convert_matrix_real_to_complex(Base::Matrix::output_dense_matrix(C.matrix))) 
+        Base::Matrix::convert_matrix_real_to_complex(Base::Matrix::output_dense_matrix(C.matrix)))
         * eigen_vectors_comp_sparse;
     auto V_mul_D_comp_sparse = eigen_vectors_comp_sparse
         * Matrix<DefDiag, Base::Matrix::Complex<T>, 3>(eigen_values_comp_sparse.matrix);
