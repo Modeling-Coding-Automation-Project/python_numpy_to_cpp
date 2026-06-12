@@ -204,6 +204,71 @@ public:
     return full;
   }
 
+  /**
+   * @brief Checks if the given column and row indices correspond to a non-zero
+   * element in the sparse matrix.
+   *
+   * This function verifies whether the specified column and row indices are
+   * valid and correspond to a non-zero element in the sparse matrix. It checks
+   * the bounds of the indices and then iterates through the non-zero elements
+   * of the specified row to find a match for the column index.
+   *
+   * @param col The zero-based column index to check (must be less than M).
+   * @param row The zero-based row index to check (must be less than N).
+   * @return true if the indices correspond to a non-zero element; false
+   * otherwise.
+   */
+  bool is_valid_indices(const std::size_t &col, const std::size_t &row) const {
+    if (col >= M || row >= N) {
+      return false;
+    }
+
+    for (std::size_t j = 0; j < M; j++) {
+      for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
+           k++) {
+        if (row == j && col == CSRIndices::list[k]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * @brief Retrieves the index of the value corresponding to the specified
+   * column and row indices in the sparse matrix.
+   *
+   * This function checks if the provided column and row indices are valid and
+   * correspond to a non-zero element in the sparse matrix. If valid, it
+   * iterates through the non-zero elements of the specified row to find a match
+   * for the column index and returns the corresponding value index. If the
+   * indices are invalid or do not correspond to a non-zero element, it returns
+   * static_cast<std::size_t>(-1).
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than N).
+   * @return std::size_t The index of the value in the sparse matrix if valid;
+   * static_cast<std::size_t>(-1) otherwise.
+   */
+  std::size_t get_value_index(const std::size_t &col,
+                              const std::size_t &row) const {
+    if (col >= M || row >= N) {
+      return static_cast<std::size_t>(-1);
+    }
+
+    for (std::size_t j = 0; j < M; j++) {
+      for (std::size_t k = CSRPointers::list[j]; k < CSRPointers::list[j + 1];
+           k++) {
+        if (row == j && col == CSRIndices::list[k]) {
+          return k;
+        }
+      }
+    }
+
+    return static_cast<std::size_t>(-1);
+  }
+
   /* Constant */
   static constexpr std::size_t ROWS = M;
   static constexpr std::size_t COLS = N;
