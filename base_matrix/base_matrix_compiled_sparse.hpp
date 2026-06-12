@@ -235,6 +235,22 @@ public:
     return false;
   }
 
+  /**
+   * @brief Retrieves the index of the value corresponding to the specified
+   * column and row indices in the sparse matrix.
+   *
+   * This function checks if the provided column and row indices are valid and
+   * correspond to a non-zero element in the sparse matrix. If valid, it
+   * iterates through the non-zero elements of the specified row to find a match
+   * for the column index and returns the corresponding value index. If the
+   * indices are invalid or do not correspond to a non-zero element, it returns
+   * static_cast<std::size_t>(-1).
+   *
+   * @param col The zero-based column index (must be less than M).
+   * @param row The zero-based row index (must be less than N).
+   * @return std::size_t The index of the value in the sparse matrix if valid;
+   * static_cast<std::size_t>(-1) otherwise.
+   */
   std::size_t get_value_index(const std::size_t &col,
                               const std::size_t &row) const {
     if (col >= M || row >= N) {
