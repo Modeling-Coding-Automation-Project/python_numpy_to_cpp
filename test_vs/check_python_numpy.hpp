@@ -748,6 +748,25 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
         "check Sparse Matrix initialize from Diag Matrix Identity.");
 
 
+    /* 密行列の要素に1個のインデックスでアクセス */
+    T value_of_dense = A(5);
+
+    tester.expect_near(value_of_dense, static_cast<T>(6), NEAR_LIMIT_STRICT,
+        "check Dense Matrix access value.");
+
+    A(4) = static_cast<T>(100);
+    value_of_dense = A(4);
+
+    tester.expect_near(value_of_dense, static_cast<T>(100), NEAR_LIMIT_STRICT,
+        "check Dense Matrix set value.");
+
+    value_of_dense = A(10);
+
+    tester.expect_near(value_of_dense, static_cast<T>(7), NEAR_LIMIT_STRICT,
+        "check Dense Matrix access value out of range.");
+    
+
+
     /* 対角行列の要素に動的アクセス */
     T value_of_diag = DiagJ(1, 2);
 
