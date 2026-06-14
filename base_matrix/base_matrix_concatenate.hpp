@@ -37,57 +37,38 @@ namespace Matrix {
 
 /* Functions: Concatenate vertically */
 template <typename T, std::size_t M, std::size_t P, std::size_t N,
-          std::size_t Row>
-struct VerticalConcatenateLoop {
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct VerticalConcatenateLoop;
 
-  /**
-   * @brief Concatenates two matrices vertically and stores the result in a
-   * third matrix.
-   *
-   * This static function copies the cols of matrix A and matrix B into the
-   * output matrix Y, stacking A on top of B. The operation is performed
-   * recursively for each row index.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam P The number of rows in matrix B.
-   * @tparam N The number of columns in matrices A and B.
-   * @tparam Row The current row index for recursion.
-   * @param A The first input matrix (top part of the result).
-   * @param B The second input matrix (bottom part of the result).
-   * @param Y The output matrix with M + P cols and N rows, containing the
-   * concatenated result.
-   */
+template <typename T, std::size_t M, std::size_t P, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct VerticalConcatenateLoop<
+    T, M, P, N, Start, End, typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Row], Y.data[Row]);
-    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[Row], Y.data[Row]);
-    VerticalConcatenateLoop<T, M, P, N, Row - 1>::compute(A, B, Y);
+    VerticalConcatenateLoop<T, M, P, N, Start, Mid>::compute(A, B, Y);
+    VerticalConcatenateLoop<T, M, P, N, Mid, End>::compute(A, B, Y);
   }
 };
 
-// end of recursion
-template <typename T, std::size_t M, std::size_t P, std::size_t N>
-struct VerticalConcatenateLoop<T, M, P, N, 0> {
-  /**
-   * @brief Base case for the recursive vertical concatenation loop.
-   *
-   * This static function copies the first column of matrix A and matrix B into
-   * the output matrix Y, completing the vertical concatenation.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam P The number of rows in matrix B.
-   * @tparam N The number of columns in matrices A and B.
-   * @param A The first input matrix (top part of the result).
-   * @param B The second input matrix (bottom part of the result).
-   * @param Y The output matrix with M + P cols and N rows, containing the
-   * concatenated result.
-   */
+template <typename T, std::size_t M, std::size_t P, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct VerticalConcatenateLoop<T, M, P, N, Start, End,
+                               typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, M, N> &, const Matrix<T, P, N> &,
+                      Matrix<T, M + P, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t P, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct VerticalConcatenateLoop<
+    T, M, P, N, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[0], Y.data[0]);
-    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[0], Y.data[0]);
+    Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Start], Y.data[Start]);
+    Base::Utility::copy<T, 0, P, M, P, (M + P)>(B.data[Start], Y.data[Start]);
   }
 };
 
@@ -113,7 +94,7 @@ static inline void
 COMPILED_SPARSE_VERTICAL_CONCATENATE(const Matrix<T, M, N> &A,
                                      const Matrix<T, P, N> &B,
                                      Matrix<T, M + P, N> &Y) {
-  VerticalConcatenateLoop<T, M, P, N, N - 1>::compute(A, B, Y);
+  VerticalConcatenateLoop<T, M, P, N, 0, N>::compute(A, B, Y);
 }
 
 /**
@@ -877,49 +858,34 @@ inline auto concatenate_vertically(
 /* Functions: Concatenate horizontally */
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t Row>
-struct CopyColumnsFirstLoop {
-  /**
-   * @brief Concatenates matrix A into the first N rows of matrix Y.
-   *
-   * This static function copies the contents of matrix A into the corresponding
-   * cols and rows of matrix Y, starting from the first row. The resulting
-   * matrix Y has additional rows (N + P) to accommodate further
-   * concatenation. The function uses a utility copy method for the current row
-   * and recursively processes the remaining cols.
-   *
-   * @tparam T   The data type of the matrix elements.
-   * @tparam M   The number of rows in the matrices.
-   * @tparam N   The number of columns in matrix A.
-   * @tparam P   The number of additional cols in matrix Y.
-   * @tparam Row The current row being processed (used for recursion).
-   * @param A    The input matrix to be concatenated.
-   * @param Y    The output matrix with concatenated rows.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct CopyColumnsFirstLoop;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
+                            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(A(Row), Y(Row));
-    CopyColumnsFirstLoop<T, M, N, P, Row - 1>::compute(A, Y);
+    CopyColumnsFirstLoop<T, M, N, P, Start, Mid>::compute(A, Y);
+    CopyColumnsFirstLoop<T, M, N, P, Mid, End>::compute(A, Y);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t P>
-struct CopyColumnsFirstLoop<T, M, N, P, 0> {
-  /**
-   * @brief Base case for the recursive copy of cols from matrix A to matrix Y.
-   *
-   * This static function copies the contents of the first column of matrix A
-   * into the corresponding row of matrix Y. It serves as the base case for the
-   * recursive function that processes all cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the matrices.
-   * @tparam N The number of columns in matrix A.
-   * @tparam P The number of additional cols in matrix Y.
-   * @param A The input matrix to be concatenated.
-   * @param Y The output matrix with concatenated rows.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
+                            typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, M, N> &, Matrix<T, M, N + P> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
+                            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(A(0), Y(0));
+    Base::Utility::copy<T, 0, M, 0, M, M>(A(Start), Y(Start));
   }
 };
 
@@ -941,53 +907,38 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_1(const Matrix<T, M, N> &A,
                                          Matrix<T, M, N + P> &Y) {
-  CopyColumnsFirstLoop<T, M, N, P, N - 1>::compute(A, Y);
+  CopyColumnsFirstLoop<T, M, N, P, 0, N>::compute(A, Y);
 }
 
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
-          std::size_t Row>
-struct CopyColumnsSecondLoop {
-  /**
-   * @brief Concatenates matrix B into the last P rows of matrix Y.
-   *
-   * This static function copies the contents of matrix B into the corresponding
-   * cols and rows of matrix Y, starting from the column index N. The
-   * resulting matrix Y has additional rows (N + P) to accommodate the
-   * concatenation. The function uses a utility copy method for the current row
-   * and recursively processes the remaining cols.
-   *
-   * @tparam T   The data type of the matrix elements.
-   * @tparam M   The number of rows in the matrices.
-   * @tparam N   The number of columns in matrix A.
-   * @tparam P   The number of additional cols in matrix Y.
-   * @tparam Row The current row being processed (used for recursion).
-   * @param B    The input matrix to be concatenated.
-   * @param Y    The output matrix with concatenated rows.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct CopyColumnsSecondLoop;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsSecondLoop<T, M, N, P, Start, End,
+                             typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(B(Row), Y(N + Row));
-    CopyColumnsSecondLoop<T, M, N, P, Row - 1>::compute(B, Y);
+    CopyColumnsSecondLoop<T, M, N, P, Start, Mid>::compute(B, Y);
+    CopyColumnsSecondLoop<T, M, N, P, Mid, End>::compute(B, Y);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N, std::size_t P>
-struct CopyColumnsSecondLoop<T, M, N, P, 0> {
-  /**
-   * @brief Base case for the recursive copy of cols from matrix B to matrix Y.
-   *
-   * This static function copies the contents of the first column of matrix B
-   * into the corresponding row of matrix Y, starting from column index N. It
-   * serves as the base case for the recursive function that processes all cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the matrices.
-   * @tparam N The number of columns in matrix A.
-   * @tparam P The number of additional cols in matrix Y.
-   * @param B The input matrix to be concatenated.
-   * @param Y The output matrix with concatenated rows.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsSecondLoop<T, M, N, P, Start, End,
+                             typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, M, P> &, Matrix<T, M, N + P> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t P,
+          std::size_t Start, std::size_t End>
+struct CopyColumnsSecondLoop<
+    T, M, N, P, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
-    Base::Utility::copy<T, 0, M, 0, M, M>(B(0), Y(N));
+    Base::Utility::copy<T, 0, M, 0, M, M>(B(Start), Y(N + Start));
   }
 };
 
@@ -1009,7 +960,7 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P>
 static inline void
 COMPILED_SPARSE_HORIZONTAL_CONCATENATE_2(const Matrix<T, M, P> &B,
                                          Matrix<T, M, N + P> &Y) {
-  CopyColumnsSecondLoop<T, M, N, P, P - 1>::compute(B, Y);
+  CopyColumnsSecondLoop<T, M, N, P, 0, P>::compute(B, Y);
 }
 
 /**
@@ -1081,228 +1032,172 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 }
 
 /* Copy DenseMatrix to horizontally concatenated matrix */
-// when J_idx < N
 template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
           std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
           typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
-          std::size_t J_idx>
-struct ConcatMatrixSetFromDenseColumn {
-  /**
-   * @brief Copies a dense matrix column into a horizontally concatenated sparse
-   * matrix.
-   *
-   * This static function copies the value from the dense matrix A at position
-   * (I, J_idx) into the corresponding position in the sparse matrix Y, taking
-   * into account the specified offsets for rows and cols. It then
-   * recursively processes the previous column (J_idx - 1).
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the dense matrix A.
-   * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @tparam I The current row index being processed.
-   * @tparam J_idx The current column index being processed.
-   * @param Y The output sparse matrix to be updated with the value from A.
-   * @param A The input dense matrix from which values are copied.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct ConcatMatrixSetFromDenseColumn;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromDenseColumn<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Col_Offset)>(Y, A(I, J_idx));
-
     ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
                                    Col_Offset, CSRIndices_Y, CSRPointers_Y, I,
-                                   J_idx - 1>::compute(Y, A);
+                                   Start, Mid>::compute(Y, A);
+    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, I,
+                                   Mid, End>::compute(Y, A);
   }
 };
 
-// column recursion termination
 template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
           std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I>
-struct ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
-                                      Col_Offset, CSRIndices_Y, CSRPointers_Y,
-                                      I, 0> {
-  /**
-   * @brief Copies the first row of a dense matrix into a horizontally
-   * concatenated sparse matrix.
-   *
-   * This static function copies the value from the dense matrix A at position
-   * (I, 0) into the corresponding position in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the dense matrix A.
-   * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @param Y The output sparse matrix to be updated with the value from A.
-   * @param A The input dense matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromDenseColumn<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
+          const Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromDenseColumn<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
-
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
-        Y, A(I, 0));
+    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
+                                          (Start + Col_Offset)>(Y, A(I, Start));
   }
 };
 
-// when I_idx < M
 template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
           std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
-struct ConcatMatrixSetFromDenseRow {
-  /**
-   * @brief Copies a dense matrix row into a horizontally concatenated sparse
-   * matrix.
-   *
-   * This static function copies the values from the dense matrix A at row I_idx
-   * into the corresponding positions in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols. It then recursively
-   * processes the next row (I_idx - 1).
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the dense matrix A.
-   * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @tparam I_idx The current row index being processed.
-   * @param Y The output sparse matrix to be updated with values from A.
-   * @param A The input dense matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct ConcatMatrixSetFromDenseRow;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDenseRow<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, Start, End,
+    typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const Matrix<T, M, N> &A) {
+    ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                Col_Offset, CSRIndices_Y, CSRPointers_Y, Start,
+                                Mid>::compute(Y, A);
+    ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
+                                Col_Offset, CSRIndices_Y, CSRPointers_Y, Mid,
+                                End>::compute(Y, A);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDenseRow<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
+          const Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
+          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDenseRow<
+    T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+    CSRPointers_Y, Start, End,
+    typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
     ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
                                    Col_Offset, CSRIndices_Y, CSRPointers_Y,
-                                   I_idx, N - 1>::compute(Y, A);
-    ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
-                                Col_Offset, CSRIndices_Y, CSRPointers_Y,
-                                I_idx - 1>::compute(Y, A);
-  }
-};
-
-// row recursion termination
-template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
-          std::size_t Y_Col, std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y>
-struct ConcatMatrixSetFromDenseRow<T, M, N, Y_Row, Y_Col, Column_Offset,
-                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, 0> {
-  /**
-   * @brief Copies the first column of a dense matrix into a horizontally
-   * concatenated sparse matrix.
-   *
-   * This static function copies the values from the dense matrix A at row 0
-   * into the corresponding positions in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the dense matrix A.
-   * @tparam N The number of columns in the dense matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @param Y The output sparse matrix to be updated with values from A.
-   * @param A The input dense matrix from which values are copied.
-   */
-  static void
-  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
-          const Matrix<T, M, N> &A) {
-    ConcatMatrixSetFromDenseColumn<T, M, N, Y_Row, Y_Col, Column_Offset,
-                                   Col_Offset, CSRIndices_Y, CSRPointers_Y, 0,
-                                   N - 1>::compute(Y, A);
+                                   Start, 0, N>::compute(Y, A);
   }
 };
 
 /* Copy DiagMatrix to horizontally concatenated matrix */
-// when I_idx < M
 template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
-struct ConcatMatrixSetFromDiagRow {
-  /**
-   * @brief Copies a diagonal matrix row into a horizontally concatenated sparse
-   * matrix.
-   *
-   * This static function copies the value from the diagonal matrix B at index
-   * I_idx into the corresponding position in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols. It then recursively
-   * processes the previous row (I_idx - 1).
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @tparam I_idx The current row index being processed.
-   * @param Y The output sparse matrix to be updated with the value from B.
-   * @param B The input diagonal matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct ConcatMatrixSetFromDiagRow;
+
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDiagRow<
+    T, M, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y, CSRPointers_Y,
+    Start, End, typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
-
-    Base::Matrix::set_sparse_matrix_value<(I_idx + Column_Offset),
-                                          (I_idx + Col_Offset)>(Y, B[I_idx]);
-
     ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
-                               CSRIndices_Y, CSRPointers_Y,
-                               I_idx - 1>::compute(Y, B);
+                               CSRIndices_Y, CSRPointers_Y, Start,
+                               Mid>::compute(Y, B);
+    ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
+                               CSRIndices_Y, CSRPointers_Y, Mid,
+                               End>::compute(Y, B);
   }
 };
 
-// row recursion termination
 template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y>
-struct ConcatMatrixSetFromDiagRow<T, M, Y_Row, Y_Col, Column_Offset, Col_Offset,
-                                  CSRIndices_Y, CSRPointers_Y, 0> {
-  /**
-   * @brief Copies the first column of a diagonal matrix into a horizontally
-   * concatenated sparse matrix.
-   *
-   * This static function copies the value from the diagonal matrix B at index 0
-   * into the corresponding position in the sparse matrix Y, taking into account
-   * the specified offsets for rows and cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the diagonal matrix B.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @param Y The output sparse matrix to be updated with the value from B.
-   * @param B The input diagonal matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDiagRow<
+    T, M, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y, CSRPointers_Y,
+    Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
+          const DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromDiagRow<
+    T, M, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y, CSRPointers_Y,
+    Start, End, typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
-
-    Base::Matrix::set_sparse_matrix_value<Column_Offset, Col_Offset>(Y, B[0]);
+    Base::Matrix::set_sparse_matrix_value<(Start + Column_Offset),
+                                          (Start + Col_Offset)>(Y, B[Start]);
   }
 };
 
@@ -1379,10 +1274,10 @@ inline void update_horizontally_concatenated_matrix(
       typename ConcatenateHorizontally::DenseAndDiag<T, M, N>::CSRPointers_Y;
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, 0, CSRIndices_Y,
-                              CSRPointers_Y, M - 1>::compute(Y, A);
+                              CSRPointers_Y, 0, M>::compute(Y, A);
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, B);
+                             CSRPointers_Y, 0, M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -1417,165 +1312,127 @@ inline auto concatenate_horizontally(const Matrix<T, M, N> &A,
 }
 
 /* Copy SparseMatrix to horizontally concatenated matrix */
-// when J_idx < N
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
           typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
-          std::size_t J_idx>
-struct ConcatMatrixSetFromSparseColumn {
-  /**
-   * @brief Copies a sparse matrix column into a horizontally concatenated
-   * sparse matrix.
-   *
-   * This static function copies the value from the sparse matrix A at position
-   * (I, J_idx) into the corresponding position in the sparse matrix Y, taking
-   * into account the specified offsets for rows and cols. It then
-   * recursively processes the previous column (J_idx - 1).
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the sparse matrix A.
-   * @tparam N The number of columns in the sparse matrix A.
-   * @tparam CSRIndices_A The row indices for the sparse matrix A.
-   * @tparam CSRPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @tparam I The current row index being processed.
-   * @tparam J_idx The current column index being processed.
-   * @param Y The output sparse matrix to be updated with the value from A.
-   * @param A The input sparse matrix from which values are copied.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct ConcatMatrixSetFromSparseColumn;
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromSparseColumn<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
+    ConcatMatrixSetFromSparseColumn<
+        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, Mid>::compute(Y, A);
+    ConcatMatrixSetFromSparseColumn<
+        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Mid, End>::compute(Y, A);
+  }
+};
 
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromSparseColumn<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct ConcatMatrixSetFromSparseColumn<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, End,
+    typename std::enable_if<(End - Start == 1)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     Base::Matrix::set_sparse_matrix_value<(I + Column_Offset),
-                                          (J_idx + Col_Offset)>(
-        Y, Base::Matrix::get_sparse_matrix_value<I, J_idx>(A));
-
-    ConcatMatrixSetFromSparseColumn<
-        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
-        Col_Offset, CSRIndices_Y, CSRPointers_Y, I, J_idx - 1>::compute(Y, A);
+                                          (Start + Col_Offset)>(
+        Y, Base::Matrix::get_sparse_matrix_value<I, Start>(A));
   }
 };
 
-// column recursion termination
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I>
-struct ConcatMatrixSetFromSparseColumn<T, M, N, CSRIndices_A, CSRPointers_A,
-                                       Y_Row, Y_Col, Column_Offset, Col_Offset,
-                                       CSRIndices_Y, CSRPointers_Y, I, 0> {
-  /**
-   * @brief Copies the first row of a sparse matrix into a horizontally
-   * concatenated sparse matrix.
-   *
-   * This static function copies the value from the sparse matrix A at position
-   * (I, 0) into the corresponding position in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the sparse matrix A.
-   * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @param Y The output sparse matrix to be updated with the value from A.
-   * @param A The input sparse matrix from which values are copied.
-   */
-  static void
-  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
-          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct ConcatMatrixSetFromSparseRow;
 
-    Base::Matrix::set_sparse_matrix_value<(I + Column_Offset), Col_Offset>(
-        Y, Base::Matrix::get_sparse_matrix_value<I, 0>(A));
-  }
-};
-
-// when I_idx < M
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t I_idx>
-struct ConcatMatrixSetFromSparseRow {
-  /**
-   * @brief Copies a sparse matrix row into a horizontally concatenated sparse
-   * matrix.
-   *
-   * This static function copies the values from the sparse matrix A at row
-   * I_idx into the corresponding positions in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols. It then recursively
-   * processes the next row (I_idx - 1).
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the sparse matrix A.
-   * @tparam N The number of columns in the sparse matrix A.
-   * @tparam CSRIndices_A The row indices for the sparse matrix A.
-   * @tparam CSRPointers_A The row pointers for the sparse matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @tparam I_idx The current row index being processed.
-   * @param Y The output sparse matrix to be updated with values from A.
-   * @param A The input sparse matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromSparseRow<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, End,
+    typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
-    ConcatMatrixSetFromSparseColumn<
-        T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
-        Col_Offset, CSRIndices_Y, CSRPointers_Y, I_idx, N - 1>::compute(Y, A);
     ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, Y_Row,
                                  Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
-                                 CSRPointers_Y, I_idx - 1>::compute(Y, A);
+                                 CSRPointers_Y, Start, Mid>::compute(Y, A);
+    ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, Y_Row,
+                                 Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
+                                 CSRPointers_Y, Mid, End>::compute(Y, A);
   }
 };
 
-// row recursion termination
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
           std::size_t Column_Offset, std::size_t Col_Offset,
-          typename CSRIndices_Y, typename CSRPointers_Y>
-struct ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, Y_Row,
-                                    Y_Col, Column_Offset, Col_Offset,
-                                    CSRIndices_Y, CSRPointers_Y, 0> {
-  /**
-   * @brief Copies the first column of a sparse matrix into a horizontally
-   * concatenated sparse matrix.
-   *
-   * This static function copies the values from the sparse matrix A at row 0
-   * into the corresponding positions in the sparse matrix Y, taking into
-   * account the specified offsets for rows and cols.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The number of rows in the sparse matrix A.
-   * @tparam N The number of columns in the sparse matrix A.
-   * @tparam Y_Row The number of rows in the sparse matrix Y.
-   * @tparam Y_Col The number of columns in the sparse matrix Y.
-   * @tparam Column_Offset The offset for rows in the sparse matrix Y.
-   * @tparam Col_Offset The offset for cols in the sparse matrix Y.
-   * @tparam CSRIndices_Y The row indices for the sparse matrix Y.
-   * @tparam CSRPointers_Y The row pointers for the sparse matrix Y.
-   * @param Y The output sparse matrix to be updated with values from A.
-   * @param A The input sparse matrix from which values are copied.
-   */
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromSparseRow<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, End,
+    typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Y_Row, std::size_t Y_Col,
+          std::size_t Column_Offset, std::size_t Col_Offset,
+          typename CSRIndices_Y, typename CSRPointers_Y, std::size_t Start,
+          std::size_t End>
+struct ConcatMatrixSetFromSparseRow<
+    T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
+    Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, End,
+    typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
     ConcatMatrixSetFromSparseColumn<
         T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
-        Col_Offset, CSRIndices_Y, CSRPointers_Y, 0, N - 1>::compute(Y, A);
+        Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, 0, N>::compute(Y, A);
   }
 };
 
@@ -1667,11 +1524,11 @@ inline void update_horizontally_concatenated_matrix(
       T, M, N, L, CSRIndices_B, CSRPointers_B>::CSRPointers_Y;
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, 0, CSRIndices_Y,
-                              CSRPointers_Y, M - 1>::compute(Y, A);
+                              CSRPointers_Y, 0, M>::compute(Y, A);
 
   ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_B, CSRPointers_B, M, (N + L),
-                               0, N, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, B);
+                               0, N, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -1782,10 +1639,10 @@ inline void update_horizontally_concatenated_matrix(
       typename ConcatenateHorizontally::DiagAndDense<T, M, N>::CSRPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, A);
+                             CSRPointers_Y, 0, M>::compute(Y, A);
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (M + N), 0, M, CSRIndices_Y,
-                              CSRPointers_Y, M - 1>::compute(Y, B);
+                              CSRPointers_Y, 0, M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -1889,10 +1746,10 @@ inline void update_horizontally_concatenated_matrix(
       typename ConcatenateHorizontally::DiagAndDiag<T, M>::CSRPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, 0, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, A);
+                             CSRPointers_Y, 0, M>::compute(Y, A);
 
   ConcatMatrixSetFromDiagRow<T, M, M, (2 * M), 0, M, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, B);
+                             CSRPointers_Y, 0, M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -2012,11 +1869,11 @@ inline void update_horizontally_concatenated_matrix(
       T, M, N, CSRIndices_B, CSRPointers_B>::CSRPointers_Y;
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, 0, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, A);
+                             CSRPointers_Y, 0, M>::compute(Y, A);
 
   ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_B, CSRPointers_B, M, (M + N),
-                               0, M, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, B);
+                               0, M, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -2144,11 +2001,11 @@ inline void update_horizontally_concatenated_matrix(
       T, M, N, L, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_A, CSRPointers_A, M, (N + L),
-                               0, 0, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, A);
+                               0, 0, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, A);
 
   ConcatMatrixSetFromDenseRow<T, M, N, M, (N + L), 0, N, CSRIndices_Y,
-                              CSRPointers_Y, M - 1>::compute(Y, B);
+                              CSRPointers_Y, 0, M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -2279,11 +2136,11 @@ inline void update_horizontally_concatenated_matrix(
       T, M, N, CSRIndices_A, CSRPointers_A>::CSRPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, M, (M + N),
-                               0, 0, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, A);
+                               0, 0, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, A);
 
   ConcatMatrixSetFromDiagRow<T, M, M, (M + N), 0, N, CSRIndices_Y,
-                             CSRPointers_Y, M - 1>::compute(Y, B);
+                             CSRPointers_Y, 0, M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -2425,12 +2282,12 @@ inline void update_horizontally_concatenated_matrix(
       CSRPointers_B>::CSRPointers_Y;
 
   ConcatMatrixSetFromSparseRow<T, M, N, CSRIndices_A, CSRPointers_A, M, (N + L),
-                               0, 0, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, A);
+                               0, 0, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, A);
 
   ConcatMatrixSetFromSparseRow<T, M, L, CSRIndices_B, CSRPointers_B, M, (N + L),
-                               0, N, CSRIndices_Y, CSRPointers_Y,
-                               M - 1>::compute(Y, B);
+                               0, N, CSRIndices_Y, CSRPointers_Y, 0,
+                               M>::compute(Y, B);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
