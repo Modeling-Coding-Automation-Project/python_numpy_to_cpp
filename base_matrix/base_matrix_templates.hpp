@@ -459,44 +459,44 @@ struct CheckSparseAvailableEmpty<SparseAvailable<Columns...>> {
 /* Create Dense Available */
 
 /**
- * @brief Metafunction to generate a parameter pack of boolean flags, all set to
- * false.
+ * @brief Metafunction to generate a parameter pack of boolean template
+ * arguments, prepending 'false' N times to the pack.
  *
- * This template recursively constructs a type alias containing a parameter pack
- * of N boolean values, all initialized to false. It is typically used in
- * template metaprogramming to generate compile-time sequences of boolean flags.
+ * @tparam N The number of 'false' flags to prepend.
  *
- * @tparam N The number of boolean flags to generate.
- * @tparam Flags The accumulated boolean flags (used internally during
- * recursion).
+ * This primary template recursively divides the problem into two halves to
+ * reduce recursion depth. It concatenates the results from both halves using
+ * ConcatenateColumnAvailable.
  */
-template <std::size_t N, bool... Flags> struct GenerateFalseFlags {
-  using type = typename GenerateFalseFlags<N - 1, false, Flags...>::type;
+template <std::size_t N> struct GenerateFalseFlags {
+  // Divide at the midpoint to reduce recursion depth
+  static constexpr std::size_t Mid = N / 2;
+
+  using type =
+      ConcatenateColumnAvailable<typename GenerateFalseFlags<Mid>::type,
+                                 typename GenerateFalseFlags<N - Mid>::type>;
 };
 
-/**
- * @brief Template specialization for GenerateFalseFlags when the first template
- * parameter is 0.
- *
- * This specialization defines a type alias 'type' that is set to
- * ColumnAvailable<Flags...>, effectively propagating the boolean parameter pack
- * 'Flags...' to the ColumnAvailable template.
- *
- * @tparam Flags Variadic boolean template parameters representing flag values.
- */
-template <bool... Flags> struct GenerateFalseFlags<0, Flags...> {
-  using type = ColumnAvailable<Flags...>;
+// N = 1
+template <> struct GenerateFalseFlags<1> {
+  using type = ColumnAvailable<false>;
+};
+
+// N = 0 (empty list)
+template <> struct GenerateFalseFlags<0> {
+  using type = ColumnAvailable<>;
 };
 
 /**
  * @brief Alias template to generate a type representing a sequence of 'false'
- * flags for rows.
+ * flags for a given size.
  *
- * This alias uses the GenerateFalseFlags template to create a type with N
- * 'false' values, typically used to indicate the availability status of rows
- * in a matrix (all unavailable).
+ * This alias uses the GenerateFalseFlags metafunction to create a type
+ * (typically a type list or similar) containing N 'false' values, which can be
+ * used for compile-time flag management or template metaprogramming.
  *
- * @tparam N The number of rows (flags) to generate.
+ * @tparam N The number of 'false' flags to generate.
+ *
  * @see GenerateFalseFlags
  */
 template <std::size_t N>
