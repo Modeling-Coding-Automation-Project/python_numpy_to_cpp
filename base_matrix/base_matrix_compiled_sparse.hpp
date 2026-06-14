@@ -378,7 +378,8 @@ struct Core {
 
 // Column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, std::size_t J>
+          typename CSRPointers, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Column {
   /**
    * @brief Column loop for computing the output dense matrix from a compiled
@@ -394,19 +395,28 @@ struct Column {
    * @tparam CSRPointers  The type representing row pointers.
    * @tparam J            Current row index in the output dense matrix.
    */
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
           Matrix<T, M, N> &result) {
-
-    Core<T, M, N, CSRIndices, CSRPointers, J, 0>::compute(mat, result);
-    Column<T, M, N, CSRIndices, CSRPointers, J - 1>::compute(mat, result);
+    Column<T, M, N, CSRIndices, CSRPointers, Start, Mid>::compute(mat, result);
+    Column<T, M, N, CSRIndices, CSRPointers, Mid, End>::compute(mat, result);
   }
 };
 
-// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers>
-struct Column<T, M, N, CSRIndices, CSRPointers, 0> {
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices, CSRPointers, Start, End,
+              typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &,
+          Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices, CSRPointers, Start, End,
+              typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief End of the column loop for computing the output dense matrix.
    *
@@ -422,8 +432,7 @@ struct Column<T, M, N, CSRIndices, CSRPointers, 0> {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
           Matrix<T, M, N> &result) {
-
-    Core<T, M, N, CSRIndices, CSRPointers, 0, 0>::compute(mat, result);
+    Core<T, M, N, CSRIndices, CSRPointers, Start, 0>::compute(mat, result);
   }
 };
 
@@ -448,7 +457,7 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
         Matrix<T, M, N> &result) {
 
-  Column<T, M, N, CSRIndices, CSRPointers, M - 1>::compute(mat, result);
+  Column<T, M, N, CSRIndices, CSRPointers, 0, M>::compute(mat, result);
 }
 
 } // namespace OutputDenseMatrix
@@ -498,7 +507,8 @@ namespace SubstituteDenseMatrixToSparseMatrix {
 
 // when J_idx < N
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t I, std::size_t J_idx>
+          typename CSRPointers_A, std::size_t I, std::size_t Start,
+          std::size_t End, typename Enable = void>
 struct Row {
   /**
    * @brief Recursive computation of a column in the sparse matrix.
@@ -521,15 +531,27 @@ struct Row {
   compute(const Matrix<T, M, N> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Y.values[I * N + J_idx] = A.template get<I, J_idx>();
-    Row<T, M, N, CSRIndices_A, CSRPointers_A, I, J_idx - 1>::compute(A, Y);
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    Row<T, M, N, CSRIndices_A, CSRPointers_A, I, Start, Mid>::compute(A, Y);
+    Row<T, M, N, CSRIndices_A, CSRPointers_A, I, Mid, End>::compute(A, Y);
   }
 };
 
-// column recursion termination
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t I>
-struct Row<T, M, N, CSRIndices_A, CSRPointers_A, I, 0> {
+          typename CSRPointers_A, std::size_t I, std::size_t Start,
+          std::size_t End>
+struct Row<T, M, N, CSRIndices_A, CSRPointers_A, I, Start, End,
+           typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(const Matrix<T, M, N> &,
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t I, std::size_t Start,
+          std::size_t End>
+struct Row<T, M, N, CSRIndices_A, CSRPointers_A, I, Start, End,
+           typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief Termination condition for the column computation.
    *
@@ -550,13 +572,14 @@ struct Row<T, M, N, CSRIndices_A, CSRPointers_A, I, 0> {
   compute(const Matrix<T, M, N> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Y.values[I * N] = A.template get<I, 0>();
+    Y.values[I * N + Start] = A.template get<I, Start>();
   }
 };
 
 // when I_idx < M
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t I_idx>
+          typename CSRPointers_A, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Column {
   /**
    * @brief Recursive computation of a row in the sparse matrix.
@@ -578,15 +601,25 @@ struct Column {
   compute(const Matrix<T, M, N> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
 
-    Row<T, M, N, CSRIndices_A, CSRPointers_A, I_idx, N - 1>::compute(A, Y);
-    Column<T, M, N, CSRIndices_A, CSRPointers_A, I_idx - 1>::compute(A, Y);
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, Start, Mid>::compute(A, Y);
+    Column<T, M, N, CSRIndices_A, CSRPointers_A, Mid, End>::compute(A, Y);
   }
 };
 
-// row recursion termination
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A>
-struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, Start, End,
+              typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(const Matrix<T, M, N> &,
+          CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices_A, CSRPointers_A, Start, End,
+              typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief Termination condition for the row computation.
    *
@@ -605,7 +638,7 @@ struct Column<T, M, N, CSRIndices_A, CSRPointers_A, 0> {
   static void
   compute(const Matrix<T, M, N> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
-    Row<T, M, N, CSRIndices_A, CSRPointers_A, 0, N - 1>::compute(A, Y);
+    Row<T, M, N, CSRIndices_A, CSRPointers_A, Start, 0, N>::compute(A, Y);
   }
 };
 
@@ -632,7 +665,7 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 static inline void
 compute(const Matrix<T, M, N> &A,
         CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
-  Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, Y);
+  Column<T, M, N, CSRIndices_A, CSRPointers_A, 0, M>::compute(A, Y);
 }
 
 } // namespace SubstituteDenseMatrixToSparseMatrix
@@ -883,8 +916,8 @@ struct CoreConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A,
 // Core inner loop for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t K,
-          std::size_t K_End>
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End, typename Enable = void>
 struct InnerLoop {
   /**
    * @brief Core inner loop for setting sparse matrix value.
@@ -908,22 +941,20 @@ struct InnerLoop {
   static void
   compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &value) {
-
-    CoreConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A,
-                    J, K, (RowToSet - CSRIndices_A::list[K])>::compute(A,
-                                                                       value);
-
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
     InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-              (K + 1), (K_End - 1)>::compute(A, value);
+              Start, Mid>::compute(A, value);
+    InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
+              Mid, End>::compute(A, value);
   }
 };
 
-// End of inner loop
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t K>
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End>
 struct InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-                 K, 0> {
+                 Start, End, typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the inner loop for setting sparse matrix value.
    *
@@ -948,7 +979,22 @@ struct InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
           const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of inner loop, do nothing
+  }
+};
+
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End>
+struct InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
+                 Start, End,
+                 typename std::enable_if<(End - Start == 1)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const T &value) {
+    CoreConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A,
+                    J, Start,
+                    (RowToSet - CSRIndices_A::list[Start])>::compute(A, value);
   }
 };
 
@@ -1017,15 +1063,15 @@ struct OuterConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A,
 
     InnerLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
               CSRPointers_A::list[J],
-              (CSRPointers_A::list[J + 1] -
-               CSRPointers_A::list[J])>::compute(A, value);
+              CSRPointers_A::list[J + 1]>::compute(A, value);
   }
 };
 
 // Core outer loop for setting sparse matrix value
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t J_End>
+          typename CSRPointers_A, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct OuterLoop {
   /**
    * @brief Core outer loop for setting sparse matrix value.
@@ -1049,22 +1095,19 @@ struct OuterLoop {
   static void
   compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const T &value) {
-
-    OuterConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A,
-                     CSRPointers_A, (ColumnToSet - J), J,
-                     J_End>::compute(A, value);
-
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
     OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A,
-              (J + 1), (J_End - 1)>::compute(A, value);
+              Start, Mid>::compute(A, value);
+    OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, Mid,
+              End>::compute(A, value);
   }
 };
 
-// End of outer loop
 template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J>
-struct OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-                 0> {
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A,
+                 Start, End, typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the outer loop for setting sparse matrix value.
    *
@@ -1088,7 +1131,21 @@ struct OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A, J,
           const T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of outer loop, do nothing
+  }
+};
+
+template <std::size_t ColumnToSet, std::size_t RowToSet, typename T,
+          std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct OuterLoop<ColumnToSet, RowToSet, T, M, N, CSRIndices_A, CSRPointers_A,
+                 Start, End,
+                 typename std::enable_if<(End - Start == 1)>::type> {
+  static void
+  compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          const T &value) {
+    OuterConditional<ColumnToSet, RowToSet, T, M, N, CSRIndices_A,
+                     CSRPointers_A, (ColumnToSet - Start), Start,
+                     (End - Start)>::compute(A, value);
   }
 };
 
@@ -1335,8 +1392,8 @@ struct CoreConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A,
 // Core inner loop for setting sparse matrix value
 template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t K,
-          std::size_t K_End>
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End, typename Enable = void>
 struct InnerLoop {
   /**
    * @brief Core inner loop for getting sparse matrix value.
@@ -1360,22 +1417,20 @@ struct InnerLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           T &value) {
-
-    CoreConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A,
-                    J, K, (RowToGet - CSRIndices_A::list[K])>::compute(A,
-                                                                       value);
-
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
     InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-              (K + 1), (K_End - 1)>::compute(A, value);
+              Start, Mid>::compute(A, value);
+    InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
+              Mid, End>::compute(A, value);
   }
 };
 
-// End of inner loop
 template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t K>
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End>
 struct InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-                 K, 0> {
+                 Start, End, typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the inner loop for getting sparse matrix value.
    *
@@ -1400,7 +1455,22 @@ struct InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
           T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of inner loop, do nothing
+  }
+};
+
+template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
+          std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t J, std::size_t Start,
+          std::size_t End>
+struct InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
+                 Start, End,
+                 typename std::enable_if<(End - Start == 1)>::type> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          T &value) {
+    CoreConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A,
+                    J, Start,
+                    (RowToGet - CSRIndices_A::list[Start])>::compute(A, value);
   }
 };
 
@@ -1469,15 +1539,15 @@ struct OuterConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A,
 
     InnerLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
               CSRPointers_A::list[J],
-              (CSRPointers_A::list[J + 1] -
-               CSRPointers_A::list[J])>::compute(A, value);
+              CSRPointers_A::list[J + 1]>::compute(A, value);
   }
 };
 
 // Core outer loop for setting sparse matrix value
 template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J, std::size_t J_End>
+          typename CSRPointers_A, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct OuterLoop {
   /**
    * @brief Core outer loop for getting sparse matrix value.
@@ -1501,22 +1571,19 @@ struct OuterLoop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           T &value) {
-
-    OuterConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A,
-                     CSRPointers_A, (ColumnToGet - J), J,
-                     J_End>::compute(A, value);
-
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
     OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A,
-              (J + 1), (J_End - 1)>::compute(A, value);
+              Start, Mid>::compute(A, value);
+    OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, Mid,
+              End>::compute(A, value);
   }
 };
 
-// End of outer loop
 template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
           std::size_t M, std::size_t N, typename CSRIndices_A,
-          typename CSRPointers_A, std::size_t J>
-struct OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
-                 0> {
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A,
+                 Start, End, typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the outer loop for getting sparse matrix value.
    *
@@ -1540,7 +1607,21 @@ struct OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A, J,
           T &value) {
     static_cast<void>(A);
     static_cast<void>(value);
-    // End of outer loop, do nothing
+  }
+};
+
+template <std::size_t ColumnToGet, std::size_t RowToGet, typename T,
+          std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A, std::size_t Start, std::size_t End>
+struct OuterLoop<ColumnToGet, RowToGet, T, M, N, CSRIndices_A, CSRPointers_A,
+                 Start, End,
+                 typename std::enable_if<(End - Start == 1)>::type> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+          T &value) {
+    OuterConditional<ColumnToGet, RowToGet, T, M, N, CSRIndices_A,
+                     CSRPointers_A, (ColumnToGet - Start), Start,
+                     (End - Start)>::compute(A, value);
   }
 };
 
@@ -1768,7 +1849,8 @@ struct OutputTransposeMatrixCore {
 
 // Column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, typename Result_Type, std::size_t J>
+          typename CSRPointers, typename Result_Type, std::size_t Start,
+          std::size_t End, typename Enable = void>
 struct OutputTransposeMatrixRow {
   /**
    * @brief Column loop for outputting the transpose of a sparse matrix.
@@ -1786,22 +1868,34 @@ struct OutputTransposeMatrixRow {
    * @tparam Result_Type  The type of the result matrix.
    * @tparam J            Current index in the row indices list.
    */
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
           Result_Type &result) {
-
-    OutputTransposeMatrixCore<T, M, N, CSRIndices, CSRPointers, Result_Type, J,
-                              0>::compute(mat, result);
     OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type,
-                             J - 1>::compute(mat, result);
+                             Start, Mid>::compute(mat, result);
+    OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type, Mid,
+                             End>::compute(mat, result);
   }
 };
 
-// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, typename Result_Type>
+          typename CSRPointers, typename Result_Type, std::size_t Start,
+          std::size_t End>
 struct OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type,
-                                0> {
+                                Start, End,
+                                typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &,
+          Result_Type &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, typename Result_Type, std::size_t Start,
+          std::size_t End>
+struct OutputTransposeMatrixRow<
+    T, M, N, CSRIndices, CSRPointers, Result_Type, Start, End,
+    typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief End of the column loop for outputting the transpose of a sparse
    * matrix.
@@ -1822,9 +1916,8 @@ struct OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type,
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
           Result_Type &result) {
-
-    OutputTransposeMatrixCore<T, M, N, CSRIndices, CSRPointers, Result_Type, 0,
-                              0>::compute(mat, result);
+    OutputTransposeMatrixCore<T, M, N, CSRIndices, CSRPointers, Result_Type,
+                              Start, 0>::compute(mat, result);
   }
 };
 
@@ -1853,8 +1946,8 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &mat,
         Result_Type &result) {
 
-  OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type,
-                           M - 1>::compute(mat, result);
+  OutputTransposeMatrixRow<T, M, N, CSRIndices, CSRPointers, Result_Type, 0,
+                           M>::compute(mat, result);
 }
 
 } // namespace OutputTransposeMatrix
@@ -1920,7 +2013,8 @@ namespace ConvertRealSparseMatrixToComplex {
 
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, std::size_t I>
+          typename CSRPointers, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Loop {
   /**
    * @brief Core loop for converting a real sparse matrix to a complex sparse
@@ -1943,16 +2037,18 @@ struct Loop {
       CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
           &To_matrix) {
 
-    To_matrix.values[I - 1].real = From_matrix.values[I - 1];
-    Loop<T, M, N, CSRIndices, CSRPointers, I - 1>::compute(From_matrix,
-                                                           To_matrix);
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    Loop<T, M, N, CSRIndices, CSRPointers, Start, Mid>::compute(From_matrix,
+                                                                To_matrix);
+    Loop<T, M, N, CSRIndices, CSRPointers, Mid, End>::compute(From_matrix,
+                                                              To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers>
-struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the core loop for converting a real sparse matrix to a
    * complex sparse matrix.
@@ -1969,13 +2065,20 @@ struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
    * @tparam CSRPointers  The type representing row pointers of the sparse
    * matrix.
    */
+  static void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &,
+          CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &From_matrix,
       CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
           &To_matrix) {
-    /* Do Nothing. */
-    static_cast<void>(From_matrix);
-    static_cast<void>(To_matrix);
+    To_matrix.values[Start].real = From_matrix.values[Start];
   }
 };
 
@@ -2004,7 +2107,7 @@ inline void compute(
     CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
         &To_matrix) {
 
-  Loop<T, M, N, CSRIndices, CSRPointers, CSRPointers::list[M]>::compute(
+  Loop<T, M, N, CSRIndices, CSRPointers, 0, CSRPointers::list[M]>::compute(
       From_matrix, To_matrix);
 }
 
@@ -2056,7 +2159,8 @@ namespace GetRealSparseMatrixFromComplex {
 
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, std::size_t I>
+          typename CSRPointers, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Loop {
   /**
    * @brief Core loop for extracting the real part from a complex sparse matrix.
@@ -2078,16 +2182,18 @@ struct Loop {
               &From_matrix,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
 
-    To_matrix.values[I - 1] = From_matrix.values[I - 1].real;
-    Loop<T, M, N, CSRIndices, CSRPointers, I - 1>::compute(From_matrix,
-                                                           To_matrix);
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    Loop<T, M, N, CSRIndices, CSRPointers, Start, Mid>::compute(From_matrix,
+                                                                To_matrix);
+    Loop<T, M, N, CSRIndices, CSRPointers, Mid, End>::compute(From_matrix,
+                                                              To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers>
-struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the core loop for extracting the real part from a complex
    * sparse matrix.
@@ -2104,14 +2210,20 @@ struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
    * @tparam CSRPointers  The type representing row pointers of the sparse
    * matrix.
    */
+  static void compute(
+      const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers> &,
+      CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
               &From_matrix,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
-
-    /* Do Nothing. */
-    static_cast<void>(From_matrix);
-    static_cast<void>(To_matrix);
+    To_matrix.values[Start] = From_matrix.values[Start].real;
   }
 };
 
@@ -2140,7 +2252,7 @@ compute(const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
             &From_matrix,
         CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
 
-  Loop<T, M, N, CSRIndices, CSRPointers, CSRPointers::list[M]>::compute(
+  Loop<T, M, N, CSRIndices, CSRPointers, 0, CSRPointers::list[M]>::compute(
       From_matrix, To_matrix);
 }
 
@@ -2192,7 +2304,8 @@ namespace GetImagSparseMatrixFromComplex {
 
 /* Helper struct for unrolling the loop */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers, std::size_t I>
+          typename CSRPointers, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Loop {
   /**
    * @brief Core loop for extracting the imaginary part from a complex sparse
@@ -2216,16 +2329,18 @@ struct Loop {
               &From_matrix,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
 
-    To_matrix.values[I - 1] = From_matrix.values[I - 1].imag;
-    Loop<T, M, N, CSRIndices, CSRPointers, I - 1>::compute(From_matrix,
-                                                           To_matrix);
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    Loop<T, M, N, CSRIndices, CSRPointers, Start, Mid>::compute(From_matrix,
+                                                                To_matrix);
+    Loop<T, M, N, CSRIndices, CSRPointers, Mid, End>::compute(From_matrix,
+                                                              To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
-          typename CSRPointers>
-struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
   /**
    * @brief End of the core loop for extracting the imaginary part from a
    * complex sparse matrix.
@@ -2242,14 +2357,20 @@ struct Loop<T, M, N, CSRIndices, CSRPointers, 0> {
    * @tparam CSRPointers  The type representing row pointers of the sparse
    * matrix.
    */
+  static void compute(
+      const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers> &,
+      CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers, std::size_t Start, std::size_t End>
+struct Loop<T, M, N, CSRIndices, CSRPointers, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void
   compute(const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
               &From_matrix,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
-
-    /* Do Nothing. */
-    static_cast<void>(From_matrix);
-    static_cast<void>(To_matrix);
+    To_matrix.values[Start] = From_matrix.values[Start].imag;
   }
 };
 
@@ -2279,7 +2400,7 @@ compute(const CompiledSparseMatrix<Complex<T>, M, N, CSRIndices, CSRPointers>
             &From_matrix,
         CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &To_matrix) {
 
-  Loop<T, M, N, CSRIndices, CSRPointers, CSRPointers::list[M]>::compute(
+  Loop<T, M, N, CSRIndices, CSRPointers, 0, CSRPointers::list[M]>::compute(
       From_matrix, To_matrix);
 }
 
@@ -2439,7 +2560,8 @@ struct Core {
 
 // Column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
-          typename CSRPointers_B, std::size_t J>
+          typename CSRPointers_B, std::size_t Start, std::size_t End,
+          typename Enable = void>
 struct Column {
   /**
    * @brief Column loop for diagonal inverse multiplication of a sparse matrix.
@@ -2457,23 +2579,34 @@ struct Column {
    * matrix B.
    * @tparam J            Current index in the row indices list of B.
    */
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void
   compute(const DiagMatrix<T, M> &A,
           const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
           const T &division_min,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
-
-    Core<T, M, N, CSRIndices_B, CSRPointers_B, J, 0>::compute(
+    Column<T, M, N, CSRIndices_B, CSRPointers_B, Start, Mid>::compute(
         A, B, division_min, result);
-    Column<T, M, N, CSRIndices_B, CSRPointers_B, J - 1>::compute(
+    Column<T, M, N, CSRIndices_B, CSRPointers_B, Mid, End>::compute(
         A, B, division_min, result);
   }
 };
 
-// End of column loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
-          typename CSRPointers_B>
-struct Column<T, M, N, CSRIndices_B, CSRPointers_B, 0> {
+          typename CSRPointers_B, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices_B, CSRPointers_B, Start, End,
+              typename std::enable_if<(End == Start)>::type> {
+  static void
+  compute(const DiagMatrix<T, M> &,
+          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &,
+          const T &,
+          CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
+          typename CSRPointers_B, std::size_t Start, std::size_t End>
+struct Column<T, M, N, CSRIndices_B, CSRPointers_B, Start, End,
+              typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief End of the column loop for diagonal inverse multiplication of a
    * sparse matrix.
@@ -2495,8 +2628,7 @@ struct Column<T, M, N, CSRIndices_B, CSRPointers_B, 0> {
           const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
           const T &division_min,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
-
-    Core<T, M, N, CSRIndices_B, CSRPointers_B, 0, 0>::compute(
+    Core<T, M, N, CSRIndices_B, CSRPointers_B, Start, 0>::compute(
         A, B, division_min, result);
   }
 };
@@ -2528,7 +2660,7 @@ compute(const DiagMatrix<T, M> &A,
         const T &division_min,
         CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-  Column<T, M, N, CSRIndices_B, CSRPointers_B, M - 1>::compute(
+  Column<T, M, N, CSRIndices_B, CSRPointers_B, 0, M>::compute(
       A, B, division_min, result);
 }
 
