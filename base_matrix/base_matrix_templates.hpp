@@ -1592,47 +1592,76 @@ namespace TemplatesOperation {
 
 /**
  * @brief A template struct to concatenate two SparseAvailable types
- * horizontally.
+horizontally
+ * in blocks.
  *
  * This struct provides a type alias 'type' that is the result of concatenating
- * two SparseAvailable types horizontally, effectively merging their rows
- * into a new SparseAvailableColumns type.
+ * two SparseAvailable types horizontally in blocks, effectively merging their
+ * columns for a specific range of rows.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_B The second SparseAvailable type.
+ * @tparam StartRow The starting row index for the block to concatenate.
+ * @tparam Count The number of rows in the block to concatenate.
+ * The resulting type is a SparseAvailable type that contains the concatenated
+ * columns for the specified block of rows from both input SparseAvailable
+types.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_B,
-          std::size_t RowCount>
-struct ConcatenateSparseAvailableHorizontallyLoop {
+          std::size_t StartRow, std::size_t Count>
+struct ConcatenateSparseAvailableHorizontallyBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
   using type = typename ConcatenateSparseAvailable<
-      typename ConcatenateSparseAvailableHorizontallyLoop<
-          SparseAvailable_A, SparseAvailable_B, (RowCount - 1)>::type,
-      SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
-          typename GetColumnAvailable<RowCount, SparseAvailable_A>::type,
-          typename GetColumnAvailable<RowCount,
-                                      SparseAvailable_B>::type>::type>>::type;
+      typename ConcatenateSparseAvailableHorizontallyBlock<
+          SparseAvailable_A, SparseAvailable_B, StartRow, MidCount>::type,
+      typename ConcatenateSparseAvailableHorizontallyBlock<
+          SparseAvailable_A, SparseAvailable_B, StartRow + MidCount,
+          Count - MidCount>::type>::type;
 };
 
 /**
- * @brief Specialization of ConcatenateSparseAvailableHorizontallyLoop for the
- * base case when RowCount is 0.
+ * @brief Specialization of ConcatenateSparseAvailableHorizontallyBlock for the
+ * case when Count is 1.
  *
  * This specialization defines a type alias 'type' that is set to
- * SparseAvailableColumns, effectively creating a SparseAvailableColumns type
- * with the combined availability of the first rows from both SparseAvailable
- * types.
+ * SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
+ * typename GetColumnAvailable<StartRow, SparseAvailable_A>::type,
+ * typename GetColumnAvailable<StartRow, SparseAvailable_B>::type>::type>,
+ * effectively concatenating the ColumnAvailable types from both SparseAvailable
+ * types for the specific row index when there is only one row to process.
  *
- * @tparam SparseAvailable_A The first SparseAvailable type (unused in this
- * specialization).
- * @tparam SparseAvailable_B The second SparseAvailable type (unused in
- * this specialization).
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_B The second SparseAvailable type.
+ * @tparam StartRow The starting row index for the block to concatenate.
  */
-template <typename SparseAvailable_A, typename SparseAvailable_B>
-struct ConcatenateSparseAvailableHorizontallyLoop<SparseAvailable_A,
-                                                  SparseAvailable_B, 0> {
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t StartRow>
+struct ConcatenateSparseAvailableHorizontallyBlock<
+    SparseAvailable_A, SparseAvailable_B, StartRow, 1> {
+
   using type = SparseAvailableColumns<typename ConcatenateColumnAvailableLists<
-      typename GetColumnAvailable<0, SparseAvailable_A>::type,
-      typename GetColumnAvailable<0, SparseAvailable_B>::type>::type>;
+      typename GetColumnAvailable<StartRow, SparseAvailable_A>::type,
+      typename GetColumnAvailable<StartRow, SparseAvailable_B>::type>::type>;
+};
+
+/**
+ * @brief Specialization of ConcatenateSparseAvailableHorizontallyBlock for the
+ * case when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<>, effectively creating an empty SparseAvailable type
+ * when there are no rows to process.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_B The second SparseAvailable type.
+ * @tparam StartRow The starting row index for the block to concatenate.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t StartRow>
+struct ConcatenateSparseAvailableHorizontallyBlock<
+    SparseAvailable_A, SparseAvailable_B, StartRow, 0> {
+  using type = SparseAvailableColumns<>;
 };
 
 } // namespace TemplatesOperation
@@ -1640,22 +1669,23 @@ struct ConcatenateSparseAvailableHorizontallyLoop<SparseAvailable_A,
 /**
  * @brief Alias template to concatenate two SparseAvailable types horizontally.
  *
- * This alias uses the
- * TemplatesOperation::ConcatenateSparseAvailableHorizontallyLoop to combine two
- * SparseAvailable types, effectively merging their rows into a single
- * SparseAvailableColumns type.
+ * This alias uses the ConcatenateSparseAvailableHorizontallyBlock to combine
+ * two SparseAvailable types horizontally, effectively merging their columns for
+ * all rows. It specifies the starting row index as 0 and the count as the
+ * total number of rows in the first SparseAvailable type.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_B The second SparseAvailable type.
- *
- * The resulting type is a SparseAvailableColumns type that contains all rows
- * from both input SparseAvailable types, concatenated horizontally.
+ * @tparam StartRow The starting row index for the block to concatenate.
+ * @tparam Count The number of rows in the block to concatenate.
+ * The resulting type is a SparseAvailable type that contains the concatenated
+ * columns for all rows from both input SparseAvailable types.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using ConcatenateSparseAvailableHorizontally =
-    typename TemplatesOperation::ConcatenateSparseAvailableHorizontallyLoop<
-        SparseAvailable_A, SparseAvailable_B,
-        SparseAvailable_A::number_of_rows - 1>::type;
+    typename TemplatesOperation::ConcatenateSparseAvailableHorizontallyBlock<
+        SparseAvailable_A, SparseAvailable_B, 0,
+        SparseAvailable_A::number_of_rows>::type;
 
 /* Concatenate ColumnAvailable with SparseAvailable  */
 
