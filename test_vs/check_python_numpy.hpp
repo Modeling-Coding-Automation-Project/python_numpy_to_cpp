@@ -827,6 +827,61 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(value_of_sparse_set, static_cast<T>(8), NEAR_LIMIT_STRICT,
         "check Sparse Matrix set value.");
 
+    /* 要素数 */
+    std::size_t matrix_size = A.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Matrix size.");
+
+    matrix_size = DiagJ.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Diag Matrix size.");
+
+    matrix_size = C.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix size.");
+
+    std::size_t cols_size;
+    std::size_t rows_size;
+
+    std::tie(rows_size, cols_size) = A.shape();
+
+    tester.expect_near(static_cast<T>(rows_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Matrix shape rows.");
+    tester.expect_near(static_cast<T>(cols_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Matrix shape cols.");
+
+    std::tie(rows_size, cols_size) = DiagJ.shape();
+
+    tester.expect_near(static_cast<T>(rows_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Diag Matrix shape rows.");
+    tester.expect_near(static_cast<T>(cols_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Diag Matrix shape cols.");
+
+    std::tie(rows_size, cols_size) = C.shape();
+
+    tester.expect_near(static_cast<T>(rows_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix shape rows.");
+    tester.expect_near(static_cast<T>(cols_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix shape cols.");
+
+    std::size_t ndim_value = A.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Matrix ndim.");
+
+    ndim_value = DiagJ.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Diag Matrix ndim.");
+
+    ndim_value = C.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix ndim.");
+
 
     tester.throw_error_if_test_failed();
 }
