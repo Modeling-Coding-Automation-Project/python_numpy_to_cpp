@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <thread>
+#include <tuple>
 #include <utility>
 
 namespace PythonNumpy {
@@ -213,6 +214,13 @@ public:
    * @return std::size_t The number of rows in the matrix.
    */
   constexpr std::size_t rows() const { return ROWS; }
+
+  /**
+   * @brief Retrieves the number of elements in the matrix.
+   *
+   * @return std::size_t The total number of elements in the matrix (M * N).
+   */
+  constexpr std::size_t size() const { return M * N; }
 
   /**
    * @brief Retrieves the element at the specified index in the matrix.
@@ -649,6 +657,14 @@ public:
    * M).
    */
   constexpr std::size_t rows() const { return ROWS; }
+
+  /**
+   * @brief Retrieves the number of elements in the diagonal matrix.
+   *
+   * @return std::size_t The total number of elements in the diagonal matrix
+   * (M * M).
+   */
+  constexpr std::size_t size() const { return M * M; }
 
   /**
    * @brief Retrieves the number of elements in the diagonal matrix.
@@ -1096,6 +1112,14 @@ public:
    * M).
    */
   constexpr std::size_t rows() const { return ROWS; }
+
+  /**
+   * @brief Retrieves the number of elements in the sparse matrix.
+   *
+   * @return std::size_t The total number of elements in the sparse matrix (M *
+   * N).
+   */
+  constexpr std::size_t size() const { return M * N; }
 
   /**
    * @brief Retrieves the number of elements in the sparse matrix.

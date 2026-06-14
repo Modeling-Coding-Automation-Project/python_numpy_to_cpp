@@ -827,6 +827,22 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(value_of_sparse_set, static_cast<T>(8), NEAR_LIMIT_STRICT,
         "check Sparse Matrix set value.");
 
+    /* 要素数 */
+    std::size_t matrix_size = A.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Matrix size.");
+
+    matrix_size = DiagJ.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Diag Matrix size.");
+
+    matrix_size = C.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix size.");
+
 
     tester.throw_error_if_test_failed();
 }
