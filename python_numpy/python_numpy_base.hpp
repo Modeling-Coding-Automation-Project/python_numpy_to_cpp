@@ -314,7 +314,7 @@ public:
    * @note If the indices are out of bounds, they are clamped to the maximum
    * valid index.
    */
-  const T &operator()(std::size_t col, std::size_t row) const {
+  const T &operator()(std::size_t row, std::size_t col) const {
     if (row >= ROWS) {
       row = ROWS - 1;
     }
@@ -334,13 +334,24 @@ public:
    * @note This method is fast but may cause segmentation faults if indices are
    * out of bounds.
    */
-  inline T &access(const std::size_t &col, const std::size_t &row) {
+  inline T &access(const std::size_t &row, const std::size_t &col) {
 
-    return this->matrix(row)[col];
+    return this->matrix(col)[row];
   }
 
-  inline const T &access(const std::size_t &col, const std::size_t &row) const {
-    return this->matrix(row)[col];
+  /**
+   * @brief Accesses the element at the specified column and row indices.
+   *
+   * @param col The zero-based column index (must be less than COLS).
+   * @param row The zero-based row index (must be less than ROWS).
+   * @return const T& A constant reference to the value at the specified column
+   * and row.
+   *
+   * @note This method is fast but may cause segmentation faults if indices are
+   * out of bounds.
+   */
+  inline const T &access(const std::size_t &row, const std::size_t &col) const {
+    return this->matrix(col)[row];
   }
 
   /**
