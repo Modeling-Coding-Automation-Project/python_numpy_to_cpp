@@ -697,127 +697,173 @@ using DenseAvailableEmpty = typename TemplatesOperation::RepeatColumnAvailable<
 namespace TemplatesOperation {
 
 /**
- * @brief Metafunction to generate a parameter pack of boolean flags with a
- * single true value at a specified index.
+ * @brief Metafunction to generate a ColumnAvailable type with 'true' flags at
+ * specific indices.
  *
- * This template recursively constructs a boolean parameter pack of length N,
- * where only the element at position Index is true, and all other elements are
- * false. The generated type can be used for compile-time selection or
- * specialization based on index.
+ * This template recursively constructs a ColumnAvailable type where the flags
+ * are set to 'true' at the specified index and 'false' elsewhere. It divides
+ * the range of indices into two halves to reduce recursion depth and combines
+ * the results using ConcatenateColumnAvailable.
  *
- * @tparam N The total number of boolean flags to generate.
- * @tparam Index The index at which the flag should be set to true.
- * @tparam Flags The accumulated boolean flags during recursion.
+ * @tparam Start The starting index for the current range.
+ * @tparam Count The number of indices in the current range.
+ * @tparam Index The specific index at which the flag should be set to 'true'.
+ *
+ * The resulting type is accessible via the nested ::type member, which will be
+ * a ColumnAvailable type with 'true' at the specified index and 'false'
+ * elsewhere.
  */
-template <std::size_t N, std::size_t Index, bool... Flags>
-struct GenerateIndexedTrueFlags {
-  using type = typename GenerateIndexedTrueFlags<
-      N - 1, Index, (N - 1 == Index ? true : false), Flags...>::type;
+template <std::size_t Start, std::size_t Count, std::size_t Index>
+struct GenerateIndexedTrueFlagsRange {
+
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = ConcatenateColumnAvailable<
+      typename GenerateIndexedTrueFlagsRange<Start, MidCount, Index>::type,
+      typename GenerateIndexedTrueFlagsRange<Start + MidCount, Count - MidCount,
+                                             Index>::type>;
 };
 
 /**
- * @brief Specialization of the GenerateIndexedTrueFlags template for the case
- * when the first template parameter is 0.
+ * @brief Specialization of GenerateIndexedTrueFlagsRange for the case when
+ * Count is 1.
  *
  * This specialization defines a type alias 'type' that is set to
- * ColumnAvailable<Flags...>, effectively forwarding the boolean parameter pack
- * Flags to the ColumnAvailable template.
+ * ColumnAvailable<(Start == Index)>, effectively creating a ColumnAvailable
+ * type where the flag is 'true' if the current index (Start) matches the
+ * specified Index, and 'false' otherwise.
  *
- * @tparam Index The index value (unused in this specialization).
- * @tparam Flags A parameter pack of boolean values representing column
- * availability.
+ * @tparam Start The starting index for the current range.
+ * @tparam Index The specific index at which the flag should be set to 'true'.
  */
-template <std::size_t Index, bool... Flags>
-struct GenerateIndexedTrueFlags<0, Index, Flags...> {
-  using type = ColumnAvailable<Flags...>;
+template <std::size_t Start, std::size_t Index>
+struct GenerateIndexedTrueFlagsRange<Start, 1, Index> {
+
+  using type = ColumnAvailable<(Start == Index)>;
 };
 
 /**
- * @brief Alias template to generate a type representing a sequence of boolean
- * flags, where the flag at position Index is set to true and all others are
- * false.
+ * @brief Specialization of GenerateIndexedTrueFlagsRange for the case when
+ * Count is 0.
  *
- * @tparam N     The total number of flags (rows).
- * @tparam Index The index of the flag to be set to true.
+ * This specialization defines a type alias 'type' that is set to
+ * ColumnAvailable<>, effectively creating an empty ColumnAvailable type when
+ * there are no indices to process.
  *
- * This alias uses GenerateIndexedTrueFlags to produce a type (typically a
- * std::integer_sequence or similar) with N elements, where only the element at
- * position Index is true.
+ * @tparam Start The starting index for the current range (unused in this
+ * specialization).
+ * @tparam Index The specific index at which the flag should be set to 'true'
+ * (unused in this specialization).
+ */
+template <std::size_t Start, std::size_t Index>
+struct GenerateIndexedTrueFlagsRange<Start, 0, Index> {
+
+  using type = ColumnAvailable<>;
+};
+
+/**
+ * @brief Alias template to generate a ColumnAvailable type with 'true' flags at
+ * a specific index for a range of size N.
+ *
+ * This alias uses the GenerateIndexedTrueFlagsRange metafunction to create a
+ * ColumnAvailable type where the flag is 'true' at the specified Index and
+ * 'false' elsewhere for a total of N indices.
+ *
+ * @tparam N The total number of indices (size of the range).
+ * @tparam Index The specific index at which the flag should be set to 'true'.
+ *
+ * The resulting type is a ColumnAvailable type with 'true' at the specified
+ * index and 'false' elsewhere, accessible via the nested ::type member.
  */
 template <std::size_t N, std::size_t Index>
 using GenerateIndexedTrueColumnAvailable =
-    typename GenerateIndexedTrueFlags<N, Index>::type;
+    typename GenerateIndexedTrueFlagsRange<0, N, Index>::type;
 
 /**
- * @brief Recursively constructs a type list by repeating a column availability
- * type for a matrix.
+ * @brief Metafunction to generate a block of diagonal columns for a square
+ * matrix.
  *
- * This template recursively builds a type list representing the availability of
- * rows in a matrix, by prepending a new column availability type at each
- * recursion step. The recursion continues until the base case (not shown here)
- * is reached.
+ * This template recursively constructs a SparseAvailable type representing the
+ * diagonal columns of a square matrix. It divides the range of rows into two
+ * halves to reduce recursion depth and combines the results using
+ * ConcatenateSparseAvailable.
  *
- * @tparam M The number of rows remaining to process.
- * @tparam N The number of columns in the matrix.
- * @tparam Index The current index for which the column availability is being
- * generated.
- * @tparam ColumnAvailable The type representing the availability of the current
- * column.
- * @tparam Columns The accumulated list of column availability types.
+ * @tparam TotalCols The total number of columns in the matrix (also the number
+ * of rows for a square matrix).
+ * @tparam StartRow The starting row index for the current block.
+ * @tparam RowCount The number of rows in the current block.
  *
- * The resulting type is accessible via the nested ::type member.
+ * The resulting type is accessible via the nested ::type member, which will be
+ * a SparseAvailable type representing the diagonal columns for the specified
+ * block of rows.
  */
-template <std::size_t M, std::size_t N, std::size_t Index,
-          typename ColumnAvailable, typename... Columns>
-struct IndexedRepeatColumnAvailable {
-  using type = typename IndexedRepeatColumnAvailable<
-      (M - 1), N, (Index - 1),
-      GenerateIndexedTrueColumnAvailable<N, (Index - 1)>, ColumnAvailable,
-      Columns...>::type;
+template <std::size_t TotalCols, std::size_t StartRow, std::size_t RowCount>
+struct GenerateDiagColumnsBlock {
+  static constexpr std::size_t Mid = RowCount / 2;
+
+  using type = typename ConcatenateSparseAvailable<
+      typename GenerateDiagColumnsBlock<TotalCols, StartRow, Mid>::type,
+      typename GenerateDiagColumnsBlock<TotalCols, StartRow + Mid,
+                                        RowCount - Mid>::type>::type;
 };
 
 /**
- * @brief Specialization of IndexedRepeatColumnAvailable for the case when M is
- * 0.
+ * @brief Specialization of GenerateDiagColumnsBlock for the case when RowCount
+ * is 1.
  *
  * This specialization defines a type alias 'type' that is set to
- * TemplatesOperation::SparseAvailableColumns<Columns...>, effectively
- * collecting the repeated column availability types into a sparse column
- * representation.
+ * SparseAvailableColumns<GenerateIndexedTrueColumnAvailable<TotalCols,
+ * StartRow>>, effectively creating a SparseAvailable type representing a single
+ * diagonal column for the specified row.
  *
- * @tparam N The number of columns in the matrix (unused in this
- * specialization).
- * @tparam Index The current index (unused in this specialization).
- * @tparam ColumnAvailable The type representing the availability of the current
- * column (unused in this specialization).
- * @tparam Columns Variadic template parameter pack representing the accumulated
- * column availability types.
+ * @tparam TotalCols The total number of columns in the matrix (also the number
+ * of rows for a square matrix).
+ * @tparam StartRow The starting row index for the current block.
  */
-template <std::size_t N, std::size_t Index, typename ColumnAvailable,
-          typename... Columns>
-struct IndexedRepeatColumnAvailable<0, N, Index, ColumnAvailable, Columns...> {
-  using type = TemplatesOperation::SparseAvailableColumns<Columns...>;
+template <std::size_t TotalCols, std::size_t StartRow>
+struct GenerateDiagColumnsBlock<TotalCols, StartRow, 1> {
+  using type = SparseAvailableColumns<
+      GenerateIndexedTrueColumnAvailable<TotalCols, StartRow>>;
+};
+
+/**
+ * @brief Specialization of GenerateDiagColumnsBlock for the case when RowCount
+ * is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<>, effectively creating an empty SparseAvailable type
+ * when there are no rows to process.
+ *
+ * @tparam TotalCols The total number of columns in the matrix (also the number
+ * of rows for a square matrix) (unused in this specialization).
+ * @tparam StartRow The starting row index for the current block (unused in this
+ * specialization).
+ */
+template <std::size_t TotalCols, std::size_t StartRow>
+struct GenerateDiagColumnsBlock<TotalCols, StartRow, 0> {
+  using type = SparseAvailableColumns<>;
 };
 
 } // namespace TemplatesOperation
 
 /**
- * @brief Alias template to create a diagonal availability mask for a square
- * matrix of size MxM.
+ * @brief Alias template to generate a SparseAvailable type representing the
+ * diagonal columns of a square matrix of size MxM.
  *
- * This alias uses the TemplatesOperation::IndexedRepeatColumnAvailable to
- * generate a type representing the availability of rows in a diagonal
- * matrix, where only the diagonal elements are available (true).
+ * This alias uses the GenerateDiagColumnsBlock metafunction to create a
+ * SparseAvailable type where the diagonal columns are marked as available
+ * (true) and the off-diagonal columns are marked as unavailable (false) for a
+ * square matrix of size MxM.
  *
- * @tparam M The size of the square matrix (number of columns and rows).
+ * @tparam M The number of rows and columns in the square matrix.
  *
- * The resulting type is a SparseAvailableColumns type with M rows, where
- * each column has only one true value at its diagonal position.
+ * The resulting type is a SparseAvailable type representing the diagonal
+ * columns for a square matrix of size MxM, accessible via the nested ::type
+ * member.
  */
 template <std::size_t M>
-using DiagAvailable = typename TemplatesOperation::IndexedRepeatColumnAvailable<
-    M, M, (M - 1),
-    TemplatesOperation::GenerateIndexedTrueColumnAvailable<M, (M - 1)>>::type;
+using DiagAvailable =
+    typename TemplatesOperation::GenerateDiagColumnsBlock<M, 0, M>::type;
 
 /* Create Sparse Available from Indices and Pointers */
 
