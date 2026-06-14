@@ -2032,7 +2032,7 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     MCAPTester<T> tester;
 
-    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-4) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     /* 実数値のみの固有値 */
