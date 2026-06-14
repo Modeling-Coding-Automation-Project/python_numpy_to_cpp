@@ -477,12 +477,21 @@ template <std::size_t N> struct GenerateFalseFlags {
                                  typename GenerateFalseFlags<N - Mid>::type>;
 };
 
-// N = 1
+/**
+ * @brief Specialization of GenerateFalseFlags for the case when N is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * ColumnAvailable<false>.
+ */
 template <> struct GenerateFalseFlags<1> {
   using type = ColumnAvailable<false>;
 };
 
-// N = 0 (empty list)
+/**
+ * @brief Specialization of GenerateFalseFlags for the case when N is 0.
+ *
+ * This specialization defines an empty ColumnAvailable type.
+ */
 template <> struct GenerateFalseFlags<0> {
   using type = ColumnAvailable<>;
 };
@@ -507,28 +516,37 @@ using GenerateFalseColumnAvailable = typename GenerateFalseFlags<N>::type;
  * arguments, prepending 'true' N times to the pack.
  *
  * @tparam N The number of 'true' flags to prepend.
- * @tparam Flags The existing boolean flags in the parameter pack.
  *
- * This primary template recursively prepends 'true' to the Flags parameter pack
- * N times. The recursion is expected to be terminated by a specialization for N
- * == 0.
+ * This primary template recursively divides the problem into two halves to
+ * reduce recursion depth. It concatenates the results from both halves using
+ * ConcatenateColumnAvailable.
  */
-template <std::size_t N, bool... Flags> struct GenerateTrueFlags {
-  using type = typename GenerateTrueFlags<N - 1, true, Flags...>::type;
+template <std::size_t N> struct GenerateTrueFlags {
+  // Divide at the midpoint to reduce recursion depth
+  static constexpr std::size_t Mid = N / 2;
+
+  using type =
+      ConcatenateColumnAvailable<typename GenerateTrueFlags<Mid>::type,
+                                 typename GenerateTrueFlags<N - Mid>::type>;
 };
 
 /**
- * @brief Specialization of the GenerateTrueFlags template for the case when the
- * first template parameter is 0.
+ * @brief Specialization of GenerateTrueFlags for the case when N is 1.
  *
  * This specialization defines a type alias 'type' that is set to
- * ColumnAvailable<Flags...>, effectively forwarding the remaining boolean
- * template parameters (Flags...) to the ColumnAvailable template.
- *
- * @tparam Flags Variadic boolean template parameters representing flag values.
+ * ColumnAvailable<true>.
  */
-template <bool... Flags> struct GenerateTrueFlags<0, Flags...> {
-  using type = ColumnAvailable<Flags...>;
+template <> struct GenerateTrueFlags<1> {
+  using type = ColumnAvailable<true>;
+};
+
+/**
+ * @brief Specialization of GenerateTrueFlags for the case when N is 0.
+ *
+ * This specialization defines an empty ColumnAvailable type.
+ */
+template <> struct GenerateTrueFlags<0> {
+  using type = ColumnAvailable<>;
 };
 
 /**
