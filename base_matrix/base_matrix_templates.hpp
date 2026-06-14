@@ -869,188 +869,225 @@ using DiagAvailable =
 
 namespace TemplatesOperation {
 
-/**
- * @brief Metafunction to generate a compile-time list of boolean flags by
- * performing a logical OR operation on two ColumnAvailable types.
- *
- * This template recursively combines the boolean flags from two ColumnAvailable
- * types, producing a new ColumnAvailable type that reflects the logical OR of
- * the flags at each index.
- *
- * @tparam ColumnAvailable_A The first ColumnAvailable type.
- * @tparam ColumnAvailable_B The second ColumnAvailable type.
- * @tparam N The number of rows (size of the lists).
- * @tparam Flags The accumulated boolean flags during recursion.
- */
-template <typename ColumnAvailable_A, typename ColumnAvailable_B, std::size_t N,
-          bool... Flags>
-struct GenerateORTrueFlagsLoop {
-  using type = typename GenerateORTrueFlagsLoop<
-      ColumnAvailable_A, ColumnAvailable_B, N - 1,
-      (ColumnAvailable_A::list[N - 1] | ColumnAvailable_B::list[N - 1]),
-      Flags...>::type;
-};
+/* Generate OR of ColumnAvailable */
+template <typename ColA, typename ColB> struct GenerateORTrueFlags;
 
 /**
- * @brief Specialization of GenerateORTrueFlagsLoop for the case when N is 0.
+ * @brief Specialization of GenerateORTrueFlags for two ColumnAvailable types.
  *
  * This specialization defines a type alias 'type' that is set to
- * ColumnAvailable<Flags...>, effectively collecting the accumulated boolean
- * flags into a ColumnAvailable type.
+ * ColumnAvailable<(FlagsA | FlagsB)...>, effectively creating a new
+ * ColumnAvailable type where each flag is the logical OR of the corresponding
+ * flags from the two input ColumnAvailable types.
  *
- * @tparam ColumnAvailable_A The first ColumnAvailable type (unused in this
- * specialization).
- * @tparam ColumnAvailable_B The second ColumnAvailable type (unused in this
- * specialization).
- * @tparam Flags The accumulated boolean flags representing the logical OR of
- * the two ColumnAvailable types.
+ * @tparam FlagsA The boolean flags from the first ColumnAvailable type.
+ * @tparam FlagsB The boolean flags from the second ColumnAvailable type.
  */
-template <typename ColumnAvailable_A, typename ColumnAvailable_B, bool... Flags>
-struct GenerateORTrueFlagsLoop<ColumnAvailable_A, ColumnAvailable_B, 0,
-                               Flags...> {
-  using type = ColumnAvailable<Flags...>;
+template <bool... FlagsA, bool... FlagsB>
+struct GenerateORTrueFlags<ColumnAvailable<FlagsA...>,
+                           ColumnAvailable<FlagsB...>> {
+
+  using type = ColumnAvailable<(FlagsA | FlagsB)...>;
 };
 
 /**
- * @brief Alias template to generate a ColumnAvailable type representing the
- * logical OR of two ColumnAvailable types.
+ * @brief Alias template to generate a ColumnAvailable type by performing a
+ * logical OR operation on two ColumnAvailable types.
  *
- * This alias uses the GenerateORTrueFlagsLoop to compute the logical OR of the
- * flags in ColumnAvailable_A and ColumnAvailable_B, producing a new
- * ColumnAvailable type that reflects the combined availability of both rows.
+ * This alias uses the GenerateORTrueFlags metafunction to create a new
+ * ColumnAvailable type where each flag is the logical OR of the corresponding
+ * flags from the two input ColumnAvailable types.
  *
  * @tparam ColumnAvailable_A The first ColumnAvailable type.
  * @tparam ColumnAvailable_B The second ColumnAvailable type.
  *
- * The resulting type is a ColumnAvailable type with the logical OR of the
- * flags from both input ColumnAvailable types.
+ * The resulting type is a ColumnAvailable type where each flag is the logical
+ * OR of the corresponding flags from both input types, accessible via the
+ * nested ::type member.
  */
 template <typename ColumnAvailable_A, typename ColumnAvailable_B>
 using GenerateORTrueFlagsColumnAvailable =
-    typename GenerateORTrueFlagsLoop<ColumnAvailable_A, ColumnAvailable_B,
-                                     ColumnAvailable_A::size>::type;
+    typename GenerateORTrueFlags<ColumnAvailable_A, ColumnAvailable_B>::type;
 
 /**
- * @brief Metafunction to create a sparse pointers column loop for generating
- * ColumnAvailable types based on row indices and pointers.
+ * @brief Template struct to create a block of available columns for a sparse
+ * matrix based on given indices.
  *
- * This template recursively constructs a ColumnAvailable type for each row,
- * based on the provided row indices and pointers. It generates a type that
- * indicates which rows are available (true) or not (false) for each row.
+ * This template recursively constructs a ColumnAvailable type representing the
+ * availability of columns for a specific row in a sparse matrix. It divides
+ * the range of column indices into two halves to reduce recursion depth and
+ * combines the results using GenerateORTrueFlagsColumnAvailable.
  *
- * @tparam CSRIndices A type representing the row indices.
- * @tparam N The number of rows in the matrix.
- * @tparam CSRIndicesIndex The current index in the CSRIndices list being
- * processed.
- * @tparam RowEndCount The number of columns remaining to process.
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam N The total number of columns in the matrix.
+ * @tparam StartIndex The starting index for the current block of columns.
+ * @tparam Count The number of columns in the current block.
+ *
+ * The resulting type is accessible via the nested ::type member, which will be
+ * a ColumnAvailable type representing the availability of columns for the
+ * specified block based on the provided indices.
  */
-template <typename CSRIndices, std::size_t N, std::size_t CSRIndicesIndex,
-          std::size_t RowEndCount>
-struct CreateSparsePointersRowLoop {
-  using type = typename GenerateORTrueFlagsLoop<
-      GenerateIndexedTrueColumnAvailable<N, CSRIndices::list[CSRIndicesIndex]>,
-      typename CreateSparsePointersRowLoop<CSRIndices, N, (CSRIndicesIndex + 1),
-                                           (RowEndCount - 1)>::type,
-      N>::type;
+template <typename CSRIndices, std::size_t N, std::size_t StartIndex,
+          std::size_t Count>
+struct CreateSparseAvailableRowBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = GenerateORTrueFlagsColumnAvailable<
+      typename CreateSparseAvailableRowBlock<CSRIndices, N, StartIndex,
+                                             MidCount>::type,
+      typename CreateSparseAvailableRowBlock<
+          CSRIndices, N, StartIndex + MidCount, Count - MidCount>::type>;
 };
 
 /**
- * @brief Specialization of CreateSparsePointersRowLoop for the case when
- * RowEndCount is 0.
+ * @brief Specialization of CreateSparseAvailableRowBlock for the case when
+ * Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * GenerateIndexedTrueColumnAvailable<N, CSRIndices::list[StartIndex]>,
+ * effectively creating a ColumnAvailable type where the flag is 'true' at the
+ * index specified by CSRIndices::list[StartIndex] and 'false' elsewhere.
+ *
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam N The total number of columns in the matrix.
+ * @tparam StartIndex The starting index for the current block of columns.
+ */
+template <typename CSRIndices, std::size_t N, std::size_t StartIndex>
+struct CreateSparseAvailableRowBlock<CSRIndices, N, StartIndex, 1> {
+
+  using type =
+      GenerateIndexedTrueColumnAvailable<N, CSRIndices::list[StartIndex]>;
+};
+
+/**
+ * @brief Specialization of CreateSparseAvailableRowBlock for the case when
+ * Count is 0.
  *
  * This specialization defines a type alias 'type' that is set to
  * GenerateFalseColumnAvailable<N>, effectively creating a ColumnAvailable type
- * with all rows marked as unavailable (false).
+ * where all flags are 'false' when there are no columns to process.
  *
- * @tparam CSRIndices A type representing the row indices (unused in this
- * specialization).
- * @tparam N The number of rows in the matrix.
- * @tparam CSRIndicesIndex The current index in the CSRIndices list (unused in
- * this specialization).
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence) (unused in this specialization).
+ * @tparam N The total number of columns in the matrix.
+ * @tparam StartIndex The starting index for the current block of columns
+ * (unused in this specialization).
  */
-template <typename CSRIndices, std::size_t N, std::size_t CSRIndicesIndex>
-struct CreateSparsePointersRowLoop<CSRIndices, N, CSRIndicesIndex, 0> {
+template <typename CSRIndices, std::size_t N, std::size_t StartIndex>
+struct CreateSparseAvailableRowBlock<CSRIndices, N, StartIndex, 0> {
   using type = GenerateFalseColumnAvailable<N>;
 };
 
 /**
- * @brief Metafunction to create a loop for generating sparse pointers based on
- * row indices and pointers.
+ * @brief Template struct to create a SparseAvailable type representing the
+ * available rows in a sparse matrix based on given indices and pointers.
  *
- * This template recursively constructs a SparseAvailableColumns type by
- * iterating over the row pointers and generating ColumnAvailable types for each
- * row based on the row indices and pointers.
+ * This template recursively constructs a SparseAvailable type by processing
+ * blocks of rows defined by StartRow and RowCount. It divides the range of rows
+ * into two halves to reduce recursion depth and combines the results using
+ * ConcatenateSparseAvailable.
  *
- * @tparam N The number of rows in the matrix.
- * @tparam CSRIndices A type representing the row indices.
- * @tparam CSRPointers A type representing the row pointers.
- * @tparam EndCount The number of columns remaining to process.
- * @tparam ConsecutiveIndex The current index in the CSRPointers list being
- * processed.
- * @tparam Columns The accumulated ColumnAvailable types during recursion.
+ * @tparam N The total number of columns in the matrix.
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam CSRPointers The type representing the row pointers for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam StartRow The starting row index for the current block of rows.
+ * @tparam RowCount The number of rows in the current block.
+ *
+ * The resulting type is accessible via the nested ::type member, which will be
+ * a SparseAvailable type representing the available rows for the specified
+ * block based on the provided indices and pointers.
  */
 template <std::size_t N, typename CSRIndices, typename CSRPointers,
-          std::size_t EndCount, std::size_t ConsecutiveIndex,
-          typename... Columns>
-struct CreateSparsePointersLoop {
-  using type = typename CreateSparsePointersLoop<
-      N, CSRIndices, CSRPointers, (EndCount - 1),
-      CSRPointers::list[CSRPointers::size - EndCount], Columns...,
-      typename CreateSparsePointersRowLoop<
-          CSRIndices, N, CSRPointers::list[CSRPointers::size - EndCount - 1],
-          (CSRPointers::list[CSRPointers::size - EndCount] -
-           CSRPointers::list[CSRPointers::size - EndCount - 1])>::type>::type;
+          std::size_t StartRow, std::size_t RowCount>
+struct CreateSparseAvailableRows {
+  static constexpr std::size_t Mid = RowCount / 2;
+
+  using type = typename ConcatenateSparseAvailable<
+      typename CreateSparseAvailableRows<N, CSRIndices, CSRPointers, StartRow,
+                                         Mid>::type,
+      typename CreateSparseAvailableRows<N, CSRIndices, CSRPointers,
+                                         StartRow + Mid,
+                                         RowCount - Mid>::type>::type;
 };
 
 /**
- * @brief Specialization of CreateSparsePointersLoop for the case when EndCount
+ * @brief Specialization of CreateSparseAvailableRows for the case when RowCount
+ * is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<typename CreateSparseAvailableRowBlock<CSRIndices, N,
+ * StartIdx, Count>::type>, effectively creating a SparseAvailable type
+ * representing the available columns for a single row based on the provided
+ * indices and pointers.
+ *
+ * @tparam N The total number of columns in the matrix.
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam CSRPointers The type representing the row pointers for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam StartRow The starting row index for the current block of rows.
+ */
+template <std::size_t N, typename CSRIndices, typename CSRPointers,
+          std::size_t StartRow>
+struct CreateSparseAvailableRows<N, CSRIndices, CSRPointers, StartRow, 1> {
+
+  static constexpr std::size_t StartIdx = CSRPointers::list[StartRow];
+  static constexpr std::size_t Count =
+      CSRPointers::list[StartRow + 1] - StartIdx;
+
+  using type = SparseAvailableColumns<typename CreateSparseAvailableRowBlock<
+      CSRIndices, N, StartIdx, Count>::type>;
+};
+
+/**
+ * @brief Specialization of CreateSparseAvailableRows for the case when RowCount
  * is 0.
  *
  * This specialization defines a type alias 'type' that is set to
- * SparseAvailableColumns<Columns...>, effectively collecting the accumulated
- * ColumnAvailable types into a sparse column representation.
+ * SparseAvailableColumns<>, effectively creating an empty SparseAvailable type
+ * when there are no rows to process.
  *
- * @tparam N The number of rows in the matrix (unused in this
- * specialization).
- * @tparam CSRIndices A type representing the row indices (unused in this
- * specialization).
- * @tparam CSRPointers A type representing the row pointers (unused in this
- * specialization).
- * @tparam ConsecutiveIndex The current index in the CSRPointers list (unused in
- * this specialization).
- * @tparam Columns Variadic template parameter pack representing the accumulated
- * ColumnAvailable types.
+ * @tparam N The total number of columns in the matrix.
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence) (unused in this specialization).
+ * @tparam CSRPointers The type representing the row pointers for the sparse
+ * matrix (typically an IndexSequence) (unused in this specialization).
+ * @tparam StartRow The starting row index for the current block of rows
+ * (unused in this specialization).
  */
 template <std::size_t N, typename CSRIndices, typename CSRPointers,
-          std::size_t ConsecutiveIndex, typename... Columns>
-struct CreateSparsePointersLoop<N, CSRIndices, CSRPointers, 0, ConsecutiveIndex,
-                                Columns...> {
-  using type = SparseAvailableColumns<Columns...>;
+          std::size_t StartRow>
+struct CreateSparseAvailableRows<N, CSRIndices, CSRPointers, StartRow, 0> {
+  using type = SparseAvailableColumns<>;
 };
 
 } // namespace TemplatesOperation
 
 /**
- * @brief Alias template to create a sparse matrix availability type from row
- * indices and row pointers.
+ * @brief Alias template to create a SparseAvailable type representing the
+ * available rows in a sparse matrix based on given indices and pointers.
  *
- * This alias uses the TemplatesOperation::CreateSparsePointersLoop to generate
- * a SparseAvailableColumns type based on the provided row indices and row
- * pointers. It is typically used to represent the availability of rows in a
- * sparse matrix, where each column's availability is determined by the row
- * indices and pointers.
+ * This alias uses the CreateSparseAvailableRows metafunction to generate a
+ * SparseAvailable type that indicates which rows are available in a sparse
+ * matrix of size MxN, based on the provided column indices and row pointers.
  *
- * @tparam N The number of rows in the matrix.
- * @tparam CSRIndices A type representing the row indices.
- * @tparam CSRPointers A type representing the row pointers.
+ * @tparam N The total number of columns in the matrix.
+ * @tparam CSRIndices The type representing the column indices for the sparse
+ * matrix (typically an IndexSequence).
+ * @tparam CSRPointers The type representing the row pointers for the sparse
+ * matrix (typically an IndexSequence).
  *
- * The resulting type is a SparseAvailableColumns type with the availability of
- * each column determined by the provided row indices and pointers.
+ * The resulting type is a SparseAvailable type representing the available rows
+ * for the specified matrix, accessible via the nested ::type member.
  */
 template <std::size_t N, typename CSRIndices, typename CSRPointers>
 using CreateSparseAvailableFromIndicesAndPointers =
-    typename TemplatesOperation::CreateSparsePointersLoop<
-        N, CSRIndices, CSRPointers, (CSRPointers::size - 1), 0>::type;
+    typename TemplatesOperation::CreateSparseAvailableRows<
+        N, CSRIndices, CSRPointers, 0, (CSRPointers::size - 1)>::type;
 
 namespace TemplatesOperation {
 
