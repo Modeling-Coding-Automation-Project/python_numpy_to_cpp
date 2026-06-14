@@ -278,6 +278,65 @@ template <typename... Columns> struct SparseAvailableColumns {
 template <typename... Columns>
 using SparseAvailable = TemplatesOperation::SparseAvailableColumns<Columns...>;
 
+/* Concatenate ColumnAvailable */
+
+namespace TemplatesOperation {
+
+/**
+ * @brief A template struct to concatenate two ColumnAvailable types into a new
+ * ColumnAvailable type.
+ *
+ * This struct provides a type alias 'type' that is the result of concatenating
+ * two ColumnAvailable types, effectively combining their boolean flags into a
+ * single ColumnAvailable type.
+ *
+ * @tparam ColumnAvailable_A The first ColumnAvailable type.
+ * @tparam ColumnAvailable_B The second ColumnAvailable type.
+ *
+ * The resulting type is a ColumnAvailable type that contains the combined
+ * boolean flags from both input ColumnAvailable types.
+ */
+template <typename Column1, typename Column2>
+struct ConcatenateColumnAvailableLists;
+
+/**
+ * @brief Specialization of ConcatenateColumnAvailableLists for two
+ * ColumnAvailable types.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * ColumnAvailable<Flags1..., Flags2...>, effectively concatenating the boolean
+ * flags from both ColumnAvailable types into a new ColumnAvailable type.
+ *
+ * @tparam Flags1 The boolean flags from the first ColumnAvailable type.
+ * @tparam Flags2 The boolean flags from the second ColumnAvailable type.
+ */
+template <bool... Flags1, bool... Flags2>
+struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
+                                       ColumnAvailable<Flags2...>> {
+  using type = ColumnAvailable<Flags1..., Flags2...>;
+};
+
+} // namespace TemplatesOperation
+
+/**
+ * @brief Alias template to concatenate two ColumnAvailable types into a new
+ * ColumnAvailable type.
+ *
+ * This alias uses the TemplatesOperation::ConcatenateColumnAvailableLists to
+ * combine two ColumnAvailable types, effectively merging their boolean flags
+ * into a single ColumnAvailable type.
+ *
+ * @tparam ColumnAvailable_A The first ColumnAvailable type.
+ * @tparam ColumnAvailable_B The second ColumnAvailable type.
+ *
+ * The resulting type is a ColumnAvailable type that contains the combined
+ * boolean flags from both input ColumnAvailable types.
+ */
+template <typename ColumnAvailable_A, typename ColumnAvailable_B>
+using ConcatenateColumnAvailable =
+    typename TemplatesOperation::ConcatenateColumnAvailableLists<
+        ColumnAvailable_A, ColumnAvailable_B>::type;
+
 namespace TemplatesOperation {
 
 /**
@@ -1256,65 +1315,6 @@ struct ToCSRPointers<TemplatesOperation::IndexSequence<Seq...>> {
 template <std::size_t M, std::size_t N>
 using DenseMatrixCSRPointers = typename TemplatesOperation::ToCSRIndices<
     TemplatesOperation::MatrixColumnCSRPointers<M, N>>::type;
-
-/* Concatenate ColumnAvailable */
-
-namespace TemplatesOperation {
-
-/**
- * @brief A template struct to concatenate two ColumnAvailable types into a new
- * ColumnAvailable type.
- *
- * This struct provides a type alias 'type' that is the result of concatenating
- * two ColumnAvailable types, effectively combining their boolean flags into a
- * single ColumnAvailable type.
- *
- * @tparam ColumnAvailable_A The first ColumnAvailable type.
- * @tparam ColumnAvailable_B The second ColumnAvailable type.
- *
- * The resulting type is a ColumnAvailable type that contains the combined
- * boolean flags from both input ColumnAvailable types.
- */
-template <typename Column1, typename Column2>
-struct ConcatenateColumnAvailableLists;
-
-/**
- * @brief Specialization of ConcatenateColumnAvailableLists for two
- * ColumnAvailable types.
- *
- * This specialization defines a type alias 'type' that is set to
- * ColumnAvailable<Flags1..., Flags2...>, effectively concatenating the boolean
- * flags from both ColumnAvailable types into a new ColumnAvailable type.
- *
- * @tparam Flags1 The boolean flags from the first ColumnAvailable type.
- * @tparam Flags2 The boolean flags from the second ColumnAvailable type.
- */
-template <bool... Flags1, bool... Flags2>
-struct ConcatenateColumnAvailableLists<ColumnAvailable<Flags1...>,
-                                       ColumnAvailable<Flags2...>> {
-  using type = ColumnAvailable<Flags1..., Flags2...>;
-};
-
-} // namespace TemplatesOperation
-
-/**
- * @brief Alias template to concatenate two ColumnAvailable types into a new
- * ColumnAvailable type.
- *
- * This alias uses the TemplatesOperation::ConcatenateColumnAvailableLists to
- * combine two ColumnAvailable types, effectively merging their boolean flags
- * into a single ColumnAvailable type.
- *
- * @tparam ColumnAvailable_A The first ColumnAvailable type.
- * @tparam ColumnAvailable_B The second ColumnAvailable type.
- *
- * The resulting type is a ColumnAvailable type that contains the combined
- * boolean flags from both input ColumnAvailable types.
- */
-template <typename ColumnAvailable_A, typename ColumnAvailable_B>
-using ConcatenateColumnAvailable =
-    typename TemplatesOperation::ConcatenateColumnAvailableLists<
-        ColumnAvailable_A, ColumnAvailable_B>::type;
 
 /* Get ColumnAvailable from SparseAvailable */
 
