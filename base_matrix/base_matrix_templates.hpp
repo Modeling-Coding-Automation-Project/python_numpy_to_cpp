@@ -1702,36 +1702,6 @@ namespace TemplatesOperation {
  * @tparam Column The ColumnAvailable type to be concatenated.
  * @tparam Sparse The SparseAvailable type to be concatenated.
  */
-template <typename...> struct ConcatTuple;
-
-/**
- * @brief Specialization of ConcatTuple for two std::tuple types.
- *
- * This specialization defines a type alias 'type' that is set to
- * std::tuple<Ts1..., Ts2...>, effectively concatenating the elements of two
- * tuples into a new tuple.
- *
- * @tparam Ts1 The variadic template parameter pack representing the first
- * tuple.
- * @tparam Ts2 The variadic template parameter pack representing the second
- * tuple.
- */
-template <typename... Ts1, typename... Ts2>
-struct ConcatTuple<std::tuple<Ts1...>, std::tuple<Ts2...>> {
-  using type = std::tuple<Ts1..., Ts2...>;
-};
-
-/**
- * @brief A template struct to concatenate a ColumnAvailable type with a
- * SparseAvailable type.
- *
- * This struct provides a type alias 'type' that is the result of concatenating
- * a ColumnAvailable type with a SparseAvailable type, effectively merging their
- * rows into a new SparseAvailable type.
- *
- * @tparam Column The ColumnAvailable type to be concatenated.
- * @tparam Sparse The SparseAvailable type to be concatenated.
- */
 template <typename Column, typename Sparse> struct ConcatColumnSparse;
 
 /**
