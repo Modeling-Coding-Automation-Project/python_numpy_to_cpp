@@ -237,7 +237,8 @@ public:
    * of rows and columns in the matrix.
    */
   std::tuple<std::size_t, std::size_t> shape() const {
-    return std::make_tuple<std::size_t, std::size_t>(ROWS, COLS);
+    return std::make_tuple(static_cast<std::size_t>(ROWS),
+                           static_cast<std::size_t>(COLS));
   }
 
   /**
@@ -698,7 +699,8 @@ public:
    * of rows and columns in the diagonal matrix.
    */
   std::tuple<std::size_t, std::size_t> shape() const {
-    return std::make_tuple<std::size_t, std::size_t>(ROWS, COLS);
+    return std::make_tuple(static_cast<std::size_t>(ROWS),
+                           static_cast<std::size_t>(COLS));
   }
 
   /**
@@ -1172,7 +1174,8 @@ public:
    * of rows and columns in the sparse matrix.
    */
   std::tuple<std::size_t, std::size_t> shape() const {
-    return std::make_tuple<std::size_t, std::size_t>(ROWS, COLS);
+    return std::make_tuple(static_cast<std::size_t>(ROWS),
+                           static_cast<std::size_t>(COLS));
   }
 
   /**
