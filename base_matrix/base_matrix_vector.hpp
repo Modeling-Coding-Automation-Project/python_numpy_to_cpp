@@ -27,6 +27,7 @@
 #include <array>
 #include <cstddef>
 #include <initializer_list>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -169,10 +170,33 @@ public:
    * @param b The second vector.
    * @return The dot product of the two vectors.
    */
-  template <typename U, std::size_t P, std::size_t P_idx> struct VectorDotCore {
+  template <typename U, std::size_t P, std::size_t Start, std::size_t End,
+            typename Enable = void>
+  struct VectorDotCore;
+
+  template <typename U, std::size_t P, std::size_t Start, std::size_t End>
+  struct VectorDotCore<U, P, Start, End,
+                       typename std::enable_if<(End - Start > 1)>::type> {
+    static constexpr std::size_t Mid = Start + (End - Start) / 2;
     static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
-      return a[P_idx] * b[P_idx] +
-             VectorDotCore<U, P, P_idx - 1>::compute(a, b);
+      return VectorDotCore<U, P, Start, Mid>::compute(a, b) +
+             VectorDotCore<U, P, Mid, End>::compute(a, b);
+    }
+  };
+
+  template <typename U, std::size_t P, std::size_t Start, std::size_t End>
+  struct VectorDotCore<U, P, Start, End,
+                       typename std::enable_if<(End == Start)>::type> {
+    static T compute(const Vector<U, P> &, const Vector<U, P> &) {
+      return static_cast<T>(0);
+    }
+  };
+
+  template <typename U, std::size_t P, std::size_t Start, std::size_t End>
+  struct VectorDotCore<U, P, Start, End,
+                       typename std::enable_if<(End - Start == 1)>::type> {
+    static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
+      return a[Start] * b[Start];
     }
   };
 
@@ -186,12 +210,6 @@ public:
    * @tparam U The type of the vector elements (should match T).
    * @tparam P The size of the vectors (should match N).
    */
-  template <typename U, std::size_t P> struct VectorDotCore<U, P, 0> {
-    static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
-      return a[0] * b[0];
-    }
-  };
-
   /**
    * @brief Computes the dot product of two vectors.
    *
@@ -206,7 +224,7 @@ public:
    */
   template <typename U, std::size_t P>
   static inline T VECTOR_DOT(const Vector<U, P> &a, const Vector<U, P> &b) {
-    return VectorDotCore<U, P, P - 1>::compute(a, b);
+    return VectorDotCore<U, P, 0, P>::compute(a, b);
   }
 
   /**
@@ -373,38 +391,30 @@ public:
 /* Normalize */
 namespace VectorNormalize {
 
-template <typename T, std::size_t N, std::size_t Index>
-struct VectorNormalizeCore {
-  /**
-   * @brief Normalizes the vector by multiplying each element with the inverse
-   * of the norm.
-   *
-   * This function recursively normalizes the vector by multiplying each
-   * element with the inverse of the norm, starting from the last index and
-   * moving towards the first.
-   *
-   * @param vec The vector to normalize.
-   * @param norm_inv The inverse of the norm to multiply each element with.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct VectorNormalizeCore;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct VectorNormalizeCore<T, N, Start, End,
+                           typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(Vector<T, N> &vec, T norm_inv) {
-    vec[Index] *= norm_inv;
-    VectorNormalizeCore<T, N, Index - 1>::compute(vec, norm_inv);
+    VectorNormalizeCore<T, N, Start, Mid>::compute(vec, norm_inv);
+    VectorNormalizeCore<T, N, Mid, End>::compute(vec, norm_inv);
   }
 };
 
-// Specialization to end the recursion
-template <typename T, std::size_t N> struct VectorNormalizeCore<T, N, 0> {
-  /**
-   * @brief Normalizes the first element of the vector by multiplying it with
-   * the inverse of the norm.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * multiplies the first element of the vector with the inverse of the norm.
-   *
-   * @param vec The vector to normalize.
-   * @param norm_inv The inverse of the norm to multiply the first element with.
-   */
-  static void compute(Vector<T, N> &vec, T norm_inv) { vec[0] *= norm_inv; }
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct VectorNormalizeCore<T, N, Start, End,
+                           typename std::enable_if<(End == Start)>::type> {
+  static void compute(Vector<T, N> &, T) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct VectorNormalizeCore<T, N, Start, End,
+                           typename std::enable_if<(End - Start == 1)>::type> {
+  static void compute(Vector<T, N> &vec, T norm_inv) { vec[Start] *= norm_inv; }
 };
 
 /**
@@ -421,7 +431,7 @@ template <typename T, std::size_t N> struct VectorNormalizeCore<T, N, 0> {
  */
 template <typename T, std::size_t N>
 inline void compute(Vector<T, N> &vec, T norm_inv) {
-  VectorNormalizeCore<T, N, N - 1>::compute(vec, norm_inv);
+  VectorNormalizeCore<T, N, 0, N>::compute(vec, norm_inv);
 }
 
 } // namespace VectorNormalize
@@ -490,38 +500,30 @@ inline void vector_normalize(Vector<T, N> &vec, const T &division_min) {
 /* Scalar Addition */
 namespace VectorAddScalar {
 
-// Vector Add Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Adds a scalar to each element of the vector.
-   *
-   * This function recursively adds a scalar to each element of the vector,
-   * starting from the last index and moving towards the first.
-   *
-   * @param vec The vector to which the scalar is added.
-   * @param scalar The scalar value to add to each element of the vector.
-   * @param result The resulting vector after adding the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[N_idx] = vec[N_idx] + scalar;
-    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, Start, Mid>::compute(vec, scalar, result);
+    Core<T, N, Mid, End>::compute(vec, scalar, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Adds a scalar to the first element of the vector.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * adds the scalar to the first element of the vector.
-   *
-   * @param vec The vector to which the scalar is added.
-   * @param scalar The scalar value to add to the first element of the vector.
-   * @param result The resulting vector after adding the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[0] = vec[0] + scalar;
+    result[Start] = vec[Start] + scalar;
   }
 };
 
@@ -539,7 +541,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
  */
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(vec, scalar, result);
+  Core<T, N, 0, N>::compute(vec, scalar, result);
 }
 
 } // namespace VectorAddScalar
@@ -612,38 +614,30 @@ inline Vector<T, N> operator+(const T &scalar, const Vector<T, N> &vec) {
 namespace VectorSubScalar {
 
 // Vector Sub Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Subtracts a scalar from each element of the vector.
-   *
-   * This function recursively subtracts a scalar from each element of the
-   * vector, starting from the last index and moving towards the first.
-   *
-   * @param vec The vector from which the scalar is subtracted.
-   * @param scalar The scalar value to subtract from each element of the vector.
-   * @param result The resulting vector after subtracting the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[N_idx] = vec[N_idx] - scalar;
-    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, Start, Mid>::compute(vec, scalar, result);
+    Core<T, N, Mid, End>::compute(vec, scalar, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Subtracts a scalar from the first element of the vector.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * subtracts the scalar from the first element of the vector.
-   *
-   * @param vec The vector from which the scalar is subtracted.
-   * @param scalar The scalar value to subtract from the first element of the
-   * vector.
-   * @param result The resulting vector after subtracting the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[0] = vec[0] - scalar;
+    result[Start] = vec[Start] - scalar;
   }
 };
 
@@ -662,7 +656,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &vec, const T &scalar,
                     Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(vec, scalar, result);
+  Core<T, N, 0, N>::compute(vec, scalar, result);
 }
 
 } // namespace VectorSubScalar
@@ -702,40 +696,30 @@ inline Vector<T, N> operator-(const Vector<T, N> &vec, const T &scalar) {
 namespace ScalarSubVector {
 
 // Scalar Sub Vector Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Subtracts a vector from a scalar.
-   *
-   * This function recursively subtracts each element of the vector from the
-   * scalar, starting from the last index and moving towards the first.
-   *
-   * @param scalar The scalar value from which the vector is subtracted.
-   * @param vec The vector to subtract from the scalar.
-   * @param result The resulting vector after subtracting the vector from the
-   * scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
-    result[N_idx] = scalar - vec[N_idx];
-    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, Start, Mid>::compute(scalar, vec, result);
+    Core<T, N, Mid, End>::compute(scalar, vec, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Subtracts the first element of the vector from the scalar.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * subtracts the first element of the vector from the scalar.
-   *
-   * @param scalar The scalar value from which the first element of the vector
-   * is subtracted.
-   * @param vec The vector whose first element is subtracted from the scalar.
-   * @param result The resulting vector after subtracting the first element of
-   * the vector from the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(T, const Vector<T, N> &, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
-    result[0] = scalar - vec[0];
+    result[Start] = scalar - vec[Start];
   }
 };
 
@@ -755,7 +739,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(const T &scalar, const Vector<T, N> &vec,
                     Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(scalar, vec, result);
+  Core<T, N, 0, N>::compute(scalar, vec, result);
 }
 
 } // namespace ScalarSubVector
@@ -797,40 +781,33 @@ inline Vector<T, N> operator-(const T &scalar, const Vector<T, N> &vec) {
 namespace VectorAddVector {
 
 // Vector Add Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Adds two vectors element-wise.
-   *
-   * This function recursively adds the corresponding elements of two vectors,
-   * starting from the last index and moving towards the first.
-   *
-   * @param a The first vector to add.
-   * @param b The second vector to add.
-   * @param result The resulting vector after adding the two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[N_idx] = a[N_idx] + b[N_idx];
-    Core<T, N, N_idx - 1>::compute(a, b, result);
+    Core<T, N, Start, Mid>::compute(a, b, result);
+    Core<T, N, Mid, End>::compute(a, b, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Adds the first elements of two vectors.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * adds the first elements of the two vectors.
-   *
-   * @param a The first vector to add.
-   * @param b The second vector to add.
-   * @param result The resulting vector after adding the first elements of the
-   * two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, const Vector<T, N> &,
+                      Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[0] = a[0] + b[0];
+    result[Start] = a[Start] + b[Start];
   }
 };
 
@@ -849,7 +826,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                     Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(a, b, result);
+  Core<T, N, 0, N>::compute(a, b, result);
 }
 
 } // namespace VectorAddVector
@@ -889,40 +866,33 @@ inline Vector<T, N> operator+(const Vector<T, N> &a, const Vector<T, N> &b) {
 namespace VectorSubVector {
 
 // Vector Sub Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Subtracts two vectors element-wise.
-   *
-   * This function recursively subtracts the corresponding elements of two
-   * vectors, starting from the last index and moving towards the first.
-   *
-   * @param a The first vector from which the second vector is subtracted.
-   * @param b The second vector to subtract from the first vector.
-   * @param result The resulting vector after subtracting the two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[N_idx] = a[N_idx] - b[N_idx];
-    Core<T, N, N_idx - 1>::compute(a, b, result);
+    Core<T, N, Start, Mid>::compute(a, b, result);
+    Core<T, N, Mid, End>::compute(a, b, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Subtracts the first elements of two vectors.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * subtracts the first element of the second vector from the first element of
-   * the first vector.
-   *
-   * @param a The first vector from which the second vector is subtracted.
-   * @param b The second vector to subtract from the first vector.
-   * @param result The resulting vector after subtracting the two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, const Vector<T, N> &,
+                      Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[0] = a[0] - b[0];
+    result[Start] = a[Start] - b[Start];
   }
 };
 
@@ -941,7 +911,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                     Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(a, b, result);
+  Core<T, N, 0, N>::compute(a, b, result);
 }
 
 } // namespace VectorSubVector
@@ -981,38 +951,30 @@ inline Vector<T, N> operator-(const Vector<T, N> &a, const Vector<T, N> &b) {
 namespace VectorMultiplyScalar {
 
 // Vector Multiply Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Multiplies each element of the vector by a scalar.
-   *
-   * This function recursively multiplies each element of the vector by a
-   * scalar, starting from the last index and moving towards the first.
-   *
-   * @param vec The vector to multiply by the scalar.
-   * @param scalar The scalar value to multiply each element of the vector with.
-   * @param result The resulting vector after multiplying by the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[N_idx] = vec[N_idx] * scalar;
-    Core<T, N, N_idx - 1>::compute(vec, scalar, result);
+    Core<T, N, Start, Mid>::compute(vec, scalar, result);
+    Core<T, N, Mid, End>::compute(vec, scalar, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Multiplies the first element of the vector by a scalar.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * multiplies the first element of the vector by the scalar.
-   *
-   * @param vec The vector to multiply by the scalar.
-   * @param scalar The scalar value to multiply the first element of the vector
-   * with.
-   * @param result The resulting vector after multiplying by the scalar.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-    result[0] = vec[0] * scalar;
+    result[Start] = vec[Start] * scalar;
   }
 };
 
@@ -1030,7 +992,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
  */
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(vec, scalar, result);
+  Core<T, N, 0, N>::compute(vec, scalar, result);
 }
 
 } // namespace VectorMultiplyScalar
@@ -1102,40 +1064,33 @@ inline Vector<T, N> operator*(const T &scalar, const Vector<T, N> &vec) {
 /* Vector Multiply */
 namespace VectorMultiply {
 
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Multiplies two vectors element-wise.
-   *
-   * This function recursively multiplies the corresponding elements of two
-   * vectors, starting from the last index and moving towards the first.
-   *
-   * @param a The first vector to multiply.
-   * @param b The second vector to multiply.
-   * @param result The resulting vector after multiplying the two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[N_idx] = a[N_idx] * b[N_idx];
-    Core<T, N, N_idx - 1>::compute(a, b, result);
+    Core<T, N, Start, Mid>::compute(a, b, result);
+    Core<T, N, Mid, End>::compute(a, b, result);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Multiplies the first elements of two vectors.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * multiplies the first elements of the two vectors.
-   *
-   * @param a The first vector to multiply.
-   * @param b The second vector to multiply.
-   * @param result The resulting vector after multiplying the first elements of
-   * the two vectors.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Vector<T, N> &, const Vector<T, N> &,
+                      Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
-    result[0] = a[0] * b[0];
+    result[Start] = a[Start] * b[Start];
   }
 };
 
@@ -1154,7 +1109,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                     Vector<T, N> &result) {
-  Core<T, N, N - 1>::compute(a, b, result);
+  Core<T, N, 0, N>::compute(a, b, result);
 }
 
 } // namespace VectorMultiply
@@ -1193,38 +1148,31 @@ inline Vector<T, N> operator*(const Vector<T, N> &a, const Vector<T, N> &b) {
 /* Complex Norm */
 namespace ComplexVectorNorm {
 
-// Vector Multiply Scalar Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
-  /**
-   * @brief Computes the squared norm of a complex vector.
-   *
-   * This function recursively computes the squared norm of a complex vector,
-   * starting from the last index and moving towards the first.
-   *
-   * @param vec_comp The complex vector whose norm is computed.
-   * @return The squared norm of the complex vector.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static T compute(const Vector<Complex<T>, N> &vec_comp) {
-    return vec_comp[N_idx].real * vec_comp[N_idx].real +
-           vec_comp[N_idx].imag * vec_comp[N_idx].imag +
-           Core<T, N, N_idx - 1>::compute(vec_comp);
+    return Core<T, N, Start, Mid>::compute(vec_comp) +
+           Core<T, N, Mid, End>::compute(vec_comp);
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Computes the squared norm of the first element of a complex vector.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * computes the squared norm of the first element of the complex vector.
-   *
-   * @param vec_comp The complex vector whose norm is computed.
-   * @return The squared norm of the first element of the complex vector.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static T compute(const Vector<Complex<T>, N> &) { return static_cast<T>(0); }
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static T compute(const Vector<Complex<T>, N> &vec_comp) {
-    return vec_comp[0].real * vec_comp[0].real +
-           vec_comp[0].imag * vec_comp[0].imag;
+    return vec_comp[Start].real * vec_comp[Start].real +
+           vec_comp[Start].imag * vec_comp[Start].imag;
   }
 };
 
@@ -1241,7 +1189,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
  */
 template <typename T, std::size_t N>
 inline T compute(const Vector<Complex<T>, N> &vec_comp) {
-  return Core<T, N, N - 1>::compute(vec_comp);
+  return Core<T, N, 0, N>::compute(vec_comp);
 }
 
 } // namespace ComplexVectorNorm
@@ -1381,37 +1329,30 @@ inline T complex_vector_norm_inv(const Vector<Complex<T>, N> &vec_comp,
 /* Complex Normalize */
 namespace ComplexVectorNormalize {
 
-template <typename T, std::size_t N, std::size_t Index> struct Core {
-  /**
-   * @brief Normalizes a complex vector by multiplying each element by the
-   * inverse norm.
-   *
-   * This function recursively normalizes each element of the complex vector,
-   * starting from the last index and moving towards the first.
-   *
-   * @param vec The complex vector to normalize.
-   * @param norm_inv The inverse norm value to multiply each element by.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
-    vec[Index] *= norm_inv;
-    Core<T, N, Index - 1>::compute(vec, norm_inv);
+    Core<T, N, Start, Mid>::compute(vec, norm_inv);
+    Core<T, N, Mid, End>::compute(vec, norm_inv);
   }
 };
 
-// Specialization to end the recursion
-template <typename T, std::size_t N> struct Core<T, N, 0> {
-  /**
-   * @brief Normalizes the first element of a complex vector by multiplying it
-   * by the inverse norm.
-   *
-   * This function is called when the recursion reaches the first index, and it
-   * multiplies the first element of the complex vector by the inverse norm.
-   *
-   * @param vec The complex vector to normalize.
-   * @param norm_inv The inverse norm value to multiply the first element by.
-   */
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(Vector<Complex<T>, N> &, T) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
-    vec[0] *= norm_inv;
+    vec[Start] *= norm_inv;
   }
 };
 
@@ -1428,7 +1369,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
  */
 template <typename T, std::size_t N>
 inline void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
-  Core<T, N, N - 1>::compute(vec, norm_inv);
+  Core<T, N, 0, N>::compute(vec, norm_inv);
 }
 
 } // namespace ComplexVectorNormalize
@@ -1494,8 +1435,9 @@ inline void complex_vector_normalize(Vector<Complex<T>, N> &vec,
 /* Get Real and Imaginary Vector from Complex Vector */
 namespace GetRealFromComplexVector {
 
-// Get Real from Complex Vector Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core {
   /**
    * @brief Extracts the real part from a complex vector and stores it in a
    * vector.
@@ -1509,8 +1451,8 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].real;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].real;
   }
 
   /**
@@ -1526,8 +1468,8 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].real;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].real;
   }
 
   /**
@@ -1543,13 +1485,44 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].real;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].real;
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void compute(std::vector<T> &To_vector,
+                      const std::vector<Complex<T>> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+
+  static void compute(std::array<T, N> &To_vector,
+                      const std::array<Complex<T>, N> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(std::vector<T> &, const std::vector<Complex<T>> &) {}
+  static void compute(std::array<T, N> &, const std::array<Complex<T>, N> &) {}
+  static void compute(Vector<T, N> &, const Vector<Complex<T>, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief Extracts the real part from the first element of a complex vector
    * and stores it in a vector.
@@ -1563,7 +1536,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
-    To_vector[0] = From_vector[0].real;
+    To_vector[Start] = From_vector[Start].real;
   }
 
   /**
@@ -1579,7 +1552,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
-    To_vector[0] = From_vector[0].real;
+    To_vector[Start] = From_vector[Start].real;
   }
 
   /**
@@ -1595,7 +1568,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
-    To_vector[0] = From_vector[0].real;
+    To_vector[Start] = From_vector[Start].real;
   }
 };
 
@@ -1615,7 +1588,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(std::vector<T> &To_vector,
                     const std::vector<Complex<T>> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 /**
@@ -1634,7 +1607,7 @@ inline void compute(std::vector<T> &To_vector,
 template <typename T, std::size_t N>
 inline void compute(std::array<T, N> &To_vector,
                     const std::array<Complex<T>, N> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 /**
@@ -1652,15 +1625,16 @@ inline void compute(std::array<T, N> &To_vector,
 template <typename T, std::size_t N>
 inline void compute(Vector<T, N> &To_vector,
                     const Vector<Complex<T>, N> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 } // namespace GetRealFromComplexVector
 
 namespace GetImagFromComplexVector {
 
-// Get Imag from Complex Vector Core Template: N_idx < N
-template <typename T, std::size_t N, std::size_t N_idx> struct Core {
+template <typename T, std::size_t N, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core {
   /**
    * @brief Extracts the imaginary part from a complex vector and stores it in a
    * vector.
@@ -1674,8 +1648,8 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].imag;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].imag;
   }
 
   /**
@@ -1691,8 +1665,8 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].imag;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].imag;
   }
 
   /**
@@ -1708,13 +1682,44 @@ template <typename T, std::size_t N, std::size_t N_idx> struct Core {
    */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
-    To_vector[N_idx] = From_vector[N_idx].imag;
-    Core<T, N, N_idx - 1>::compute(To_vector, From_vector);
+    static_assert(End - Start == 1, "invalid range");
+    To_vector[Start] = From_vector[Start].imag;
   }
 };
 
-// Termination condition: N_idx == 0
-template <typename T, std::size_t N> struct Core<T, N, 0> {
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void compute(std::vector<T> &To_vector,
+                      const std::vector<Complex<T>> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+
+  static void compute(std::array<T, N> &To_vector,
+                      const std::array<Complex<T>, N> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+
+  static void compute(Vector<T, N> &To_vector,
+                      const Vector<Complex<T>, N> &From_vector) {
+    Core<T, N, Start, Mid>::compute(To_vector, From_vector);
+    Core<T, N, Mid, End>::compute(To_vector, From_vector);
+  }
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(std::vector<T> &, const std::vector<Complex<T>> &) {}
+  static void compute(std::array<T, N> &, const std::array<Complex<T>, N> &) {}
+  static void compute(Vector<T, N> &, const Vector<Complex<T>, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t Start, std::size_t End>
+struct Core<T, N, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   /**
    * @brief Extracts the imaginary part from the first element of a complex
    * vector and stores it in a vector.
@@ -1728,7 +1733,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
-    To_vector[0] = From_vector[0].imag;
+    To_vector[Start] = From_vector[Start].imag;
   }
 
   /**
@@ -1744,7 +1749,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
-    To_vector[0] = From_vector[0].imag;
+    To_vector[Start] = From_vector[Start].imag;
   }
 
   /**
@@ -1760,7 +1765,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
    */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
-    To_vector[0] = From_vector[0].imag;
+    To_vector[Start] = From_vector[Start].imag;
   }
 };
 
@@ -1780,7 +1785,7 @@ template <typename T, std::size_t N> struct Core<T, N, 0> {
 template <typename T, std::size_t N>
 inline void compute(std::vector<T> &To_vector,
                     const std::vector<Complex<T>> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 /**
@@ -1799,7 +1804,7 @@ inline void compute(std::vector<T> &To_vector,
 template <typename T, std::size_t N>
 inline void compute(std::array<T, N> &To_vector,
                     const std::array<Complex<T>, N> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 /**
@@ -1818,7 +1823,7 @@ inline void compute(std::array<T, N> &To_vector,
 template <typename T, std::size_t N>
 inline void compute(Vector<T, N> &To_vector,
                     const Vector<Complex<T>, N> &From_vector) {
-  Core<T, N, N - 1>::compute(To_vector, From_vector);
+  Core<T, N, 0, N>::compute(To_vector, From_vector);
 }
 
 } // namespace GetImagFromComplexVector

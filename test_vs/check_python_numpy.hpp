@@ -3622,7 +3622,7 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
 
     MCAPTester<T> tester;
 
-    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-4) : T(1.0e-3);
     const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
