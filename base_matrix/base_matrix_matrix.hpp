@@ -32,8 +32,10 @@
 #include <cstddef>
 #include <initializer_list>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
 
 namespace Base {
 namespace Matrix {
@@ -2020,164 +2022,115 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
 /* Matrix Multiply Matrix */
 namespace MatrixMultiplyMatrix {
 
-// when K_idx < K
+// Divide-and-conquer dot-product on k in [Start, End).
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t I, std::size_t J, std::size_t K_idx>
-struct Core {
-  /**
-   * @brief Recursively computes the product of two matrices.
-   *
-   * This function computes the dot product of the I-th row of matrix A and the
-   * J-th column of matrix B, and recursively calls itself for the next index
-   * K_idx - 1.
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @tparam I The current row index in matrix A.
-   * @tparam J The current column index in matrix B.
-   * @tparam K_idx The current index in the multiplication.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @return T The computed product for the specified row and column.
-   */
+          std::size_t I, std::size_t J, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
+struct Core<T, M, K, N, I, J, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
-
-    return A.template get<I, K_idx>() * B.template get<K_idx, J>() +
-           Core<T, M, K, N, I, J, K_idx - 1>::compute(A, B);
+    return Core<T, M, K, N, I, J, Start, Mid>::compute(A, B) +
+           Core<T, M, K, N, I, J, Mid, End>::compute(A, B);
   }
 };
 
-// when K_idx reached 0
+// Empty range: no contribution.
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t I, std::size_t J>
-struct Core<T, M, K, N, I, J, 0> {
-  /**
-   * @brief Base case for the matrix multiplication.
-   *
-   * This function computes the product of the I-th row of matrix A and the
-   * J-th column of matrix B when the recursion reaches the base case (K_idx ==
-   * 0).
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @tparam I The current row index in matrix A.
-   * @tparam J The current column index in matrix B.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @return T The computed product for the specified row and column.
-   */
+          std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
+struct Core<T, M, K, N, I, J, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
+  static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
+    return static_cast<T>(0);
+  }
+};
+
+// Single term range.
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
+struct Core<T, M, K, N, I, J, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
-
-    return A.template get<I, 0>() * B.template get<0, J>();
+    return A.template get<I, Start>() * B.template get<Start, J>();
   }
 };
 
-// After completing the J column, go to the next row I
+// Divide-and-conquer over columns j in [Start, End) for a fixed row I.
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t I, std::size_t J>
-struct Row {
-  /**
-   * @brief Recursively computes the product of two matrices column by column.
-   *
-   * This function computes the product for the J-th column of matrix B and
-   * recursively calls itself for the next column index J - 1.
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @tparam I The current row index in matrix A.
-   * @tparam J The current column index in matrix B.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @param result The resulting matrix where the product is stored.
-   */
-  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
-                      Matrix<T, M, N> &result) {
+          std::size_t I, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Row;
 
-    result.template set<I, J>(Core<T, M, K, N, I, J, K - 1>::compute(A, B));
-    Row<T, M, K, N, I, J - 1>::compute(A, B, result);
-  }
-};
-
-// Row recursive termination
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t I>
-struct Row<T, M, K, N, I, 0> {
-  /**
-   * @brief Base case for the column multiplication.
-   *
-   * This function computes the product for the first row of matrix B and
-   * stores the result in the result matrix when the recursion reaches the base
-   * case (J == 0).
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @tparam I The current row index in matrix A.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @param result The resulting matrix where the product is stored.
-   */
+          std::size_t I, std::size_t Start, std::size_t End>
+struct Row<T, M, K, N, I, Start, End,
+           typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-
-    result.template set<I, 0>(Core<T, M, K, N, I, 0, K - 1>::compute(A, B));
+    Row<T, M, K, N, I, Start, Mid>::compute(A, B, result);
+    Row<T, M, K, N, I, Mid, End>::compute(A, B, result);
   }
 };
 
-// proceed to the next row after completing the I row
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
-          std::size_t I>
-struct Column {
-  /**
-   * @brief Recursively computes the product of two matrices row by row.
-   *
-   * This function computes the product for the I-th row of matrix A and
-   * recursively calls itself for the next row index I - 1.
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @tparam I The current row index in matrix A.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @param result The resulting matrix where the product is stored.
-   */
+          std::size_t I, std::size_t Start, std::size_t End>
+struct Row<T, M, K, N, I, Start, End,
+           typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
+                      Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t I, std::size_t Start, std::size_t End>
+struct Row<T, M, K, N, I, Start, End,
+           typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    Row<T, M, K, N, I, N - 1>::compute(A, B, result);
-    Column<T, M, K, N, I - 1>::compute(A, B, result);
+    result.template set<I, Start>(
+        Core<T, M, K, N, I, Start, 0, K>::compute(A, B));
   }
 };
 
-// Column recursive termination
-template <typename T, std::size_t M, std::size_t K, std::size_t N>
-struct Column<T, M, K, N, 0> {
-  /**
-   * @brief Base case for the row multiplication.
-   *
-   * This function computes the product for the first column of matrix A and
-   * stores the result in the result matrix when the recursion reaches the base
-   * case (I == 0).
-   *
-   * @tparam T The type of the matrix elements.
-   * @tparam M The number of rows in matrix A.
-   * @tparam K The number of columns in matrix A and rows in matrix B.
-   * @tparam N The number of columns in matrix B.
-   * @param A The first matrix to multiply.
-   * @param B The second matrix to multiply.
-   * @param result The resulting matrix where the product is stored.
-   */
+// Divide-and-conquer over rows i in [Start, End).
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct Column;
+
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct Column<T, M, K, N, Start, End,
+              typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
-    Row<T, M, K, N, 0, N - 1>::compute(A, B, result);
+    Column<T, M, K, N, Start, Mid>::compute(A, B, result);
+    Column<T, M, K, N, Mid, End>::compute(A, B, result);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct Column<T, M, K, N, Start, End,
+              typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
+                      Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t K, std::size_t N,
+          std::size_t Start, std::size_t End>
+struct Column<T, M, K, N, Start, End,
+              typename std::enable_if<(End - Start == 1)>::type> {
+  static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
+                      Matrix<T, M, N> &result) {
+    Row<T, M, K, N, Start, 0, N>::compute(A, B, result);
   }
 };
 
@@ -2199,7 +2152,7 @@ struct Column<T, M, K, N, 0> {
 template <typename T, std::size_t M, std::size_t K, std::size_t N>
 inline void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                     Matrix<T, M, N> &result) {
-  Column<T, M, K, N, M - 1>::compute(A, B, result);
+  Column<T, M, K, N, 0, M>::compute(A, B, result);
 }
 
 } // namespace MatrixMultiplyMatrix
