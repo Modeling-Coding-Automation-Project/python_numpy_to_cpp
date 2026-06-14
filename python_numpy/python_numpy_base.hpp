@@ -83,6 +83,13 @@ public:
   using SparseAvailable_Type = DenseAvailable<M, N>;
 
 public:
+  /* Constant */
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
+
+public:
   /* Constructor */
   Matrix() {}
 
@@ -218,26 +225,31 @@ public:
   /**
    * @brief Retrieves the number of elements in the matrix.
    *
-   * @return std::size_t The total number of elements in the matrix (M * N).
+   * @return std::size_t The total number of elements in the matrix (ROWS *
+   * COLS).
    */
-  constexpr std::size_t size() const { return M * N; }
+  constexpr std::size_t size() const { return ROWS * COLS; }
+
+  std::tuple<std::size_t, std::size_t> shape() const {
+    return std::make_tuple(ROWS, COLS);
+  }
 
   /**
    * @brief Retrieves the element at the specified index in the matrix.
    *
-   * @param index The zero-based index (must be less than M * N).
+   * @param index The zero-based index (must be less than ROWS * COLS).
    * @return T The value at the specified index.
    *
    * @note If the index is out of bounds, it is clamped to the maximum valid
-   * index (M * N - 1).
+   * index (ROWS * COLS - 1).
    */
   T &operator()(std::size_t index) {
-    if (index >= M * N) {
-      index = M * N - 1;
+    if (index >= ROWS * COLS) {
+      index = ROWS * COLS - 1;
     }
 
-    std::size_t row = index / N;
-    std::size_t col = index % N;
+    std::size_t row = index / COLS;
+    std::size_t col = index % COLS;
 
     return this->matrix(row, col);
   }
@@ -245,19 +257,19 @@ public:
   /**
    * @brief Retrieves the element at the specified index in the matrix.
    *
-   * @param index The zero-based index (must be less than M * N).
+   * @param index The zero-based index (must be less than ROWS * COLS).
    * @return const T& The value at the specified index.
    *
    * @note If the index is out of bounds, it is clamped to the maximum valid
-   * index (M * N - 1).
+   * index (ROWS * COLS - 1).
    */
   const T &operator()(std::size_t index) const {
-    if (index >= M * N) {
-      index = M * N - 1;
+    if (index >= ROWS * COLS) {
+      index = ROWS * COLS - 1;
     }
 
-    std::size_t row = index / N;
-    std::size_t col = index % N;
+    std::size_t row = index / COLS;
+    std::size_t col = index % COLS;
 
     return this->matrix(row, col);
   }
@@ -265,45 +277,44 @@ public:
   /**
    * @brief Retrieves the number of elements in the matrix.
    *
-   * @return std::size_t The total number of elements in the matrix (M * N).
+   * @return std::size_t The total number of elements in the matrix (ROWS *
+   * COLS).
    */
-  T &operator()(std::size_t col, std::size_t row) {
-    if (col >= M) {
-      col = M - 1;
+  T &operator()(std::size_t row, std::size_t col) {
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= N) {
-      row = N - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
-
-    return this->matrix(col, row);
+    return this->matrix(row, col);
   }
 
   /**
    * @brief Retrieves the element at the specified column and row indices.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than N).
+   * @param col The zero-based column index (must be less than COLS).
+   * @param row The zero-based row index (must be less than ROWS).
    * @return const T& The value at the specified column and row.
    *
    * @note If the indices are out of bounds, they are clamped to the maximum
    * valid index.
    */
   const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= N) {
-      row = N - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
-
-    return this->matrix(col, row);
+    return this->matrix(row, col);
   }
 
   /**
    * @brief Accesses the element at the specified column and row indices.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than N).
+   * @param col The zero-based column index (must be less than COLS).
+   * @param row The zero-based row index (must be less than ROWS).
    * @return T& A reference to the value at the specified column and row.
    *
    * @note This method is fast but may cause segmentation faults if indices are
@@ -421,13 +432,6 @@ public:
   }
 
 public:
-  /* Constant */
-  static constexpr std::size_t COLS = N;
-  static constexpr std::size_t ROWS = M;
-
-  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
-
-public:
   /* Variable */
   Base::Matrix::Matrix<T, M, N> matrix;
 };
@@ -456,6 +460,13 @@ public:
   using Value_Complex_Type = T;
   using Matrix_Type = DefDiag;
   using SparseAvailable_Type = DiagAvailable<M>;
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = M;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
 public:
   /* Constructor */
@@ -662,9 +673,9 @@ public:
    * @brief Retrieves the number of elements in the diagonal matrix.
    *
    * @return std::size_t The total number of elements in the diagonal matrix
-   * (M * M).
+   * (ROWS * COLS).
    */
-  constexpr std::size_t size() const { return M * M; }
+  constexpr std::size_t size() const { return ROWS * COLS; }
 
   /**
    * @brief Retrieves the number of elements in the diagonal matrix.
@@ -673,8 +684,8 @@ public:
    * (M).
    */
   T &operator()(std::size_t index) {
-    if (index >= M) {
-      index = M - 1;
+    if (index >= ROWS) {
+      index = ROWS - 1;
     }
 
     return this->matrix[index];
@@ -690,8 +701,8 @@ public:
    * index (M - 1).
    */
   const T &operator()(std::size_t index) const {
-    if (index >= M) {
-      index = M - 1;
+    if (index >= ROWS) {
+      index = ROWS - 1;
     }
 
     return this->matrix[index];
@@ -701,28 +712,28 @@ public:
    * @brief Accesses the element at the specified row and column in the diagonal
    * matrix.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than M).
+   * @param col The zero-based column index (must be less than COLS).
+   * @param row The zero-based row index (must be less than ROWS).
    * @return T& A reference to the value at the specified row and column.
    *
    * @note If the row or column index is out of bounds, it is clamped to the
-   * maximum valid index (M - 1).
+   * maximum valid index (ROWS - 1).
    */
-  T &operator()(std::size_t col, std::size_t row) {
-    if (col >= M) {
-      col = M - 1;
+  T &operator()(std::size_t row, std::size_t col) {
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= M) {
-      row = M - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
 
-    if (col != row) {
+    if (row != col) {
       static thread_local T dummy{};
       dummy = static_cast<T>(0);
       return dummy;
 
     } else {
-      return this->matrix[col];
+      return this->matrix[row];
     }
   }
 
@@ -730,29 +741,29 @@ public:
    * @brief Accesses the element at the specified row and column in the diagonal
    * matrix.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than M).
+   * @param col The zero-based column index (must be less than COLS).
+   * @param row The zero-based row index (must be less than ROWS).
    * @return const T& A constant reference to the value at the specified row and
    * column.
    *
    * @note If the row or column index is out of bounds, it is clamped to the
-   * maximum valid index (M - 1). For non-diagonal elements, this function
-   * returns a reference to a static thread-local variable initialized to zero.
+   * maximum valid index (ROWS - 1).
    */
-  const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
+  const T &operator()(std::size_t row, std::size_t col) const {
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= M) {
-      row = M - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
 
-    if (col != row) {
+    if (row != col) {
       static thread_local T dummy{};
       dummy = static_cast<T>(0);
       return dummy;
+
     } else {
-      return this->matrix[col];
+      return this->matrix[row];
     }
   }
 
@@ -883,13 +894,6 @@ public:
   }
 
 public:
-  /* Constant */
-  static constexpr std::size_t COLS = M;
-  static constexpr std::size_t ROWS = M;
-
-  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
-
-public:
   /* Variable */
   Base::Matrix::DiagMatrix<T, M> matrix;
 };
@@ -932,6 +936,15 @@ protected:
   using BaseMatrix_Type_ =
       Base::Matrix::CompiledSparseMatrix<T, M, N, CSRIndices_Type_,
                                          CSRPointers_Type_>;
+
+public:
+  /* Constant */
+  static constexpr std::size_t COLS = N;
+  static constexpr std::size_t ROWS = M;
+
+  static constexpr std::size_t NumberOfValues = CSRPointers_Type_::list[M];
+
+  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
 public:
   /* Constructor */
@@ -1116,16 +1129,16 @@ public:
   /**
    * @brief Retrieves the number of elements in the sparse matrix.
    *
-   * @return std::size_t The total number of elements in the sparse matrix (M *
-   * N).
+   * @return std::size_t The total number of elements in the sparse matrix (ROWS
+   * * COLS).
    */
-  constexpr std::size_t size() const { return M * N; }
+  constexpr std::size_t size() const { return ROWS * COLS; }
 
   /**
    * @brief Retrieves the number of elements in the sparse matrix.
    *
-   * @return std::size_t The total number of elements in the sparse matrix (M *
-   * N).
+   * @return std::size_t The total number of elements in the sparse matrix (ROWS
+   * * COLS).
    */
   T &operator()(std::size_t value_index) {
     if (value_index >= this->matrix.values.size()) {
@@ -1154,66 +1167,66 @@ public:
   }
 
   /**
-   * @brief Accesses the element at the specified column and row in the sparse
+   * @brief Accesses the element at the specified row and column in the sparse
    * matrix.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than N).
-   * @return T& A reference to the value at the specified column and row.
+   * @param col The zero-based column index (must be less than N).
+   * @param row The zero-based row index (must be less than M).
+   * @return T& A reference to the value at the specified row and column.
    *
-   * @note If the column or row index is out of bounds, it is clamped to the
-   * maximum valid index (M - 1 for columns, N - 1 for rows). If the indices
+   * @note If the row or column index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1 for rows, N - 1 for columns). If the indices
    * are valid but do not correspond to a non-zero element in the sparse matrix,
-   * this function returns a reference to a static thread-local variable
-   * initialized to zero.
+   * a reference to a thread-local dummy variable initialized to zero is
+   * returned.
    */
-  T &operator()(std::size_t col, std::size_t row) {
-    if (col >= M) {
-      col = M - 1;
+  T &operator()(std::size_t row, std::size_t col) {
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= N) {
-      row = N - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
 
-    if (!this->matrix.is_valid_indices(col, row)) {
+    if (!this->matrix.is_valid_indices(row, col)) {
       static thread_local T dummy{};
       dummy = static_cast<T>(0);
       return dummy;
 
     } else {
-      return this->matrix[this->matrix.get_value_index(col, row)];
+      return this->matrix[this->matrix.get_value_index(row, col)];
     }
   }
 
   /**
-   * @brief Accesses the element at the specified column and row in the sparse
+   * @brief Accesses the element at the specified row and column in the sparse
    * matrix.
    *
-   * @param col The zero-based column index (must be less than M).
-   * @param row The zero-based row index (must be less than N).
-   * @return const T& A constant reference to the value at the specified column
-   * and row.
+   * @param row The zero-based row index (must be less than M).
+   * @param col The zero-based column index (must be less than N).
+   * @return const T& A constant reference to the value at the specified row and
+   * column.
    *
-   * @note If the column or row index is out of bounds, it is clamped to the
-   * maximum valid index (M - 1 for columns, N - 1 for rows). For valid indices
-   * that do not correspond to a non-zero element in the sparse matrix, this
-   * function returns a reference to a static thread-local variable initialized
-   * to zero.
+   * @note If the row or column index is out of bounds, it is clamped to the
+   * maximum valid index (M - 1 for rows, N - 1 for columns). If the indices
+   * are valid but do not correspond to a non-zero element in the sparse matrix,
+   * a reference to a thread-local dummy variable initialized to zero is
+   * returned.
    */
-  const T &operator()(std::size_t col, std::size_t row) const {
-    if (col >= M) {
-      col = M - 1;
+  const T &operator()(std::size_t row, std::size_t col) const {
+    if (row >= ROWS) {
+      row = ROWS - 1;
     }
-    if (row >= N) {
-      row = N - 1;
+    if (col >= COLS) {
+      col = COLS - 1;
     }
 
-    if (!this->matrix.is_valid_indices(col, row)) {
+    if (!this->matrix.is_valid_indices(row, col)) {
       static thread_local T dummy{};
       dummy = static_cast<T>(0);
       return dummy;
     } else {
-      return this->matrix[this->matrix.get_value_index(col, row)];
+      return this->matrix[this->matrix.get_value_index(row, col)];
     }
   }
 
@@ -1323,15 +1336,6 @@ public:
             Value_Type, T, M, N, SparseAvailable,
             IS_COMPLEX>::get(this->matrix));
   }
-
-public:
-  /* Constant */
-  static constexpr std::size_t COLS = N;
-  static constexpr std::size_t ROWS = M;
-
-  static constexpr std::size_t NumberOfValues = CSRPointers_Type_::list[M];
-
-  static constexpr bool IS_COMPLEX = Is_Complex_Type<T>::value;
 
 public:
   /* Variable */
