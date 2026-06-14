@@ -241,6 +241,13 @@ public:
   }
 
   /**
+   * @brief Retrieves the number of dimensions of the matrix.
+   *
+   * @return std::size_t The number of dimensions (always 2 for a matrix).
+   */
+  std::size_t ndim() const { return 2; }
+
+  /**
    * @brief Retrieves the element at the specified index in the matrix.
    *
    * @param index The zero-based index (must be less than ROWS * COLS).
@@ -693,6 +700,13 @@ public:
   std::tuple<std::size_t, std::size_t> shape() const {
     return std::make_tuple(ROWS, COLS);
   }
+
+  /**
+   * @brief Retrieves the number of dimensions of the diagonal matrix.
+   *
+   * @return std::size_t The number of dimensions (always 2 for a matrix).
+   */
+  std::size_t ndim() const { return 2; }
 
   /**
    * @brief Retrieves the number of elements in the diagonal matrix.
@@ -1160,6 +1174,14 @@ public:
   std::tuple<std::size_t, std::size_t> shape() const {
     return std::make_tuple(ROWS, COLS);
   }
+
+  /**
+   * @brief Retrieves the number of dimensions of the sparse matrix.
+   *
+   * @return std::size_t The number of dimensions in the sparse matrix (2 for
+   * 2D matrices).
+   */
+  std::size_t ndim() const { return 2; }
 
   /**
    * @brief Retrieves the number of elements in the sparse matrix.

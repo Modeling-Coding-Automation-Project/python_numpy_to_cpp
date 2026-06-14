@@ -867,7 +867,20 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(static_cast<T>(cols_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
         "check Sparse Matrix shape cols.");
 
+    std::size_t ndim_value = A.ndim();
 
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Matrix ndim.");
+
+    ndim_value = DiagJ.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Diag Matrix ndim.");
+
+    ndim_value = C.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check Sparse Matrix ndim.");
 
 
     tester.throw_error_if_test_failed();
