@@ -28,6 +28,7 @@
 #include <array>
 #include <cstddef>
 #include <initializer_list>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -279,41 +280,33 @@ inline Matrix<T, M, 1> output_diagonal_vector(const DiagMatrix<T, M> &matrix) {
 /* Matrix Addition */
 namespace DiagMatrixAddDiagMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise addition of two diagonal matrices.
-   *
-   * This function recursively computes the sum of two diagonal matrices A and
-   * B, storing the result in the provided result matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after addition.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[M_idx] = A[M_idx] + B[M_idx];
-    Core<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, Start, Mid>::compute(A, B, result);
+    Core<T, M, Mid, End>::compute(A, B, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise addition of two diagonal matrices.
-   *
-   * This function serves as the base case for the recursive addition of two
-   * diagonal matrices A and B, storing the result in the provided result
-   * matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after addition.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
+                      DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[0] = A[0] + B[0];
+    result[Start] = A[Start] + B[Start];
   }
 };
 
@@ -330,7 +323,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
-  Core<T, M, M - 1>::compute(A, B, result);
+  Core<T, M, 0, M>::compute(A, B, result);
 }
 
 } // namespace DiagMatrixAddDiagMatrix
@@ -368,43 +361,31 @@ inline DiagMatrix<T, M> operator+(const DiagMatrix<T, M> &A,
 
 namespace DiagMatrixAddMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise addition of a diagonal matrix and a dense
-   * matrix.
-   *
-   * This function recursively computes the sum of a diagonal matrix A and a
-   * dense matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix.
-   * @param result The resulting dense matrix after addition.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
 
-    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
-                                      A[M_idx]);
-    Core<T, M, M_idx - 1>::compute(A, result);
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+    Core<T, M, Start, Mid>::compute(A, result);
+    Core<T, M, Mid, End>::compute(A, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise addition of a diagonal matrix and a dense
-   * matrix.
-   *
-   * This function serves as the base case for the recursive addition of a
-   * diagonal matrix A and a dense matrix B, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param result The resulting dense matrix after addition.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, Matrix<T, M, M> &) {}
+};
 
-    result.template set<0, 0>(result.template get<0, 0>() + A[0]);
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
+  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+    result.template set<Start, Start>(result.template get<Start, Start>() +
+                                      A[Start]);
   }
 };
 
@@ -421,7 +402,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
  */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-  Core<T, M, M - 1>::compute(A, result);
+  Core<T, M, 0, M>::compute(A, result);
 }
 
 } // namespace DiagMatrixAddMatrix
@@ -491,36 +472,30 @@ inline Matrix<T, M, M> operator+(const Matrix<T, M, M> &A,
 /* Minus */
 namespace DiagMatrixMinus {
 
-// when I_idx < M
-template <typename T, std::size_t M, std::size_t I_idx> struct Loop {
-  /**
-   * @brief Computes the element-wise negation of a diagonal matrix.
-   *
-   * This function recursively computes the negation of a diagonal matrix A,
-   * storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix to negate.
-   * @param result The resulting diagonal matrix after negation.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Loop;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
-    result[I_idx] = -A[I_idx];
-    Loop<T, M, I_idx - 1>::compute(A, result);
+    Loop<T, M, Start, Mid>::compute(A, result);
+    Loop<T, M, Mid, End>::compute(A, result);
   }
 };
 
-// row recursion termination
-template <typename T, std::size_t M> struct Loop<T, M, 0> {
-  /**
-   * @brief Computes the element-wise negation of a diagonal matrix.
-   *
-   * This function serves as the base case for the recursive negation of a
-   * diagonal matrix A, storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix to negate.
-   * @param result The resulting diagonal matrix after negation.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
-    result[0] = -A[0];
+    result[Start] = -A[Start];
   }
 };
 
@@ -535,7 +510,7 @@ template <typename T, std::size_t M> struct Loop<T, M, 0> {
  */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
-  Loop<T, M, M - 1>::compute(A, result);
+  Loop<T, M, 0, M>::compute(A, result);
 }
 
 } // namespace DiagMatrixMinus
@@ -572,41 +547,33 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A) {
 /* Matrix Subtraction */
 namespace DiagMatrixSubDiagMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise subtraction of two diagonal matrices.
-   *
-   * This function recursively computes the difference between two diagonal
-   * matrices A and B, storing the result in the provided result matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after subtraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[M_idx] = A[M_idx] - B[M_idx];
-    Core<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, Start, Mid>::compute(A, B, result);
+    Core<T, M, Mid, End>::compute(A, B, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise subtraction of two diagonal matrices.
-   *
-   * This function serves as the base case for the recursive subtraction of two
-   * diagonal matrices A and B, storing the result in the provided result
-   * matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after subtraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
+                      DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[0] = A[0] - B[0];
+    result[Start] = A[Start] - B[Start];
   }
 };
 
@@ -624,7 +591,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
-  Core<T, M, M - 1>::compute(A, B, result);
+  Core<T, M, 0, M>::compute(A, B, result);
 }
 
 } // namespace DiagMatrixSubDiagMatrix
@@ -660,66 +627,6 @@ inline DiagMatrix<T, M> operator-(const DiagMatrix<T, M> &A,
   return result;
 }
 
-namespace DiagMatrixSubMatrix {
-
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise subtraction of a diagonal matrix from a
-   * dense matrix.
-   *
-   * This function recursively computes the difference between a dense matrix A
-   * and a diagonal matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The dense matrix.
-   * @param B The diagonal matrix.
-   * @param result The resulting dense matrix after subtraction.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-
-    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() +
-                                      A[M_idx]);
-    Core<T, M, M_idx - 1>::compute(A, result);
-  }
-};
-
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise subtraction of a diagonal matrix from a
-   * dense matrix.
-   *
-   * This function serves as the base case for the recursive subtraction of a
-   * diagonal matrix A from a dense matrix, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param result The resulting dense matrix after subtraction.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-
-    result.template set<0, 0>(result.template get<0, 0>() + A[0]);
-  }
-};
-
-/**
- * @brief Computes the element-wise subtraction of a diagonal matrix from a
- * dense matrix.
- *
- * This function initiates the recursive computation of the difference between
- * a dense matrix A and a diagonal matrix B, storing the result in the provided
- * result matrix.
- *
- * @param A The diagonal matrix.
- * @param result The resulting dense matrix after subtraction.
- */
-template <typename T, std::size_t M>
-inline void compute(const Matrix<T, M, M> &A, Matrix<T, M, M> &result) {
-  Core<T, M, M - 1>::compute(A, result);
-}
-
-} // namespace DiagMatrixSubMatrix
-
 /**
  * @brief Subtracts a diagonal matrix from a dense matrix element-wise.
  *
@@ -753,41 +660,31 @@ inline Matrix<T, M, M> operator-(const DiagMatrix<T, M> &A,
 
 namespace MatrixSubDiagMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise subtraction of a diagonal matrix from a
-   * dense matrix.
-   *
-   * This function recursively computes the difference between a dense matrix A
-   * and a diagonal matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param result The resulting dense matrix after subtraction.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
 
-    result.template set<M_idx, M_idx>(result.template get<M_idx, M_idx>() -
-                                      A[M_idx]);
-    Core<T, M, M_idx - 1>::compute(A, result);
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
+    Core<T, M, Start, Mid>::compute(A, result);
+    Core<T, M, Mid, End>::compute(A, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise subtraction of a diagonal matrix from a
-   * dense matrix.
-   *
-   * This function serves as the base case for the recursive subtraction of a
-   * diagonal matrix A from a dense matrix, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param result The resulting dense matrix after subtraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, Matrix<T, M, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-    result.template set<0, 0>(result.template get<0, 0>() - A[0]);
+    result.template set<Start, Start>(result.template get<Start, Start>() -
+                                      A[Start]);
   }
 };
 
@@ -804,7 +701,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
  */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-  Core<T, M, M - 1>::compute(A, result);
+  Core<T, M, 0, M>::compute(A, result);
 }
 
 } // namespace MatrixSubDiagMatrix
@@ -843,43 +740,32 @@ inline Matrix<T, M, M> operator-(const Matrix<T, M, M> &A,
 /* Diag Matrix multiply Scalar */
 namespace DiagMatrixMultiplyScalar {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise multiplication of a diagonal matrix by a
-   * scalar.
-   *
-   * This function recursively computes the product of a diagonal matrix and a
-   * scalar, storing the result in the provided result matrix.
-   *
-   * @param mat The diagonal matrix to multiply.
-   * @param scalar The scalar value to multiply with.
-   * @param result The resulting diagonal matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
-    result[M_idx] = mat[M_idx] * scalar;
-    Core<T, M, M_idx - 1>::compute(mat, scalar, result);
+    Core<T, M, Start, Mid>::compute(mat, scalar, result);
+    Core<T, M, Mid, End>::compute(mat, scalar, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise multiplication of a diagonal matrix by a
-   * scalar.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * diagonal matrix and a scalar, storing the result in the provided result
-   * matrix.
-   *
-   * @param mat The diagonal matrix to multiply.
-   * @param scalar The scalar value to multiply with.
-   * @param result The resulting diagonal matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const T, DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
-    result[0] = mat[0] * scalar;
+    result[Start] = mat[Start] * scalar;
   }
 };
 
@@ -898,7 +784,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &mat, const T &scalar,
                     DiagMatrix<T, M> &result) {
-  Core<T, M, M - 1>::compute(mat, scalar, result);
+  Core<T, M, 0, M>::compute(mat, scalar, result);
 }
 
 } // namespace DiagMatrixMultiplyScalar
@@ -966,41 +852,33 @@ inline DiagMatrix<T, M> operator*(const T &scalar, const DiagMatrix<T, M> &A) {
 /* Diag Matrix multiply Vector */
 namespace DiagMatrixMultiplyVector {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a vector.
-   *
-   * This function recursively computes the product of a diagonal matrix A and a
-   * vector vec, storing the result in the provided result vector.
-   *
-   * @param A The diagonal matrix.
-   * @param vec The vector to multiply with.
-   * @param result The resulting vector after multiplication.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                       Vector<T, M> &result) {
-    result[M_idx] = A[M_idx] * vec[M_idx];
-    Core<T, M, M_idx - 1>::compute(A, vec, result);
+    Core<T, M, Start, Mid>::compute(A, vec, result);
+    Core<T, M, Mid, End>::compute(A, vec, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a vector.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * diagonal matrix A and a vector vec, storing the result in the provided
-   * result vector.
-   *
-   * @param A The diagonal matrix.
-   * @param vec The vector to multiply with.
-   * @param result The resulting vector after multiplication.
-   */
-  static void compute(const DiagMatrix<T, M> &A, Vector<T, M> vec,
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const Vector<T, M> &,
+                      Vector<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
+  static void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                       Vector<T, M> &result) {
-    result[0] = A[0] * vec[0];
+    result[Start] = A[Start] * vec[Start];
   }
 };
 
@@ -1018,7 +896,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                     Vector<T, M> &result) {
-  Core<T, M, M - 1>::compute(A, vec, result);
+  Core<T, M, 0, M>::compute(A, vec, result);
 }
 
 } // namespace DiagMatrixMultiplyVector
@@ -1057,41 +935,33 @@ inline Vector<T, M> operator*(const DiagMatrix<T, M> &A,
 /* Matrix Multiplication */
 namespace DiagMatrixMultiplyDiagMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise multiplication of two diagonal matrices.
-   *
-   * This function recursively computes the product of two diagonal matrices A
-   * and B, storing the result in the provided result matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[M_idx] = A[M_idx] * B[M_idx];
-    Core<T, M, M_idx - 1>::compute(A, B, result);
+    Core<T, M, Start, Mid>::compute(A, B, result);
+    Core<T, M, Mid, End>::compute(A, B, result);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise multiplication of two diagonal matrices.
-   *
-   * This function serves as the base case for the recursive multiplication of
-   * two diagonal matrices A and B, storing the result in the provided result
-   * matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
+                      DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
-    result[0] = A[0] * B[0];
+    result[Start] = A[Start] * B[Start];
   }
 };
 
@@ -1108,7 +978,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result) {
-  Core<T, M, M - 1>::compute(A, B, result);
+  Core<T, M, 0, M>::compute(A, B, result);
 }
 
 } // namespace DiagMatrixMultiplyDiagMatrix
@@ -1147,88 +1017,70 @@ inline DiagMatrix<T, M> operator*(const DiagMatrix<T, M> &A,
 /* Diag Matrix Multiply Matrix */
 namespace DiagMatrixMultiplyMatrix {
 
-// Core multiplication for DiagMatrix and Matrix
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
-          std::size_t K>
-struct Core {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a dense
-   * matrix.
-   *
-   * This function recursively computes the product of a diagonal matrix A and a
-   * dense matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Core<T, M, N, J, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-
-    result.template set<J, K>(A[J] * B.template get<J, K>());
-    Core<T, M, N, J, K - 1>::compute(A, B, result);
+    Core<T, M, N, J, Start, Mid>::compute(A, B, result);
+    Core<T, M, N, J, Mid, End>::compute(A, B, result);
   }
 };
 
-// Specialization for K == 0
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Core<T, M, N, J, 0> {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a dense
-   * matrix.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * diagonal matrix A and a dense matrix B, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Core<T, M, N, J, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
+                      Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Core<T, M, N, J, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-
-    result.template set<J, 0>(A[J] * B.template get<J, 0>());
+    result.template set<J, Start>(A[J] * B.template get<J, Start>());
   }
 };
 
-// Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J> struct Row {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a dense
-   * matrix, column by column.
-   *
-   * This function recursively computes the product of a diagonal matrix A and a
-   * dense matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct Row;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Row<T, M, N, Start, End,
+           typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    Core<T, M, N, J, N - 1>::compute(A, B, result);
-    Row<T, M, N, J - 1>::compute(A, B, result);
+    Row<T, M, N, Start, Mid>::compute(A, B, result);
+    Row<T, M, N, Mid, End>::compute(A, B, result);
   }
 };
 
-// Specialization for J == 0
-template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
-  /**
-   * @brief Computes the multiplication of a diagonal matrix with a dense
-   * matrix, starting from the first row.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * diagonal matrix A and a dense matrix B, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Row<T, M, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
+                      Matrix<T, M, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Row<T, M, N, Start, End,
+           typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
-    Core<T, M, N, 0, N - 1>::compute(A, B, result);
+    Core<T, M, N, Start, 0, N>::compute(A, B, result);
   }
 };
 
@@ -1246,7 +1098,7 @@ template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, 0> {
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result) {
-  Row<T, M, N, M - 1>::compute(A, B, result);
+  Row<T, M, N, 0, M>::compute(A, B, result);
 }
 
 } // namespace DiagMatrixMultiplyMatrix
@@ -1286,88 +1138,70 @@ inline Matrix<T, M, N> operator*(const DiagMatrix<T, M> &A,
 
 namespace MatrixMultiplyDiagMatrix {
 
-// Core multiplication for each element
 template <typename T, std::size_t L, std::size_t M, std::size_t I,
-          std::size_t J>
-struct Core {
-  /**
-   * @brief Computes the multiplication of a dense matrix with a diagonal
-   * matrix.
-   *
-   * This function recursively computes the product of a dense matrix A and a
-   * diagonal matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The dense matrix.
-   * @param B The diagonal matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t L, std::size_t M, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct Core<T, L, M, I, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-
-    result.template set<I, J>(A.template get<I, J>() * B[J]);
-    Core<T, L, M, I, J - 1>::compute(A, B, result);
+    Core<T, L, M, I, Start, Mid>::compute(A, B, result);
+    Core<T, L, M, I, Mid, End>::compute(A, B, result);
   }
 };
 
-// Specialization for J = 0
-template <typename T, std::size_t L, std::size_t M, std::size_t I>
-struct Core<T, L, M, I, 0> {
-  /**
-   * @brief Computes the multiplication of a dense matrix with a diagonal
-   * matrix.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * dense matrix A and a diagonal matrix B, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The dense matrix.
-   * @param B The diagonal matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t L, std::size_t M, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct Core<T, L, M, I, Start, End,
+            typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, L, M> &, const DiagMatrix<T, M> &,
+                      Matrix<T, L, M> &) {}
+};
+
+template <typename T, std::size_t L, std::size_t M, std::size_t I,
+          std::size_t Start, std::size_t End>
+struct Core<T, L, M, I, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-
-    result.template set<I, 0>(A.template get<I, 0>() * B[0]);
+    result.template set<I, Start>(A.template get<I, Start>() * B[Start]);
   }
 };
 
-// Column-wise multiplication
-template <typename T, std::size_t L, std::size_t M, std::size_t I> struct Row {
-  /**
-   * @brief Computes the multiplication of a dense matrix with a diagonal
-   * matrix, column by column.
-   *
-   * This function recursively computes the product of a dense matrix A and a
-   * diagonal matrix B, storing the result in the provided result matrix.
-   *
-   * @param A The dense matrix.
-   * @param B The diagonal matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t L, std::size_t M, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct Row;
+
+template <typename T, std::size_t L, std::size_t M, std::size_t Start,
+          std::size_t End>
+struct Row<T, L, M, Start, End,
+           typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    Core<T, L, M, I, M - 1>::compute(A, B, result);
-    Row<T, L, M, I - 1>::compute(A, B, result);
+    Row<T, L, M, Start, Mid>::compute(A, B, result);
+    Row<T, L, M, Mid, End>::compute(A, B, result);
   }
 };
 
-// Specialization for I = 0
-template <typename T, std::size_t L, std::size_t M> struct Row<T, L, M, 0> {
-  /**
-   * @brief Computes the multiplication of a dense matrix with a diagonal
-   * matrix, starting from the first row.
-   *
-   * This function serves as the base case for the recursive multiplication of a
-   * dense matrix A and a diagonal matrix B, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The dense matrix.
-   * @param B The diagonal matrix.
-   * @param result The resulting dense matrix after multiplication.
-   */
+template <typename T, std::size_t L, std::size_t M, std::size_t Start,
+          std::size_t End>
+struct Row<T, L, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const Matrix<T, L, M> &, const DiagMatrix<T, M> &,
+                      Matrix<T, L, M> &) {}
+};
+
+template <typename T, std::size_t L, std::size_t M, std::size_t Start,
+          std::size_t End>
+struct Row<T, L, M, Start, End,
+           typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
-    Core<T, L, M, 0, M - 1>::compute(A, B, result);
+    Core<T, L, M, Start, 0, M>::compute(A, B, result);
   }
 };
 
@@ -1385,7 +1219,7 @@ template <typename T, std::size_t L, std::size_t M> struct Row<T, L, M, 0> {
 template <typename T, std::size_t L, std::size_t M>
 inline void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                     Matrix<T, L, M> &result) {
-  Row<T, L, M, L - 1>::compute(A, B, result);
+  Row<T, L, M, 0, L>::compute(A, B, result);
 }
 
 } // namespace MatrixMultiplyDiagMatrix
@@ -1426,34 +1260,29 @@ inline Matrix<T, L, M> operator*(const Matrix<T, L, M> &A,
 /* Trace */
 namespace DiagMatrixTrace {
 
-// Base case: when index reaches 0
-template <typename T, std::size_t M, std::size_t Index> struct Core {
-  /**
-   * @brief Computes the trace of a diagonal matrix.
-   *
-   * This function recursively computes the trace of a diagonal matrix A by
-   * summing its diagonal elements.
-   *
-   * @param A The diagonal matrix.
-   * @return T The computed trace of the diagonal matrix.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static T compute(const DiagMatrix<T, M> &A) {
-    return A[Index] + Core<T, M, Index - 1>::compute(A);
+    return Core<T, M, Start, Mid>::compute(A) +
+           Core<T, M, Mid, End>::compute(A);
   }
 };
 
-// Specialization for the base case when Index is 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the trace of a diagonal matrix when the index is 0.
-   *
-   * This function serves as the base case for the recursive computation of the
-   * trace of a diagonal matrix A, returning its first diagonal element.
-   *
-   * @param A The diagonal matrix.
-   * @return T The first diagonal element of the diagonal matrix.
-   */
-  static T compute(const DiagMatrix<T, M> &A) { return A[0]; }
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static T compute(const DiagMatrix<T, M> &) { return static_cast<T>(0); }
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
+  static T compute(const DiagMatrix<T, M> &A) { return A[Start]; }
 };
 
 /**
@@ -1467,7 +1296,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
  */
 template <typename T, std::size_t M>
 inline T compute(const DiagMatrix<T, M> &A) {
-  return Core<T, M, M - 1>::compute(A);
+  return Core<T, M, 0, M>::compute(A);
 }
 
 } // namespace DiagMatrixTrace
@@ -1503,39 +1332,30 @@ inline T output_trace(const DiagMatrix<T, M> &A) {
 /* Create dense */
 namespace DiagMatrixToDense {
 
-// Diagonal element assignment core
-template <typename T, std::size_t M, std::size_t I> struct Core {
-  /**
-   * @brief Assigns the diagonal elements of a diagonal matrix to a dense
-   * matrix.
-   *
-   * This function recursively assigns the diagonal elements of a diagonal
-   * matrix A to the corresponding positions in a dense matrix result.
-   *
-   * @param result The resulting dense matrix.
-   * @param A The diagonal matrix from which to assign elements.
-   */
-  static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
 
-    result.template set<I, I>(A[I]);
-    Core<T, M, I - 1>::assign(result, A);
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
+    Core<T, M, Start, Mid>::assign(result, A);
+    Core<T, M, Mid, End>::assign(result, A);
   }
 };
 
-// Base case for recursion termination
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Assigns the first diagonal element of a diagonal matrix to a dense
-   * matrix.
-   *
-   * This function serves as the base case for the recursive assignment of
-   * diagonal elements from a diagonal matrix A to a dense matrix result.
-   *
-   * @param result The resulting dense matrix.
-   * @param A The diagonal matrix from which to assign the first element.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void assign(Matrix<T, M, M> &, const DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
-    result.template set<0, 0>(A[0]);
+    result.template set<Start, Start>(A[Start]);
   }
 };
 
@@ -1551,7 +1371,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
  */
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
-  Core<T, M, M - 1>::assign(result, A);
+  Core<T, M, 0, M>::assign(result, A);
 }
 
 } // namespace DiagMatrixToDense
@@ -1588,45 +1408,34 @@ inline Matrix<T, M, M> output_dense_matrix(const DiagMatrix<T, M> &A) {
 /* Diag Matrix divide Diag Matrix */
 namespace DiagMatrixDivideDiagMatrix {
 
-// M_idx < M
-template <typename T, std::size_t M, std::size_t M_idx> struct Core {
-  /**
-   * @brief Computes the element-wise division of two diagonal matrices.
-   *
-   * This function recursively computes the division of two diagonal matrices A
-   * and B, storing the result in the provided result matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Core;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
-    result[M_idx] =
-        A[M_idx] / Base::Utility::avoid_zero_divide(B[M_idx], division_min);
-    Core<T, M, M_idx - 1>::compute(A, B, result, division_min);
+    Core<T, M, Start, Mid>::compute(A, B, result, division_min);
+    Core<T, M, Mid, End>::compute(A, B, result, division_min);
   }
 };
 
-// Termination condition: M_idx == 0
-template <typename T, std::size_t M> struct Core<T, M, 0> {
-  /**
-   * @brief Computes the element-wise division of two diagonal matrices when the
-   * index is 0.
-   *
-   * This function serves as the base case for the recursive division of two
-   * diagonal matrices A and B, storing the result in the provided result
-   * matrix.
-   *
-   * @param A The first diagonal matrix.
-   * @param B The second diagonal matrix.
-   * @param result The resulting diagonal matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
+                      DiagMatrix<T, M> &, const T) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Core<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
-    result[0] = A[0] / Base::Utility::avoid_zero_divide(B[0], division_min);
+    result[Start] =
+        A[Start] / Base::Utility::avoid_zero_divide(B[Start], division_min);
   }
 };
 
@@ -1644,7 +1453,7 @@ template <typename T, std::size_t M> struct Core<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                     DiagMatrix<T, M> &result, const T division_min) {
-  Core<T, M, M - 1>::compute(A, B, result, division_min);
+  Core<T, M, 0, M>::compute(A, B, result, division_min);
 }
 
 } // namespace DiagMatrixDivideDiagMatrix
@@ -1713,97 +1522,72 @@ diag_divide_diag_partition(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
 /* Diag Matrix Inverse multiply Matrix */
 namespace DiagMatrixInverseMultiplyMatrix {
 
-// core multiplication for each element
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
-          std::size_t K>
-struct Row {
-  /**
-   * @brief Computes the element-wise division of a dense matrix by a diagonal
-   * matrix.
-   *
-   * This function recursively computes the division of each element in a dense
-   * matrix B by the corresponding diagonal element in a diagonal matrix A,
-   * storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix to divide.
-   * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+          std::size_t Start, std::size_t End, typename Enable = void>
+struct Row;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Row<T, M, N, J, Start, End,
+           typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    result(J, K) =
-        B(J, K) / Base::Utility::avoid_zero_divide(A[J], division_min);
-    Row<T, M, N, J, K - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, J, Start, Mid>::compute(A, B, result, division_min);
+    Row<T, M, N, J, Mid, End>::compute(A, B, result, division_min);
   }
 };
 
-// if K == 0
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Row<T, M, N, J, 0> {
-  /**
-   * @brief Computes the element-wise division of the first row of a dense
-   * matrix by a diagonal matrix.
-   *
-   * This function serves as the base case for the recursive division of each
-   * element in the first row of a dense matrix B by the corresponding
-   * diagonal element in a diagonal matrix A, storing the result in the
-   * provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix to divide.
-   * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Row<T, M, N, J, Start, End,
+           typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
+                      Matrix<T, M, N> &, const T) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t J,
+          std::size_t Start, std::size_t End>
+struct Row<T, M, N, J, Start, End,
+           typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    result(J, 0) =
-        B(J, 0) / Base::Utility::avoid_zero_divide(A[J], division_min);
+    result(J, Start) =
+        B(J, Start) / Base::Utility::avoid_zero_divide(A[J], division_min);
   }
 };
 
-// Column-wise multiplication
-template <typename T, std::size_t M, std::size_t N, std::size_t J>
-struct Column {
-  /**
-   * @brief Computes the element-wise division of a dense matrix by a diagonal
-   * matrix, row by row.
-   *
-   * This function recursively computes the division of each element in a dense
-   * matrix B by the corresponding diagonal element in a diagonal matrix A,
-   * storing the result in the provided result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix to divide.
-   * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End, typename Enable = void>
+struct Column;
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Column<T, M, N, Start, End,
+              typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Row<T, M, N, J, N - 1>::compute(A, B, result, division_min);
-    Column<T, M, N, J - 1>::compute(A, B, result, division_min);
+    Column<T, M, N, Start, Mid>::compute(A, B, result, division_min);
+    Column<T, M, N, Mid, End>::compute(A, B, result, division_min);
   }
 };
 
-// if J == 0
-template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
-  /**
-   * @brief Computes the element-wise division of the first column of a dense
-   * matrix by a diagonal matrix.
-   *
-   * This function serves as the base case for the recursive division of each
-   * element in the first column of a dense matrix B by the corresponding
-   * diagonal element in a diagonal matrix A, storing the result in the provided
-   * result matrix.
-   *
-   * @param A The diagonal matrix.
-   * @param B The dense matrix to divide.
-   * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
-   */
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Column<T, M, N, Start, End,
+              typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
+                      Matrix<T, M, N> &, const T) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Start,
+          std::size_t End>
+struct Column<T, M, N, Start, End,
+              typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Row<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
+    Row<T, M, N, Start, 0, N>::compute(A, B, result, division_min);
   }
 };
 
@@ -1823,7 +1607,7 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                     Matrix<T, M, N> &result, T division_min) {
-  Column<T, M, N, M - 1>::compute(A, B, result, division_min);
+  Column<T, M, N, 0, M>::compute(A, B, result, division_min);
 }
 
 } // namespace DiagMatrixInverseMultiplyMatrix
@@ -1899,43 +1683,35 @@ inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
 /* Convert Real Matrix to Complex */
 namespace DiagMatrixRealToComplex {
 
-/* Helper struct for unrolling the loop */
-template <typename T, std::size_t M, std::size_t I>
-struct DiagMatrixRealToComplexLoop {
-  /**
-   * @brief Converts a real diagonal matrix to a complex diagonal matrix.
-   *
-   * This function recursively converts each element of a real diagonal matrix
-   * to a complex diagonal matrix, where the real part is preserved and the
-   * imaginary part is set to zero.
-   *
-   * @param From_matrix The real diagonal matrix to convert.
-   * @param To_matrix The resulting complex diagonal matrix after conversion.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct DiagMatrixRealToComplexLoop;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct DiagMatrixRealToComplexLoop<
+    T, M, Start, End, typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
-    To_matrix[I].real = From_matrix[I];
-    DiagMatrixRealToComplexLoop<T, M, I - 1>::compute(From_matrix, To_matrix);
+    DiagMatrixRealToComplexLoop<T, M, Start, Mid>::compute(From_matrix,
+                                                           To_matrix);
+    DiagMatrixRealToComplexLoop<T, M, Mid, End>::compute(From_matrix,
+                                                         To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
-template <typename T, std::size_t M>
-struct DiagMatrixRealToComplexLoop<T, M, 0> {
-  /**
-   * @brief Converts the first element of a real diagonal matrix to a complex
-   * diagonal matrix.
-   *
-   * This function serves as the base case for the recursive conversion of a
-   * real diagonal matrix to a complex diagonal matrix, where the first element
-   * is converted.
-   *
-   * @param From_matrix The real diagonal matrix to convert.
-   * @param To_matrix The resulting complex diagonal matrix after conversion.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct DiagMatrixRealToComplexLoop<
+    T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<T, M> &, DiagMatrix<Complex<T>, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct DiagMatrixRealToComplexLoop<
+    T, M, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
-    To_matrix[0].real = From_matrix[0];
+    To_matrix[Start].real = From_matrix[Start];
   }
 };
 
@@ -1952,7 +1728,7 @@ struct DiagMatrixRealToComplexLoop<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<T, M> &From_matrix,
                     DiagMatrix<Complex<T>, M> &To_matrix) {
-  DiagMatrixRealToComplexLoop<T, M, M - 1>::compute(From_matrix, To_matrix);
+  DiagMatrixRealToComplexLoop<T, M, 0, M>::compute(From_matrix, To_matrix);
 }
 
 } // namespace DiagMatrixRealToComplex
@@ -1992,42 +1768,32 @@ convert_matrix_real_to_complex(const DiagMatrix<T, M> &From_matrix) {
 /* Get Real Matrix from Complex */
 namespace GetRealDiagMatrixFromComplex {
 
-/* Helper struct for unrolling the loop */
-template <typename T, std::size_t M, std::size_t I> struct Loop {
-  /**
-   * @brief Extracts the real part of a complex diagonal matrix and stores it in
-   * a real diagonal matrix.
-   *
-   * This function recursively extracts the real part of each element in a
-   * complex diagonal matrix and stores it in a corresponding position in a real
-   * diagonal matrix.
-   *
-   * @param From_matrix The complex diagonal matrix to extract from.
-   * @param To_matrix The resulting real diagonal matrix after extraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Loop;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
-    To_matrix[I] = From_matrix[I].real;
-    Loop<T, M, I - 1>::compute(From_matrix, To_matrix);
+    Loop<T, M, Start, Mid>::compute(From_matrix, To_matrix);
+    Loop<T, M, Mid, End>::compute(From_matrix, To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
-template <typename T, std::size_t M> struct Loop<T, M, 0> {
-  /**
-   * @brief Extracts the real part of the first element of a complex diagonal
-   * matrix and stores it in a real diagonal matrix.
-   *
-   * This function serves as the base case for the recursive extraction of the
-   * real part of a complex diagonal matrix, storing the first element in a real
-   * diagonal matrix.
-   *
-   * @param From_matrix The complex diagonal matrix to extract from.
-   * @param To_matrix The resulting real diagonal matrix after extraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<Complex<T>, M> &, DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
-    To_matrix[0] = From_matrix[0].real;
+    To_matrix[Start] = From_matrix[Start].real;
   }
 };
 
@@ -2043,9 +1809,9 @@ template <typename T, std::size_t M> struct Loop<T, M, 0> {
  * @param To_matrix The resulting real diagonal matrix after extraction.
  */
 template <typename T, std::size_t M>
-inline void compute(const DiagMatrix<Complex<T>, 3> &From_matrix,
-                    DiagMatrix<T, 3> &To_matrix) {
-  Loop<T, M, M - 1>::compute(From_matrix, To_matrix);
+inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                    DiagMatrix<T, M> &To_matrix) {
+  Loop<T, M, 0, M>::compute(From_matrix, To_matrix);
 }
 
 } // namespace GetRealDiagMatrixFromComplex
@@ -2084,42 +1850,32 @@ inline auto get_real_matrix_from_complex_matrix(
 /* Get Imag Matrix from Complex */
 namespace GetImagDiagMatrixFromComplex {
 
-/* Helper struct for unrolling the loop */
-template <typename T, std::size_t M, std::size_t I> struct Loop {
-  /**
-   * @brief Extracts the imaginary part of a complex diagonal matrix and stores
-   * it in a real diagonal matrix.
-   *
-   * This function recursively extracts the imaginary part of each element in a
-   * complex diagonal matrix and stores it in a corresponding position in a real
-   * diagonal matrix.
-   *
-   * @param From_matrix The complex diagonal matrix to extract from.
-   * @param To_matrix The resulting real diagonal matrix after extraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End,
+          typename Enable = void>
+struct Loop;
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start > 1)>::type> {
+  static constexpr std::size_t Mid = Start + (End - Start) / 2;
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
-    To_matrix[I] = From_matrix[I].imag;
-    Loop<T, M, I - 1>::compute(From_matrix, To_matrix);
+    Loop<T, M, Start, Mid>::compute(From_matrix, To_matrix);
+    Loop<T, M, Mid, End>::compute(From_matrix, To_matrix);
   }
 };
 
-/* Specialization to end the recursion */
-template <typename T, std::size_t M> struct Loop<T, M, 0> {
-  /**
-   * @brief Extracts the imaginary part of the first element of a complex
-   * diagonal matrix and stores it in a real diagonal matrix.
-   *
-   * This function serves as the base case for the recursive extraction of the
-   * imaginary part of a complex diagonal matrix, storing the first element in a
-   * real diagonal matrix.
-   *
-   * @param From_matrix The complex diagonal matrix to extract from.
-   * @param To_matrix The resulting real diagonal matrix after extraction.
-   */
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  static void compute(const DiagMatrix<Complex<T>, M> &, DiagMatrix<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t Start, std::size_t End>
+struct Loop<T, M, Start, End,
+            typename std::enable_if<(End - Start == 1)>::type> {
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
-    To_matrix[0] = From_matrix[0].imag;
+    To_matrix[Start] = From_matrix[Start].imag;
   }
 };
 
@@ -2137,7 +1893,7 @@ template <typename T, std::size_t M> struct Loop<T, M, 0> {
 template <typename T, std::size_t M>
 inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                     DiagMatrix<T, M> &To_matrix) {
-  Loop<T, M, M - 1>::compute(From_matrix, To_matrix);
+  Loop<T, M, 0, M>::compute(From_matrix, To_matrix);
 }
 
 } // namespace GetImagDiagMatrixFromComplex
