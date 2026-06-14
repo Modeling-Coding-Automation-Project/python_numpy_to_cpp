@@ -337,6 +337,43 @@ using ConcatenateColumnAvailable =
     typename TemplatesOperation::ConcatenateColumnAvailableLists<
         ColumnAvailable_A, ColumnAvailable_B>::type;
 
+/**
+ * @brief A template struct to concatenate two SparseAvailable types vertically.
+ *
+ * This struct provides a type alias 'type' that is the result of concatenating
+ * two SparseAvailable types, effectively merging their rows into a new
+ * SparseAvailable type.
+ *
+ * @tparam SparseAvailable1 The first SparseAvailable type.
+ * @tparam SparseAvailable2 The second SparseAvailable type.
+ *
+ * The resulting type is a SparseAvailable type that contains all rows from
+ * both input SparseAvailable types.
+ */
+template <typename SparseAvailable1, typename SparseAvailable2>
+struct ConcatenateSparseAvailable;
+
+/**
+ * @brief Specialization of ConcatenateSparseAvailable for two SparseAvailable
+ * types.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<Columns1..., Columns2...>, effectively concatenating
+ * the rows from both SparseAvailable types into a new SparseAvailable type.
+ *
+ * @tparam Columns1 The variadic template parameter pack representing the
+ * rows in the first SparseAvailable type.
+ * @tparam Columns2 The variadic template parameter pack representing the
+ * rows in the second SparseAvailable type.
+ */
+template <typename... Columns1, typename... Columns2>
+struct ConcatenateSparseAvailable<
+    TemplatesOperation::SparseAvailableColumns<Columns1...>,
+    TemplatesOperation::SparseAvailableColumns<Columns2...>> {
+  using type =
+      TemplatesOperation::SparseAvailableColumns<Columns1..., Columns2...>;
+};
+
 namespace TemplatesOperation {
 
 /**
@@ -565,40 +602,57 @@ template <std::size_t N>
 using GenerateTrueColumnAvailable = typename GenerateTrueFlags<N>::type;
 
 /**
- * @brief Recursively constructs a type by repeating the ColumnAvailable type M
- * times in a parameter pack.
+ * @brief Metafunction to generate a type list by repeating a column
+ * availability type for a specified number of times.
  *
- * @tparam M The number of times to repeat the ColumnAvailable type.
- * @tparam ColumnAvailable The type to be repeated.
- * @tparam Columns The parameter pack accumulating the repeated types.
+ * This template recursively constructs a type list representing the
+ * availability of rows in a matrix, by prepending a new column availability
+ * type at each recursion step. The recursion continues until the base case (not
+ * shown here) is reached.
  *
- * This template recursively instantiates itself, decrementing M each time,
- * and prepending ColumnAvailable to the Columns parameter pack, until a base
- * case is reached.
+ * @tparam M The number of rows remaining to process.
+ * @tparam ColumnAvailableType The type representing the availability of the
+ * current column.
+ *
+ * The resulting type is accessible via the nested ::type member.
  */
-template <std::size_t M, typename ColumnAvailable, typename... Columns>
+template <std::size_t M, typename ColumnAvailableType>
 struct RepeatColumnAvailable {
-  using type =
-      typename RepeatColumnAvailable<M - 1, ColumnAvailable, ColumnAvailable,
-                                     Columns...>::type;
+  static constexpr std::size_t Mid = M / 2;
+
+  using type = typename ConcatenateSparseAvailable<
+      typename RepeatColumnAvailable<Mid, ColumnAvailableType>::type,
+      typename RepeatColumnAvailable<M - Mid, ColumnAvailableType>::type>::type;
 };
 
 /**
- * @brief Specialization of RepeatColumnAvailable for the case when the first
- * template parameter is 0.
+ * @brief Specialization of RepeatColumnAvailable for the case when M is 1.
  *
- * This specialization defines a type alias `type` that is set to
- * `TemplatesOperation::SparseAvailableColumns<Columns...>`, effectively
- * collecting the remaining rows into a sparse column representation.
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<ColumnAvailableType>, effectively creating a sparse
+ * column representation for a single row.
  *
- * @tparam ColumnAvailable Unused in this specialization, but required for
- * template matching.
- * @tparam Columns Variadic template parameter pack representing the remaining
- * rows.
+ * @tparam ColumnAvailableType The type representing the availability of the
+ * current column.
  */
-template <typename ColumnAvailable, typename... Columns>
-struct RepeatColumnAvailable<0, ColumnAvailable, Columns...> {
-  using type = TemplatesOperation::SparseAvailableColumns<Columns...>;
+template <typename ColumnAvailableType>
+struct RepeatColumnAvailable<1, ColumnAvailableType> {
+  using type = SparseAvailableColumns<ColumnAvailableType>;
+};
+
+/**
+ * @brief Specialization of RepeatColumnAvailable for the case when M is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailableColumns<>, effectively creating an empty sparse column
+ * representation.
+ *
+ * @tparam ColumnAvailableType The type representing the availability of the
+ * current column (unused in this specialization).
+ */
+template <typename ColumnAvailableType>
+struct RepeatColumnAvailable<0, ColumnAvailableType> {
+  using type = SparseAvailableColumns<>;
 };
 
 } // namespace TemplatesOperation
@@ -1370,43 +1424,6 @@ struct GetColumnAvailable<N, SparseAvailable<Columns...>> {
 } // namespace TemplatesOperation
 
 /* Concatenate SparseAvailable vertically */
-
-/**
- * @brief A template struct to concatenate two SparseAvailable types vertically.
- *
- * This struct provides a type alias 'type' that is the result of concatenating
- * two SparseAvailable types, effectively merging their rows into a new
- * SparseAvailable type.
- *
- * @tparam SparseAvailable1 The first SparseAvailable type.
- * @tparam SparseAvailable2 The second SparseAvailable type.
- *
- * The resulting type is a SparseAvailable type that contains all rows from
- * both input SparseAvailable types.
- */
-template <typename SparseAvailable1, typename SparseAvailable2>
-struct ConcatenateSparseAvailable;
-
-/**
- * @brief Specialization of ConcatenateSparseAvailable for two SparseAvailable
- * types.
- *
- * This specialization defines a type alias 'type' that is set to
- * SparseAvailableColumns<Columns1..., Columns2...>, effectively concatenating
- * the rows from both SparseAvailable types into a new SparseAvailable type.
- *
- * @tparam Columns1 The variadic template parameter pack representing the
- * rows in the first SparseAvailable type.
- * @tparam Columns2 The variadic template parameter pack representing the
- * rows in the second SparseAvailable type.
- */
-template <typename... Columns1, typename... Columns2>
-struct ConcatenateSparseAvailable<
-    TemplatesOperation::SparseAvailableColumns<Columns1...>,
-    TemplatesOperation::SparseAvailableColumns<Columns2...>> {
-  using type =
-      TemplatesOperation::SparseAvailableColumns<Columns1..., Columns2...>;
-};
 
 /**
  * @brief Alias template to concatenate two SparseAvailable types vertically.
