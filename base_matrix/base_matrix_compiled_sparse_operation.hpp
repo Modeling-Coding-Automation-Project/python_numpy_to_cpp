@@ -6329,7 +6329,7 @@ struct List<T, M, N, K, CSRIndices_B, CSRPointers_B, I, Start, End, J,
   compute(const Matrix<T, M, K> &A,
           const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
           Matrix<T, M, N> &Y) {
-    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, I, Start>::compute(A, B, Y);
+    Core<T, M, N, K, CSRIndices_B, CSRPointers_B, Start, J>::compute(A, B, Y);
   }
 };
 
