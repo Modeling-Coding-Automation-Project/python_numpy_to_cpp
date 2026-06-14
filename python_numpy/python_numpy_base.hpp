@@ -230,6 +230,12 @@ public:
    */
   constexpr std::size_t size() const { return ROWS * COLS; }
 
+  /**
+   * @brief Retrieves the shape of the matrix as a tuple of (ROWS, COLS).
+   *
+   * @return std::tuple<std::size_t, std::size_t> A tuple containing the number
+   * of rows and columns in the matrix.
+   */
   std::tuple<std::size_t, std::size_t> shape() const {
     return std::make_tuple(ROWS, COLS);
   }
@@ -676,6 +682,17 @@ public:
    * (ROWS * COLS).
    */
   constexpr std::size_t size() const { return ROWS * COLS; }
+
+  /**
+   * @brief Retrieves the shape of the diagonal matrix as a tuple of (ROWS,
+   * COLS).
+   *
+   * @return std::tuple<std::size_t, std::size_t> A tuple containing the number
+   * of rows and columns in the diagonal matrix.
+   */
+  std::tuple<std::size_t, std::size_t> shape() const {
+    return std::make_tuple(ROWS, COLS);
+  }
 
   /**
    * @brief Retrieves the number of elements in the diagonal matrix.
@@ -1133,6 +1150,16 @@ public:
    * * COLS).
    */
   constexpr std::size_t size() const { return ROWS * COLS; }
+
+  /**
+   * @brief Retrieves the shape of the sparse matrix as a tuple of (ROWS, COLS).
+   *
+   * @return std::tuple<std::size_t, std::size_t> A tuple containing the number
+   * of rows and columns in the sparse matrix.
+   */
+  std::tuple<std::size_t, std::size_t> shape() const {
+    return std::make_tuple(ROWS, COLS);
+  }
 
   /**
    * @brief Retrieves the number of elements in the sparse matrix.
