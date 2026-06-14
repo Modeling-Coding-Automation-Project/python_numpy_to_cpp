@@ -1725,64 +1725,95 @@ struct ConcatColumnSparse<Column, SparseAvailable<Columns...>> {
 /* Get rest of SparseAvailable */
 
 /**
- * @brief A template struct to get the rest of SparseAvailable starting from a
- * specific column index.
+ * @brief A template struct to get the rest of a SparseAvailable type starting
+ * from a specific row index.
  *
- * This struct provides a type alias 'type' that is the result of concatenating
- * the ColumnAvailable type at the specified column index with the rest of the
- * SparseAvailable rows.
+ * This struct provides a type alias 'type' that is the result of recursively
+ * extracting the ColumnAvailable types from the SparseAvailable type starting
+ * from the specified row index, effectively creating a new SparseAvailable type
+ * that contains only the rows from the specified index onward.
  *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
  * rows.
- * @tparam Row_Index The index of the row to start from.
- * @tparam Residual The number of remaining rows to process.
+ * @tparam StartRow The index of the row to start from.
+ * @tparam Count The number of rows to include in the resulting SparseAvailable
+ * type.
+ *
+ * The resulting type is a SparseAvailable type that contains only the rows
+ * starting from the specified index, accessible via the nested ::type member.
  */
-template <typename SparseAvailable_In, std::size_t Row_Index,
-          std::size_t Residual>
-struct GetRestOfSparseAvailableLoop {
-  using type = typename ConcatColumnSparse<
-      typename GetColumnAvailable<Row_Index, SparseAvailable_In>::type,
-      typename GetRestOfSparseAvailableLoop<SparseAvailable_In, (Row_Index + 1),
-                                            (Residual - 1)>::type>::type;
+template <typename SparseAvailable_In, std::size_t StartRow, std::size_t Count>
+struct GetRestOfSparseAvailableBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = typename ConcatenateSparseAvailable<
+      typename GetRestOfSparseAvailableBlock<SparseAvailable_In, StartRow,
+                                             MidCount>::type,
+      typename GetRestOfSparseAvailableBlock<SparseAvailable_In,
+                                             StartRow + MidCount,
+                                             Count - MidCount>::type>::type;
 };
 
 /**
- * @brief Specialization of GetRestOfSparseAvailableLoop for the case when
- * Residual is 0.
+ * @brief Specialization of GetRestOfSparseAvailableBlock for the case when
+ * Count is 1.
  *
  * This specialization defines a type alias 'type' that is set to
- * SparseAvailable<ColumnAvailable>, effectively creating a SparseAvailable type
- * with the ColumnAvailable type at the specified column index.
+ * SparseAvailable<typename GetColumnAvailable<StartRow,
+ * SparseAvailable_In>::type>, effectively extracting the ColumnAvailable type
+ * at the specified row index and creating a new SparseAvailable type with that
+ * single row when there is only one row to process.
  *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
  * rows.
- * @tparam Row_Index The index of the row to start from.
+ * @tparam StartRow The index of the row to start from.
  */
-template <typename SparseAvailable_In, std::size_t Row_Index>
-struct GetRestOfSparseAvailableLoop<SparseAvailable_In, Row_Index, 0> {
+template <typename SparseAvailable_In, std::size_t StartRow>
+struct GetRestOfSparseAvailableBlock<SparseAvailable_In, StartRow, 1> {
+
   using type = SparseAvailable<
-      typename GetColumnAvailable<Row_Index, SparseAvailable_In>::type>;
+      typename GetColumnAvailable<StartRow, SparseAvailable_In>::type>;
 };
 
 /**
- * @brief A template alias to get the rest of SparseAvailable starting from a
- * specific column index.
+ * @brief Specialization of GetRestOfSparseAvailableBlock for the case when
+ * Count is 0.
  *
- * This alias uses the GetRestOfSparseAvailableLoop to generate a
- * SparseAvailable type that contains the ColumnAvailable types starting from
- * the specified column index.
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailable<>, effectively creating an empty SparseAvailable type when
+ * there are no rows to process.
  *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ * @tparam StartRow The index of the row to start from.
+ */
+template <typename SparseAvailable_In, std::size_t StartRow>
+struct GetRestOfSparseAvailableBlock<SparseAvailable_In, StartRow, 0> {
+
+  using type = SparseAvailable<>;
+};
+
+/**
+ * @brief Alias template to get the rest of a SparseAvailable type starting from
+ * a specific row index.
+ *
+ * This alias uses the GetRestOfSparseAvailableBlock to extract the
+ * ColumnAvailable types from the SparseAvailable type starting from the
+ * specified row index, effectively creating a new SparseAvailable type that
+ * contains only the rows from the specified index onward.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
  * rows.
  * @tparam Row_Index The index of the row to start from.
  *
- * The resulting type is a SparseAvailable type that contains all rows from
- * the specified index onward.
+ * The resulting type is a SparseAvailable type that contains only the rows
+ * starting from the specified index, accessible via the nested ::type member.
  */
 template <typename SparseAvailable_In, std::size_t Row_Index>
-using GetRestOfSparseAvailable = typename GetRestOfSparseAvailableLoop<
-    SparseAvailable_In, Row_Index,
-    ((SparseAvailable_In::number_of_rows - 1) - Row_Index)>::type;
+using GetRestOfSparseAvailable =
+    typename TemplatesOperation::GetRestOfSparseAvailableBlock<
+        SparseAvailable_In, Row_Index,
+        (SparseAvailable_In::number_of_rows - Row_Index)>::type;
 
 /**
  * @brief A template struct to check if a SparseAvailable type is empty.
