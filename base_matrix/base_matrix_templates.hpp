@@ -2075,6 +2075,22 @@ struct AssignSparseMatrixRowBlock<SparseAvailable_In, ColumnElementNumber,
   using type = InvalidSequence<0>;
 };
 
+/**
+ * @brief A template struct to assign row indices for a block of columns in a
+ * sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * generating row indices for a block of columns in the SparseAvailable type,
+ * effectively creating a sequence of row indices for the specified range of
+ * columns.
+ *
+ * @tparam SparseAvailable_In The SparseAvailable type containing multiple rows.
+ * @tparam StartColumn The starting column index for the block to assign.
+ * @tparam Count The number of columns in the block to assign.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * specified block of columns, accessible via the nested ::type member.
+ */
 template <typename SparseAvailable_In, std::size_t StartColumn,
           std::size_t Count>
 struct AssignSparseMatrixColumnBlock {
@@ -2088,6 +2104,18 @@ struct AssignSparseMatrixColumnBlock {
                                Count - MidCount>::type>::type;
 };
 
+/**
+ * @brief Specialization of AssignSparseMatrixColumnBlock for the case when
+ * Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * AssignSparseMatrixRowBlock for the specified column index, effectively
+ * generating row indices for that single column when there is only one column
+ * to process.
+ *
+ * @tparam SparseAvailable_In The SparseAvailable type containing multiple rows.
+ * @tparam StartColumn The starting column index for the block to assign.
+ */
 template <typename SparseAvailable_In, std::size_t StartColumn>
 struct AssignSparseMatrixColumnBlock<SparseAvailable_In, StartColumn, 1> {
 
@@ -2096,12 +2124,37 @@ struct AssignSparseMatrixColumnBlock<SparseAvailable_In, StartColumn, 1> {
                                           SparseAvailable_In::row_size>::type;
 };
 
+/**
+ * @brief Specialization of AssignSparseMatrixColumnBlock for the case when
+ * Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid row
+ * indices to return when there are no columns to process.
+ *
+ * @tparam SparseAvailable_In The SparseAvailable type containing multiple rows.
+ * @tparam StartColumn The starting column index for the block to assign.
+ */
 template <typename SparseAvailable_In, std::size_t StartColumn>
 struct AssignSparseMatrixColumnBlock<SparseAvailable_In, StartColumn, 0> {
 
   using type = InvalidSequence<0>;
 };
 
+/**
+ * @brief A template struct to assign row indices for all columns in a sparse
+ * matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * generating row indices for all columns in the SparseAvailable type,
+ * effectively creating a sequence of row indices for the entire matrix.
+ *
+ * @tparam SparseAvailable_In The SparseAvailable type containing multiple rows.
+ * @tparam ColumnElementNumber The index of the column being processed.
+ *
+ * The resulting type is an IndexSequence containing the row indices for all
+ * columns in the SparseAvailable type, accessible via the nested ::type member.
+ */
 template <typename SparseAvailable_In, std::size_t ColumnElementNumber>
 struct AssignSparseMatrixColumnLoop {
 
@@ -2110,9 +2163,40 @@ struct AssignSparseMatrixColumnLoop {
                                              ColumnElementNumber + 1>::type;
 };
 
+/**
+ * @brief A template struct to generate a sequence of row indices from a
+ * SparseAvailable type, taking into account whether it is empty or not.
+ *
+ * This struct provides a type alias 'type' that is set to the result of
+ * AssignSparseMatrixColumnLoop if the SparseAvailable type is not empty, or an
+ * IndexSequence<0> if it is empty, effectively generating a sequence of row
+ * indices for the SparseAvailable type while handling the case of an empty
+ * matrix.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ * @tparam NotEmpty A boolean indicating whether the SparseAvailable type is
+ * empty or not.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * SparseAvailable type if it is not empty, or an IndexSequence<0> if it is
+ * empty, accessible via the nested ::type member.
+ */
 template <typename SparseAvailable_In, bool NotEmpty>
 struct CSRIndicesSequenceFromSparseAvailable;
 
+/**
+ * @brief Specialization of CSRIndicesSequenceFromSparseAvailable for the case
+ * when the SparseAvailable type is not empty.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * AssignSparseMatrixColumnLoop for the non-empty SparseAvailable type,
+ * effectively generating a sequence of row indices for the SparseAvailable type
+ * when it is not empty.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ */
 template <typename SparseAvailable_In>
 struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable_In, true> {
   using type = typename AssignSparseMatrixColumnLoop<
@@ -2121,6 +2205,17 @@ struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable_In, true> {
        1)>::type;
 };
 
+/**
+ * @brief Specialization of CSRIndicesSequenceFromSparseAvailable for the case
+ * when the SparseAvailable type is empty.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * IndexSequence<0>, effectively indicating that there are no valid row indices
+ * to return when the SparseAvailable type is empty.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ */
 template <typename SparseAvailable_In>
 struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable_In, false> {
   using type = IndexSequence<0>;
