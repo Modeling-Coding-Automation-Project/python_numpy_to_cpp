@@ -178,6 +178,9 @@ public:
   struct VectorDotCore<U, P, Start, End,
                        typename std::enable_if<(End - Start > 1)>::type> {
     static constexpr std::size_t Mid = Start + (End - Start) / 2;
+    /**
+     * @brief Recursively accumulates partial dot products.
+     */
     static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
       return VectorDotCore<U, P, Start, Mid>::compute(a, b) +
              VectorDotCore<U, P, Mid, End>::compute(a, b);
@@ -187,6 +190,9 @@ public:
   template <typename U, std::size_t P, std::size_t Start, std::size_t End>
   struct VectorDotCore<U, P, Start, End,
                        typename std::enable_if<(End == Start)>::type> {
+    /**
+     * @brief Base case for an empty index range in dot product computation.
+     */
     static T compute(const Vector<U, P> &, const Vector<U, P> &) {
       return static_cast<T>(0);
     }
@@ -195,6 +201,9 @@ public:
   template <typename U, std::size_t P, std::size_t Start, std::size_t End>
   struct VectorDotCore<U, P, Start, End,
                        typename std::enable_if<(End - Start == 1)>::type> {
+    /**
+     * @brief Computes one term of the dot product.
+     */
     static T compute(const Vector<U, P> &a, const Vector<U, P> &b) {
       return a[Start] * b[Start];
     }
@@ -393,12 +402,18 @@ namespace VectorNormalize {
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector normalization helper.
+ */
 struct VectorNormalizeCore;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct VectorNormalizeCore<T, N, Start, End,
                            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively normalizes a vector over an index range.
+   */
   static void compute(Vector<T, N> &vec, T norm_inv) {
     VectorNormalizeCore<T, N, Start, Mid>::compute(vec, norm_inv);
     VectorNormalizeCore<T, N, Mid, End>::compute(vec, norm_inv);
@@ -408,12 +423,18 @@ struct VectorNormalizeCore<T, N, Start, End,
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct VectorNormalizeCore<T, N, Start, End,
                            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(Vector<T, N> &, T) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct VectorNormalizeCore<T, N, Start, End,
                            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Normalizes one vector element.
+   */
   static void compute(Vector<T, N> &vec, T norm_inv) { vec[Start] *= norm_inv; }
 };
 
@@ -502,12 +523,18 @@ namespace VectorAddScalar {
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector-scalar addition helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively adds a scalar to vector elements over a range.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(vec, scalar, result);
     Core<T, N, Mid, End>::compute(vec, scalar, result);
@@ -516,12 +543,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Adds a scalar to one vector element.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[Start] = vec[Start] + scalar;
   }
@@ -616,12 +649,18 @@ namespace VectorSubScalar {
 // Vector Sub Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector-scalar subtraction helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively subtracts a scalar from vector elements over a range.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(vec, scalar, result);
     Core<T, N, Mid, End>::compute(vec, scalar, result);
@@ -630,12 +669,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Subtracts a scalar from one vector element.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[Start] = vec[Start] - scalar;
   }
@@ -698,12 +743,18 @@ namespace ScalarSubVector {
 // Scalar Sub Vector Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive scalar-vector subtraction helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively subtracts vector elements from a scalar over a range.
+   */
   static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(scalar, vec, result);
     Core<T, N, Mid, End>::compute(scalar, vec, result);
@@ -712,12 +763,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(T, const Vector<T, N> &, Vector<T, N> &) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Subtracts one vector element from a scalar.
+   */
   static void compute(T scalar, const Vector<T, N> &vec, Vector<T, N> &result) {
     result[Start] = scalar - vec[Start];
   }
@@ -783,12 +840,18 @@ namespace VectorAddVector {
 // Vector Add Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector-vector addition helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively adds two vectors over an index range.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(a, b, result);
@@ -798,6 +861,9 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, const Vector<T, N> &,
                       Vector<T, N> &) {}
 };
@@ -805,6 +871,9 @@ struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Adds one pair of vector elements.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[Start] = a[Start] + b[Start];
@@ -868,12 +937,18 @@ namespace VectorSubVector {
 // Vector Sub Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector-vector subtraction helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively subtracts two vectors over an index range.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(a, b, result);
@@ -883,6 +958,9 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, const Vector<T, N> &,
                       Vector<T, N> &) {}
 };
@@ -890,6 +968,9 @@ struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Subtracts one pair of vector elements.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[Start] = a[Start] - b[Start];
@@ -953,12 +1034,18 @@ namespace VectorMultiplyScalar {
 // Vector Multiply Scalar Core Template: N_idx < N
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive vector-scalar multiplication helper.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively multiplies vector elements by a scalar over a range.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(vec, scalar, result);
     Core<T, N, Mid, End>::compute(vec, scalar, result);
@@ -967,12 +1054,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, T, Vector<T, N> &) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Multiplies one vector element by a scalar.
+   */
   static void compute(const Vector<T, N> &vec, T scalar, Vector<T, N> &result) {
     result[Start] = vec[Start] * scalar;
   }
@@ -1066,12 +1159,18 @@ namespace VectorMultiply {
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive element-wise vector multiplication.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively multiplies two vectors element-wise over a range.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     Core<T, N, Start, Mid>::compute(a, b, result);
@@ -1081,6 +1180,9 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(const Vector<T, N> &, const Vector<T, N> &,
                       Vector<T, N> &) {}
 };
@@ -1088,6 +1190,9 @@ struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Multiplies one pair of vector elements.
+   */
   static void compute(const Vector<T, N> &a, const Vector<T, N> &b,
                       Vector<T, N> &result) {
     result[Start] = a[Start] * b[Start];
@@ -1150,12 +1255,18 @@ namespace ComplexVectorNorm {
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive complex-vector norm accumulation.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively accumulates squared magnitudes over a range.
+   */
   static T compute(const Vector<Complex<T>, N> &vec_comp) {
     return Core<T, N, Start, Mid>::compute(vec_comp) +
            Core<T, N, Mid, End>::compute(vec_comp);
@@ -1164,12 +1275,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static T compute(const Vector<Complex<T>, N> &) { return static_cast<T>(0); }
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one squared magnitude term.
+   */
   static T compute(const Vector<Complex<T>, N> &vec_comp) {
     return vec_comp[Start].real * vec_comp[Start].real +
            vec_comp[Start].imag * vec_comp[Start].imag;
@@ -1331,12 +1448,18 @@ namespace ComplexVectorNormalize {
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive complex-vector normalization.
+ */
 struct Core;
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively normalizes a complex vector over an index range.
+   */
   static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
     Core<T, N, Start, Mid>::compute(vec, norm_inv);
     Core<T, N, Mid, End>::compute(vec, norm_inv);
@@ -1345,12 +1468,18 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range.
+   */
   static void compute(Vector<Complex<T>, N> &, T) {}
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Normalizes one complex-vector element.
+   */
   static void compute(Vector<Complex<T>, N> &vec, T norm_inv) {
     vec[Start] *= norm_inv;
   }
@@ -1494,18 +1623,27 @@ template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively extracts real parts over an index range to std::vector.
+   */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
     Core<T, N, Mid, End>::compute(To_vector, From_vector);
   }
 
+  /**
+   * @brief Recursively extracts real parts over an index range to std::array.
+   */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
     Core<T, N, Mid, End>::compute(To_vector, From_vector);
   }
 
+  /**
+   * @brief Recursively extracts real parts over an index range to Vector.
+   */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
@@ -1515,8 +1653,17 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range to std::vector.
+   */
   static void compute(std::vector<T> &, const std::vector<Complex<T>> &) {}
+  /**
+   * @brief Base case for an empty index range to std::array.
+   */
   static void compute(std::array<T, N> &, const std::array<Complex<T>, N> &) {}
+  /**
+   * @brief Base case for an empty index range to Vector.
+   */
   static void compute(Vector<T, N> &, const Vector<Complex<T>, N> &) {}
 };
 
@@ -1691,18 +1838,29 @@ template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively extracts imaginary parts over an index range to
+   * std::vector.
+   */
   static void compute(std::vector<T> &To_vector,
                       const std::vector<Complex<T>> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
     Core<T, N, Mid, End>::compute(To_vector, From_vector);
   }
 
+  /**
+   * @brief Recursively extracts imaginary parts over an index range to
+   * std::array.
+   */
   static void compute(std::array<T, N> &To_vector,
                       const std::array<Complex<T>, N> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
     Core<T, N, Mid, End>::compute(To_vector, From_vector);
   }
 
+  /**
+   * @brief Recursively extracts imaginary parts over an index range to Vector.
+   */
   static void compute(Vector<T, N> &To_vector,
                       const Vector<Complex<T>, N> &From_vector) {
     Core<T, N, Start, Mid>::compute(To_vector, From_vector);
@@ -1712,8 +1870,17 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty index range to std::vector.
+   */
   static void compute(std::vector<T> &, const std::vector<Complex<T>> &) {}
+  /**
+   * @brief Base case for an empty index range to std::array.
+   */
   static void compute(std::array<T, N> &, const std::array<Complex<T>, N> &) {}
+  /**
+   * @brief Base case for an empty index range to Vector.
+   */
   static void compute(Vector<T, N> &, const Vector<Complex<T>, N> &) {}
 };
 
