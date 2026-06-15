@@ -2898,53 +2898,127 @@ template <std::size_t M, std::size_t N> struct TriangularCountNumbers {
 /* Create Upper Triangular Sparse Matrix Row Indices */
 
 /**
- * @brief A template struct to create a sequence of upper triangular row
- * numbers.
+ * @brief A template struct to concatenate upper triangular row numbers for a
+ * specific block of rows in a sparse matrix.
  *
  * This struct provides a type alias 'type' that is the result of recursively
- * generating a sequence of upper triangular row numbers for a given range.
+ * concatenating upper triangular row numbers for a specific block of rows in
+ * the matrix, effectively creating a sequence of row indices that correspond to
+ * the upper triangular part of the matrix for the specified range of rows.
  *
- * @tparam M The starting index of the sequence.
- * @tparam N The ending index of the sequence.
+ * @tparam Start The starting index of the block of rows.
+ * @tparam Count The number of rows in the block.
+ * @tparam N The total number of columns in the matrix.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * upper triangular part of the matrix for the specified range of rows,
+ * accessible via the nested ::type member.
  */
-template <std::size_t M, std::size_t N>
-struct ConcatenateUpperTriangularRowNumbers {
+template <std::size_t Start, std::size_t Count, std::size_t N>
+struct ConcatenateUpperTriangularRowNumbersBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
   using type = typename Concatenate<
-      typename ConcatenateUpperTriangularRowNumbers<(M - 1), N>::type,
-      typename TriangularSequenceList<M, N>::type>::type;
+      typename ConcatenateUpperTriangularRowNumbersBlock<Start, MidCount,
+                                                         N>::type,
+      typename ConcatenateUpperTriangularRowNumbersBlock<
+          Start + MidCount, Count - MidCount, N>::type>::type;
 };
 
 /**
- * @brief Specialization of ConcatenateUpperTriangularRowNumbers for the case
- * when M is 1.
+ * @brief Specialization of ConcatenateUpperTriangularRowNumbersBlock for the
+ * case when Count is 1.
  *
  * This specialization defines a type alias 'type' that is set to the result of
- * TriangularSequenceList<1, N>, effectively creating a sequence of upper
- * triangular row numbers for the specified range.
+ * TriangularSequenceList for the specified starting index and total number of
+ * columns, effectively creating a sequence of row indices for the upper
+ * triangular part of the matrix for that single row when there is only one row
+ * to process.
  *
- * @tparam N The ending index of the sequence.
+ * @tparam Start The starting index of the block of rows.
+ * @tparam N The total number of columns in the matrix.
  */
-template <std::size_t N> struct ConcatenateUpperTriangularRowNumbers<1, N> {
-  using type = typename TriangularSequenceList<1, N>::type;
+template <std::size_t Start, std::size_t N>
+struct ConcatenateUpperTriangularRowNumbersBlock<Start, 1, N> {
+
+  using type = typename TriangularSequenceList<Start, N>::type;
+};
+
+/**
+ * @brief Specialization of ConcatenateUpperTriangularRowNumbersBlock for the
+ * case when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid row
+ * indices to return when there are no rows to process.
+ *
+ * @tparam Start The starting index of the block of rows.
+ * @tparam N The total number of columns in the matrix.
+ */
+template <std::size_t Start, std::size_t N>
+struct ConcatenateUpperTriangularRowNumbersBlock<Start, 0, N> {
+
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to concatenate upper triangular row numbers for a
+ * specific range of rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * concatenated sequence of upper triangular row numbers for a given range of
+ * rows, starting from 1 and ending at M, with respect to the total number of
+ * columns N.
+ *
+ * @tparam M The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * upper triangular part of the matrix for the specified range of rows,
+ * accessible via the nested ::type member.
+ */
+template <std::size_t M, std::size_t N>
+struct ConcatenateUpperTriangularRowNumbers {
+
+  using type =
+      typename ConcatenateUpperTriangularRowNumbersBlock<1, M, N>::type;
 };
 
 /**
  * @brief A template alias to create a sequence of upper triangular row numbers
  * for a given range.
  *
- * This alias uses the ConcatenateUpperTriangularRowNumbers to generate a type
- * representing the upper triangular row numbers for the specified range.
- *
- * @tparam M The starting index of the sequence.
- * @tparam N The ending index of the sequence.
- *
- * The resulting type is a sequence of upper triangular row numbers for the
+ * This alias uses the TemplatesOperation::ConcatenateUpperTriangularRowNumbers
+ * to generate a type representing the upper triangular row numbers for the
  * specified range.
+ *
+ * @tparam M The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * upper triangular part of the matrix for the specified range of rows.
  */
 template <std::size_t M, std::size_t N>
 using UpperTriangularRowNumbers =
     typename ConcatenateUpperTriangularRowNumbers<((N < M) ? N : M), N>::type;
 
+/**
+ * @brief A template struct to accumulate the number of elements in a triangular
+ * sequence.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * triangular count sequence for a given range, starting from 0 and ending at M,
+ * and concatenating it with an IndexSequence containing 0.
+ *
+ * @tparam TriangularCountNumbers The TriangularCountNumbers type containing the
+ * counts of elements in each row.
+ * @tparam M The starting index of the sequence.
+ * @tparam N The ending index of the sequence.
+ * @tparam Dif The difference between M and N.
+ * The resulting type is an IndexSequence containing the accumulated counts of
+ * non-empty entries for each row across the specified range, accessible via the
+ * nested ::type member.
+ */
 template <typename TriangularCountNumbers, std::size_t M>
 struct AccumulateTriangularElementNumberStruct {
   using type =
