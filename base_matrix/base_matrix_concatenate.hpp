@@ -46,6 +46,14 @@ struct VerticalConcatenateLoop<
     T, M, P, N, Start, End, typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively copies a column range from two matrices into the
+   * vertically concatenated output matrix.
+   *
+   * @param A The first input matrix (top block).
+   * @param B The second input matrix (bottom block).
+   * @param Y The output matrix receiving the concatenated values.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     VerticalConcatenateLoop<T, M, P, N, Start, Mid>::compute(A, B, Y);
@@ -57,6 +65,9 @@ template <typename T, std::size_t M, std::size_t P, std::size_t N,
           std::size_t Start, std::size_t End>
 struct VerticalConcatenateLoop<T, M, P, N, Start, End,
                                typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range during vertical concatenation.
+   */
   static void compute(const Matrix<T, M, N> &, const Matrix<T, P, N> &,
                       Matrix<T, M + P, N> &) {}
 };
@@ -65,6 +76,14 @@ template <typename T, std::size_t M, std::size_t P, std::size_t N,
           std::size_t Start, std::size_t End>
 struct VerticalConcatenateLoop<
     T, M, P, N, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Copies one column from the two input matrices into the output
+   * matrix.
+   *
+   * @param A The first input matrix (top block).
+   * @param B The second input matrix (bottom block).
+   * @param Y The output matrix receiving the concatenated values.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, P, N> &B,
                       Matrix<T, M + P, N> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, (M + P)>(A.data[Start], Y.data[Start]);
@@ -161,6 +180,14 @@ inline auto concatenate_vertically(const Matrix<T, M, N> &A,
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a dense matrix and a
+ * diagonal matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of the dense matrix.
+ * @tparam N The number of columns of both matrices.
+ */
 template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
 
   using CSRIndices =
@@ -236,6 +263,17 @@ inline auto concatenate_vertically(const Matrix<T, M, N> &A,
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a dense matrix and a
+ * compiled sparse matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of the dense matrix.
+ * @tparam N The number of columns of both matrices.
+ * @tparam P The number of rows of the compiled sparse matrix.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename CSRIndices_B, typename CSRPointers_B>
 struct DenseAndSparse {
@@ -330,6 +368,14 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a diagonal matrix and a
+ * dense matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The order of the diagonal matrix.
+ * @tparam P The number of rows of the dense matrix.
+ */
 template <typename T, std::size_t M, std::size_t P> struct DiagAndDense {
 
   using SparseAvailable_A = DiagAvailable<M>;
@@ -409,6 +455,12 @@ inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating two diagonal matrices.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The order of both diagonal matrices.
+ */
 template <typename T, std::size_t M> struct DiagAndDiag {
 
   using SparseAvailable_A = DiagAvailable<M>;
@@ -483,6 +535,16 @@ inline auto concatenate_vertically(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a diagonal matrix and a
+ * compiled sparse matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The order of the diagonal matrix and number of columns.
+ * @tparam P The number of rows of the compiled sparse matrix.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t P, typename CSRIndices_B,
           typename CSRPointers_B>
 struct DiagAndSparse {
@@ -573,6 +635,17 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a compiled sparse matrix and
+ * a dense matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of the compiled sparse matrix.
+ * @tparam N The number of columns of both matrices.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ * @tparam P The number of rows of the dense matrix.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A, std::size_t P>
 struct SparseAndDense {
@@ -666,6 +739,16 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating a compiled sparse matrix and
+ * a diagonal matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of the compiled sparse matrix.
+ * @tparam N The number of columns of both matrices.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
 struct SparseAndDiag {
@@ -756,6 +839,19 @@ inline auto concatenate_vertically(
 
 namespace ConcatenateVertically {
 
+/**
+ * @brief Type traits for vertically concatenating two compiled sparse
+ * matrices.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of matrix A.
+ * @tparam N The number of columns shared by both matrices.
+ * @tparam P The number of rows of matrix B.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t P,
           typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
           typename CSRPointers_B>
@@ -867,6 +963,13 @@ struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
                             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively copies a column range of matrix A into the left block
+   * of Y.
+   *
+   * @param A The left input matrix.
+   * @param Y The output matrix receiving the copied values.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
     CopyColumnsFirstLoop<T, M, N, P, Start, Mid>::compute(A, Y);
     CopyColumnsFirstLoop<T, M, N, P, Mid, End>::compute(A, Y);
@@ -877,6 +980,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Start, std::size_t End>
 struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
                             typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range while copying matrix A.
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<T, M, N + P> &) {}
 };
 
@@ -884,6 +990,12 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Start, std::size_t End>
 struct CopyColumnsFirstLoop<T, M, N, P, Start, End,
                             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Copies one column of matrix A into the left block of Y.
+   *
+   * @param A The left input matrix.
+   * @param Y The output matrix receiving the copied values.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(A(Start), Y(Start));
   }
@@ -920,6 +1032,13 @@ struct CopyColumnsSecondLoop<T, M, N, P, Start, End,
                              typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively copies a column range of matrix B into the right block
+   * of Y.
+   *
+   * @param B The right input matrix.
+   * @param Y The output matrix receiving the copied values.
+   */
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
     CopyColumnsSecondLoop<T, M, N, P, Start, Mid>::compute(B, Y);
     CopyColumnsSecondLoop<T, M, N, P, Mid, End>::compute(B, Y);
@@ -930,6 +1049,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Start, std::size_t End>
 struct CopyColumnsSecondLoop<T, M, N, P, Start, End,
                              typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range while copying matrix B.
+   */
   static void compute(const Matrix<T, M, P> &, Matrix<T, M, N + P> &) {}
 };
 
@@ -937,6 +1059,12 @@ template <typename T, std::size_t M, std::size_t N, std::size_t P,
           std::size_t Start, std::size_t End>
 struct CopyColumnsSecondLoop<
     T, M, N, P, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Copies one column of matrix B into the right block of Y.
+   *
+   * @param B The right input matrix.
+   * @param Y The output matrix receiving the copied values.
+   */
   static void compute(const Matrix<T, M, P> &B, Matrix<T, M, N + P> &Y) {
     Base::Utility::copy<T, 0, M, 0, M, M>(B(Start), Y(N + Start));
   }
@@ -1048,6 +1176,13 @@ struct ConcatMatrixSetFromDenseColumn<
     typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively maps one dense row segment into the target compiled
+   * sparse matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source dense matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -1068,6 +1203,9 @@ struct ConcatMatrixSetFromDenseColumn<
     T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
     CSRPointers_Y, I, Start, End,
     typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty dense-column range.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
           const Matrix<T, M, N> &) {}
@@ -1081,6 +1219,12 @@ struct ConcatMatrixSetFromDenseColumn<
     T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
     CSRPointers_Y, I, Start, End,
     typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Writes one dense value into the target compiled sparse matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source dense matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -1105,6 +1249,13 @@ struct ConcatMatrixSetFromDenseRow<
     typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively maps dense rows into the target compiled sparse
+   * matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source dense matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -1124,6 +1275,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Y_Row,
 struct ConcatMatrixSetFromDenseRow<
     T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
     CSRPointers_Y, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty dense-row range.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
           const Matrix<T, M, N> &) {}
@@ -1137,6 +1291,12 @@ struct ConcatMatrixSetFromDenseRow<
     T, M, N, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y,
     CSRPointers_Y, Start, End,
     typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Expands one dense row by delegating to column-wise mapping.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source dense matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const Matrix<T, M, N> &A) {
@@ -1162,6 +1322,13 @@ struct ConcatMatrixSetFromDiagRow<
     Start, End, typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively maps diagonal entries into the target compiled sparse
+   * matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param B The source diagonal matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
@@ -1181,6 +1348,9 @@ template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
 struct ConcatMatrixSetFromDiagRow<
     T, M, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y, CSRPointers_Y,
     Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal range.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
           const DiagMatrix<T, M> &) {}
@@ -1193,6 +1363,12 @@ template <typename T, std::size_t M, std::size_t Y_Row, std::size_t Y_Col,
 struct ConcatMatrixSetFromDiagRow<
     T, M, Y_Row, Y_Col, Column_Offset, Col_Offset, CSRIndices_Y, CSRPointers_Y,
     Start, End, typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Writes one diagonal entry into the target compiled sparse matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param B The source diagonal matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const DiagMatrix<T, M> &B) {
@@ -1203,6 +1379,14 @@ struct ConcatMatrixSetFromDiagRow<
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a dense matrix and a
+ * diagonal matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the dense matrix.
+ */
 template <typename T, std::size_t M, std::size_t N> struct DenseAndDiag {
 
   using SparseAvailable_A = DenseAvailable<M, N>;
@@ -1330,6 +1514,13 @@ struct ConcatMatrixSetFromSparseColumn<
     typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively maps one sparse row segment into the target compiled
+   * sparse matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source compiled sparse matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
@@ -1351,6 +1542,9 @@ struct ConcatMatrixSetFromSparseColumn<
     T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
     Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, End,
     typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty sparse-column range.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
@@ -1365,6 +1559,12 @@ struct ConcatMatrixSetFromSparseColumn<
     T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
     Col_Offset, CSRIndices_Y, CSRPointers_Y, I, Start, End,
     typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Writes one sparse value into the target compiled sparse matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source compiled sparse matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
@@ -1392,6 +1592,13 @@ struct ConcatMatrixSetFromSparseRow<
     typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively maps sparse rows into the target compiled sparse
+   * matrix.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source compiled sparse matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
@@ -1413,6 +1620,9 @@ struct ConcatMatrixSetFromSparseRow<
     T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
     Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, End,
     typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty sparse-row range.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &) {}
@@ -1427,6 +1637,12 @@ struct ConcatMatrixSetFromSparseRow<
     T, M, N, CSRIndices_A, CSRPointers_A, Y_Row, Y_Col, Column_Offset,
     Col_Offset, CSRIndices_Y, CSRPointers_Y, Start, End,
     typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Expands one sparse row by delegating to column-wise sparse mapping.
+   *
+   * @param Y The destination compiled sparse matrix.
+   * @param A The source compiled sparse matrix.
+   */
   static void
   compute(CompiledSparseMatrix<T, Y_Row, Y_Col, CSRIndices_Y, CSRPointers_Y> &Y,
           const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
@@ -1438,6 +1654,17 @@ struct ConcatMatrixSetFromSparseRow<
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a dense matrix and a
+ * compiled sparse matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the dense matrix.
+ * @tparam L The number of columns of the compiled sparse matrix.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename CSRIndices_B, typename CSRPointers_B>
 struct DenseAndSparse {
@@ -1569,6 +1796,14 @@ inline auto concatenate_horizontally(
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a diagonal matrix and a
+ * dense matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the dense matrix.
+ */
 template <typename T, std::size_t M, std::size_t N> struct DiagAndDense {
 
   using SparseAvailable_A = DiagAvailable<M>;
@@ -1678,6 +1913,12 @@ inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating two diagonal matrices.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The order of both diagonal matrices.
+ */
 template <typename T, std::size_t M> struct DiagAndDiag {
 
   using SparseAvailable_A = DiagAvailable<M>;
@@ -1783,6 +2024,16 @@ inline auto concatenate_horizontally(const DiagMatrix<T, M> &A,
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a diagonal matrix and a
+ * compiled sparse matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the compiled sparse matrix.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
           typename CSRPointers_B>
 struct DiagAndSparse {
@@ -1913,6 +2164,17 @@ inline auto concatenate_horizontally(
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a compiled sparse matrix
+ * and a dense matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the dense matrix.
+ * @tparam L The number of columns of the compiled sparse matrix.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename CSRIndices_A, typename CSRPointers_A>
 struct SparseAndDense {
@@ -2046,6 +2308,16 @@ inline auto concatenate_horizontally(
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating a compiled sparse matrix
+ * and a diagonal matrix.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of the compiled sparse matrix.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
 struct SparseAndDiag {
@@ -2180,6 +2452,19 @@ inline auto concatenate_horizontally(
 
 namespace ConcatenateHorizontally {
 
+/**
+ * @brief Type traits for horizontally concatenating two compiled sparse
+ * matrices.
+ *
+ * @tparam T The matrix value type.
+ * @tparam M The number of rows of both matrices.
+ * @tparam N The number of columns of matrix A.
+ * @tparam L The number of columns of matrix B.
+ * @tparam CSRIndices_A The CSR column indices type of matrix A.
+ * @tparam CSRPointers_A The CSR row pointers type of matrix A.
+ * @tparam CSRIndices_B The CSR column indices type of matrix B.
+ * @tparam CSRPointers_B The CSR row pointers type of matrix B.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t L,
           typename CSRIndices_A, typename CSRPointers_A, typename CSRIndices_B,
           typename CSRPointers_B>
