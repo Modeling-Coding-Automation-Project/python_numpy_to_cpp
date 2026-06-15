@@ -157,6 +157,21 @@ public:
 
   /* Identity */
 
+  /**
+   * @brief Struct template for creating an identity matrix using compile-time
+   * recursion.
+   *
+   * This struct template uses template metaprogramming to recursively set the
+   * diagonal elements of a matrix to 1, effectively creating an identity
+   * matrix. The recursion is controlled by the Start and End template
+   * parameters, which define the range of indices to process.
+   *
+   * @tparam U The type of the matrix elements.
+   * @tparam P The size of the identity matrix (P x P).
+   * @tparam Start The starting index for the diagonal element to set.
+   * @tparam End The ending index for the diagonal element to set.
+   * @tparam Enable A helper type for SFINAE to control specialization.
+   */
   template <typename U, std::size_t P, std::size_t Start, std::size_t End,
             typename Enable = void>
   struct CreateIdentityCore;
@@ -166,6 +181,17 @@ public:
                             typename std::enable_if<(End - Start > 1)>::type> {
     static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+    /**
+     * @brief Recursively sets the diagonal elements of the identity matrix
+     * to 1.
+     *
+     * This static function recursively sets the diagonal elements of the
+     * identity matrix to 1 for the specified range of indices. It divides the
+     * range into two halves until it reaches individual indices, which are then
+     * set directly.
+     *
+     * @param identity The identity matrix being constructed.
+     */
     static void compute(Matrix<U, P, P> &identity) {
       CreateIdentityCore<U, P, Start, Mid>::compute(identity);
       CreateIdentityCore<U, P, Mid, End>::compute(identity);
@@ -175,12 +201,32 @@ public:
   template <typename U, std::size_t P, std::size_t Start, std::size_t End>
   struct CreateIdentityCore<U, P, Start, End,
                             typename std::enable_if<(End == Start)>::type> {
+    /**
+     * @brief Base case for the recursive creation of an identity matrix when
+     * the range is empty.
+     *
+     * This static function serves as the base case for the recursive creation
+     * of an identity matrix. When the range is empty (End == Start), it does
+     * nothing.
+     *
+     * @param identity The identity matrix being constructed (not used here).
+     */
     static void compute(Matrix<U, P, P> &) {}
   };
 
   template <typename U, std::size_t P, std::size_t Start, std::size_t End>
   struct CreateIdentityCore<U, P, Start, End,
                             typename std::enable_if<(End - Start == 1)>::type> {
+    /**
+     * @brief Base case for the recursive creation of an identity matrix when
+     * the range contains a single element.
+     *
+     * This static function serves as the base case for the recursive creation
+     * of an identity matrix. When the range contains a single element
+     * (End - Start == 1), it sets the corresponding diagonal element to 1.
+     *
+     * @param identity The identity matrix being constructed.
+     */
     static void compute(Matrix<U, P, P> &identity) {
       identity.template set<Start, Start>(static_cast<U>(1));
     }
@@ -228,6 +274,24 @@ public:
   }
 
   /* Full */
+
+  /**
+   * @brief Struct template for filling an entire column of a matrix with a
+   * specified value using compile-time recursion.
+   *
+   * This struct template uses template metaprogramming to recursively set all
+   * elements of a specific column in a matrix to a given value. The recursion
+   * is controlled by the Start and End template parameters, which define the
+   * range of row indices to process for the specified column.
+   *
+   * @tparam U The type of the matrix elements.
+   * @tparam O The number of rows in the matrix.
+   * @tparam P The number of columns in the matrix.
+   * @tparam I The index of the column to fill.
+   * @tparam Start The starting index for the row to set.
+   * @tparam End The ending index for the row to set.
+   * @tparam Enable A helper type for SFINAE to control specialization.
+   */
   template <typename U, std::size_t O, std::size_t P, std::size_t I,
             std::size_t Start, std::size_t End, typename Enable = void>
   struct MatrixFullColumn;
@@ -238,6 +302,17 @@ public:
                           typename std::enable_if<(End - Start > 1)>::type> {
     static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+    /**
+     * @brief Recursively fills a column of the matrix with a specified value.
+     *
+     * This static function recursively sets all elements of a specific column
+     * in the matrix to a given value for the specified range of row indices. It
+     * divides the row range into two halves until it reaches individual rows,
+     * which are then set directly.
+     *
+     * @param Full The matrix being filled.
+     * @param value The value to set in the specified column.
+     */
     static void compute(Matrix<U, O, P> &Full, const U &value) {
       MatrixFullColumn<U, O, P, I, Start, Mid>::compute(Full, value);
       MatrixFullColumn<U, O, P, I, Mid, End>::compute(Full, value);
@@ -248,6 +323,17 @@ public:
             std::size_t Start, std::size_t End>
   struct MatrixFullColumn<U, O, P, I, Start, End,
                           typename std::enable_if<(End == Start)>::type> {
+    /**
+     * @brief Base case for the recursive filling of a column when the row range
+     * is empty.
+     *
+     * This static function serves as the base case for the recursive filling of
+     * a column in the matrix. When the row range is empty (End == Start), it
+     * does nothing.
+     *
+     * @param Full The matrix being filled (not used here).
+     * @param value The value to set in the specified column (not used here).
+     */
     static void compute(Matrix<U, O, P> &, const U &) {}
   };
 
@@ -255,11 +341,37 @@ public:
             std::size_t Start, std::size_t End>
   struct MatrixFullColumn<U, O, P, I, Start, End,
                           typename std::enable_if<(End - Start == 1)>::type> {
+    /**
+     * @brief Base case for the recursive filling of a column when the row range
+     * contains a single element.
+     * This static function serves as the base case for the recursive filling of
+     * a column in the matrix. When the row range contains a single element (End
+     * - Start == 1), it sets the corresponding element in the specified column
+     * to the given value.
+     * @param Full The matrix being filled.
+     * @param value The value to set in the specified column.
+     */
     static void compute(Matrix<U, O, P> &Full, const U &value) {
       Full.template set<I, Start>(value);
     }
   };
 
+  /**
+   * @brief Struct template for filling an entire row of a matrix with a
+   * specified value using compile-time recursion.
+   *
+   * This struct template uses template metaprogramming to recursively set all
+   * elements of a specific row in a matrix to a given value. The recursion is
+   * controlled by the Start and End template parameters, which define the range
+   * of column indices to process for the specified row.
+   *
+   * @tparam U The type of the matrix elements.
+   * @tparam O The number of rows in the matrix.
+   * @tparam P The number of columns in the matrix.
+   * @tparam Start The starting index for the column to set.
+   * @tparam End The ending index for the column to set.
+   * @tparam Enable A helper type for SFINAE to control specialization.
+   */
   template <typename U, std::size_t O, std::size_t P, std::size_t Start,
             std::size_t End, typename Enable = void>
   struct MatrixFullRow;
@@ -270,6 +382,17 @@ public:
                        typename std::enable_if<(End - Start > 1)>::type> {
     static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+    /**
+     * @brief Recursively fills a row of the matrix with a specified value.
+     *
+     * This static function recursively sets all elements of a specific row in
+     * the matrix to a given value for the specified range of column indices. It
+     * divides the column range into two halves until it reaches individual
+     * columns, which are then set directly.
+     *
+     * @param Full The matrix being filled.
+     * @param value The value to set in the specified row.
+     */
     static void compute(Matrix<U, O, P> &Full, const U &value) {
       MatrixFullRow<U, O, P, Start, Mid>::compute(Full, value);
       MatrixFullRow<U, O, P, Mid, End>::compute(Full, value);
@@ -280,6 +403,17 @@ public:
             std::size_t End>
   struct MatrixFullRow<U, O, P, Start, End,
                        typename std::enable_if<(End == Start)>::type> {
+    /**
+     * @brief Base case for the recursive filling of a row when the column range
+     * is empty.
+     *
+     * This static function serves as the base case for the recursive filling of
+     * a row in the matrix. When the column range is empty (End == Start), it
+     * does nothing.
+     *
+     * @param Full The matrix being filled (not used here).
+     * @param value The value to set in the specified row (not used here).
+     */
     static void compute(Matrix<U, O, P> &, const U &) {}
   };
 
@@ -287,6 +421,16 @@ public:
             std::size_t End>
   struct MatrixFullRow<U, O, P, Start, End,
                        typename std::enable_if<(End - Start == 1)>::type> {
+    /**
+     * @brief Base case for the recursive filling of a row when the column range
+     * contains a single element.
+     * This static function serves as the base case for the recursive filling of
+     * a row in the matrix. When the column range contains a single element (End
+     * - Start == 1), it sets the corresponding element in the specified row to
+     * the given value.
+     * @param Full The matrix being filled.
+     * @param value The value to set in the specified row.
+     */
     static void compute(Matrix<U, O, P> &Full, const U &value) {
       MatrixFullColumn<U, O, P, Start, 0, P>::compute(Full, value);
     }
@@ -643,6 +787,22 @@ public:
 /* swap rows */
 namespace MatrixSwapRows {
 
+/**
+ * @brief Struct template for performing a column swap operation on a matrix
+ * using compile-time recursion.
+ *
+ * This struct template uses template metaprogramming to recursively swap two
+ * rows in the matrix, starting from the last row and moving upwards. The
+ * recursion is controlled by the Start and End template parameters, which
+ * define the range of row indices to process for the swap operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index for the row to swap.
+ * @tparam End The ending index for the row to swap.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Core;
@@ -653,6 +813,18 @@ struct Core<T, M, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively swaps two rows in the matrix.
+   *
+   * This static function recursively swaps two rows in the matrix for the
+   * specified range of row indices. It divides the row range into two halves
+   * until it reaches individual rows, which are then swapped directly.
+   *
+   * @param row_1 The index of the first row to swap.
+   * @param row_2 The index of the second row to swap.
+   * @param mat The matrix in which the rows are swapped.
+   * @param temp A temporary variable to hold values during swapping.
+   */
   static void compute(std::size_t row_1, std::size_t row_2,
                       Matrix<T, M, N> &mat, T temp) {
     Core<T, M, N, Start, Mid>::compute(row_1, row_2, mat, temp);
@@ -664,6 +836,18 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Core<T, M, N, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive row swap when the row range is empty.
+   *
+   * This static function serves as the base case for the recursive row swap
+   * operation. When the row range is empty (End == Start), it does nothing.
+   *
+   * @param row_1 The index of the first row to swap (not used here).
+   * @param row_2 The index of the second row to swap (not used here).
+   * @param mat The matrix in which the rows are swapped (not used here).
+   * @param temp A temporary variable to hold values during swapping (not used
+   * here).
+   */
   static void compute(std::size_t, std::size_t, Matrix<T, M, N> &, T) {}
 };
 
@@ -671,6 +855,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Core<T, M, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Base case for the recursive row swap when the row range contains a
+   * single element.
+   *
+   * This static function serves as the base case for the recursive row swap
+   * operation. When the row range contains a single element (End - Start == 1),
+   * it performs the actual swap of the two specified rows in the matrix.
+   *
+   * @param row_1 The index of the first row to swap.
+   * @param row_2 The index of the second row to swap.
+   * @param mat The matrix in which the rows are swapped.
+   * @param temp A temporary variable to hold values during swapping.
+   */
   static void compute(std::size_t row_1, std::size_t row_2,
                       Matrix<T, M, N> &mat, T temp) {
     temp = mat.data[Start][row_1];
@@ -779,6 +976,23 @@ inline void matrix_col_swap(std::size_t col_1, std::size_t col_2,
 /* Trace */
 namespace MatrixTrace {
 
+/**
+ * @brief Struct template for computing the trace of a square matrix using
+ * compile-time recursion.
+ *
+ * This struct template uses template metaprogramming to recursively calculate
+ * the trace of a square matrix by summing its diagonal elements. The
+ * recursion is controlled by the Start and End template parameters, which
+ * define the range of diagonal indices to process for the trace calculation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam N The number of rows and columns in the square matrix.
+ * @tparam Start The starting index for the diagonal element to include in the
+ * trace calculation.
+ * @tparam End The ending index for the diagonal element to include in the
+ * trace calculation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
 struct Core;
@@ -788,6 +1002,17 @@ struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively computes the trace of a square matrix.
+   *
+   * This static function recursively calculates the trace of a square matrix by
+   * summing the diagonal elements for the specified range of indices. It
+   * divides the range into two halves until it reaches individual diagonal
+   * elements, which are then included in the sum directly.
+   *
+   * @param mat The square matrix from which the trace is computed.
+   * @return T The computed trace of the matrix for the specified range.
+   */
   static T compute(const Matrix<T, N, N> &mat) {
     return Core<T, N, Start, Mid>::compute(mat) +
            Core<T, N, Mid, End>::compute(mat);
@@ -796,12 +1021,36 @@ struct Core<T, N, Start, End,
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive trace computation when the range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive trace
+   * computation. When the range of diagonal indices is empty (End == Start), it
+   * returns zero, as there are no diagonal elements to include in the trace.
+   *
+   * @param mat The square matrix from which the trace is computed (not used
+   * here).
+   * @return T The computed trace of the matrix for the empty range, which is
+   * zero.
+   */
   static T compute(const Matrix<T, N, N> &) { return static_cast<T>(0); }
 };
 
 template <typename T, std::size_t N, std::size_t Start, std::size_t End>
 struct Core<T, N, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Base case for the recursive trace computation when the range
+   * contains a single element. This static function serves as the base case for
+   * the recursive trace computation. When the range of diagonal indices
+   * contains a single element (End - Start == 1), it returns  the value of the
+   * diagonal element at the specified index, as this is the only element to
+   * include in the trace for that range.
+   * @param mat The square matrix from which the trace is computed.
+   * @return T The computed trace of the matrix for the single-element range,
+   * which is the value of the diagonal element at the specified index.
+   */
   static T compute(const Matrix<T, N, N> &mat) {
     return mat.template get<Start, Start>();
   }
@@ -862,6 +1111,23 @@ inline T output_matrix_trace(const Matrix<T, M, N> &mat) {
 /* Matrix Addition */
 namespace MatrixAddMatrix {
 
+/**
+ * @brief Struct template for performing matrix addition using compile-time
+ * recursion.
+ *
+ * This struct template uses template metaprogramming to recursively add two
+ * matrices element-wise. The recursion is controlled by the Start and End
+ * template parameters, which define the range of column indices to process for
+ * the addition operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @tparam I The current row index being processed.
+ * @tparam Start The starting index for the column to add.
+ * @tparam End The ending index for the column to add.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -871,6 +1137,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively adds two matrices element-wise for a specific row.
+   *
+   * This static function recursively adds two matrices element-wise for the
+   * specified row index (I) and the range of column indices defined by Start
+   * and End. It divides the column range into two halves until it reaches
+   * individual columns, which are then added directly.
+   *
+   * @param A The first matrix to add.
+   * @param B The second matrix to add.
+   * @param result The matrix where the result of the addition is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, I, Start, Mid>::compute(A, B, result);
@@ -882,6 +1161,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive matrix addition when the column range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * addition operation. When the column range is empty (End == Start), it does
+   * nothing, as there are no columns to add for that row.
+   *
+   * @param A The first matrix to add (not used here).
+   * @param B The second matrix to add (not used here).
+   * @param result The matrix where the result of the addition is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -890,6 +1182,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix addition when the column range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * addition operation. When the column range contains a single element (End -
+   * Start == 1), it performs the actual addition of the two matrices for that
+   * specific row and column, storing the result in the corresponding position
+   * in the result matrix.
+   *
+   * @param A The first matrix to add.
+   * @param B The second matrix to add.
+   * @param result The matrix where the result of the addition is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(A.template get<I, Start>() +
@@ -906,6 +1213,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively adds two matrices element-wise for a specific column.
+   *
+   * This static function recursively adds two matrices element-wise for the
+   * specified column index and the range of row indices defined by Start and
+   * End. It divides the row range into two halves until it reaches individual
+   * rows, which are then processed by the Row struct to perform the addition
+   * for that specific column.
+   * @param A The first matrix to add.
+   * @param B The second matrix to add.
+   * @param result The matrix where the result of the addition is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, N, Start, Mid>::compute(A, B, result);
@@ -917,6 +1237,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive matrix addition when the row range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * addition operation. When the row range is empty (End == Start), it does
+   * nothing, as there are no rows to add for that column.
+   *
+   * @param A The first matrix to add (not used here).
+   * @param B The second matrix to add (not used here).
+   * @param result The matrix where the result of the addition is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -925,6 +1258,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Base case for the recursive matrix addition when the row range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * addition operation. When the row range contains a single element (End -
+   * Start == 1), it processes that specific row for all columns in the
+   * specified column range by invoking the Row struct to perform the addition
+   * for each column in that row.
+   *
+   * @param A The first matrix to add.
+   * @param B The second matrix to add.
+   * @param result The matrix where the result of the addition is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, Start, 0, N>::compute(A, B, result);
@@ -990,6 +1337,23 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N> &A,
 /* Matrix Subtraction */
 namespace MatrixSubMatrix {
 
+/**
+ * @brief Struct template for performing matrix subtraction using compile-time
+ * recursion.
+ *
+ * This struct template uses template metaprogramming to recursively subtract
+ * two matrices element-wise. The recursion is controlled by the Start and End
+ * template parameters, which define the range of column indices to process for
+ * the subtraction operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @tparam I The current row index being processed.
+ * @tparam Start The starting index for the column to subtract.
+ * @tparam End The ending index for the column to subtract.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -999,6 +1363,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively subtracts two matrices element-wise for a specific row.
+   *
+   * This static function recursively subtracts two matrices element-wise for
+   * the specified row index (I) and the range of column indices defined by
+   * Start and End. It divides the column range into two halves until it reaches
+   * individual columns, which are then subtracted directly.
+   *
+   * @param A The first matrix to subtract.
+   * @param B The second matrix to subtract.
+   * @param result The matrix where the result of the subtraction is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, I, Start, Mid>::compute(A, B, result);
@@ -1010,6 +1387,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive matrix subtraction when the column range
+   * is empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * subtraction operation. When the column range is empty (End == Start), it
+   * does nothing, as there are no columns to subtract for that row.
+   *
+   * @param A The first matrix to subtract (not used here).
+   * @param B The second matrix to subtract (not used here).
+   * @param result The matrix where the result of the subtraction is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -1018,6 +1408,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Base case for the recursive matrix subtraction when the column range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * subtraction operation. When the column range contains a single element (End
+   * - Start == 1), it performs the actual subtraction of the two matrices for
+   * that specific row and column, storing the result in the corresponding
+   * position in the result matrix.
+   * @param A The first matrix to subtract.
+   * @param B The second matrix to subtract.
+   * @param result The matrix where the result of the subtraction is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(A.template get<I, Start>() -
@@ -1025,6 +1428,22 @@ struct Row<T, M, N, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for performing matrix subtraction using compile-time
+ * recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively subtract
+ * two matrices element-wise for columns. The recursion is controlled by the
+ * Start and End template parameters, which define the range of row indices to
+ * process for the subtraction operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @tparam Start The starting index for the row to subtract.
+ * @tparam End The ending index for the row to subtract.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -1034,6 +1453,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively subtracts two matrices element-wise for a specific
+   * column.
+   *
+   * This static function recursively subtracts two matrices element-wise for
+   * the specified column index and the range of row indices defined by Start
+   * and End. It divides the row range into two halves until it reaches
+   * individual rows, which are then processed by the Row struct to perform the
+   * subtraction for that specific column.
+   * @param A The first matrix to subtract.
+   * @param B The second matrix to subtract.
+   * @param result The matrix where the result of the subtraction is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, N, Start, Mid>::compute(A, B, result);
@@ -1045,6 +1478,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix subtraction when the row range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * subtraction operation. When the row range is empty (End == Start), it does
+   * nothing, as there are no rows to subtract for that column.
+   *
+   * @param A The first matrix to subtract (not used here).
+   * @param B The second matrix to subtract (not used here).
+   * @param result The matrix where the result of the subtraction is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -1053,6 +1500,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix subtraction when the row range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * subtraction operation. When the row range contains a single element (End -
+   * Start == 1), it processes that specific row for all columns in the
+   * specified column range by invoking the Row struct to perform the
+   * subtraction for each column in that row.
+   * @param A The first matrix to subtract.
+   * @param B The second matrix to subtract.
+   * @param result The matrix where the result of the subtraction is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, Start, 0, N>::compute(A, B, result);
@@ -1117,6 +1578,23 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A,
 
 namespace MatrixMinus {
 
+/**
+ * @brief Struct template for performing matrix negation using compile-time
+ * recursion.
+ *
+ * This struct template uses template metaprogramming to recursively negate the
+ * elements of a matrix. The recursion is controlled by the Start and End
+ * template parameters, which define the range of column indices to process for
+ * the negation operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The current row index being processed.
+ * @tparam Start The starting index for the column to negate.
+ * @tparam End The ending index for the column to negate.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -1126,6 +1604,18 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively negates the elements of a matrix for a specific row.
+   *
+   * This static function recursively negates the elements of a matrix for the
+   * specified row index (I) and the range of column indices defined by Start
+   * and End. It divides the column range into two halves until it reaches
+   * individual columns, which are then negated directly.
+   *
+   * @param A The matrix to negate.
+   * @param result The matrix where the result of the negation is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
     Row<T, M, N, I, Start, Mid>::compute(A, result);
     Row<T, M, N, I, Mid, End>::compute(A, result);
@@ -1136,6 +1626,18 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for the recursive matrix negation when the column range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * negation operation. When the column range is empty (End == Start), it does
+   * nothing, as there are no columns to negate for that row.
+   *
+   * @param A The matrix to negate (not used here).
+   * @param result The matrix where the result of the negation is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -1143,11 +1645,40 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix negation when the column range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * negation operation. When the column range contains a single element (End -
+   * Start == 1), it performs the actual negation of the matrix for that
+   * specific row and column, storing the result in the corresponding position
+   * in the result matrix.
+   * @param A The matrix to negate.
+   * @param result The matrix where the result of the negation is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
     result.template set<I, Start>(-A.template get<I, Start>());
   }
 };
 
+/**
+ * @brief Struct template for performing matrix negation using compile-time
+ * recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively negate the
+ * elements of a matrix for columns. The recursion is controlled by the Start
+ * and End template parameters, which define the range of row indices to process
+ * for the negation operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index for the row to negate.
+ * @tparam End The ending index for the row to negate.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -1157,6 +1688,18 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively negates the elements of a matrix for a specific column.
+   *
+   * This static function recursively negates the elements of a matrix for the
+   * specified column index and the range of row indices defined by Start and
+   * End. It divides the row range into two halves until it reaches individual
+   * rows, which are then processed by the Row struct to perform the negation
+   * for that specific column.
+   * @param A The matrix to negate.
+   * @param result The matrix where the result of the negation is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
     Column<T, M, N, Start, Mid>::compute(A, result);
     Column<T, M, N, Mid, End>::compute(A, result);
@@ -1167,6 +1710,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix negation when the row range is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * negation operation. When the row range is empty (End == Start), it does
+   * nothing, as there are no rows to negate for that column.
+   *
+   * @param A The matrix to negate (not used here).
+   * @param result The matrix where the result of the negation is stored (not
+   * used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -1174,6 +1730,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix negation when the row range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * negation operation. When the row range contains a single element (End -
+   * Start == 1), it processes that specific row for all columns in the
+   * specified column range by invoking the Row struct to perform the negation
+   * for each column in that row.
+   * @param A The matrix to negate.
+   * @param result The matrix where the result of the negation is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, M, N> &result) {
     Row<T, M, N, Start, 0, N>::compute(A, result);
   }
@@ -1234,6 +1803,23 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N> &A) {
 /* (Scalar) * (Matrix) */
 namespace MatrixMultiplyScalar {
 
+/**
+ * @brief Struct template for performing scalar multiplication of a matrix using
+ * compile-time recursion.
+ *
+ * This struct template uses template metaprogramming to recursively multiply
+ * the elements of a matrix by a scalar value. The recursion is controlled by
+ * the Start and End template parameters, which define the range of column
+ * indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The current row index being processed.
+ * @tparam Start The starting index for the column to multiply.
+ * @tparam End The ending index for the column to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -1243,6 +1829,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively multiplies the elements of a matrix by a scalar for a
+   * specific row.
+   *
+   * This static function recursively multiplies the elements of a matrix by a
+   * scalar value for the specified row index (I) and the range of column
+   * indices defined by Start and End. It divides the column range into two
+   * halves until it reaches individual columns, which are then multiplied
+   * directly by the scalar.
+   *
+   * @param scalar The scalar value to multiply with.
+   * @param mat The matrix to multiply with the scalar.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, I, Start, Mid>::compute(scalar, mat, result);
@@ -1254,6 +1855,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive scalar multiplication when the column
+   * range is empty.
+   *
+   * This static function serves as the base case for the recursive scalar
+   * multiplication operation. When the column range is empty (End == Start), it
+   * does nothing, as there are no columns to multiply for that row.
+   *
+   * @param scalar The scalar value to multiply with (not used here).
+   * @param mat The matrix to multiply with the scalar (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const T &, const Matrix<T, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -1261,6 +1876,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive scalar multiplication when the column
+   * range contains a single element.
+   *
+   * This static function serves as the base case for the recursive scalar
+   * multiplication operation. When the column range contains a single element
+   * (End - Start == 1), it performs the actual multiplication of the matrix
+   * element by the scalar for that specific row and column, storing the result
+   * in the corresponding position in the result matrix.
+   * @param scalar The scalar value to multiply with.
+   * @param mat The matrix to multiply with the scalar.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(scalar * mat.template get<I, Start>());
@@ -1276,6 +1905,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively multiplies the elements of a matrix by a scalar for a
+   * specific column.
+   *
+   * This static function recursively multiplies the elements of a matrix by a
+   * scalar value for the specified column index and the range of row indices
+   * defined by Start and End. It divides the row range into two halves until it
+   * reaches individual rows, which are then processed by the Row struct to
+   * perform the multiplication for that specific column.
+   * @param scalar The scalar value to multiply with.
+   * @param mat The matrix to multiply with the scalar.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
     Column<T, M, N, Start, Mid>::compute(scalar, mat, result);
@@ -1287,6 +1930,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive scalar multiplication when the row range
+   * is empty.
+   *
+   * This static function serves as the base case for the recursive scalar
+   * multiplication operation. When the row range is empty (End == Start), it
+   * does nothing, as there are no rows to multiply for that column.
+   *
+   * @param scalar The scalar value to multiply with (not used here).
+   * @param mat The matrix to multiply with the scalar (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const T &, const Matrix<T, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -1294,6 +1951,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive scalar multiplication when the row range
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive scalar
+   * multiplication operation. When the row range contains a single element (End
+   * - Start == 1), it processes that specific row for all columns in the
+   * specified column range by invoking the Row struct to perform the
+   * multiplication for each column in that row.
+   * @param scalar The scalar value to multiply with.
+   * @param mat The matrix to multiply with the scalar.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const T &scalar, const Matrix<T, M, N> &mat,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, Start, 0, N>::compute(scalar, mat, result);
@@ -1394,6 +2065,23 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N> &mat, const T &scalar) {
 /* Matrix multiply Vector */
 namespace MatrixMultiplyVector {
 
+/**
+ * @brief Struct template for performing matrix-vector multiplication using
+ * compile-time recursion.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific row of a matrix with a vector. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of column indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix and vector elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The current row index being processed.
+ * @tparam Start The starting index for the column to multiply.
+ * @tparam End The ending index for the column to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Core;
@@ -1403,6 +2091,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Core<T, M, N, I, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product of a specific row of a matrix
+   * with a vector.
+   *
+   * This static function recursively computes the dot product of a specific row
+   * (I) of a matrix with a vector for the range of column indices defined by
+   * Start and End. It divides the column range into two halves until it reaches
+   * individual columns, which are then multiplied by the corresponding vector
+   * element and summed up to compute the final result for that row.
+   *
+   * @param mat The matrix to multiply with the vector.
+   * @param vec The vector to multiply with the matrix.
+   * @return T The resulting value of the dot product for that specific row.
+   */
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
     return Core<T, M, N, I, Start, Mid>::compute(mat, vec) +
            Core<T, M, N, I, Mid, End>::compute(mat, vec);
@@ -1413,6 +2116,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, I, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * column range is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the column range is empty (End
+   * == Start), it returns zero, as there are no columns to multiply for that
+   * row.
+   *
+   * @param mat The matrix to multiply with the vector (not used here).
+   * @param vec The vector to multiply with the matrix (not used here).
+   * @return T The resulting value of the dot product for that specific row,
+   * which is zero in this case.
+   */
   static T compute(const Matrix<T, M, N> &, const Vector<T, N> &) {
     return static_cast<T>(0);
   }
@@ -1422,11 +2140,42 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, I, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * column range contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the column range contains a
+   * single element (End - Start == 1), it performs the actual multiplication of
+   * the matrix element by the corresponding vector element for that specific
+   * row and column, returning the result as the final value for that row.
+   * @param mat The matrix to multiply with the vector.
+   * @param vec The vector to multiply with the matrix.
+   * @return T The resulting value of the dot product for that specific row and
+   * column.
+   */
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec) {
     return mat.template get<I, Start>() * vec[Start];
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-vector multiplication using
+ * compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of each row of a matrix with a vector. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of row indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix and vector elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -1436,6 +2185,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product of each row of a matrix with a
+   * vector for a specific range of rows.
+   *
+   * This static function recursively computes the dot product of each row of a
+   * matrix with a vector for the specified range of row indices defined by
+   * Start and End. It divides the row range into two halves until it reaches
+   * individual rows, which are then processed by the Core struct to perform the
+   * multiplication for that specific row.
+   * @param mat The matrix to multiply with the vector.
+   * @param vec The vector to multiply with the matrix.
+   * @param result The vector where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
     Column<T, M, N, Start, Mid>::compute(mat, vec, result);
@@ -1447,6 +2210,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * row range is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the row range is empty (End ==
+   * Start), it does nothing, as there are no rows to multiply for that column.
+   *
+   * @param mat The matrix to multiply with the vector (not used here).
+   * @param vec The vector to multiply with the matrix (not used here).
+   * @param result The vector where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Vector<T, N> &,
                       Vector<T, M> &) {}
 };
@@ -1455,6 +2232,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * row range contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the row range contains a
+   * single element (End - Start == 1), it processes that specific row by
+   * invoking the Core struct to compute the dot product of that row with the
+   * vector, and stores the result in the corresponding position in the result
+   * vector.
+   * @param mat The matrix to multiply with the vector.
+   * @param vec The vector to multiply with the matrix.
+   * @param result The vector where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, N> &vec,
                       Vector<T, M> &result) {
     result[Start] = Core<T, M, N, Start, 0, N>::compute(mat, vec);
