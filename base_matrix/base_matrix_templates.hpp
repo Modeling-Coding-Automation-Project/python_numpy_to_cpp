@@ -2346,6 +2346,23 @@ struct CountSparseMatrixRowLoop {
   using type = IndexSequence<ElementCount + AddedCount>;
 };
 
+/**
+ * @brief A template struct to count the number of elements in a block of
+ * columns for a specific row in a sparse matrix.
+ *
+ * This struct provides a static constexpr size_t 'value' that is the result of
+ * recursively counting the number of elements in a block of columns for a
+ * specific row in the SparseAvailable type, effectively calculating the total
+ * count of non-empty entries for that row across the specified range of
+ * columns.
+ *
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ * @tparam ColumnElementNumber The index of the column being processed.
+ * @tparam RowElementNumber The index of the row being processed.
+ *
+ * The resulting value is the total count of non-empty entries for the specified
+ * row across the specified range of columns.
+ */
 template <typename SparseAvailable, std::size_t StartColumn, std::size_t Count>
 struct CountSparseMatrixColumnBlock {
   static constexpr std::size_t MidCount = Count / 2;
@@ -2358,6 +2375,18 @@ struct CountSparseMatrixColumnBlock {
                                Count - MidCount>::type>::type;
 };
 
+/**
+ * @brief Specialization of CountSparseMatrixColumnBlock for the case when Count
+ * is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * CountSparseMatrixRowLoop for the specified column index, effectively
+ * generating the count of non-empty entries for that column across all rows
+ * when there is only one column to process.
+ *
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ * @tparam StartColumn The starting column index for the block to count.
+ */
 template <typename SparseAvailable, std::size_t StartColumn>
 struct CountSparseMatrixColumnBlock<SparseAvailable, StartColumn, 1> {
 
@@ -2366,12 +2395,39 @@ struct CountSparseMatrixColumnBlock<SparseAvailable, StartColumn, 1> {
                                         (SparseAvailable::row_size - 1)>::type;
 };
 
+/**
+ * @brief Specialization of CountSparseMatrixColumnBlock for the case when Count
+ * is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid counts to
+ * return when there are no columns to process.
+ *
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ * @tparam StartColumn The starting column index for the block to count.
+ */
 template <typename SparseAvailable, std::size_t StartColumn>
 struct CountSparseMatrixColumnBlock<SparseAvailable, StartColumn, 0> {
 
   using type = InvalidSequence<0>;
 };
 
+/**
+ * @brief A template struct to count the number of elements in all columns for
+ * all rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * counting the number of elements in all columns for all rows in the
+ * SparseAvailable type, effectively creating a sequence of counts for each
+ * column across all rows in the matrix.
+ *
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ * @tparam ColumnElementNumber The index of the column being processed.
+ *
+ * The resulting type is an IndexSequence containing the counts of non-empty
+ * entries for each column across all rows in the SparseAvailable type,
+ * accessible via the nested ::type member.
+ */
 template <typename SparseAvailable, std::size_t ColumnElementNumber>
 struct CountSparseMatrixColumnLoop {
 
@@ -2381,6 +2437,24 @@ struct CountSparseMatrixColumnLoop {
           SparseAvailable, 0, ColumnElementNumber + 1>::type>::type;
 };
 
+/**
+ * @brief A template struct to accumulate the number of elements in a block of
+ * columns for a specific row in a sparse matrix.
+ *
+ * This struct provides a static constexpr size_t 'value' that is the result of
+ * recursively accumulating the number of elements in a block of columns for a
+ * specific row in the SparseAvailable type, effectively calculating the total
+ * count of non-empty entries for that row across the specified range of
+ * columns.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam StartIndex The starting index for the block to accumulate.
+ * @tparam Count The number of columns in the block to accumulate.
+ *
+ * The resulting value is the total count of non-empty entries for the specified
+ * row across the specified range of columns.
+ */
 template <typename CountSparseMatrixColumnLoop, std::size_t StartIndex,
           std::size_t Count>
 struct AccumulateElementNumberBlock {
@@ -2395,6 +2469,19 @@ struct AccumulateElementNumberBlock {
   }
 };
 
+/**
+ * @brief Specialization of AccumulateElementNumberBlock for the case when Count
+ * is 1.
+ *
+ * This specialization defines a static constexpr size_t 'value' that is set to
+ * the count at the specified index in the CountSparseMatrixColumnLoop type,
+ * effectively returning the count for that specific column when there is only
+ * one column to process.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam StartIndex The starting index for the block to accumulate.
+ */
 template <typename CountSparseMatrixColumnLoop, std::size_t StartIndex>
 struct AccumulateElementNumberBlock<CountSparseMatrixColumnLoop, StartIndex,
                                     1> {
@@ -2403,12 +2490,40 @@ struct AccumulateElementNumberBlock<CountSparseMatrixColumnLoop, StartIndex,
   }
 };
 
+/**
+ * @brief Specialization of AccumulateElementNumberBlock for the case when Count
+ * is 0.
+ *
+ * This specialization defines a static constexpr size_t 'value' that is always
+ * 0, indicating that there are no elements to accumulate when there are no
+ * columns to process.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam StartIndex The starting index for the block to accumulate.
+ */
 template <typename CountSparseMatrixColumnLoop, std::size_t StartIndex>
 struct AccumulateElementNumberBlock<CountSparseMatrixColumnLoop, StartIndex,
                                     0> {
   static constexpr std::size_t compute() { return 0; }
 };
 
+/**
+ * @brief A template struct to accumulate the number of elements in all columns
+ * for a specific row in a sparse matrix.
+ *
+ * This struct provides a static constexpr size_t 'value' that is the result of
+ * recursively accumulating the number of elements in all columns for a specific
+ * row in the SparseAvailable type, effectively calculating the total count of
+ * non-empty entries for that row across all columns in the matrix.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam ColumnElementNumber The index of the column being processed.
+ *
+ * The resulting value is the total count of non-empty entries for the specified
+ * row across all columns in the SparseAvailable type.
+ */
 template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
 struct AccumulateElementNumberLoop {
 
@@ -2418,20 +2533,135 @@ struct AccumulateElementNumberLoop {
   }
 };
 
-template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
-struct AccumulateSparseMatrixElementNumberLoop {
+/**
+ * @brief A template struct to accumulate the number of elements in all columns
+ * for all rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * accumulating the number of elements in all columns for all rows in the
+ * SparseAvailable type, effectively creating a sequence of accumulated counts
+ * for each column across all rows in the matrix.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ *
+ * The resulting type is an IndexSequence containing the accumulated counts of
+ * non-empty entries for each column across all rows in the SparseAvailable
+ * type, accessible via the nested ::type member.
+ */
+template <typename CountSparseMatrixColumnLoop, std::size_t StartColumn,
+          std::size_t Count>
+struct AccumulateSparseMatrixElementNumberBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
   using type = typename Concatenate<
-      typename AccumulateSparseMatrixElementNumberLoop<
-          CountSparseMatrixColumnLoop, ColumnElementNumber - 1>::type,
-      IndexSequence<AccumulateElementNumberLoop<
-          CountSparseMatrixColumnLoop, ColumnElementNumber>::compute()>>::type;
+      typename AccumulateSparseMatrixElementNumberBlock<
+          CountSparseMatrixColumnLoop, StartColumn, MidCount>::type,
+      typename AccumulateSparseMatrixElementNumberBlock<
+          CountSparseMatrixColumnLoop, StartColumn + MidCount,
+          Count - MidCount>::type>::type;
 };
 
+/**
+ * @brief Specialization of AccumulateSparseMatrixElementNumberBlock for the
+ * case when Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to an
+ * IndexSequence containing the result of AccumulateElementNumberLoop for the
+ * specified column index, effectively returning the accumulated count for that
+ * specific column when there is only one column to process.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam StartColumn The starting index for the block to accumulate.
+ */
+template <typename CountSparseMatrixColumnLoop, std::size_t StartColumn>
+struct AccumulateSparseMatrixElementNumberBlock<CountSparseMatrixColumnLoop,
+                                                StartColumn, 1> {
+
+  using type =
+      IndexSequence<AccumulateElementNumberLoop<CountSparseMatrixColumnLoop,
+                                                StartColumn>::compute()>;
+};
+
+/**
+ * @brief Specialization of AccumulateSparseMatrixElementNumberBlock for the
+ * case when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid counts to
+ * return when there are no columns to process.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam StartColumn The starting index for the block to accumulate.
+ */
 template <typename CountSparseMatrixColumnLoop>
-struct AccumulateSparseMatrixElementNumberLoop<CountSparseMatrixColumnLoop, 0> {
+struct AccumulateSparseMatrixElementNumberBlock<CountSparseMatrixColumnLoop, 0,
+                                                1> {
+
   using type = IndexSequence<CountSparseMatrixColumnLoop::list[0]>;
 };
 
+/**
+ * @brief Specialization of AccumulateSparseMatrixElementNumberBlock for the
+ * case when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid counts to
+ * return when there are no columns to process.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ */
+template <typename CountSparseMatrixColumnLoop, std::size_t StartColumn>
+struct AccumulateSparseMatrixElementNumberBlock<CountSparseMatrixColumnLoop,
+                                                StartColumn, 0> {
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to accumulate the number of elements in all columns
+ * for all rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * accumulating the number of elements in all columns for all rows in the
+ * SparseAvailable type, effectively creating a sequence of accumulated counts
+ * for each column across all rows in the matrix.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam ColumnElementNumber The index of the column being processed.
+ *
+ * The resulting type is an IndexSequence containing the accumulated counts of
+ * non-empty entries for each column across all rows in the SparseAvailable
+ * type, accessible via the nested ::type member.
+ */
+template <typename CountSparseMatrixColumnLoop, std::size_t ColumnElementNumber>
+struct AccumulateSparseMatrixElementNumberLoop {
+
+  using type = typename AccumulateSparseMatrixElementNumberBlock<
+      CountSparseMatrixColumnLoop, 0, ColumnElementNumber + 1>::type;
+};
+
+/**
+ * @brief A template struct to accumulate the number of elements in all columns
+ * for all rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * accumulating the number of elements in all columns for all rows in the
+ * SparseAvailable type, effectively creating a sequence of accumulated counts
+ * for each column across all rows in the matrix.
+ *
+ * @tparam CountSparseMatrixColumnLoop The type containing the counts for each
+ * column across all rows in the SparseAvailable type.
+ * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ *
+ * The resulting type is an IndexSequence containing the accumulated counts of
+ * non-empty entries for each column across all rows in the SparseAvailable
+ * type, accessible via the nested ::type member.
+ */
 template <typename CountSparseMatrixColumnLoop, typename SparseAvailable>
 struct AccumulateSparseMatrixElementNumberStruct {
   using type = typename AccumulateSparseMatrixElementNumberLoop<
