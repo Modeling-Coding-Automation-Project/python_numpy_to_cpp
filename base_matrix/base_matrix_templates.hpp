@@ -4127,93 +4127,200 @@ struct SparseAvailableMatrixMultiplyTransposeMultiplyLoop {
 
 /**
  * @brief A template struct to concatenate multiple ColumnAvailable types into a
- * SparseAvailable type.
+ * single SparseAvailable type for the multiplication of a matrix and its
+ * transpose.
  *
  * This struct provides a type alias 'type' that is the result of concatenating
- * multiple ColumnAvailable types into a SparseAvailable type.
+ * multiple ColumnAvailable types into a SparseAvailable type for the specified
+ * row and column in the multiplication of a matrix and its transpose.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
  * @tparam ROW The index of the row being processed.
- * @tparam J_Idx The index of the column being processed.
+ * @tparam StartJ The starting index of the columns being processed.
+ * @tparam Count The number of columns to process for the multiplication.
+ * The resulting type is a ColumnAvailable type containing the logical OR of
+ * the availability of each column in the two SparseAvailable types for the
+ * specified row and column, accessible via the nested ::type member.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_BT,
-          std::size_t ROW, std::size_t J_Idx>
-struct SparseAvailableMatrixMultiplyTransposeRowLoop {
+          std::size_t ROW, std::size_t StartJ, std::size_t Count>
+struct SparseAvailableMatrixMultiplyTransposeRowBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
   using type = ConcatenateColumnAvailable<
-      typename SparseAvailableMatrixMultiplyTransposeRowLoop<
-          SparseAvailable_A, SparseAvailable_BT, ROW, (J_Idx - 1)>::type,
-      ColumnAvailable<ColumnAvailableElementWiseOr<
-          typename SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
-              SparseAvailable_A, SparseAvailable_BT, ROW, J_Idx,
-              (SparseAvailable_A::row_size - 1)>::type,
-          (SparseAvailable_A::row_size - 1)>::value>>;
+      typename SparseAvailableMatrixMultiplyTransposeRowBlock<
+          SparseAvailable_A, SparseAvailable_BT, ROW, StartJ, MidCount>::type,
+      typename SparseAvailableMatrixMultiplyTransposeRowBlock<
+          SparseAvailable_A, SparseAvailable_BT, ROW, StartJ + MidCount,
+          Count - MidCount>::type>;
 };
 
 /**
- * @brief Specialization of SparseAvailableMatrixMultiplyTransposeRowLoop for
- * the case when J_Idx is 0.
+ * @brief Specialization of SparseAvailableMatrixMultiplyTransposeRowBlock for
+ * the case when Count is 1.
  *
  * This specialization defines a type alias 'type' that is set to a
  * ColumnAvailable type containing the result of the multiplication for the
- * first column.
+ * specified row and column when there is only one column to process.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
  * @tparam ROW The index of the row being processed.
+ * @tparam StartJ The starting index of the columns being processed.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_BT,
-          std::size_t ROW>
-struct SparseAvailableMatrixMultiplyTransposeRowLoop<
-    SparseAvailable_A, SparseAvailable_BT, ROW, 0> {
+          std::size_t ROW, std::size_t StartJ>
+struct SparseAvailableMatrixMultiplyTransposeRowBlock<
+    SparseAvailable_A, SparseAvailable_BT, ROW, StartJ, 1> {
   using type = ColumnAvailable<ColumnAvailableElementWiseOr<
       typename SparseAvailableMatrixMultiplyTransposeMultiplyLoop<
-          SparseAvailable_A, SparseAvailable_BT, ROW, 0,
+          SparseAvailable_A, SparseAvailable_BT, ROW, StartJ,
           (SparseAvailable_A::row_size - 1)>::type,
       (SparseAvailable_A::row_size - 1)>::value>;
 };
 
 /**
- * @brief A template struct to concatenate multiple SparseAvailable types into a
- * SparseAvailableColumns type.
+ * @brief Specialization of SparseAvailableMatrixMultiplyTransposeRowBlock for
+ * the case when Count is 0.
  *
- * This struct provides a type alias 'type' that is the result of concatenating
- * multiple SparseAvailable types into a SparseAvailableColumns type.
+ * This specialization defines a type alias 'type' that is set to a
+ * ColumnAvailable type containing no values, effectively indicating that there
+ * are no valid columns to process for the multiplication when Count is 0.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
- * @tparam I_Idx The index of the row being processed.
+ * @tparam ROW The index of the row being processed.
+ * @tparam StartJ The starting index of the columns being processed.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t ROW, std::size_t StartJ>
+struct SparseAvailableMatrixMultiplyTransposeRowBlock<
+    SparseAvailable_A, SparseAvailable_BT, ROW, StartJ, 0> {
+
+  using type = ColumnAvailable<>;
+};
+
+/**
+ * @brief A template struct to concatenate multiple ColumnAvailable types into a
+ * single SparseAvailable type for the multiplication of a matrix and its
+ * transpose.
+ *
+ * This struct provides a type alias 'type' that is the result of concatenating
+ * multiple ColumnAvailable types into a SparseAvailable type for the specified
+ * row and column in the multiplication of a matrix and its transpose.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
+ * @tparam ROW The index of the row being processed.
+ * @tparam J_Idx The index of the current column being processed.
+ * The resulting type is a ColumnAvailable type containing the logical OR of
+ * the availability of each column in the two SparseAvailable types for the
+ * specified row and column, accessible via the nested ::type member.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t ROW, std::size_t J_Idx>
+struct SparseAvailableMatrixMultiplyTransposeRowLoop {
+
+  using type = typename SparseAvailableMatrixMultiplyTransposeRowBlock<
+      SparseAvailable_A, SparseAvailable_BT, ROW, 0, J_Idx + 1>::type;
+};
+
+/**
+ * @brief A template struct to concatenate multiple ColumnAvailable types into a
+ * single SparseAvailable type for the multiplication of a matrix and its
+ * transpose.
+ *
+ * This struct provides a type alias 'type' that is the result of concatenating
+ * multiple ColumnAvailable types into a SparseAvailable type for the specified
+ * row and column in the multiplication of a matrix and its transpose.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
+ * @tparam StartIdx The starting index of the rows being processed.
+ * @tparam Count The number of rows to process for the multiplication.
+ * The resulting type is a SparseAvailable type containing the logical OR of
+ * the availability of each column in the two SparseAvailable types for the
+ * specified rows, accessible via the nested ::type member.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t StartIdx, std::size_t Count>
+struct SparseAvailableMatrixMultiplyTransposeColumnBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = ConcatenateSparseAvailableVertically<
+      typename SparseAvailableMatrixMultiplyTransposeColumnBlock<
+          SparseAvailable_A, SparseAvailable_BT, StartIdx, MidCount>::type,
+      typename SparseAvailableMatrixMultiplyTransposeColumnBlock<
+          SparseAvailable_A, SparseAvailable_BT, StartIdx + MidCount,
+          Count - MidCount>::type>;
+};
+
+/**
+ * @brief Specialization of SparseAvailableMatrixMultiplyTransposeColumnBlock
+ * for the case when Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to a
+ * SparseAvailable type containing the result of the multiplication for the
+ * specified row when there is only one row to process.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
+ * @tparam StartIdx The starting index of the rows being processed.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t StartIdx>
+struct SparseAvailableMatrixMultiplyTransposeColumnBlock<
+    SparseAvailable_A, SparseAvailable_BT, StartIdx, 1> {
+
+  using type = TemplatesOperation::SparseAvailableColumns<
+      typename SparseAvailableMatrixMultiplyTransposeRowLoop<
+          SparseAvailable_A, SparseAvailable_BT, StartIdx,
+          (SparseAvailable_BT::number_of_rows - 1)>::type>;
+};
+
+/**
+ * @brief Specialization of SparseAvailableMatrixMultiplyTransposeColumnBlock
+ * for the case when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to a
+ * SparseAvailable type containing no columns, effectively indicating that there
+ * are no valid rows to process for the multiplication when Count is 0.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
+ * @tparam StartIdx The starting index of the rows being processed.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_BT,
+          std::size_t StartIdx>
+struct SparseAvailableMatrixMultiplyTransposeColumnBlock<
+    SparseAvailable_A, SparseAvailable_BT, StartIdx, 0> {
+
+  using type = SparseAvailable<>;
+};
+
+/**
+ * @brief A template struct to concatenate multiple ColumnAvailable types into a
+ * single SparseAvailable type for the multiplication of a matrix and its
+ * transpose.
+ *
+ * This struct provides a type alias 'type' that is the result of concatenating
+ * multiple ColumnAvailable types into a SparseAvailable type for the specified
+ * row and column in the multiplication of a matrix and its transpose.
+ *
+ * @tparam SparseAvailable_A The first SparseAvailable type.
+ * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
+ * @tparam I_Idx The index of the current row being processed.
+ * The resulting type is a SparseAvailable type containing the logical OR of
+ * the availability of each column in the two SparseAvailable types for the
+ * specified rows, accessible via the nested ::type member.
  */
 template <typename SparseAvailable_A, typename SparseAvailable_BT,
           std::size_t I_Idx>
 struct SparseAvailableMatrixMultiplyTransposeColumnLoop {
-  using type = ConcatenateSparseAvailableVertically<
-      typename SparseAvailableMatrixMultiplyTransposeColumnLoop<
-          SparseAvailable_A, SparseAvailable_BT, (I_Idx - 1)>::type,
-      TemplatesOperation::SparseAvailableColumns<
-          typename SparseAvailableMatrixMultiplyTransposeRowLoop<
-              SparseAvailable_A, SparseAvailable_BT, I_Idx,
-              (SparseAvailable_BT::number_of_rows - 1)>::type>>;
-};
 
-/**
- * @brief Specialization of SparseAvailableMatrixMultiplyTransposeColumnLoop
- * for the case when I_Idx is 0.
- *
- * This specialization defines a type alias 'type' that is set to a
- * SparseAvailableColumns type containing the result of the multiplication for
- * the first row.
- *
- * @tparam SparseAvailable_A The first SparseAvailable type.
- * @tparam SparseAvailable_BT The second SparseAvailable type (transposed).
- */
-template <typename SparseAvailable_A, typename SparseAvailable_BT>
-struct SparseAvailableMatrixMultiplyTransposeColumnLoop<SparseAvailable_A,
-                                                        SparseAvailable_BT, 0> {
-  using type = TemplatesOperation::SparseAvailableColumns<
-      typename SparseAvailableMatrixMultiplyTransposeRowLoop<
-          SparseAvailable_A, SparseAvailable_BT, 0,
-          (SparseAvailable_BT::number_of_rows - 1)>::type>;
+  using type = typename SparseAvailableMatrixMultiplyTransposeColumnBlock<
+      SparseAvailable_A, SparseAvailable_BT, 0, I_Idx + 1>::type;
 };
 
 /**
