@@ -4531,6 +4531,7 @@ using ValidateSparseAvailable =
         (SparseAvailable::number_of_rows - 1)>::type;
 
 /* SparseAvailable get row */
+
 namespace TemplatesOperation {
 
 /** @brief A template struct to generate a ColumnAvailable type with a
@@ -4547,41 +4548,42 @@ template <std::size_t M, std::size_t Index>
 using GenerateIndexedRowTrueColumnAvailable =
     ColumnAvailable<(M == Index ? true : false)>;
 
-/**
- * @brief A template struct to recursively generate a ColumnAvailable type with
- * a specific index set to true for each column.
- *
- * This struct provides a type alias 'type' that is the result of recursively
- * generating a ColumnAvailable type with the specified index set to true for
- * each column.
- *
- * @tparam M The total number of rows.
- * @tparam Index The index to be set to true.
- */
+template <typename T1, typename T2> struct MergeSparseAvailableColumns;
+
+template <typename... C1, typename... C2>
+struct MergeSparseAvailableColumns<SparseAvailableColumns<C1...>,
+                                   SparseAvailableColumns<C2...>> {
+  using type = SparseAvailableColumns<C1..., C2...>;
+};
+
+template <std::size_t Index, std::size_t Start, std::size_t Count>
+struct GenerateIndexedRowBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = typename MergeSparseAvailableColumns<
+      typename GenerateIndexedRowBlock<Index, Start, MidCount>::type,
+      typename GenerateIndexedRowBlock<Index, Start + MidCount,
+                                       Count - MidCount>::type>::type;
+};
+
+template <std::size_t Index, std::size_t Start>
+struct GenerateIndexedRowBlock<Index, Start, 1> {
+  using type = SparseAvailableColumns<
+      GenerateIndexedRowTrueColumnAvailable<Start, Index>>;
+};
+
+template <std::size_t Index, std::size_t Start>
+struct GenerateIndexedRowBlock<Index, Start, 0> {
+  using type = SparseAvailableColumns<>;
+};
+
 template <std::size_t M, std::size_t Index, typename ColumnAvailable,
           typename... Columns>
 struct IndexedRowRepeatColumnAvailable {
-  using type = typename IndexedRowRepeatColumnAvailable<
-      (M - 1), Index, GenerateIndexedRowTrueColumnAvailable<(M - 1), Index>,
-      ColumnAvailable, Columns...>::type;
-};
-
-/**
- * @brief Specialization of IndexedRowRepeatColumnAvailable for the case when M
- * is 0.
- *
- * This specialization defines a type alias 'type' that is set to a
- * SparseAvailable type containing the ColumnAvailable types generated for each
- * column.
- *
- * @tparam Index The index to be set to true.
- * @tparam ColumnAvailable The ColumnAvailable type generated so far.
- * @tparam Columns The remaining ColumnAvailable types.
- */
-template <std::size_t Index, typename ColumnAvailable, typename... Columns>
-struct IndexedRowRepeatColumnAvailable<0, Index, ColumnAvailable, Columns...> {
-  using type = TemplatesOperation::SparseAvailableColumns<
-      GenerateIndexedRowTrueColumnAvailable<0, Index>, Columns...>;
+  using type = typename MergeSparseAvailableColumns<
+      typename GenerateIndexedRowBlock<Index, 0, M>::type,
+      TemplatesOperation::SparseAvailableColumns<ColumnAvailable,
+                                                 Columns...>>::type;
 };
 
 } // namespace TemplatesOperation
