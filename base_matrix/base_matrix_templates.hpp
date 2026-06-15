@@ -2694,36 +2694,78 @@ namespace TemplatesOperation {
 
 /* Sequence for Triangular */
 
-/** * @brief A template struct to create a triangular index sequence.
+/**
+ * @brief A template struct to create a triangular index block.
  *
  * This struct provides a type alias 'type' that is the result of recursively
- * generating a triangular index sequence for a given range.
+ * generating a triangular index block for a given starting index and count,
+ * effectively creating a sequence of indices that form a triangular pattern.
+ *
+ * @tparam SeqStart The starting index for the block.
+ * @tparam Count The number of indices in the block.
+ *
+ * The resulting type is an IndexSequence containing the indices for the
+ * triangular block, accessible via the nested ::type member.
+ */
+template <std::size_t SeqStart, std::size_t Count>
+struct MakeTriangularIndexBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = typename Concatenate<
+      typename MakeTriangularIndexBlock<SeqStart, MidCount>::type,
+      typename MakeTriangularIndexBlock<SeqStart + MidCount,
+                                        Count - MidCount>::type>::type;
+};
+
+/**
+ * @brief Specialization of MakeTriangularIndexBlock for the case when Count is
+ * 1.
+ *
+ * This specialization defines a type alias 'type' that is set to an
+ * IndexSequence containing the SeqStart index, effectively creating a
+ * triangular index block for that single index when there is only one index to
+ * process.
+ *
+ * @tparam SeqStart The starting index for the block.
+ */
+template <std::size_t SeqStart> struct MakeTriangularIndexBlock<SeqStart, 1> {
+  using type = IndexSequence<SeqStart>;
+};
+
+/**
+ * @brief Specialization of MakeTriangularIndexBlock for the case when Count is
+ * 0.
+ *
+ * This specialization defines a type alias 'type' that is set to an
+ * InvalidSequence, effectively creating a triangular index block for that
+ * single index when there are no indices to process.
+ *
+ * @tparam SeqStart The starting index for the block.
+ */
+template <std::size_t SeqStart> struct MakeTriangularIndexBlock<SeqStart, 0> {
+
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to create a triangular index sequence.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * triangular index block for a given range, starting from Start and ending at
+ * End, with an element size of E_S.
  *
  * @tparam Start The starting index of the sequence.
  * @tparam End The ending index of the sequence.
  * @tparam E_S The current size of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the indices for the
+ * triangular sequence, accessible via the nested ::type member.
  */
 template <std::size_t Start, std::size_t End, std::size_t E_S>
 struct MakeTriangularIndexSequence {
-  using type = typename Concatenate<
-      typename MakeTriangularIndexSequence<Start, (End - 1), (E_S - 1)>::type,
-      IndexSequence<(End - 1)>>::type;
-};
 
-/**
- * @brief Specialization of MakeTriangularIndexSequence for the case when E_S is
- * 0.
- *
- * This specialization defines a type alias 'type' that is set to IndexSequence
- * containing (End - 1), effectively creating a triangular index sequence for
- * the specified range.
- *
- * @tparam Start The starting index of the sequence.
- * @tparam End The ending index of the sequence.
- */
-template <std::size_t Start, std::size_t End>
-struct MakeTriangularIndexSequence<Start, End, 0> {
-  using type = IndexSequence<(End - 1)>;
+  using type =
+      typename MakeTriangularIndexBlock<(End - E_S - 1), (E_S + 1)>::type;
 };
 
 /**
@@ -2735,6 +2777,9 @@ struct MakeTriangularIndexSequence<Start, End, 0> {
  *
  * @tparam Start The starting index of the sequence.
  * @tparam End The ending index of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the indices for the
+ * triangular sequence, accessible via the nested ::type member.
  */
 template <std::size_t Start, std::size_t End> struct TriangularSequenceList {
   using type =
