@@ -1,31 +1,31 @@
-/********************************************************************************
-@file base_matrix_compiled_sparse_operation.hpp
-@brief
-This file provides a comprehensive set of template-based operations for sparse
-matrix arithmetic in C++. It supports various combinations of sparse, dense, and
-diagonal matrices and vectors, including addition, subtraction, multiplication,
-and transpose operations. The implementation is highly generic and leverages
-template metaprogramming for compile-time recursion and efficient code
-generation. Both recursive template and for-loop based implementations are
-provided, controlled by macros.
-
-@details
-The file defines operations for:
-- Sparse matrix negation, addition, subtraction, and scalar multiplication.
-- Sparse matrix multiplication with dense matrices, diagonal matrices, and
-vectors.
-- Dense matrix and diagonal matrix arithmetic with sparse matrices.
-- Sparse matrix multiplication with other sparse matrices, including transposed
-cases.
-- Setting diagonal matrix values into sparse matrices.
-- Utility structures for compile-time calculation of result matrix types.
-
-@note
-tparam M is the number of rows in the matrix.
-tparam N is the number of columns in the matrix.
-Somehow programming custom is vice versa,
-but in this project, we use the mathematical custom.
-********************************************************************************/
+/**
+ * @file base_matrix_compiled_sparse_operation.hpp
+ * @brief
+ * This file provides a comprehensive set of template-based operations for
+ * sparse matrix arithmetic in C++. It supports various combinations of sparse,
+ * dense, and diagonal matrices and vectors, including addition, subtraction,
+ * multiplication, and transpose operations. The implementation is highly
+ * generic and leverages template metaprogramming for compile-time recursion and
+ * efficient code generation. Both recursive template and for-loop based
+ * implementations are provided, controlled by macros.
+ *
+ * @details
+ * The file defines operations for:
+ * - Sparse matrix negation, addition, subtraction, and scalar multiplication.
+ * - Sparse matrix multiplication with dense matrices, diagonal matrices, and
+ * vectors.
+ * - Dense matrix and diagonal matrix arithmetic with sparse matrices.
+ * - Sparse matrix multiplication with other sparse matrices, including
+ * transposed cases.
+ * - Setting diagonal matrix values into sparse matrices.
+ * - Utility structures for compile-time calculation of result matrix types.
+ *
+ * @note
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
+ * Somehow programming custom is vice versa,
+ * but in this project, we use the mathematical custom.
+ */
 #ifndef BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP_
 #define BASE_MATRIX_COMPILED_SPARSE_OPERATION_HPP_
 
