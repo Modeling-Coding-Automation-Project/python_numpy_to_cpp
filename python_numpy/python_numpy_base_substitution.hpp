@@ -45,6 +45,25 @@ template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct SubstituteColumnRange;
 
+/**
+ * @brief Substitutes a range of columns from the part matrix into the All
+ * matrix.
+ *
+ * This struct template recursively substitutes a range of columns from the part
+ * matrix into the All matrix at the specified offsets. It divides the column
+ * range until it reaches individual columns, which are then substituted
+ * directly.
+ *
+ * @tparam Row_Offset The column offset for substitution.
+ * @tparam Col_Offset The row offset for substitution.
+ * @tparam All_Type The type of the All matrix.
+ * @tparam Part_Type The type of the part matrix.
+ * @tparam M The number of rows in the part matrix.
+ * @tparam N The number of columns in the part matrix.
+ * @tparam I The current row index for substitution.
+ * @tparam Start The starting index of the column range to substitute.
+ * @tparam End The ending index of the column range to substitute.
+ */
 template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
@@ -79,7 +98,8 @@ template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
 struct SubstituteColumnRange<Row_Offset, Col_Offset, All_Type, Part_Type, M, N,
                              I, Start, End,
                              typename std::enable_if<(End == Start)>::type> {
-  /**   * @brief Base case for substituting a range of columns when the range is
+  /**
+   * @brief Base case for substituting a range of columns when the range is
    * empty.
    *
    * This static function serves as the base case for the recursive substitution
@@ -139,6 +159,18 @@ template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           std::size_t End, typename Enable = void>
 struct SubstituteRowRange;
 
+/**
+ * @brief Substitutes a range of rows from the part matrix into the All
+ * matrix.
+ *
+ * This static function substitutes a range of rows from the part matrix into
+ * the All matrix at the specified offsets. It recursively divides the row
+ * range until it reaches individual rows, which are then substituted
+ * directly.
+ *
+ * @param All The All matrix where values are substituted.
+ * @param Part The part matrix containing values to substitute.
+ */
 template <std::size_t Row_Offset, std::size_t Col_Offset, typename All_Type,
           typename Part_Type, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
