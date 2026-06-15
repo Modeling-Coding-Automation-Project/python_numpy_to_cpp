@@ -3344,42 +3344,85 @@ namespace TemplatesOperation {
 /* Create Lower Triangular Sparse Matrix Row Pointers */
 
 /**
- * @brief A template struct to create a sequence of lower triangular count
- * numbers.
+ * @brief A template struct to create a lower triangular count block.
  *
  * This struct provides a type alias 'type' that is the result of recursively
- * generating a lower triangular count sequence for a given range.
+ * generating a lower triangular count block for a given starting index and
+ * count, effectively creating a sequence of counts that form a lower triangular
+ * pattern.
  *
- * @tparam Start The starting index of the sequence.
- * @tparam End The ending index of the sequence.
- * @tparam E_S The current size of the sequence.
+ * @tparam Start The starting index for the block.
+ * @tparam Count The number of counts in the block.
+ *
+ * The resulting type is an IndexSequence containing the counts for the
+ * lower triangular block, accessible via the nested ::type member.
  */
-template <std::size_t Start, std::size_t End, std::size_t E_S>
-struct MakeLowerTriangularCountSequence {
-  using type =
-      typename Concatenate<IndexSequence<Start>,
-                           typename MakeLowerTriangularCountSequence<
-                               (Start + 1), (End - 1), (E_S - 1)>::type>::type;
+template <std::size_t Start, std::size_t Count>
+struct MakeLowerTriangularCountSequenceBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = typename Concatenate<
+      typename MakeLowerTriangularCountSequenceBlock<Start, MidCount>::type,
+      typename MakeLowerTriangularCountSequenceBlock<
+          Start + MidCount, Count - MidCount>::type>::type;
 };
 
 /**
- * @brief Specialization of MakeLowerTriangularCountSequence for the case when
- * E_S is 0.
+ * @brief Specialization of MakeLowerTriangularCountSequenceBlock for the case
+ * when Count is 1.
  *
- * This specialization defines a type alias 'type' that is set to IndexSequence
- * containing Start, effectively creating a lower triangular count sequence for
- * the specified range.
+ * This specialization defines a type alias 'type' that is set to an
+ * IndexSequence containing the Start index, effectively creating a lower
+ * triangular count block for that single index when there is only one count to
+ * process.
  *
- * @tparam Start The starting index of the sequence.
- * @tparam End The ending index of the sequence.
+ * @tparam Start The starting index for the block.
  */
-template <std::size_t Start, std::size_t End>
-struct MakeLowerTriangularCountSequence<Start, End, 0> {
+template <std::size_t Start>
+struct MakeLowerTriangularCountSequenceBlock<Start, 1> {
+
   using type = IndexSequence<Start>;
 };
 
 /**
- * @brief A template struct to create a lower triangular count list.
+ * @brief Specialization of MakeLowerTriangularCountSequenceBlock for the case
+ * when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid counts to
+ * return when there are no counts to process.
+ *
+ * @tparam Start The starting index for the block.
+ */
+template <std::size_t Start>
+struct MakeLowerTriangularCountSequenceBlock<Start, 0> {
+
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to create a lower triangular count sequence.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * lower triangular count block for a given range, starting from Start and
+ * ending at End, with an element size of E_S.
+ *
+ * @tparam Start The starting index of the sequence.
+ * @tparam End The ending index of the sequence.
+ * @tparam E_S The current size of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the counts for the
+ * lower triangular sequence, accessible via the nested ::type member.
+ */
+template <std::size_t Start, std::size_t End, std::size_t E_S>
+struct MakeLowerTriangularCountSequence {
+
+  using type =
+      typename MakeLowerTriangularCountSequenceBlock<Start, E_S + 1>::type;
+};
+
+/**
+ * @brief A template struct to create a lower triangular count sequence list.
  *
  * This struct provides a type alias 'type' that is the result of generating a
  * lower triangular count sequence for a given range, starting from Start and
@@ -3387,6 +3430,9 @@ struct MakeLowerTriangularCountSequence<Start, End, 0> {
  *
  * @tparam Start The starting index of the sequence.
  * @tparam End The ending index of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the counts for the
+ * lower triangular sequence, accessible via the nested ::type member.
  */
 template <std::size_t Start, std::size_t End> struct LowerTriangularCountList {
   using type = typename MakeLowerTriangularCountSequence<Start, End,
