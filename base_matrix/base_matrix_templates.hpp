@@ -3714,35 +3714,99 @@ struct SparseAvailableMatrixMultiplyMultiplyLoop {
 };
 
 /**
- * @brief A template struct to concatenate multiple ColumnAvailable types into a
- * single SparseAvailable type.
+ * @brief A template struct to perform element-wise logical OR operation on a
+ * specific range of columns for a given row and column in the multiplication of
+ * two SparseAvailable types.
  *
- * This struct provides a type alias 'type' that is the result of concatenating
- * multiple ColumnAvailable types into a SparseAvailable type.
+ * This struct provides a static constexpr member 'value' that is the result of
+ * performing an element-wise logical OR operation on the availability of each
+ * column in the two SparseAvailable types for the specified row and column,
+ * effectively determining if the multiplication is available for that specific
+ * range of columns.
  *
- * @tparam ColumnAvailableList The list of ColumnAvailable types to be
- * concatenated.
+ * @tparam ColumnAvailable The ColumnAvailable type containing the availability
+ * values for the specified row and column.
+ * @tparam StartIdx The starting index for the logical OR operation.
+ * @tparam Count The number of indices to process for the logical OR operation.
  */
-template <typename ColumnAvailable, std::size_t N_Idx>
-struct ColumnAvailableElementWiseOr {
-  static constexpr bool value = LogicalOr<
-      ColumnAvailable::list[N_Idx],
-      ColumnAvailableElementWiseOr<ColumnAvailable, (N_Idx - 1)>::value>::value;
+template <typename ColumnAvailable, std::size_t StartIdx, std::size_t Count>
+struct ColumnAvailableElementWiseOrBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  static constexpr bool LeftResult =
+      ColumnAvailableElementWiseOrBlock<ColumnAvailable, StartIdx,
+                                        MidCount>::value;
+
+  template <bool LeftVal, std::size_t Dummy = 0> struct EvaluateRight {
+
+    static constexpr bool value = true;
+  };
+
+  template <std::size_t Dummy> struct EvaluateRight<false, Dummy> {
+
+    static constexpr bool value =
+        ColumnAvailableElementWiseOrBlock<ColumnAvailable, StartIdx + MidCount,
+                                          Count - MidCount>::value;
+  };
+
+  static constexpr bool value = EvaluateRight<LeftResult>::value;
 };
 
 /**
- * @brief Specialization of ColumnAvailableElementWiseOr for the case when N_Idx
- * is 0.
+ * @brief Specialization of ColumnAvailableElementWiseOrBlock for the case when
+ * Count is 1.
  *
  * This specialization defines a static constexpr member 'value' that is set to
- * the first element of the ColumnAvailable type, effectively returning the
- * availability of the first row.
+ * the availability value for the specified index in the ColumnAvailable type,
+ * effectively determining if the multiplication is available for that specific
+ * column when there is only one index to process.
  *
- * @tparam ColumnAvailable The ColumnAvailable type containing multiple rows.
+ * @tparam ColumnAvailable The ColumnAvailable type containing the availability
+ * values for the specified row and column.
+ * @tparam StartIdx The starting index for the logical OR operation.
  */
-template <typename ColumnAvailable>
-struct ColumnAvailableElementWiseOr<ColumnAvailable, 0> {
-  static constexpr bool value = ColumnAvailable::list[0];
+template <typename ColumnAvailable, std::size_t StartIdx>
+struct ColumnAvailableElementWiseOrBlock<ColumnAvailable, StartIdx, 1> {
+  static constexpr bool value = ColumnAvailable::list[StartIdx];
+};
+
+/**
+ * @brief Specialization of ColumnAvailableElementWiseOrBlock for the case when
+ * Count is 0.
+ *
+ * This specialization defines a static constexpr member 'value' that is set to
+ * false, effectively indicating that there are no valid indices to process for
+ * the logical OR operation when Count is 0.
+ *
+ * @tparam ColumnAvailable The ColumnAvailable type containing the availability
+ * values for the specified row and column.
+ * @tparam StartIdx The starting index for the logical OR operation.
+ */
+template <typename ColumnAvailable, std::size_t StartIdx>
+struct ColumnAvailableElementWiseOrBlock<ColumnAvailable, StartIdx, 0> {
+  static constexpr bool value = false;
+};
+
+/**
+ * @brief A template struct to perform element-wise logical OR operation on a
+ * specific range of columns for a given row and column in the multiplication of
+ * two SparseAvailable types.
+ *
+ * This struct provides a static constexpr member 'value' that is the result of
+ * performing an element-wise logical OR operation on the availability of each
+ * column in the two SparseAvailable types for the specified row and column,
+ * effectively determining if the multiplication is available for that specific
+ * range of columns.
+ *
+ * @tparam ColumnAvailable The ColumnAvailable type containing the availability
+ * values for the specified row and column.
+ * @tparam N_Idx The index of the current multiplication being processed.
+ */
+template <typename ColumnAvailable, std::size_t N_Idx>
+struct ColumnAvailableElementWiseOr {
+
+  static constexpr bool value =
+      ColumnAvailableElementWiseOrBlock<ColumnAvailable, 0, N_Idx + 1>::value;
 };
 
 /**
@@ -3753,6 +3817,11 @@ struct ColumnAvailableElementWiseOr<ColumnAvailable, 0> {
  * multiple ColumnAvailable types into a SparseAvailable type.
  *
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
+ * @tparam COL The index of the column being processed.
+ * @tparam M_Idx The index of the current row being processed.
+ * The resulting type is a ColumnAvailable type containing the logical OR of
+ * the availability of each column in the two SparseAvailable types for the
+ * specified row and column, accessible via the nested ::type member.
  */
 template <typename SparseAvailable, std::size_t COL, std::size_t M_Idx>
 struct ColumnAvailableFromSparseAvailableColumLoop {
