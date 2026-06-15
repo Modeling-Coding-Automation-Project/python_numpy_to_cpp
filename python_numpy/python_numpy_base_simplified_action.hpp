@@ -38,6 +38,20 @@ namespace PythonNumpy {
 
 namespace ElementWiseMultiplyOperation {
 
+/**
+ * @brief Computes the backward substitution for the j loop in the QR
+ * decomposition.
+ *
+ * This function computes the backward substitution for the j loop, updating
+ * the output matrix with the computed values based on the upper triangular
+ * matrix R and the input matrix.
+ *
+ * @param R The upper triangular matrix from QR decomposition.
+ * @param matrix_in The input matrix used for substitution.
+ * @param matrix_out The output matrix to store results.
+ * @param sum The accumulated sum for the current row.
+ * @param division_min The minimum value to avoid division by zero.
+ */
 template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t I, std::size_t Start,
           std::size_t End, typename Enable = void>
@@ -50,6 +64,20 @@ struct Row<Out_Type, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Computes the output by processing two input types element-wise for a
+   * specific row.
+   *
+   * This static function computes the output for a specific row by performing
+   * element-wise multiplication of the corresponding elements from the two
+   * input types, `A` and `B`. It recursively divides the column range until it
+   * reaches individual columns, at which point it performs the multiplication
+   * directly.
+   *
+   * @param Out The output object where the result will be stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     Row<Out_Type, In_A_Type, In_B_Type, M, N, I, Start, Mid>::compute(Out, A,
                                                                       B);
@@ -62,6 +90,16 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t End>
 struct Row<Out_Type, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start). In this case, no computation is performed.
+   * @param Out The output object where the result would be stored if there were
+   * computations to perform.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     static_cast<void>(Out);
     static_cast<void>(A);
@@ -74,12 +112,41 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t End>
 struct Row<Out_Type, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Specialization for a single column range.
+   *
+   * This struct template specialization handles the case where the column range
+   * contains exactly one column (End - Start == 1). In this case, the
+   * computation is performed directly for that column.
+   * @param Out The output object where the result will be stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     Out.template set<I, Start>(A.template get<I, Start>() *
                                B.template get<I, Start>());
   }
 };
 
+/**
+ * @brief Computes the output by processing two input types element-wise.
+ *
+ * This function template performs a computation on two input objects, `A` and
+ * `B`, and stores the result in `Out`. It ensures at compile-time that both
+ * input types have the same number of columns and rows using static assertions.
+ *
+ * @tparam Out_Type Type of the output object.
+ * @tparam In_A_Type Type of the first input object.
+ * @tparam In_B_Type Type of the second input object.
+ * @param[out] Out Reference to the output object where the result will be
+ * stored.
+ * @param[in] A Constant reference to the first input object.
+ * @param[in] B Constant reference to the second input object.
+ *
+ * @note The function relies on a helper template `Row` to perform the actual
+ * computation. The dimensions (cols and rows) are determined at compile-time
+ * from `In_A_Type`. Both input types must have matching dimensions.
+ */
 template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -91,6 +158,20 @@ struct Column<Out_Type, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Computes the output by processing two input types element-wise for a
+   * specific column.
+   *
+   * This static function computes the output for a specific column by
+   * performing element-wise multiplication of the corresponding elements from
+   * the two input types, `A` and `B`. It recursively divides the row range
+   * until it reaches individual rows, at which point it performs the
+   * multiplication directly.
+   *
+   * @param Out The output object where the result will be stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     Column<Out_Type, In_A_Type, In_B_Type, M, N, Start, Mid>::compute(Out, A,
                                                                       B);
@@ -102,6 +183,16 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t Start, std::size_t End>
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @param Out The output object where the result would be stored if there were
+   * computations to perform.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     static_cast<void>(Out);
     static_cast<void>(A);
@@ -113,6 +204,17 @@ template <typename Out_Type, typename In_A_Type, typename In_B_Type,
           std::size_t M, std::size_t N, std::size_t Start, std::size_t End>
 struct Column<Out_Type, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Specialization for a single row.
+   *
+   * This struct template specialization handles the case where the row range
+   * contains a single row (End - Start == 1). It delegates the computation to
+   * the `Row` struct template for the specific row.
+   *
+   * @param Out The output object where the result will be stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(Out_Type &Out, const In_A_Type &A, const In_B_Type &B) {
     Row<Out_Type, In_A_Type, In_B_Type, M, N, Start, 0, N>::compute(Out, A, B);
   }
@@ -188,6 +290,26 @@ inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
 
 namespace InnerProductOperation {
 
+/**
+ * @brief Computes the inner product of two input matrices element-wise.
+ *
+ * This function template performs an inner product computation on two input
+ * objects, `A` and `B`, accumulating the sum of element-wise products. It
+ * ensures at compile-time that both input types have the same number of columns
+ * and rows using static assertions.
+ *
+ * @tparam T The scalar type for the result.
+ * @tparam In_A_Type Type of the first input object.
+ * @tparam In_B_Type Type of the second input object.
+ * @param[in] A Constant reference to the first input object.
+ * @param[in] B Constant reference to the second input object.
+ * @return The inner product of A and B as a scalar of type T.
+ *
+ * @note The function relies on helper templates `Row` and `Column` to perform
+ * the actual computation. The dimensions (cols and rows) are determined at
+ * compile-time from `In_A_Type`. Both input types must have matching
+ * dimensions.
+ */
 template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t I, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -199,6 +321,21 @@ struct Row<T, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Computes the inner product for a specific row by processing two
+   * input types element-wise.
+   *
+   * This static function computes the inner product for a specific row by
+   * performing element-wise multiplication of the corresponding elements from
+   * the two input types, `A` and `B`, and accumulating the results. It
+   * recursively divides the column range until it reaches individual columns,
+   * at which point it performs the multiplication directly.
+   *
+   * @param result The scalar variable where the computed inner product will be
+   * stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     Row<T, In_A_Type, In_B_Type, M, N, I, Start, Mid>::compute(result, A, B);
     Row<T, In_A_Type, In_B_Type, M, N, I, Mid, End>::compute(result, A, B);
@@ -209,6 +346,16 @@ template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start). In this case, no computation is performed.
+   * @param result The scalar variable where the computed inner product would be
+   * stored if there were computations to perform.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     static_cast<void>(result);
     static_cast<void>(A);
@@ -220,6 +367,19 @@ template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, In_A_Type, In_B_Type, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Specialization for a single column range.
+   *
+   * This struct template specialization handles the case where the column range
+   * contains exactly one column (End - Start == 1). In this case, the
+   * computation is performed directly for that column, contributing to the
+   * inner product result.
+   *
+   * @param result The scalar variable where the computed inner product will be
+   * stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     result += A.template get<I, Start>() * B.template get<I, Start>();
   }
@@ -236,6 +396,21 @@ struct Column<T, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Computes the inner product for a specific column by processing two
+   * input types element-wise.
+   *
+   * This static function computes the inner product for a specific column by
+   * performing element-wise multiplication of the corresponding elements from
+   * the two input types, `A` and `B`, and accumulating the results. It
+   * recursively divides the row range until it reaches individual rows, at
+   * which point it performs the multiplication directly.
+   *
+   * @param result The scalar variable where the computed inner product will be
+   * stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     Column<T, In_A_Type, In_B_Type, M, N, Start, Mid>::compute(result, A, B);
     Column<T, In_A_Type, In_B_Type, M, N, Mid, End>::compute(result, A, B);
@@ -246,6 +421,16 @@ template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t Start, std::size_t End>
 struct Column<T, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @param result The scalar variable where the computed inner product would be
+   * stored if there were computations to perform.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     static_cast<void>(result);
     static_cast<void>(A);
@@ -257,6 +442,19 @@ template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t Start, std::size_t End>
 struct Column<T, In_A_Type, In_B_Type, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Specialization for a single row.
+   *
+   * This struct template specialization handles the case where the row range
+   * contains a single row (End - Start == 1). It delegates the computation to
+   * the `Row` struct template for the specific row, contributing to the inner
+   * product result.
+   *
+   * @param result The scalar variable where the computed inner product will be
+   * stored.
+   * @param A The first input object containing values to multiply.
+   * @param B The second input object containing values to multiply.
+   */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
     Row<T, In_A_Type, In_B_Type, M, N, Start, 0, N>::compute(result, A, B);
   }
@@ -338,6 +536,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t COL,
 struct GetRow_Loop {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Computes the specified row from the input dense matrix and stores it
+   * in the result vector.
+   *
+   * This static function extracts a specific column (indexed by COL) from the
+   * input dense matrix and assigns it to the corresponding position in the
+   * result vector. It recursively processes the remaining rows by invoking
+   * GetRow_Loop with a decremented column index until all rows have been
+   * processed.
+   *
+   * @param matrix The input dense matrix of type DenseMatrix_Type<T, M, N>.
+   * @param result The output dense matrix (vector) of type DenseMatrix_Type<T,
+   * M, 1> to store the computed row.
+   */
   static void compute(const DenseMatrix_Type<T, M, N> &matrix,
                       DenseMatrix_Type<T, M, 1> &result) {
 
@@ -350,6 +562,16 @@ template <typename T, std::size_t M, std::size_t N, std::size_t COL,
           std::size_t Start, std::size_t End>
 struct GetRow_Loop<T, M, N, COL, Start, End,
                    typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @param matrix The input dense matrix of type DenseMatrix_Type<T, M, N>.
+   * @param result The output dense matrix (vector) of type DenseMatrix_Type<T,
+   * M, 1> where the computed row would be stored if there were computations to
+   * perform.
+   */
   static void compute(const DenseMatrix_Type<T, M, N> &matrix,
                       DenseMatrix_Type<T, M, 1> &result) {
     static_cast<void>(matrix);
@@ -361,12 +583,36 @@ template <typename T, std::size_t M, std::size_t N, std::size_t COL,
           std::size_t Start, std::size_t End>
 struct GetRow_Loop<T, M, N, COL, Start, End,
                    typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Specialization for a single row.
+   *
+   * This struct template specialization handles the case where the row range
+   * contains a single row (End - Start == 1). It extracts the specified column
+   * from the input dense matrix and assigns it to the corresponding position in
+   * the result vector.
+   *
+   * @param matrix The input dense matrix of type DenseMatrix_Type<T, M, N>.
+   * @param result The output dense matrix (vector) of type DenseMatrix_Type<T,
+   * M, 1> where the computed row will be stored.
+   */
   static void compute(const DenseMatrix_Type<T, M, N> &matrix,
                       DenseMatrix_Type<T, M, 1> &result) {
     result.template set<Start, 0>(matrix.template get<Start, COL>());
   }
 };
 
+/**
+ * @brief Defines the type of a dense matrix that can hold a specific row from a
+ * dense matrix.
+ *
+ * This type alias creates a dense matrix type that can hold a specific row from
+ * a dense matrix, indexed by COL.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the dense matrix.
+ * @tparam N The number of columns in the dense matrix.
+ * @tparam COL The index of the column to extract.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t COL>
 using GetRow = GetRow_Loop<T, M, N, COL, 0, M>;
 
@@ -461,6 +707,19 @@ template <typename T, std::size_t M, std::size_t COL, std::size_t Start,
           std::size_t End>
 struct GetRow_Loop<T, M, COL, Start, End,
                    typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of rows in the diagonal matrix.
+   * @tparam COL The row index to operate on.
+   * @param matrix The input diagonal matrix of type DiagMatrix_Type<T, M>.
+   * @param result The output diagonal matrix (vector) of type
+   * DiagAvailableRow_Type<T, M, COL> where the computed result would be stored
+   * if there were computations to perform.
+   */
   static void compute(const DiagMatrix_Type<T, M> &matrix,
                       DiagAvailableRow_Type<T, M, COL> &result) {
     static_cast<void>(matrix);
@@ -607,6 +866,22 @@ template <typename T, std::size_t M, std::size_t N, typename SparseAvailable,
           std::size_t COL, std::size_t Start, std::size_t End>
 struct GetRow_Loop<T, M, N, SparseAvailable, COL, Start, End,
                    typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @tparam T The data type of the matrix elements.
+   * @tparam M The number of rows in the matrix.
+   * @tparam N The number of columns in the matrix.
+   * @tparam SparseAvailable The sparse matrix availability type.
+   * @tparam COL The row index to operate on.
+   * @param matrix The input sparse matrix of type Matrix<DefSparse, T, M, N,
+   * SparseAvailable>.
+   * @param result The output sparse matrix (vector) of type
+   * SparseCol_Type<T, M, COL, SparseAvailable> where the computed result would
+   * be stored if there were computations to perform.
+   */
   static void compute(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
                       SparseCol_Type<T, M, COL, SparseAvailable> &result) {
     static_cast<void>(matrix);
@@ -698,6 +973,19 @@ template <typename Matrix_Type, typename RowVector_Type, std::size_t COL,
 struct SetRow_Loop {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Sets a specific row in the input matrix with values from the row
+   * vector.
+   *
+   * This static function assigns values from the row vector to a specific row
+   * (indexed by COL) in the input matrix. It recursively processes the
+   * remaining rows by invoking SetRow_Loop with a decremented column index
+   * until all rows have been processed.
+   *
+   * @param matrix The input matrix of type Matrix_Type to set values in.
+   * @param row_vector The row vector of type RowVector_Type containing values
+   * to set in the matrix.
+   */
   static void compute(Matrix_Type &matrix, const RowVector_Type &row_vector) {
     SetRow_Loop<Matrix_Type, RowVector_Type, COL, Start, Mid>::compute(
         matrix, row_vector);
@@ -710,6 +998,17 @@ template <typename Matrix_Type, typename RowVector_Type, std::size_t COL,
           std::size_t Start, std::size_t End>
 struct SetRow_Loop<Matrix_Type, RowVector_Type, COL, Start, End,
                    typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start). In this case, no computation is performed.
+   * @param matrix The input matrix of type Matrix_Type where values would be
+   * set if there were computations to perform.
+   * @param row_vector The row vector of type RowVector_Type containing values
+   * to set in the matrix, which would be used if there were computations to
+   * perform.
+   */
   static void compute(Matrix_Type &matrix, const RowVector_Type &row_vector) {
     static_cast<void>(matrix);
     static_cast<void>(row_vector);
@@ -720,6 +1019,16 @@ template <typename Matrix_Type, typename RowVector_Type, std::size_t COL,
           std::size_t Start, std::size_t End>
 struct SetRow_Loop<Matrix_Type, RowVector_Type, COL, Start, End,
                    typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Sets a specific row in the input matrix with values from the row
+   * vector.
+   * This static function assigns values from the row vector to a specific row
+   * (indexed by COL) in the input matrix. It serves as the base case for the
+   * recursive processing of rows.
+   * @param matrix The input matrix of type Matrix_Type to set values in.
+   * @param row_vector The row vector of type RowVector_Type containing values
+   * to set in the matrix.
+   */
   static void compute(Matrix_Type &matrix, const RowVector_Type &row_vector) {
     matrix.template set<Start, COL>(row_vector.template get<Start, 0>());
   }
@@ -779,6 +1088,20 @@ template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct ConcatenateBlockColumnsRange;
 
+/**
+ * @brief Concatenates a range of block columns from a tuple of arguments.
+ *
+ * This struct template recursively concatenates a range of block columns from a
+ * tuple of arguments, resulting in a single matrix type that represents the
+ * concatenation of the specified columns.
+ *
+ * @tparam Row_Offset The offset for the row index in the tuple.
+ * @tparam N The number of columns in the block.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments for
+ * concatenation.
+ * @tparam Start The starting index of the column range to concatenate.
+ * @tparam End The ending index of the column range to concatenate.
+ */
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Start, std::size_t End>
 struct ConcatenateBlockColumnsRange<
@@ -793,6 +1116,21 @@ struct ConcatenateBlockColumnsRange<
                                             End>::type>;
 };
 
+/**
+ * @brief Concatenates a single block column from a tuple of arguments.
+ *
+ * This struct template specialization handles the case where the column range
+ * contains a single column (End - Start == 1). It retrieves the corresponding
+ * type from the tuple of arguments based on the specified row offset and
+ * column index.
+ *
+ * @tparam Row_Offset The offset for the row index in the tuple.
+ * @tparam N The number of columns in the block.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments for
+ * concatenation.
+ * @tparam Start The starting index of the column range to concatenate.
+ * @tparam End The ending index of the column range to concatenate.
+ */
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Start, std::size_t End>
 struct ConcatenateBlockColumnsRange<
@@ -802,6 +1140,20 @@ struct ConcatenateBlockColumnsRange<
       typename std::tuple_element<Row_Offset + Start, ArgsTuple_Type>::type;
 };
 
+/**
+ * @brief Concatenates block columns from a tuple of arguments.
+ *
+ * This type alias defines the type of the resulting matrix when block columns
+ * are concatenated based on the specified row offset, number of columns, and
+ * tuple of arguments. It utilizes the ConcatenateBlockColumnsRange struct to
+ * perform the concatenation.
+ *
+ * @tparam Row_Offset The offset for the row index in the tuple.
+ * @tparam N The number of columns in the block.
+ * @tparam ArgsTuple_Type The type of the tuple containing arguments for
+ * concatenation.
+ * @tparam Col_Index The index of the column to concatenate.
+ */
 template <std::size_t Row_Offset, std::size_t N, typename ArgsTuple_Type,
           std::size_t Col_Index>
 struct ConcatenateBlockColumns {
@@ -1241,6 +1593,23 @@ inline auto concatenate_tile(const MATRIX_Type &matrix)
 
 namespace ReshapeOperation {
 
+/**
+ * @brief Reshapes a matrix by substituting values from a source matrix to a
+ * destination matrix.
+ *
+ * This struct template defines a recursive structure for substituting values
+ * from a source matrix to a destination matrix based on specified indices and
+ * ranges. It handles the substitution for both row-wise and column-wise
+ * operations.
+ *
+ * @tparam To_Type The type of the destination matrix.
+ * @tparam From_Type The type of the source matrix.
+ * @tparam I The current index for substitution.
+ * @tparam Start The starting index of the range for substitution.
+ * @tparam End The ending index of the range for substitution.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename To_Type, typename From_Type, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -1251,6 +1620,17 @@ struct Row<To_Type, From_Type, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Substitutes values from a source matrix to a destination matrix for
+   * a specific row.
+   * This static function recursively substitutes values from the source matrix
+   * to the destination matrix for a specific row (indexed by I) and a range of
+   * columns defined by Start and End. It divides the range into two halves and
+   * processes each half separately until it reaches the base case where the
+   * range contains a single column.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     Row<To_Type, From_Type, I, Start, Mid>::substitute(to_matrix, from_matrix);
     Row<To_Type, From_Type, I, Mid, End>::substitute(to_matrix, from_matrix);
@@ -1261,6 +1641,16 @@ template <typename To_Type, typename From_Type, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<To_Type, From_Type, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start). In this case, no computation is performed.
+   * @param to_matrix The destination matrix where values would be substituted
+   * if there were computations to perform.
+   * @param from_matrix The source matrix containing values to substitute, which
+   * would be used if there were computations to perform.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     static_cast<void>(to_matrix);
     static_cast<void>(from_matrix);
@@ -1271,6 +1661,18 @@ template <typename To_Type, typename From_Type, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<To_Type, From_Type, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Substitutes values from a source matrix to a destination matrix for
+   * a specific row and column.
+   *
+   * This static function substitutes values from the source matrix to the
+   * destination matrix for a specific row (indexed by I) and a single column
+   * (indexed by Start). It calculates the corresponding indices in both the
+   * source and destination matrices and performs the substitution.
+   *
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     constexpr std::size_t NUMBER_OF_ELEMENT = I * From_Type::COLS + Start;
 
@@ -1300,6 +1702,23 @@ struct Row<To_Type, From_Type, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for substituting values from a source matrix to a
+ * destination matrix for a specific column.
+ *
+ * This struct template defines a recursive structure for substituting values
+ * from a source matrix to a destination matrix based on specified indices and
+ * ranges for columns. It handles the substitution for column-wise operations.
+ *
+ * @tparam To_Type The type of the destination matrix.
+ * @tparam From_Type The type of the source matrix.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @tparam Start The starting index of the range for substitution.
+ * @tparam End The ending index of the range for substitution.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Column;
@@ -1310,6 +1729,19 @@ struct Column<To_Type, From_Type, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Substitutes values from a source matrix to a destination matrix for
+   * a specific column range.
+   *
+   * This static function recursively substitutes values from the source matrix
+   * to the destination matrix for a specific column range defined by Start and
+   * End. It divides the range into two halves and processes each half
+   * separately until it reaches the base case where the range contains a single
+   * column.
+   *
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     Column<To_Type, From_Type, M, N, Start, Mid>::substitute(to_matrix,
                                                              from_matrix);
@@ -1322,6 +1754,19 @@ template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<To_Type, From_Type, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range in column-wise
+   * substitution.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start) in column-wise substitution. In this case, no
+   * computation is performed.
+   *
+   * @param to_matrix The destination matrix where values would be substituted
+   * if there were computations to perform.
+   * @param from_matrix The source matrix containing values to substitute, which
+   * would be used if there were computations to perform.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     static_cast<void>(to_matrix);
     static_cast<void>(from_matrix);
@@ -1332,6 +1777,17 @@ template <typename To_Type, typename From_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<To_Type, From_Type, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Substitutes values from a source matrix to a destination matrix for
+   * a specific column.
+   *
+   * This static function substitutes values from the source matrix to the
+   * destination matrix for a specific column (indexed by Start) across all
+   * rows. It calculates the corresponding indices in both the source and
+   * destination matrices and performs the substitution for each row.
+   * @param to_matrix The destination matrix where values are substituted.
+   * @param from_matrix The source matrix containing values to substitute.
+   */
   static void substitute(To_Type &to_matrix, const From_Type &from_matrix) {
     Row<To_Type, From_Type, Start, 0, N>::substitute(to_matrix, from_matrix);
   }
@@ -1467,6 +1923,21 @@ struct RealSumSquaresTemplate<T, Matrix_Type, I, J, true> {
   }
 };
 
+/**
+ * @brief Struct template for summing squares of real values in a specific
+ * column.
+ *
+ * This struct template defines a recursive structure for summing the squares of
+ * real values in a specific column of a matrix. It uses template specialization
+ * to handle different cases based on the range of rows being processed.
+ * @tparam T The type of the sum of squares variable.
+ * @tparam Matrix_Type The type of the matrix being processed.
+ * @tparam I The column index being processed.
+ * @tparam Start The starting index of the row range for summing squares.
+ * @tparam End The ending index of the row range for summing squares.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct RealColumn;
@@ -1477,6 +1948,19 @@ struct RealColumn<T, Matrix_Type, I, Start, End,
                   typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Sums the squares of real values in a specific column for a range of
+   * rows.
+   *
+   * This static function recursively sums the squares of real values in a
+   * specific column (indexed by I) for a range of rows defined by Start and
+   * End. It divides the range into two halves and processes each half
+   * separately until it reaches the base case where the range contains a single
+   * row.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     RealColumn<T, Matrix_Type, I, Start, Mid>::sum_squares(sum_of_squares,
                                                            matrix);
@@ -1489,6 +1973,19 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End>
 struct RealColumn<T, Matrix_Type, I, Start, End,
                   typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range in column-wise summation of
+   * squares.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start) in column-wise summation of squares. In this case, no
+   * computation is performed.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares, which
+   * would be used if there were computations to perform.
+   * @param matrix The matrix being processed to retrieve values from, which
+   * would be used if there were computations to perform.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     static_cast<void>(sum_of_squares);
     static_cast<void>(matrix);
@@ -1499,6 +1996,18 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End>
 struct RealColumn<T, Matrix_Type, I, Start, End,
                   typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Sums the squares of real values in a specific column for a single
+   * row.
+   *
+   * This static function sums the squares of real values in a specific column
+   * (indexed by I) for a single row (indexed by Start). It retrieves the value
+   * from the matrix, computes its square, and adds it to the sum_of_squares
+   * variable.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     RealSumSquaresTemplate<T, Matrix_Type, I, Start,
                            Matrix_Type::SparseAvailable_Type::lists[I][Start]>::
@@ -1506,6 +2015,21 @@ struct RealColumn<T, Matrix_Type, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for summing squares of real values in a specific row.
+ *
+ * This struct template defines a recursive structure for summing the squares of
+ * real values in a specific row of a matrix. It uses template specialization to
+ * handle different cases based on the range of columns being processed.
+ * @tparam T The type of the sum of squares variable.
+ * @tparam Matrix_Type The type of the matrix being processed.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index of the column range for summing squares.
+ * @tparam End The ending index of the column range for summing squares.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct RealRow;
@@ -1516,6 +2040,19 @@ struct RealRow<T, Matrix_Type, M, N, Start, End,
                typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Sums the squares of real values in a specific row for a range of
+   * columns.
+   *
+   * This static function recursively sums the squares of real values in a
+   * specific row (indexed by Start) for a range of columns defined by Start and
+   * End. It divides the range into two halves and processes each half
+   * separately until it reaches the base case where the range contains a single
+   * column.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     RealRow<T, Matrix_Type, M, N, Start, Mid>::sum_squares(sum_of_squares,
                                                            matrix);
@@ -1528,6 +2065,19 @@ template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct RealRow<T, Matrix_Type, M, N, Start, End,
                typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range in row-wise summation of
+   * squares.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start) in row-wise summation of squares. In this case, no
+   * computation is performed.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares, which
+   * would be used if there were computations to perform.
+   * @param matrix The matrix being processed to retrieve values from, which
+   * would be used if there were computations to perform.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     static_cast<void>(sum_of_squares);
     static_cast<void>(matrix);
@@ -1538,6 +2088,18 @@ template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct RealRow<T, Matrix_Type, M, N, Start, End,
                typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Sums the squares of real values in a specific row for a single
+   * column.
+   *
+   * This static function sums the squares of real values in a specific row
+   * (indexed by Start) for a single column (indexed by Start). It retrieves the
+   * value from the matrix, computes its square, and adds it to the
+   * sum_of_squares variable.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     RealColumn<T, Matrix_Type, Start, 0, N>::sum_squares(sum_of_squares,
                                                          matrix);
@@ -1598,6 +2160,22 @@ struct ComplexSumSquaresTemplate<T, Matrix_Type, I, J, true> {
   }
 };
 
+/**
+ * @brief Struct template for summing squares of complex values in a specific
+ * column.
+ *
+ * This struct template defines a recursive structure for summing the squares of
+ * complex values in a specific column of a matrix. It uses template
+ * specialization to handle different cases based on the range of rows being
+ * processed.
+ * @tparam T The type of the sum of squares variable.
+ * @tparam Matrix_Type The type of the matrix being processed.
+ * @tparam I The column index being processed.
+ * @tparam Start The starting index of the row range for summing squares.
+ * @tparam End The ending index of the row range for summing squares.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct ComplexColumn;
@@ -1608,6 +2186,19 @@ struct ComplexColumn<T, Matrix_Type, I, Start, End,
                      typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Sums the squares of complex values in a specific column for a range
+   * of rows.
+   *
+   * This static function recursively sums the squares of complex values in a
+   * specific column (indexed by I) for a range of rows defined by Start and
+   * End. It divides the range into two halves and processes each half
+   * separately until it reaches the base case where the range contains a single
+   * row.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     ComplexColumn<T, Matrix_Type, I, Start, Mid>::sum_squares(sum_of_squares,
                                                               matrix);
@@ -1620,6 +2211,19 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End>
 struct ComplexColumn<T, Matrix_Type, I, Start, End,
                      typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty row range in column-wise summation of
+   * squares for complex values.
+   *
+   * This struct template specialization handles the case where the row range is
+   * empty (End == Start) in column-wise summation of squares for complex
+   * values. In this case, no computation is performed.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares, which
+   * would be used if there were computations to perform.
+   * @param matrix The matrix being processed to retrieve values from, which
+   * would be used if there were computations to perform.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     static_cast<void>(sum_of_squares);
     static_cast<void>(matrix);
@@ -1630,6 +2234,18 @@ template <typename T, typename Matrix_Type, std::size_t I, std::size_t Start,
           std::size_t End>
 struct ComplexColumn<T, Matrix_Type, I, Start, End,
                      typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Sums the squares of complex values in a specific column for a single
+   * row.
+   *
+   * This static function sums the squares of complex values in a specific
+   * column (indexed by I) for a single row (indexed by Start). It retrieves the
+   * complex value from the matrix, computes the sum of squares of its real and
+   * imaginary parts, and adds it to the sum_of_squares variable.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     ComplexSumSquaresTemplate<T, Matrix_Type, I, Start,
                               Matrix_Type::SparseAvailable_Type::lists
@@ -1638,6 +2254,22 @@ struct ComplexColumn<T, Matrix_Type, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for summing squares of complex values in a specific
+ * row.
+ *
+ * This struct template defines a recursive structure for summing the squares of
+ * complex values in a specific row of a matrix. It uses template specialization
+ * to handle different cases based on the range of columns being processed.
+ * @tparam T The type of the sum of squares variable.
+ * @tparam Matrix_Type The type of the matrix being processed.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index of the column range for summing squares.
+ * @tparam End The ending index of the column range for summing squares.
+ * @tparam Enable A type used for SFINAE to enable or disable certain
+ * specializations based on conditions.
+ */
 template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct ComplexRow;
@@ -1648,6 +2280,19 @@ struct ComplexRow<T, Matrix_Type, M, N, Start, End,
                   typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Sums the squares of complex values in a specific row for a range of
+   * columns.
+   *
+   * This static function recursively sums the squares of complex values in a
+   * specific row (indexed by Start) for a range of columns defined by Start and
+   * End. It divides the range into two halves and processes each half
+   * separately until it reaches the base case where the range contains a single
+   * column.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     ComplexRow<T, Matrix_Type, M, N, Start, Mid>::sum_squares(sum_of_squares,
                                                               matrix);
@@ -1660,6 +2305,19 @@ template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct ComplexRow<T, Matrix_Type, M, N, Start, End,
                   typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Specialization for an empty column range in row-wise summation of
+   * squares for complex values.
+   *
+   * This struct template specialization handles the case where the column range
+   * is empty (End == Start) in row-wise summation of squares for complex
+   * values. In this case, no computation is performed.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares, which
+   * would be used if there were computations to perform.
+   * @param matrix The matrix being processed to retrieve values from, which
+   * would be used if there were computations to perform.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     static_cast<void>(sum_of_squares);
     static_cast<void>(matrix);
@@ -1670,6 +2328,18 @@ template <typename T, typename Matrix_Type, std::size_t M, std::size_t N,
           std::size_t Start, std::size_t End>
 struct ComplexRow<T, Matrix_Type, M, N, Start, End,
                   typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Sums the squares of complex values in a specific row for a single
+   * column.
+   *
+   * This static function sums the squares of complex values in a specific row
+   * (indexed by Start) for a single column (indexed by Start). It retrieves the
+   * complex value from the matrix, computes the sum of squares of its real and
+   * imaginary parts, and adds it to the sum_of_squares variable.
+   *
+   * @param sum_of_squares The variable to accumulate the sum of squares.
+   * @param matrix The matrix being processed to retrieve values from.
+   */
   static void sum_squares(T &sum_of_squares, const Matrix_Type &matrix) {
     ComplexColumn<T, Matrix_Type, Start, 0, N>::sum_squares(sum_of_squares,
                                                             matrix);
