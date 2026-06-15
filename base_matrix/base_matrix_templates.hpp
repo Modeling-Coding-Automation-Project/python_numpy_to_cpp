@@ -1815,77 +1815,124 @@ using GetRestOfSparseAvailable =
         SparseAvailable_In, Row_Index,
         (SparseAvailable_In::number_of_rows - Row_Index)>::type;
 
-/**
- * @brief A template struct to check if a SparseAvailable type is empty.
- *
- * This struct provides a static constexpr boolean value 'value' that is
- * true if the SparseAvailable type has no rows, and false otherwise.
- *
- * @tparam SparseAvailable The SparseAvailable type to check.
- */
-template <typename SparseAvailable_In, std::size_t Row_Index, bool NotEmpty>
-struct AvoidEmptyColumnsSparseAvailableLoop;
+template <typename SparseAvailable_In, std::size_t StartRow, std::size_t Count>
+struct FindFirstNotEmptyColumn {
+  static constexpr std::size_t MidCount = Count / 2;
 
-/**
- * @brief Specialization of AvoidEmptyColumnsSparseAvailableLoop for the case
- * when the SparseAvailable type is empty.
- *
- * This specialization defines a type alias 'type' that is set to
- * GetRestOfSparseAvailable<SparseAvailable_In, Row_Index>, effectively
- * returning the rest of the SparseAvailable starting from the specified column
- * index when it is not empty.
- *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
- * rows.
- * @tparam Row_Index The index of the row to start from.
- */
-template <typename SparseAvailable_In, std::size_t Row_Index>
-struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable_In, Row_Index,
-                                            true> {
-  using type = GetRestOfSparseAvailable<SparseAvailable_In, Row_Index>;
+  static constexpr std::size_t LeftResult =
+      FindFirstNotEmptyColumn<SparseAvailable_In, StartRow, MidCount>::value;
+
+  template <bool Found, std::size_t Dummy = 0> struct EvaluateRight {
+    static constexpr std::size_t value = LeftResult;
+  };
+
+  template <std::size_t Dummy> struct EvaluateRight<false, Dummy> {
+    static constexpr std::size_t value =
+        FindFirstNotEmptyColumn<SparseAvailable_In, StartRow + MidCount,
+                                Count - MidCount>::value;
+  };
+
+  static constexpr std::size_t value =
+      EvaluateRight<(LeftResult != static_cast<std::size_t>(-1))>::value;
 };
 
 /**
- * @brief Specialization of AvoidEmptyColumnsSparseAvailableLoop for the case
- * when the SparseAvailable type is not empty.
+ * @brief Specialization of FindFirstNotEmptyColumn for the case when Count
+ * is 1.
  *
- * This specialization defines a type alias 'type' that is set to the result of
- * recursively calling AvoidEmptyColumnsSparseAvailableLoop with the next column
- * index, effectively skipping empty rows in the SparseAvailable type.
+ * This specialization defines a static constexpr boolean 'NotEmpty' that checks
+ * if the ColumnAvailable type at the specified row index is not empty. It also
+ * defines a static constexpr size_t 'value' that is set to the row index if the
+ * column is not empty, or -1 if it is empty.
  *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
  * rows.
- * @tparam Row_Index The index of the row to start from.
+ * @tparam StartRow The index of the row to check.
  */
-template <typename SparseAvailable_In, std::size_t Row_Index>
-struct AvoidEmptyColumnsSparseAvailableLoop<SparseAvailable_In, Row_Index,
-                                            false> {
-  using type = typename AvoidEmptyColumnsSparseAvailableLoop<
-      SparseAvailable_In, (Row_Index + 1),
-      CheckSparseAvailableEmpty<typename GetColumnAvailable<
-          (Row_Index + 1), SparseAvailable_In>::type>::value>::type;
+template <typename SparseAvailable_In, std::size_t StartRow>
+struct FindFirstNotEmptyColumn<SparseAvailable_In, StartRow, 1> {
+  static constexpr bool NotEmpty = CheckSparseAvailableEmpty<
+      typename GetColumnAvailable<StartRow, SparseAvailable_In>::type>::value;
+
+  static constexpr std::size_t value =
+      NotEmpty ? StartRow : static_cast<std::size_t>(-1);
 };
 
 /**
- * @brief A template alias to avoid empty rows in a SparseAvailable type.
+ * @brief Specialization of FindFirstNotEmptyColumn for the case when Count is
+ * 0.
  *
- * This alias uses the AvoidEmptyColumnsSparseAvailableLoop to generate a
- * SparseAvailable type that contains only the non-empty rows from the input
- * SparseAvailable type.
+ * This specialization defines a static constexpr size_t 'value' that is set to
+ * -1, effectively indicating that there are no non-empty columns to be found
+ * when there are no rows to check.
  *
- * @tparam SparseAvailable_In The SparseAvailable type containing multiple
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
  * rows.
+ * @tparam StartRow The index of the row to check.
+ */
+template <typename SparseAvailable_In, std::size_t StartRow>
+struct FindFirstNotEmptyColumn<SparseAvailable_In, StartRow, 0> {
+  static constexpr std::size_t value = static_cast<std::size_t>(-1);
+};
+
+/**
+ * @brief A template struct to apply the result of FindFirstNotEmptyColumn to
+ * get the rest of a SparseAvailable type.
+ *
+ * This struct provides a type alias 'type' that is set to the result of
+ * GetRestOfSparseAvailable if a non-empty column is found, or an empty
+ * SparseAvailable type if no non-empty columns are found.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ * @tparam FoundRow The index of the first non-empty column found, or -1 if no
+ * non-empty columns are found.
  *
  * The resulting type is a SparseAvailable type that contains only the rows
- * that are not empty, effectively filtering out any empty rows.
+ * starting from the first non-empty column, or an empty SparseAvailable type
+ * if no non-empty columns are found.
+ */
+template <typename SparseAvailable_In, std::size_t FoundRow>
+struct ApplyRestOfSparseAvailable {
+  using type = GetRestOfSparseAvailable<SparseAvailable_In, FoundRow>;
+};
+
+/**
+ * @brief Specialization of ApplyRestOfSparseAvailable for the case when no
+ * non-empty columns are found.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * SparseAvailable<>, effectively creating an empty SparseAvailable type when no
+ * non-empty columns are found.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
  */
 template <typename SparseAvailable_In>
-using AvoidEmptyColumnsSparseAvailable =
-    typename AvoidEmptyColumnsSparseAvailableLoop<
-        SparseAvailable_In, 0,
-        CheckSparseAvailableEmpty<TemplatesOperation::SparseAvailableColumns<
-            typename GetColumnAvailable<0, SparseAvailable_In>::type>>::value>::
-        type;
+struct ApplyRestOfSparseAvailable<SparseAvailable_In,
+                                  static_cast<std::size_t>(-1)> {
+  using type = SparseAvailable<>;
+};
+
+/**
+ * @brief Alias template to avoid empty columns in a SparseAvailable type.
+ *
+ * This alias uses the ApplyRestOfSparseAvailable to extract the non-empty
+ * columns from the SparseAvailable type, effectively creating a new
+ * SparseAvailable type that contains only the non-empty columns.
+ *
+ * @tparam SparseAvailable_In The input SparseAvailable type containing multiple
+ * rows.
+ *
+ * The resulting type is a SparseAvailable type that contains only the non-empty
+ * columns from the input SparseAvailable type, accessible via the nested ::type
+ * member.
+ */
+template <typename SparseAvailable_In>
+using AvoidEmptyColumnsSparseAvailable = typename ApplyRestOfSparseAvailable<
+    SparseAvailable_In,
+    FindFirstNotEmptyColumn<SparseAvailable_In, 0,
+                            SparseAvailable_In::number_of_rows>::value>::type;
 
 /* Create Row Indices */
 
