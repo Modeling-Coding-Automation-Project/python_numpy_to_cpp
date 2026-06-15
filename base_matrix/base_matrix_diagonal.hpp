@@ -168,6 +168,21 @@ public:
    * @return DiagMatrix<T, M> A diagonal matrix of type T and size M filled with
    * zeros.
    */
+  static inline DiagMatrix<T, M> zeros() {
+    DiagMatrix<T, M> zeros;
+
+    return zeros;
+  }
+
+  /**
+   * @brief Accesses the diagonal element at the specified index.
+   *
+   * This method provides read-write access to the diagonal element at the
+   * specified index.
+   *
+   * @param index The index of the diagonal element to access.
+   * @return T& A reference to the diagonal element at the specified index.
+   */
   T &operator[](std::size_t index) { return this->data[index]; }
 
   /**
@@ -184,14 +199,12 @@ public:
   const T &operator[](std::size_t index) const { return this->data[index]; }
 
   /**
-   * @brief Accesses the diagonal element at the specified index.
+   * @brief Returns the number of columns in the diagonal matrix.
    *
-   * This method provides read-write access to the diagonal element at the
-   * specified index. If the index is out of bounds, it returns the last
-   * element in the diagonal.
+   * Since this is a square matrix, the number of columns is equal to the
+   * number of rows.
    *
-   * @param index The index of the diagonal element to access.
-   * @return T& A reference to the diagonal element at the specified index.
+   * @return std::size_t The number of columns in the diagonal matrix.
    */
   constexpr std::size_t cols() const { return M; }
 
@@ -240,6 +253,28 @@ public:
    * @return Vector<T, M> A vector with only the diagonal element at the
    * specified column set, all other elements are zero.
    */
+  inline Vector<T, M> get_column(std::size_t col) const {
+    if (col >= M) {
+      col = M - 1;
+    }
+
+    Vector<T, M> result;
+    result[col] = this->data[col];
+
+    return result;
+  }
+
+  /**
+   * @brief Computes the inverse diagonal matrix with safe division.
+   *
+   * This method returns a diagonal matrix where each element is the inverse of
+   * the corresponding input diagonal element, using a minimum threshold to
+   * avoid division by zero.
+   *
+   * @param division_min The minimum denominator magnitude used to avoid
+   * division by zero.
+   * @return DiagMatrix<T, M> The inverse diagonal matrix.
+   */
   inline DiagMatrix<T, M> inv(T division_min) const {
     DiagMatrix<T, M> result;
 
@@ -282,12 +317,18 @@ namespace DiagMatrixAddDiagMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-matrix addition helper.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes the sum over a diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     Core<T, M, Start, Mid>::compute(A, B, result);
@@ -297,6 +338,9 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
                       DiagMatrix<T, M> &) {}
 };
@@ -304,6 +348,9 @@ struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element addition.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[Start] = A[Start] + B[Start];
@@ -363,12 +410,18 @@ namespace DiagMatrixAddMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for adding diagonal elements to a dense matrix.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively updates diagonal elements in a dense matrix.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     Core<T, M, Start, Mid>::compute(A, result);
     Core<T, M, Mid, End>::compute(A, result);
@@ -377,12 +430,18 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, Matrix<T, M, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Adds one diagonal element into the dense matrix diagonal.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     result.template set<Start, Start>(result.template get<Start, Start>() +
                                       A[Start]);
@@ -474,12 +533,18 @@ namespace DiagMatrixMinus {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-matrix negation helper.
+ */
 struct Loop;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes negation over a diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     Loop<T, M, Start, Mid>::compute(A, result);
     Loop<T, M, Mid, End>::compute(A, result);
@@ -488,12 +553,18 @@ struct Loop<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, DiagMatrix<T, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element negation.
+   */
   static void compute(const DiagMatrix<T, M> &A, DiagMatrix<T, M> &result) {
     result[Start] = -A[Start];
   }
@@ -549,12 +620,18 @@ namespace DiagMatrixSubDiagMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-matrix subtraction helper.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes subtraction over a diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     Core<T, M, Start, Mid>::compute(A, B, result);
@@ -564,6 +641,9 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
                       DiagMatrix<T, M> &) {}
 };
@@ -571,6 +651,9 @@ struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element subtraction.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[Start] = A[Start] - B[Start];
@@ -662,12 +745,19 @@ namespace MatrixSubDiagMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for subtracting diagonal values from dense
+ * matrices.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively subtracts diagonal elements from a dense matrix.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     Core<T, M, Start, Mid>::compute(A, result);
     Core<T, M, Mid, End>::compute(A, result);
@@ -676,12 +766,18 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, Matrix<T, M, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Subtracts one diagonal element from the dense matrix diagonal.
+   */
   static void compute(const DiagMatrix<T, M> &A, Matrix<T, M, M> &result) {
     result.template set<Start, Start>(result.template get<Start, Start>() -
                                       A[Start]);
@@ -742,12 +838,18 @@ namespace DiagMatrixMultiplyScalar {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-scalar multiplication.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively applies scalar multiplication to diagonal elements.
+   */
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     Core<T, M, Start, Mid>::compute(mat, scalar, result);
@@ -757,12 +859,18 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const T, DiagMatrix<T, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element scalar multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &mat, const T scalar,
                       DiagMatrix<T, M> &result) {
     result[Start] = mat[Start] * scalar;
@@ -854,12 +962,18 @@ namespace DiagMatrixMultiplyVector {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-vector multiplication.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes diagonal-matrix and vector multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                       Vector<T, M> &result) {
     Core<T, M, Start, Mid>::compute(A, vec, result);
@@ -869,6 +983,9 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const Vector<T, M> &,
                       Vector<T, M> &) {}
 };
@@ -876,6 +993,9 @@ struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element and vector-element multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Vector<T, M> &vec,
                       Vector<T, M> &result) {
     result[Start] = A[Start] * vec[Start];
@@ -937,12 +1057,18 @@ namespace DiagMatrixMultiplyDiagMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-diagonal multiplication.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes element-wise product over diagonal indices.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     Core<T, M, Start, Mid>::compute(A, B, result);
@@ -952,6 +1078,9 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
                       DiagMatrix<T, M> &) {}
 };
@@ -959,6 +1088,9 @@ struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result) {
     result[Start] = A[Start] * B[Start];
@@ -1019,6 +1151,9 @@ namespace DiagMatrixMultiplyMatrix {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for row-wise diagonal-dense multiplication core.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
@@ -1026,6 +1161,10 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes one output-row segment for diagonal-dense
+   * multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Core<T, M, N, J, Start, Mid>::compute(A, B, result);
@@ -1037,6 +1176,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range.
+   */
   static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -1045,6 +1187,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one element for diagonal-dense multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<J, Start>(A[J] * B.template get<J, Start>());
@@ -1053,6 +1198,10 @@ struct Core<T, M, N, J, Start, End,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for outer recursion over rows in
+ * diagonal-dense multiplication.
+ */
 struct Row;
 
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
@@ -1060,6 +1209,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes multiplication over a row range.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, N, Start, Mid>::compute(A, B, result);
@@ -1070,6 +1222,9 @@ struct Row<T, M, N, Start, End,
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty row range.
+   */
   static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -1078,6 +1233,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one output row for diagonal-dense multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result) {
     Core<T, M, N, Start, 0, N>::compute(A, B, result);
@@ -1140,6 +1298,9 @@ namespace MatrixMultiplyDiagMatrix {
 
 template <typename T, std::size_t L, std::size_t M, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for row-wise dense-diagonal multiplication core.
+ */
 struct Core;
 
 template <typename T, std::size_t L, std::size_t M, std::size_t I,
@@ -1147,6 +1308,10 @@ template <typename T, std::size_t L, std::size_t M, std::size_t I,
 struct Core<T, L, M, I, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes one output-row segment for dense-diagonal
+   * multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Core<T, L, M, I, Start, Mid>::compute(A, B, result);
@@ -1158,6 +1323,9 @@ template <typename T, std::size_t L, std::size_t M, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Core<T, L, M, I, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range.
+   */
   static void compute(const Matrix<T, L, M> &, const DiagMatrix<T, M> &,
                       Matrix<T, L, M> &) {}
 };
@@ -1166,6 +1334,9 @@ template <typename T, std::size_t L, std::size_t M, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Core<T, L, M, I, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one element for dense-diagonal multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     result.template set<I, Start>(A.template get<I, Start>() * B[Start]);
@@ -1174,6 +1345,10 @@ struct Core<T, L, M, I, Start, End,
 
 template <typename T, std::size_t L, std::size_t M, std::size_t Start,
           std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for outer recursion over rows in
+ * dense-diagonal multiplication.
+ */
 struct Row;
 
 template <typename T, std::size_t L, std::size_t M, std::size_t Start,
@@ -1181,6 +1356,9 @@ template <typename T, std::size_t L, std::size_t M, std::size_t Start,
 struct Row<T, L, M, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes multiplication over a row range.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Row<T, L, M, Start, Mid>::compute(A, B, result);
@@ -1191,6 +1369,9 @@ struct Row<T, L, M, Start, End,
 template <typename T, std::size_t L, std::size_t M, std::size_t Start,
           std::size_t End>
 struct Row<T, L, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty row range.
+   */
   static void compute(const Matrix<T, L, M> &, const DiagMatrix<T, M> &,
                       Matrix<T, L, M> &) {}
 };
@@ -1199,6 +1380,9 @@ template <typename T, std::size_t L, std::size_t M, std::size_t Start,
           std::size_t End>
 struct Row<T, L, M, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one output row for dense-diagonal multiplication.
+   */
   static void compute(const Matrix<T, L, M> &A, const DiagMatrix<T, M> &B,
                       Matrix<T, L, M> &result) {
     Core<T, L, M, Start, 0, M>::compute(A, B, result);
@@ -1262,12 +1446,18 @@ namespace DiagMatrixTrace {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal trace computation.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively accumulates trace over a diagonal index range.
+   */
   static T compute(const DiagMatrix<T, M> &A) {
     return Core<T, M, Start, Mid>::compute(A) +
            Core<T, M, Mid, End>::compute(A);
@@ -1276,12 +1466,18 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range in trace computation.
+   */
   static T compute(const DiagMatrix<T, M> &) { return static_cast<T>(0); }
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Returns one diagonal element for trace accumulation.
+   */
   static T compute(const DiagMatrix<T, M> &A) { return A[Start]; }
 };
 
@@ -1334,12 +1530,18 @@ namespace DiagMatrixToDense {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-to-dense assignment.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively assigns diagonal values into a dense matrix.
+   */
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
     Core<T, M, Start, Mid>::assign(result, A);
     Core<T, M, Mid, End>::assign(result, A);
@@ -1348,12 +1550,18 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void assign(Matrix<T, M, M> &, const DiagMatrix<T, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Assigns one diagonal element into a dense matrix.
+   */
   static void assign(Matrix<T, M, M> &result, const DiagMatrix<T, M> &A) {
     result.template set<Start, Start>(A[Start]);
   }
@@ -1410,12 +1618,18 @@ namespace DiagMatrixDivideDiagMatrix {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive diagonal-diagonal division.
+ */
 struct Core;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes element-wise diagonal division.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
     Core<T, M, Start, Mid>::compute(A, B, result, division_min);
@@ -1425,6 +1639,9 @@ struct Core<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, const DiagMatrix<T, M> &,
                       DiagMatrix<T, M> &, const T) {}
 };
@@ -1432,6 +1649,9 @@ struct Core<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Core<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one diagonal-element division.
+   */
   static void compute(const DiagMatrix<T, M> &A, const DiagMatrix<T, M> &B,
                       DiagMatrix<T, M> &result, const T division_min) {
     result[Start] =
@@ -1524,6 +1744,10 @@ namespace DiagMatrixInverseMultiplyMatrix {
 
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for row-wise inverse-diagonal dense
+ * multiplication.
+ */
 struct Row;
 
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
@@ -1531,6 +1755,10 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
 struct Row<T, M, N, J, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes one row segment for inverse-diagonal and dense
+   * multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     Row<T, M, N, J, Start, Mid>::compute(A, B, result, division_min);
@@ -1542,6 +1770,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, J, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty column range.
+   */
   static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &, const T) {}
 };
@@ -1550,6 +1781,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, J, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one element for inverse-diagonal and dense multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     result(J, Start) =
@@ -1559,6 +1793,10 @@ struct Row<T, M, N, J, Start, End,
 
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
+/**
+ * @brief Forward declaration for outer recursion over rows in
+ * inverse-diagonal dense multiplication.
+ */
 struct Column;
 
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
@@ -1566,6 +1804,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively computes inverse-diagonal multiplication over rows.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     Column<T, M, N, Start, Mid>::compute(A, B, result, division_min);
@@ -1577,6 +1818,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty row range.
+   */
   static void compute(const DiagMatrix<T, M> &, const Matrix<T, M, N> &,
                       Matrix<T, M, N> &, const T) {}
 };
@@ -1585,6 +1829,9 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Computes one output row for inverse-diagonal multiplication.
+   */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
     Row<T, M, N, Start, 0, N>::compute(A, B, result, division_min);
@@ -1685,12 +1932,19 @@ namespace DiagMatrixRealToComplex {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for recursive real-to-complex diagonal
+ * conversion.
+ */
 struct DiagMatrixRealToComplexLoop;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct DiagMatrixRealToComplexLoop<
     T, M, Start, End, typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively converts a diagonal range from real to complex.
+   */
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
     DiagMatrixRealToComplexLoop<T, M, Start, Mid>::compute(From_matrix,
@@ -1703,12 +1957,18 @@ struct DiagMatrixRealToComplexLoop<
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct DiagMatrixRealToComplexLoop<
     T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<T, M> &, DiagMatrix<Complex<T>, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct DiagMatrixRealToComplexLoop<
     T, M, Start, End, typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Converts one diagonal element from real to complex.
+   */
   static void compute(const DiagMatrix<T, M> &From_matrix,
                       DiagMatrix<Complex<T>, M> &To_matrix) {
     To_matrix[Start].real = From_matrix[Start];
@@ -1770,12 +2030,19 @@ namespace GetRealDiagMatrixFromComplex {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for extracting real parts from complex diagonal
+ * matrices.
+ */
 struct Loop;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively extracts real parts over a diagonal index range.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     Loop<T, M, Start, Mid>::compute(From_matrix, To_matrix);
@@ -1785,12 +2052,18 @@ struct Loop<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &, DiagMatrix<T, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Extracts one real component from a complex diagonal element.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[Start] = From_matrix[Start].real;
@@ -1852,12 +2125,19 @@ namespace GetImagDiagMatrixFromComplex {
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End,
           typename Enable = void>
+/**
+ * @brief Forward declaration for extracting imaginary parts from complex
+ * diagonal matrices.
+ */
 struct Loop;
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+  /**
+   * @brief Recursively extracts imaginary parts over a diagonal index range.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     Loop<T, M, Start, Mid>::compute(From_matrix, To_matrix);
@@ -1867,12 +2147,18 @@ struct Loop<T, M, Start, End,
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End, typename std::enable_if<(End == Start)>::type> {
+  /**
+   * @brief Base case for an empty diagonal index range.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &, DiagMatrix<T, M> &) {}
 };
 
 template <typename T, std::size_t M, std::size_t Start, std::size_t End>
 struct Loop<T, M, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Extracts one imaginary component from a complex diagonal element.
+   */
   static void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
                       DiagMatrix<T, M> &To_matrix) {
     To_matrix[Start] = From_matrix[Start].imag;
