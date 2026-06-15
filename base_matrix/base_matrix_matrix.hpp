@@ -2315,6 +2315,23 @@ inline Vector<T, M> operator*(const Matrix<T, M, N> &mat,
 
 namespace VectorMultiplyMatrix {
 
+/**
+ * @brief Struct template for performing vector-matrix multiplication using
+ * compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of a vector and a matrix for a specific column of the matrix. The
+ * recursion is controlled by the Start and End template parameters, which
+ * define the range of row indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the vector and matrix elements.
+ * @tparam L The size of the vector.
+ * @tparam N The number of columns in the matrix (should be 1).
+ * @tparam J The current column index being processed.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t L, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Core;
@@ -2324,6 +2341,21 @@ template <typename T, std::size_t L, std::size_t N, std::size_t J,
 struct Core<T, L, N, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of a vector and a matrix for a
+   * specific column of the matrix.
+   *
+   * This static function recursively computes the product of a vector and a
+   * matrix for the specified column index (J) and the range of row indices
+   * defined by Start and End. It divides the row range into two halves until it
+   * reaches individual rows, which are then multiplied by the corresponding
+   * vector element and stored in the result matrix for that specific column.
+   *
+   * @param vec The vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the vector.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
     Core<T, L, N, J, Start, Mid>::compute(vec, mat, result);
@@ -2335,6 +2367,20 @@ template <typename T, std::size_t L, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, L, N, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive vector-matrix multiplication when the
+   * row range is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * vector-matrix multiplication operation. When the row range is empty (End ==
+   * Start), it does nothing, as there are no rows to multiply for that column.
+   *
+   * @param vec The vector to multiply with the matrix (not used here).
+   * @param mat The matrix to multiply with the vector (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Vector<T, L> &, const Matrix<T, 1, N> &,
                       Matrix<T, L, N> &) {}
 };
@@ -2343,6 +2389,20 @@ template <typename T, std::size_t L, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, L, N, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+  /**
+   * @brief Base case for the recursive vector-matrix multiplication when the
+   * row range contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * vector-matrix multiplication operation. When the row range contains a
+   * single element (End - Start == 1), it performs the actual multiplication of
+   * the vector element by the corresponding matrix element for that specific
+   * row and column, and stores the result in the corresponding position in the
+   * result matrix.
+   * @param vec The vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the vector.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
     result.template set<Start, J>(vec[Start] * mat.template get<0, J>());
@@ -2358,6 +2418,20 @@ template <typename T, std::size_t L, std::size_t N, std::size_t Start,
 struct Row<T, L, N, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of a vector and a matrix for a
+   * specific range of rows.
+   *
+   * This static function recursively computes the product of a vector and a
+   * matrix for the specified range of row indices defined by Start and End. It
+   * divides the row range into two halves until it reaches individual rows,
+   * which are then processed by the Core struct to perform the multiplication
+   * for that specific row.
+   * @param vec The vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the vector.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
     Row<T, L, N, Start, Mid>::compute(vec, mat, result);
@@ -2368,6 +2442,20 @@ struct Row<T, L, N, Start, End,
 template <typename T, std::size_t L, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, L, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive vector-matrix multiplication when the
+   * row range is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * vector-matrix multiplication operation. When the row range is empty (End ==
+   * Start), it does nothing, as there are no rows to multiply for that column.
+   *
+   * @param vec The vector to multiply with the matrix (not used here).
+   * @param mat The matrix to multiply with the vector (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Vector<T, L> &, const Matrix<T, 1, N> &,
                       Matrix<T, L, N> &) {}
 };
@@ -2376,6 +2464,21 @@ template <typename T, std::size_t L, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, L, N, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive vector-matrix multiplication when the
+   * row range contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * vector-matrix multiplication operation. When the row range contains a
+   * single element (End - Start == 1), it processes that specific row by
+   * invoking the Core struct to compute the product of that row with the
+   * vector, and stores the result in the corresponding position in the result
+   * matrix.
+   * @param vec The vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the vector.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Vector<T, L> &vec, const Matrix<T, 1, N> &mat,
                       Matrix<T, L, N> &result) {
     Core<T, L, N, Start, 0, L>::compute(vec, mat, result);
@@ -2446,6 +2549,24 @@ inline Matrix<T, L, N> operator*(const Vector<T, L> &vec,
 /* (Column Vector) * (Matrix) */
 namespace ColumnVectorMultiplyMatrix {
 
+/**
+ * @brief Struct template for performing column vector-matrix multiplication
+ * using compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of a column vector and a matrix for a specific column of the
+ * matrix. The recursion is controlled by the Start and End template parameters,
+ * which define the range of row indices to process for the multiplication
+ * operation.
+ *
+ * @tparam T The type of the column vector and matrix elements.
+ * @tparam M The size of the column vector.
+ * @tparam N The number of columns in the matrix (should be 1).
+ * @tparam J The current column index being processed.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Core;
@@ -2455,6 +2576,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of a column vector and a matrix for
+   * a specific column of the matrix.
+   *
+   * This static function recursively computes the product of a column vector
+   * and a matrix for the specified column index (J) and the range of row
+   * indices defined by Start and End. It divides the row range into two halves
+   * until it reaches individual rows, which are then multiplied by the
+   * corresponding vector element and stored in the result matrix for that
+   * specific column.
+   *
+   * @param vec The column vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the column vector.
+   * @return T The resulting value of the product for that specific column.
+   */
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
     return Core<T, M, N, J, Start, Mid>::compute(vec, mat) +
            Core<T, M, N, J, Mid, End>::compute(vec, mat);
@@ -2465,6 +2602,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive column vector-matrix multiplication when
+   * the row range is empty.
+   *
+   * This static function serves as the base case for the recursive column
+   * vector-matrix multiplication operation. When the row range is empty (End ==
+   * Start), it returns zero, as there are no rows to multiply for that column.
+   * @param vec The column vector to multiply with the matrix (not used here).
+   * @param mat The matrix to multiply with the column vector (not used here).
+   * @return T The resulting value of the product for that specific column,
+   * which is zero in this case.
+   */
   static T compute(const ColVector<T, M> &, const Matrix<T, M, N> &) {
     return static_cast<T>(0);
   }
@@ -2474,11 +2624,43 @@ template <typename T, std::size_t M, std::size_t N, std::size_t J,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive column vector-matrix multiplication when
+   * the row range contains a single element.
+   *
+   * This static function serves as the base case for the recursive column
+   * vector-matrix multiplication operation. When the row range contains a
+   * single element (End - Start == 1), it performs the actual multiplication of
+   * the column vector element by the corresponding matrix element for that
+   * specific row and column, and returns the result as the final value for that
+   * column.
+   * @param vec The column vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the column vector.
+   * @return T The resulting value of the product for that specific row and
+   * column.
+   */
   static T compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat) {
     return vec[Start] * mat.template get<Start, J>();
   }
 };
 
+/**
+ * @brief Struct template for performing column vector-matrix multiplication
+ * using compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of a column vector and a matrix for a specific range of rows. The
+ * recursion is controlled by the Start and End template parameters, which
+ * define the range of row indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the column vector and matrix elements.
+ * @tparam M The size of the column vector.
+ * @tparam N The number of columns in the matrix (should be 1).
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Row;
@@ -2488,6 +2670,21 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of a column vector and a matrix for
+   * a specific range of rows.
+   *
+   * This static function recursively computes the product of a column vector
+   * and a matrix for the specified range of row indices defined by Start and
+   * End. It divides the row range into two halves until it reaches individual
+   * rows, which are then processed by the Core struct to perform the
+   * multiplication for that specific row.
+   * @param vec The column vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the column vector.
+   * @param result The column vector where the result of the multiplication is
+   * stored.
+   */
   static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
                       ColVector<T, N> &result) {
     Row<T, M, N, Start, Mid>::compute(vec, mat, result);
@@ -2498,6 +2695,20 @@ struct Row<T, M, N, Start, End,
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive column vector-matrix multiplication when
+   * the row range is empty.
+   *
+   * This static function serves as the base case for the recursive column
+   * vector-matrix multiplication operation. When the row range is empty (End ==
+   * Start), it does nothing, as there are no rows to multiply for that column.
+   *
+   * @param vec The column vector to multiply with the matrix (not used here).
+   * @param mat The matrix to multiply with the column vector (not used here).
+   * @param result The column vector where the result of the multiplication is
+   * stored (not used here).
+   */
   static void compute(const ColVector<T, M> &, const Matrix<T, M, N> &,
                       ColVector<T, N> &) {}
 };
@@ -2506,6 +2717,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive column vector-matrix multiplication when
+   * the row range contains a single element.
+   *
+   * This static function serves as the base case for the recursive column
+   * vector-matrix multiplication operation. When the row range contains a
+   * single element (End - Start == 1), it processes that specific row by
+   * invoking the Core struct to compute the product of that row with the
+   * column vector, and stores the result in the corresponding position in the
+   * result column vector.
+   * @param vec The column vector to multiply with the matrix.
+   * @param mat The matrix to multiply with the column vector.
+   * @param result The column vector where the result of the multiplication is
+   * stored.
+   */
   static void compute(const ColVector<T, M> &vec, const Matrix<T, M, N> &mat,
                       ColVector<T, N> &result) {
     result[Start] = Core<T, M, N, Start, 0, M>::compute(vec, mat);
@@ -2575,7 +2802,27 @@ inline ColVector<T, N> operator*(const ColVector<T, M> &vec,
 /* Matrix Multiply Matrix */
 namespace MatrixMultiplyMatrix {
 
-// Divide-and-conquer dot-product on k in [Start, End).
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for the dot product of a specific element.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific element in the resulting matrix by multiplying the
+ * corresponding row of the first matrix with the corresponding column of the
+ * second matrix. The recursion is controlled by the Start and End template
+ * parameters, which define the range of indices to process for the dot product
+ * operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The row index of the resulting matrix being computed.
+ * @tparam J The column index of the resulting matrix being computed.
+ * @tparam Start The starting index for the dot product computation.
+ * @tparam End The ending index for the dot product computation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -2587,6 +2834,21 @@ struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively computes the dot product for a specific element in the
+   * resulting matrix.
+   *
+   * This static function recursively computes the dot product for the element
+   * at position (I, J) in the resulting matrix by multiplying the corresponding
+   * row of the first matrix with the corresponding column of the second matrix.
+   * It divides the range of indices for the dot product computation into two
+   * halves until it reaches individual terms, which are then multiplied and
+   * summed to produce the final value for that element.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
     return Core<T, M, K, N, I, J, Start, Mid>::compute(A, B) +
            Core<T, M, K, N, I, J, Mid, End>::compute(A, B);
@@ -2598,6 +2860,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of indices for the dot product computation is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of indices for the
+   * dot product computation is empty (End == Start), it returns zero, as there
+   * are no terms to multiply and sum for that element.
+   *
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @return T The resulting value of the dot product for that specific element,
+   * which is zero in this case.
+   */
   static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
     return static_cast<T>(0);
   }
@@ -2608,12 +2885,46 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of indices for the dot product computation contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of indices for the
+   * dot product computation contains a single element (End - Start == 1), it
+   * performs the actual multiplication of the corresponding row of the first
+   * matrix with the corresponding column of the second matrix for that specific
+   * index, and returns the result as the final value for that element.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element
+   * at position (I, J) in the resulting matrix.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
     return A.template get<I, Start>() * B.template get<Start, J>();
   }
 };
 
-// Divide-and-conquer over columns j in [Start, End) for a fixed row I.
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of rows in the resulting matrix.
+ * The recursion is controlled by the Start and End template parameters, which
+ * define the range of row indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The current row index being processed in the resulting matrix.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -2625,6 +2936,20 @@ struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of rows in the resulting matrix.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of row indices defined by Start and End in the
+   * resulting matrix. It divides the row range into two halves until it reaches
+   * individual rows, which are then processed by invoking the Core struct to
+   * compute the dot product for each element in that row.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, I, Start, Mid>::compute(A, B, result);
@@ -2636,6 +2961,20 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no rows to compute for that range.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -2644,6 +2983,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific row by invoking the Core struct to compute the dot
+   * product for each element in that row, and stores the results in the
+   * corresponding positions in the result matrix.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(
@@ -2651,7 +3005,24 @@ struct Row<T, M, K, N, I, Start, End,
   }
 };
 
-// Divide-and-conquer over rows i in [Start, End).
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of columns in the resulting
+ * matrix. The recursion is controlled by the Start and End template parameters,
+ * which define the range of column indices to process for the multiplication
+ * operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam Start The starting index for the column to multiply.
+ * @tparam End The ending index for the column to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Column;
@@ -2662,6 +3033,20 @@ struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
 
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of columns in the resulting matrix.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of column indices defined by Start and End in the
+   * resulting matrix. It divides the column range into two halves until it
+   * reaches individual columns, which are then processed by invoking the Row
+   * struct to compute the dot product for each element in that column.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, K, N, Start, Mid>::compute(A, B, result);
@@ -2673,6 +3058,20 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix is empty.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no columns to compute for that range.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -2681,6 +3080,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific column by invoking the Row struct to compute the
+   * dot product for each element in that column, and stores the results in the
+   * corresponding positions in the result matrix.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @param result The matrix where the result of the multiplication is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, Start, 0, N>::compute(A, B, result);
@@ -2753,6 +3167,23 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, K> &A,
 /* Transpose */
 namespace MatrixTranspose {
 
+/**
+ * @brief Struct template for performing matrix transposition using compile-time
+ * recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * transpose of a matrix by swapping its rows and columns. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of row indices to process for the transposition operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the original matrix.
+ * @tparam N The number of columns in the original matrix.
+ * @tparam I The current row index being processed in the original matrix.
+ * @tparam Start The starting index for the row to transpose.
+ * @tparam End The ending index for the row to transpose.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -2762,6 +3193,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the transpose of a matrix for a specific range
+   * of rows.
+   *
+   * This static function recursively computes the transpose of a matrix for the
+   * specified range of row indices defined by Start and End. It divides the row
+   * range into two halves until it reaches individual rows, which are then
+   * processed by swapping their elements with the corresponding columns in the
+   * result matrix.
+   *
+   * @param A The original matrix to transpose.
+   * @param result The resulting transposed matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
     Row<T, M, N, I, Start, Mid>::compute(A, result);
     Row<T, M, N, I, Mid, End>::compute(A, result);
@@ -2772,6 +3217,18 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix transposition when the range of
+   * row indices is empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * transposition operation. When the range of row indices is empty (End ==
+   * Start), it does nothing, as there are no rows to transpose for that range.
+   * @param A The original matrix to transpose (not used here).
+   * @param result The resulting transposed matrix where the product is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<T, N, M> &) {}
 };
 
@@ -2779,11 +3236,42 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+     * @brief Base case for the recursive matrix transposition when the range of
+     * row indices contains a single element.
+     *
+     * This static function serves as the base case for the recursive matrix
+     * transposition operation. When the range of row indices contains a single
+     * element (End - Start == 1), it processes that specific row by swapping
+  its
+     * elements with the corresponding columns in the result matrix, effectively
+     * transposing that row into a column in the result.
+     *
+     * @param A The original matrix to transpose.
+     * @param result The resulting transposed matrix where the product is
+  stored.
+     */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
     result.template set<Start, I>(A.template get<I, Start>());
   }
 };
 
+/**
+ * @brief Struct template for performing matrix transposition using compile-time
+ * recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * transpose of a matrix by swapping its rows and columns. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of column indices to process for the transposition operation.
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the original matrix.
+ * @tparam N The number of columns in the original matrix.
+ * @tparam Start The starting index for the column to transpose.
+ * @tparam End The ending index for the column to transpose.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -2793,6 +3281,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the transpose of a matrix for a specific range
+   * of columns.
+   *
+   * This static function recursively computes the transpose of a matrix for the
+   * specified range of column indices defined by Start and End. It divides the
+   * column range into two halves until it reaches individual columns, which are
+   * then processed by invoking the Row struct to swap their elements with the
+   * corresponding rows in the result matrix.
+   *
+   * @param A The original matrix to transpose.
+   * @param result The resulting transposed matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
     Column<T, M, N, Start, Mid>::compute(A, result);
     Column<T, M, N, Mid, End>::compute(A, result);
@@ -2803,6 +3305,19 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix transposition when the range of
+   * column indices is empty.
+   *
+   * This static function serves as the base case for the recursive matrix
+   * transposition operation. When the range of column indices is empty (End ==
+   * Start), it does nothing, as there are no columns to transpose for that
+   * range.
+   * @param A The original matrix to transpose (not used here).
+   * @param result The resulting transposed matrix where the product is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<T, N, M> &) {}
 };
 
@@ -2810,6 +3325,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+     * @brief Base case for the recursive matrix transposition when the range of
+     * column indices contains a single element.
+     *
+     * This static function serves as the base case for the recursive matrix
+     * transposition operation. When the range of column indices contains a
+  single
+     * element (End - Start == 1), it processes that specific column by invoking
+     * the Row struct to swap their elements with the corresponding rows in the
+     * result matrix, effectively transposing that column into a row in the
+     * result.
+     *
+     * @param A The original matrix to transpose.
+     * @param result The resulting transposed matrix where the product is
+  stored.
+     */
   static void compute(const Matrix<T, M, N> &A, Matrix<T, N, M> &result) {
     Row<T, M, N, Start, 0, N>::compute(A, result);
   }
@@ -2871,6 +3403,28 @@ inline Matrix<T, N, M> output_matrix_transpose(const Matrix<T, M, N> &mat) {
 /* Upper Triangular Matrix Multiply Matrix */
 namespace UpperTriangularMultiplyMatrix {
 
+/**
+ * @brief Struct template for performing upper triangular matrix-matrix
+ * multiplication using compile-time recursion for the dot product of a
+ * specific element.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific element in the resulting matrix by multiplying the
+ * corresponding row of the first matrix with the corresponding column of the
+ * second matrix, while considering only the upper triangular part of the first
+ * matrix. The recursion is controlled by the Start and End template parameters,
+ * which define the range of indices to process for the dot product operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The row index of the resulting matrix being computed.
+ * @tparam J The column index of the resulting matrix being computed.
+ * @tparam Start The starting index for the dot product computation.
+ * @tparam End The ending index for the dot product computation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -2881,6 +3435,25 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product for a specific element in the
+   * resulting matrix, considering only the upper triangular part of the first
+   * matrix.
+   *
+   * This static function recursively computes the dot product for the element
+   * at position (I, J) in the resulting matrix by multiplying the corresponding
+   * row of the first matrix with the corresponding column of the second matrix,
+   * while considering only the upper triangular part of the first matrix. It
+   * divides the range of indices for the dot product computation into two
+   * halves until it reaches individual terms, which are then multiplied and
+   * summed to produce the final value for that element.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element,
+   * considering only the upper triangular part of the first matrix.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
     return Core<T, M, K, N, I, J, Start, Mid>::compute(A, B) +
            Core<T, M, K, N, I, J, Mid, End>::compute(A, B);
@@ -2891,6 +3464,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices is empty.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation is
+   * empty (End == Start), it returns zero, as there are no terms to multiply
+   * and sum for that element.
+   *
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @return T The resulting value of the dot product for that specific element,
+   * which is zero in this case.
+   */
   static T compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &) {
     return static_cast<T>(0);
   }
@@ -2900,6 +3488,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices contains a single element.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation
+   * contains a single element (End - Start == 1), it performs the actual
+   * multiplication of the corresponding row of the first matrix with the
+   * corresponding column of the second matrix for that specific index, while
+   * considering only the upper triangular part of the first matrix, and returns
+   * the result as the final value for that element.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element,
+   * considering only the upper triangular part of the first matrix.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B) {
     return (Start >= I)
                ? (A.template get<I, Start>() * B.template get<Start, J>())
@@ -2907,6 +3513,25 @@ struct Core<T, M, K, N, I, J, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for performing upper triangular matrix-matrix
+ * multiplication using compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of rows in the resulting matrix,
+ * while considering only the upper triangular part of the first matrix. The
+ * recursion is controlled by the Start and End template parameters, which
+ * define the range of row indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The current row index being processed in the resulting matrix.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -2917,6 +3542,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of rows in the resulting matrix, considering only the upper
+   * triangular part of the first matrix.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of row indices defined by Start and End in the
+   * resulting matrix, while considering only the upper triangular part of the
+   * first matrix. It divides the row range into two halves until it reaches
+   * individual rows, which are then processed by invoking the Core struct to
+   * compute the dot product for each element in that row, while considering
+   * only the upper triangular part of the first matrix.
+   *
+   * @param A The first matrix to multiply (upper triangular).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, I, Start, Mid>::compute(A, B, result);
@@ -2928,6 +3571,22 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix is empty, considering only
+   * the upper triangular part of the first matrix.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no rows to compute for that range, while considering only the upper
+   * triangular part of the first matrix.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -2936,6 +3595,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix contains a single element,
+   * considering only the upper triangular part of the first matrix.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific row by invoking the Core struct to compute the dot
+   * product for each element in that row, while considering only the upper
+   * triangular part of the first matrix, and stores the results in the
+   * corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply (upper triangular).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(
@@ -2943,6 +3620,25 @@ struct Row<T, M, K, N, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for performing upper triangular matrix-matrix
+ * multiplication using compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of columns in the resulting
+ * matrix, while considering only the upper triangular part of the first matrix.
+ * The recursion is controlled by the Start and End template parameters, which
+ * define the range of column indices to process for the multiplication
+ * operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam Start The starting index for the column to multiply.
+ * @tparam End The ending index for the column to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Column;
@@ -2952,6 +3648,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of columns in the resulting matrix, considering only the upper
+   * triangular part of the first matrix.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of column indices defined by Start and End in the
+   * resulting matrix, while considering only the upper triangular part of the
+   * first matrix. It divides the column range into two halves until it reaches
+   * individual columns, which are then processed by invoking the Row struct to
+   * compute the dot product for each element in that column, while considering
+   * only the upper triangular part of the first matrix.
+   *
+   * @param A The first matrix to multiply (upper triangular).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, K, N, Start, Mid>::compute(A, B, result);
@@ -2963,6 +3677,22 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix is empty, considering only
+   * the upper triangular part of the first matrix.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no columns to compute for that range, while considering only the upper
+   * triangular part of the first matrix.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -2971,6 +3701,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix contains a single element,
+   * considering only the upper triangular part of the first matrix.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific column by invoking the Row struct to compute the
+   * dot product for each element in that column, while considering only the
+   * upper triangular part of the first matrix, and stores the results in the
+   * corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply (upper triangular).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, Start, 0, N>::compute(A, B, result);
@@ -3045,6 +3793,27 @@ matrix_multiply_Upper_triangular_A_mul_B(const Matrix<T, M, K> &A,
 /* Matrix Transpose Multiply Matrix */
 namespace MatrixTransposeMultiplyMatrix {
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for the dot product of a specific element.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific element in the resulting matrix by multiplying the
+ * corresponding row of the first matrix with the corresponding column of the
+ * second matrix, where the first matrix is transposed. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of indices to process for the dot product operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix (before transposition).
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The row index of the resulting matrix being computed.
+ * @tparam J The column index of the resulting matrix being computed.
+ * @tparam Start The starting index for the dot product computation.
+ * @tparam End The ending index for the dot product computation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -3055,6 +3824,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product for a specific element in the
+   * resulting matrix, where the first matrix is transposed.
+   *
+   * This static function recursively computes the dot product for the element
+   * at position (I, J) in the resulting matrix by multiplying the corresponding
+   * row of the first matrix (after transposition) with the corresponding column
+   * of the second matrix. It divides the range of indices for the dot product
+   * computation into two halves until it reaches individual terms, which are
+   * then multiplied and summed to produce the final value for that element.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element,
+   * where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
     return Core<T, M, K, N, I, J, Start, Mid>::compute(A, B) +
            Core<T, M, K, N, I, J, Mid, End>::compute(A, B);
@@ -3065,6 +3851,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices is empty, where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation is
+   * empty (End == Start), it returns zero, as there are no terms to multiply
+   * and sum for that element, where the first matrix is transposed.
+   *
+   * @param A The first matrix to multiply (to be transposed, not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @return T The resulting value of the dot product for that specific element,
+   * which is zero in this case, where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, K, M> &, const Matrix<T, K, N> &) {
     return static_cast<T>(0);
   }
@@ -3074,11 +3875,48 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices contains a single element, where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation
+   * contains a single element (End - Start == 1), it performs the actual
+   * multiplication of the corresponding row of the first matrix (after
+   * transposition) with the corresponding column of the second matrix for that
+   * specific index, and returns the result as the final value for that element,
+   * where the first matrix is transposed.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @return T The resulting value of the dot product for that specific element,
+   * where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B) {
     return A.template get<Start, I>() * B.template get<Start, J>();
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for rows, where the first matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of rows in the resulting matrix,
+ * where the first matrix is transposed. The recursion is controlled by the
+ * Start and End template parameters, which define the range of row indices to
+ * process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the resulting matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam I The current row index being processed in the resulting matrix.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -3089,6 +3927,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of rows in the resulting matrix, where the first matrix is
+   * transposed.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of row indices defined by Start and End in the
+   * resulting matrix, where the first matrix is transposed. It divides the row
+   * range into two halves until it reaches individual rows, which are then
+   * processed by invoking the Core struct to compute the dot product for each
+   * element in that row, where the first matrix is transposed, and stores the
+   * results in the corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, I, Start, Mid>::compute(A, B, result);
@@ -3100,6 +3956,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix is empty, where the first
+   * matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no rows to compute for that range, where the first matrix is transposed.
+   * @param A The first matrix to multiply (to be transposed, not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, K, M> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -3108,6 +3979,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix contains a single element,
+   * where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific row by invoking the Core struct to compute the dot
+   * product for each element in that row, where the first matrix is transposed,
+   * and stores the results in the corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(
@@ -3115,6 +4003,23 @@ struct Row<T, M, K, N, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for columns, where the first matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of columns in the resulting
+ * matrix, where the first matrix is transposed. The recursion is controlled by
+ * the Start and End template parameters, which define the range of column
+ * indices to process for the multiplication operation.
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the resulting matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix.
+ * @tparam Start The starting index for the column to multiply.
+ * @tparam End The ending index for the column to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Column;
@@ -3124,6 +4029,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of columns in the resulting matrix, where the first matrix is
+   * transposed.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of column indices defined by Start and End in the
+   * resulting matrix, where the first matrix is transposed. It divides the
+   * column range into two halves until it reaches individual columns, which are
+   * then processed by invoking the Row struct to compute the dot product for
+   * each element in that column, where the first matrix is transposed, and
+   * stores the results in the corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, K, N, Start, Mid>::compute(A, B, result);
@@ -3135,6 +4058,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix is empty, where the first
+   * matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no columns to compute for that range, where the first matrix is transposed.
+   * @param A The first matrix to multiply (to be transposed, not used here).
+   * @param B The second matrix to multiply (not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, K, M> &, const Matrix<T, K, N> &,
                       Matrix<T, M, N> &) {}
 };
@@ -3143,6 +4081,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix contains a single element,
+   * where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific column by invoking the Row struct to compute the
+   * dot product for each element in that column, where the first matrix is
+   * transposed, and stores the results in the corresponding positions in the
+   * result matrix.
+   *
+   * @param A The first matrix to multiply (to be transposed).
+   * @param B The second matrix to multiply.
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, K, M> &A, const Matrix<T, K, N> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, Start, 0, N>::compute(A, B, result);
@@ -3217,6 +4173,27 @@ inline Matrix<T, M, N> matrix_multiply_AT_mul_B(const Matrix<T, K, M> &A,
 /* Transpose Matrix multiply Vector  */
 namespace MatrixTransposeMultiplyVector {
 
+/**
+ * @brief Struct template for performing matrix-vector multiplication using
+ * compile-time recursion for the dot product of a specific element, where the
+ * first matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific element in the resulting vector by multiplying the
+ * corresponding row of the first matrix (after transposition) with the
+ * corresponding element of the vector, where the first matrix is transposed.
+ * The recursion is controlled by the Start and End template parameters, which
+ * define the range of indices to process for the dot product operation.
+ *
+ * @tparam T The type of the matrix and vector elements.
+ * @tparam M The number of rows in the first matrix (before transposition).
+ * @tparam N The number of columns in the first matrix (and size of the vector).
+ * @tparam N_idx The index of the element in the resulting vector being
+ * computed.
+ * @tparam Start The starting index for the dot product computation.
+ * @tparam End The ending index for the dot product computation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Core;
@@ -3226,6 +4203,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
 struct Core<T, M, N, N_idx, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product for a specific element in the
+   * resulting vector, where the first matrix is transposed.
+   *
+   * This static function recursively computes the dot product for the element
+   * at index N_idx in the resulting vector by multiplying the corresponding row
+   * of the first matrix (after transposition) with the corresponding element of
+   * the vector. It divides the range of indices for the dot product computation
+   * into two halves until it reaches individual terms, which are then
+   * multiplied and summed to produce the final value for that element, where
+   * the first  matrix is transposed.
+   * @param mat The first matrix to multiply (to be transposed).
+   * @param vec The vector to multiply with the transposed matrix.
+   * @return T The resulting value of the dot product for that specific element,
+   * where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
     return Core<T, M, N, N_idx, Start, Mid>::compute(mat, vec) +
            Core<T, M, N, N_idx, Mid, End>::compute(mat, vec);
@@ -3236,6 +4230,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, N_idx, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices is empty, where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation is
+   * empty (End == Start), it returns zero, as there are no terms to multiply
+   * and sum for that element, where the first matrix is transposed.
+   *
+   * @param mat The first matrix to multiply (to be transposed, not used here).
+   * @param vec The vector to multiply with the transposed matrix (not used
+   * here).
+   * @return T The resulting value of the dot product for that specific element,
+   * which is zero in this case, where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, M, N> &, const Vector<T, M> &) {
     return static_cast<T>(0);
   }
@@ -3245,11 +4255,46 @@ template <typename T, std::size_t M, std::size_t N, std::size_t N_idx,
           std::size_t Start, std::size_t End>
 struct Core<T, M, N, N_idx, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices contains a single element, where the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation
+   * contains a single element (End - Start == 1), it performs the actual
+   * multiplication of the corresponding row of the first matrix (after
+   * transposition) with the corresponding element of the vector for that
+   * specific index, and returns the result as the final value for that element,
+   * where the first matrix is transposed.
+   *
+   * @param mat The first matrix to multiply (to be transposed).
+   * @param vec The vector to multiply with the transposed matrix.
+   * @return T The resulting value of the dot product for that specific element,
+   * where the first matrix is transposed.
+   */
   static T compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec) {
     return mat.template get<Start, N_idx>() * vec[Start];
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-vector multiplication using
+ * compile-time recursion for rows, where the first matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of a transposed matrix and a vector for a specific range of indices
+ * in the resulting vector. The recursion is controlled by the Start and End
+ * template parameters, which define the range of indices to process for the
+ * multiplication operation.
+ *
+ * @tparam T The type of the matrix and vector elements.
+ * @tparam M The number of rows in the first matrix (before transposition).
+ * @tparam N The number of columns in the first matrix (and size of the vector).
+ * @param mat The first matrix to multiply (to be transposed).
+ * @param vec The vector to multiply with the transposed matrix.
+ * @param result The resulting vector where the product is stored.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Row;
@@ -3259,6 +4304,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of a transposed matrix and a vector
+   * for a specific range of indices in the resulting vector.
+   *
+   * This static function recursively computes the product of a transposed
+   * matrix and a vector for the specified range of indices defined by Start and
+   * End in the resulting vector. It divides the index range into two halves
+   * until it reaches individual indices, which are then processed by invoking
+   * the Core struct to compute the dot product for that specific index, where
+   * the first matrix is transposed, and stores the results in the corresponding
+   * positions in the result vector.
+   *
+   * @param mat The first matrix to multiply (to be transposed).
+   * @param vec The vector to multiply with the transposed matrix.
+   * @param result The resulting vector where the product is stored.
+   */
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
     Row<T, M, N, Start, Mid>::compute(mat, vec, result);
@@ -3269,6 +4331,23 @@ struct Row<T, M, N, Start, End,
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End, typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * range of indices in the resulting vector is empty, where the first matrix
+   * is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the range of indices in the
+   * resulting vector is empty (End == Start), it does nothing, as there are no
+   * indices to compute for that range, where the first matrix is transposed.
+   *
+   * @param mat The first matrix to multiply (to be transposed, not used here).
+   * @param vec The vector to multiply with the transposed matrix (not used
+   * here).
+   * @param result The vector where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
                       Vector<T, N> &) {}
 };
@@ -3277,6 +4356,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Row<T, M, N, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-vector multiplication when the
+   * range of indices in the resulting vector contains a single element, where
+   * the first matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-vector multiplication operation. When the range of indices in the
+   * resulting vector contains a single element (End - Start == 1), it processes
+   * that specific index by invoking the Core struct to compute the dot product
+   * for that specific index, where the first matrix is transposed, and stores
+   * the result in the corresponding position in the result vector.
+   *
+   * @param mat The first matrix to multiply (to be transposed).
+   * @param vec The vector to multiply with the transposed matrix.
+   * @param result The resulting vector where the product is stored.
+   */
   static void compute(const Matrix<T, M, N> &mat, const Vector<T, M> &vec,
                       Vector<T, N> &result) {
     result[Start] = Core<T, M, N, Start, 0, M>::compute(mat, vec);
@@ -3346,6 +4442,27 @@ inline Vector<T, N> matrix_multiply_AT_mul_b(const Matrix<T, M, N> &A,
 /* Matrix multiply Transpose Matrix */
 namespace MatrixMultiplyTransposeMatrix {
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for the dot product of a specific element, where the
+ * second matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * dot product of a specific element in the resulting matrix by multiplying the
+ * corresponding row of the first matrix with the corresponding column of the
+ * second matrix (after transposition), where the second matrix is transposed.
+ * The recursion is controlled by the Start and End template parameters, which
+ * define the range of indices to process for the dot product operation.
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the first matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the second matrix (before transposition).
+ * @tparam I The row index of the resulting matrix being computed.
+ * @tparam J The column index of the resulting matrix being computed.
+ * @tparam Start The starting index for the dot product computation.
+ * @tparam End The ending index for the dot product computation.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -3356,6 +4473,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the dot product for a specific element in the
+   * resulting matrix, where the second matrix is transposed.
+   *
+   * This static function recursively computes the dot product for the element
+   * at row index I and column index J in the resulting matrix by multiplying
+   * the corresponding row of the first matrix with the corresponding column of
+   * the second matrix (after transposition). It divides the range of indices
+   * for the dot product computation into two halves until it reaches individual
+   * terms, which are then multiplied and summed to produce the final value for
+   * that element, where the second matrix is transposed.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @return T The resulting value of the dot product for that specific element,
+   * where the second matrix is transposed.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
     return Core<T, M, K, N, I, J, Start, Mid>::compute(A, B) +
            Core<T, M, K, N, I, J, Mid, End>::compute(A, B);
@@ -3366,6 +4500,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices is empty, where the second matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation is
+   * empty (End == Start), it returns zero, as there are no terms to multiply
+   * and sum for that element, where the second matrix is transposed.
+   *
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (to be transposed, not used here).
+   * @return T The resulting value of the dot product for that specific element,
+   * which is zero in this case, where the second matrix is transposed.
+   */
   static T compute(const Matrix<T, M, K> &, const Matrix<T, N, K> &) {
     return static_cast<T>(0);
   }
@@ -3375,11 +4524,47 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t J, std::size_t Start, std::size_t End>
 struct Core<T, M, K, N, I, J, Start, End,
             typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive dot product computation when the range
+   * of indices contains a single element, where the second matrix is
+   * transposed.
+   *
+   * This static function serves as the base case for the recursive dot product
+   * computation. When the range of indices for the dot product computation
+   * contains a single element (End - Start == 1), it performs the actual
+   * multiplication of the corresponding row of the first matrix with the
+   * corresponding column of the second matrix (after transposition) for that
+   * specific index, and returns the result as the final value for that element,
+   * where the second matrix is transposed.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @return T The resulting value of the dot product for that specific element,
+   * where the second matrix is transposed.
+   */
   static T compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B) {
     return A.template get<I, Start>() * B.template get<J, Start>();
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for rows, where the second matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of row indices in the resulting
+ * matrix, where the second matrix is transposed. The recursion is controlled by
+ * the Start and End template parameters, which define the range of row indices
+ * to process for the multiplication operation.
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the resulting matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the resulting matrix.
+ * @tparam I The row index of the resulting matrix being computed.
+ * @tparam Start The starting index for the row to multiply.
+ * @tparam End The ending index for the row to multiply.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End,
           typename Enable = void>
@@ -3390,6 +4575,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of row indices in the resulting matrix, where the second matrix is
+   * transposed.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of row indices defined by Start and End in the
+   * resulting matrix, where the second matrix is transposed. It divides the
+   * row range into two halves until it reaches individual rows, which are then
+   * processed by invoking the Core struct to compute the dot product for each
+   * element in that row, where the second matrix is transposed, and stores the
+   * results in the corresponding positions in the result matrix.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, I, Start, Mid>::compute(A, B, result);
@@ -3401,6 +4603,21 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix is empty, where the second
+   * matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no rows to compute for that range, where the second matrix is transposed.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (to be transposed, not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, N, K> &,
                       Matrix<T, M, N> &) {}
 };
@@ -3409,6 +4626,24 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t I, std::size_t Start, std::size_t End>
 struct Row<T, M, K, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of row indices in the resulting matrix contains a single element,
+   * where the second matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of row indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific row by invoking the Core struct to compute the dot
+   * product for each element in that row, where the second matrix is
+   * transposed, and stores the results in the corresponding positions in the
+   * result matrix.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
     result.template set<I, Start>(
@@ -3416,6 +4651,24 @@ struct Row<T, M, K, N, I, Start, End,
   }
 };
 
+/**
+ * @brief Struct template for performing matrix-matrix multiplication using
+ * compile-time recursion for columns, where the second matrix is transposed.
+ *
+ * This struct template uses template metaprogramming to recursively compute the
+ * product of two matrices for a specific range of column indices in the
+ * resulting matrix, where the second matrix is transposed. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of column indices to process for the multiplication operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the resulting matrix.
+ * @tparam K The number of columns in the first matrix (and rows in the second).
+ * @tparam N The number of columns in the resulting matrix.
+ * @param A The first matrix to multiply.
+ * @param B The second matrix to multiply (to be transposed).
+ * @param result The resulting matrix where the product is stored.
+ */
 template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Column;
@@ -3425,6 +4678,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively computes the product of two matrices for a specific
+   * range of column indices in the resulting matrix, where the second matrix is
+   * transposed.
+   *
+   * This static function recursively computes the product of two matrices for
+   * the specified range of column indices defined by Start and End in the
+   * resulting matrix, where the second matrix is transposed. It divides the
+   * column range into two halves until it reaches individual columns, which are
+   * then processed by invoking the Row struct to compute the product for each
+   * row in that column, where the second matrix is transposed, and stores the
+   * results in the corresponding positions in the result matrix.
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
     Column<T, M, K, N, Start, Mid>::compute(A, B, result);
@@ -3436,6 +4706,22 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix is empty, where the second
+   * matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix is empty (End == Start), it does nothing, as there are
+   * no columns to compute for that range, where the second matrix is
+   * transposed.
+   * @param A The first matrix to multiply (not used here).
+   * @param B The second matrix to multiply (to be transposed, not used here).
+   * @param result The matrix where the result of the multiplication is stored
+   * (not used here).
+   */
   static void compute(const Matrix<T, M, K> &, const Matrix<T, N, K> &,
                       Matrix<T, M, N> &) {}
 };
@@ -3444,6 +4730,23 @@ template <typename T, std::size_t M, std::size_t K, std::size_t N,
           std::size_t Start, std::size_t End>
 struct Column<T, M, K, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive matrix-matrix multiplication when the
+   * range of column indices in the resulting matrix contains a single element,
+   * where the second matrix is transposed.
+   *
+   * This static function serves as the base case for the recursive
+   * matrix-matrix multiplication operation. When the range of column indices in
+   * the resulting matrix contains a single element (End - Start == 1), it
+   * processes that specific column by invoking the Row struct to compute the
+   * product for each row in that column, where the second matrix is transposed,
+   * and stores the results in the corresponding positions in the result matrix.
+   *
+   * @param A The first matrix to multiply.
+   * @param B The second matrix to multiply (to be transposed).
+   * @param result The resulting matrix where the product is stored.
+   */
   static void compute(const Matrix<T, M, K> &A, const Matrix<T, N, K> &B,
                       Matrix<T, M, N> &result) {
     Row<T, M, K, N, Start, 0, N>::compute(A, B, result);
@@ -3519,6 +4822,25 @@ matrix_multiply_A_mul_BTranspose(const Matrix<T, M, K> &A,
 /* Matrix real from complex */
 namespace MatrixRealToComplex {
 
+/**
+ * @brief Struct template for performing the conversion from a real matrix to a
+ * complex matrix using compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively convert
+ * each element of a real matrix to a complex number, where the imaginary part
+ * is set to zero, for a specific range of row indices in the resulting
+ * complex matrix. The recursion is controlled by the Start and End template
+ * parameters, which define the range of row indices to process for the
+ * conversion operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The row index of the resulting complex matrix being computed.
+ * @tparam Start The starting index for the row to convert.
+ * @tparam End The ending index for the row to convert.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -3528,6 +4850,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively converts each element of a real matrix to a complex
+   * number for a specific range of row indices in the resulting complex matrix.
+   *
+   * This static function recursively converts each element of a real matrix to
+   * a complex number, where the imaginary part is set to zero, for the
+   * specified range of row indices defined by Start and End in the resulting
+   * complex matrix. It divides the row range into two halves until it reaches
+   * individual rows, which are then processed by converting each element in
+   * that row to a complex number and storing the results in the corresponding
+   * positions in the result matrix.
+   *
+   * @param From_matrix The real matrix to convert.
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored.
+   */
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
     Row<T, M, N, I, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3539,6 +4878,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a real matrix to a
+   * complex matrix when the range of row indices in the resulting complex
+   * matrix is empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting complex matrix is
+   * empty (End == Start), it does nothing, as there are no rows to convert for
+   * that range.
+   * @param From_matrix The real matrix to convert (not used here).
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<Complex<T>, M, N> &) {}
 };
 
@@ -3546,6 +4899,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a real matrix to a
+   * complex matrix when the range of row indices in the resulting complex
+   * matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting complex matrix
+   * contains a single element (End - Start == 1), it processes that specific
+   * row by converting each element in that row from the real matrix to a
+   * complex number, where the imaginary part is set to zero, and stores the
+   * results in the corresponding positions in the result matrix.
+   *
+   * @param From_matrix The real matrix to convert.
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored.
+   */
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
     To_matrix(I, Start).real = From_matrix.template get<I, Start>();
@@ -3561,6 +4931,24 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively converts each element of a real matrix to a complex
+   * number for a specific range of column indices in the resulting complex
+   * matrix.
+   *
+   * This static function recursively converts each element of a real matrix to
+   * a complex number, where the imaginary part is set to zero, for the
+   * specified range of column indices defined by Start and End in the resulting
+   * complex matrix. It divides the column range into two halves until it
+   * reaches individual columns, which are then processed by invoking the Row
+   * struct to convert each element in that column to a complex number and store
+   * the results in the corresponding positions in the result matrix.
+   *
+   * @param From_matrix The real matrix to convert.
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored.
+   */
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
     Column<T, M, N, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3572,6 +4960,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a real matrix to a
+   * complex matrix when the range of column indices in the resulting complex
+   * matrix is empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting complex matrix
+   * is empty (End == Start), it does nothing, as there are no columns to
+   * convert for that range.
+   * @param From_matrix The real matrix to convert (not used here).
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored (not used here).
+   */
   static void compute(const Matrix<T, M, N> &, Matrix<Complex<T>, M, N> &) {}
 };
 
@@ -3579,6 +4981,24 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a real matrix to a
+   * complex matrix when the range of column indices in the resulting complex
+   * matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting complex matrix
+   * contains a single element (End - Start == 1), it processes that specific
+   * column by invoking the Row struct to convert each element in that column
+   * from the real matrix to a complex number, where the imaginary part is set
+   * to zero, and stores the results in the corresponding positions in the
+   * result matrix.
+   *
+   * @param From_matrix The real matrix to convert.
+   * @param To_matrix The resulting complex matrix where the conversion is
+   * stored.
+   */
   static void compute(const Matrix<T, M, N> &From_matrix,
                       Matrix<Complex<T>, M, N> &To_matrix) {
     Row<T, M, N, Start, 0, N>::compute(From_matrix, To_matrix);
@@ -3646,6 +5066,24 @@ convert_matrix_real_to_complex(const Matrix<T, M, N> &From_matrix) {
 /* Matrix real from complex */
 namespace MatrixRealFromComplex {
 
+/**
+ * @brief Struct template for performing the conversion from a complex matrix to
+ * a real matrix using compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively convert
+ * each element of a complex matrix to its real part for a specific range of
+ * row indices in the resulting real matrix. The recursion is controlled by
+ * the Start and End template parameters, which define the range of row indices
+ * to process for the conversion operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The row index of the resulting real matrix being computed.
+ * @tparam Start The starting index for the row to convert.
+ * @tparam End The ending index for the row to convert.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -3655,6 +5093,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively converts each element of a complex matrix to its real
+   * part for a specific range of row indices in the resulting real matrix.
+   *
+   * This static function recursively converts each element of a complex matrix
+   * to its real part for the specified range of row indices defined by Start
+   * and End in the resulting real matrix. It divides the row range into two
+   * halves until it reaches individual rows, which are then processed by
+   * converting each element in that row from the complex matrix to its real
+   * part and storing the results in the corresponding positions in the result
+   * matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting real matrix where the conversion is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Row<T, M, N, I, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3666,6 +5120,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to a
+   * real matrix when the range of row indices in the resulting real matrix is
+   * empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting real matrix is
+   * empty (End == Start), it does nothing, as there are no rows to convert for
+   * that range.
+   * @param From_matrix The complex matrix to convert (not used here).
+   * @param To_matrix The resulting real matrix where the conversion is stored
+   * (not used here).
+   */
   static void compute(const Matrix<Complex<T>, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -3673,12 +5141,45 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to a
+   * real matrix when the range of row indices in the resulting real matrix
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting real matrix
+   * contains a single element (End - Start == 1), it processes that specific
+   * row by converting each element in that row from the complex matrix to its
+   * real part and storing the results in the corresponding positions in the
+   * result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting real matrix where the conversion is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     To_matrix.template set<I, Start>(From_matrix(I, Start).real);
   }
 };
 
+/**
+ * @brief Struct template for performing the conversion from a complex matrix to
+ * a real matrix using compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively convert
+ * each element of a complex matrix to its real part for a specific range of
+ * column indices in the resulting real matrix. The recursion is controlled by
+ * the Start and End template parameters, which define the range of column
+ * indices to process for the conversion operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index for the column to convert.
+ * @tparam End The ending index for the column to convert.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -3688,6 +5189,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively converts each element of a complex matrix to its real
+   * part for a specific range of column indices in the resulting real matrix.
+   *
+   * This static function recursively converts each element of a complex matrix
+   * to its real part for the specified range of column indices defined by Start
+   * and End in the resulting real matrix. It divides the column range into two
+   * halves until it reaches individual columns, which are then processed by
+   * invoking the Row struct to convert each element in that column from the
+   * complex matrix to its real part and store the results in the corresponding
+   * positions in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting real matrix where the conversion is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Column<T, M, N, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3699,6 +5216,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to a
+   * real matrix when the range of column indices in the resulting real matrix
+   * is empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting real matrix is
+   * empty (End == Start), it does nothing, as there are no columns to convert
+   * for that range.
+   * @param From_matrix The complex matrix to convert (not used here).
+   * @param To_matrix The resulting real matrix where the conversion is stored
+   * (not used here).
+   */
   static void compute(const Matrix<Complex<T>, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -3706,6 +5237,22 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to a
+   * real matrix when the range of column indices in the resulting real matrix
+   * contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting real matrix
+   * contains a single element (End - Start == 1), it processes that specific
+   * column by invoking the Row struct to convert each element in that column
+   * from the complex matrix to its real part and store the results in the
+   * corresponding positions in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting real matrix where the conversion is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Row<T, M, N, Start, 0, N>::compute(From_matrix, To_matrix);
@@ -3771,6 +5318,25 @@ inline Matrix<T, M, N> get_real_matrix_from_complex_matrix(
 /* Matrix imag from complex */
 namespace MatrixImagFromComplex {
 
+/**
+ * @brief Struct template for performing the conversion from a complex matrix to
+ * an imaginary part matrix using compile-time recursion for rows.
+ *
+ * This struct template uses template metaprogramming to recursively extract the
+ * imaginary part of each element in a complex matrix for a specific range of
+ * row indices in the resulting imaginary part matrix. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of row indices to process for the conversion operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The row index of the resulting imaginary part matrix being
+ * computed.
+ * @tparam Start The starting index for the row to convert.
+ * @tparam End The ending index for the row to convert.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End, typename Enable = void>
 struct Row;
@@ -3780,6 +5346,24 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively extracts the imaginary part of each element in a complex
+   * matrix for a specific range of row indices in the resulting imaginary part
+   * matrix.
+   *
+   * This static function recursively extracts the imaginary part of each
+   * element in a complex matrix for the specified range of row indices defined
+   * by Start and End in the resulting imaginary part matrix. It divides the row
+   * range into two halves until it reaches individual rows, which are then
+   * processed by extracting the imaginary part of each element in that row from
+   * the complex matrix and storing the results in the corresponding positions
+   * in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Row<T, M, N, I, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3791,6 +5375,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to an
+   * imaginary part matrix when the range of row indices in the resulting
+   * imaginary part matrix is empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting imaginary part
+   * matrix is empty (End == Start), it does nothing, as there are no rows to
+   * convert for that range.
+   * @param From_matrix The complex matrix to convert (not used here).
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored (not used here).
+   */
   static void compute(const Matrix<Complex<T>, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -3798,12 +5396,46 @@ template <typename T, std::size_t M, std::size_t N, std::size_t I,
           std::size_t Start, std::size_t End>
 struct Row<T, M, N, I, Start, End,
            typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to an
+   * imaginary part matrix when the range of row indices in the resulting
+   * imaginary part matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of row indices in the resulting imaginary part
+   * matrix contains a single element (End - Start == 1), it processes that
+   * specific row by extracting the imaginary part of each element in that row
+   * from the complex matrix and storing the results in the corresponding
+   * positions in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     To_matrix.template set<I, Start>(From_matrix(I, Start).imag);
   }
 };
 
+/**
+ * @brief Struct template for performing the conversion from a complex matrix to
+ * an imaginary part matrix using compile-time recursion for columns.
+ *
+ * This struct template uses template metaprogramming to recursively extract the
+ * imaginary part of each element in a complex matrix for a specific range of
+ * column indices in the resulting imaginary part matrix. The recursion is
+ * controlled by the Start and End template parameters, which define the range
+ * of column indices to process for the conversion operation.
+ *
+ * @tparam T The type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam Start The starting index for the column to convert.
+ * @tparam End The ending index for the column to convert.
+ * @tparam Enable A helper type for SFINAE to control specialization.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End, typename Enable = void>
 struct Column;
@@ -3813,6 +5445,24 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start > 1)>::type> {
   static constexpr std::size_t Mid = Start + (End - Start) / 2;
+
+  /**
+   * @brief Recursively extracts the imaginary part of each element in a complex
+   * matrix for a specific range of column indices in the resulting imaginary
+   * part matrix.
+   *
+   * This static function recursively extracts the imaginary part of each
+   * element in a complex matrix for the specified range of column indices
+   * defined by Start and End in the resulting imaginary part matrix. It divides
+   * the column range into two halves until it reaches individual columns, which
+   * are then processed by invoking the Row struct to extract the imaginary part
+   * of each element in that column from the complex matrix and store the
+   * results in the corresponding positions in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Column<T, M, N, Start, Mid>::compute(From_matrix, To_matrix);
@@ -3824,6 +5474,20 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End == Start)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to an
+   * imaginary part matrix when the range of column indices in the resulting
+   * imaginary part matrix is empty.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting imaginary part
+   * matrix is empty (End == Start), it does nothing, as there are no columns to
+   * convert for that range.
+   * @param From_matrix The complex matrix to convert (not used here).
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored (not used here).
+   */
   static void compute(const Matrix<Complex<T>, M, N> &, Matrix<T, M, N> &) {}
 };
 
@@ -3831,6 +5495,23 @@ template <typename T, std::size_t M, std::size_t N, std::size_t Start,
           std::size_t End>
 struct Column<T, M, N, Start, End,
               typename std::enable_if<(End - Start == 1)>::type> {
+
+  /**
+   * @brief Base case for the recursive conversion from a complex matrix to an
+   * imaginary part matrix when the range of column indices in the resulting
+   * imaginary part matrix contains a single element.
+   *
+   * This static function serves as the base case for the recursive conversion
+   * operation. When the range of column indices in the resulting imaginary part
+   * matrix contains a single element (End - Start == 1), it processes that
+   * specific column by invoking the Row struct to extract the imaginary part of
+   * each element in that column from the complex matrix and store the results
+   * in the corresponding positions in the result matrix.
+   *
+   * @param From_matrix The complex matrix to convert.
+   * @param To_matrix The resulting imaginary part matrix where the conversion
+   * is stored.
+   */
   static void compute(const Matrix<Complex<T>, M, N> &From_matrix,
                       Matrix<T, M, N> &To_matrix) {
     Row<T, M, N, Start, 0, N>::compute(From_matrix, To_matrix);
