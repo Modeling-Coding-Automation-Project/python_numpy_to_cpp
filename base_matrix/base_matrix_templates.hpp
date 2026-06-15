@@ -3122,36 +3122,81 @@ namespace TemplatesOperation {
 
 /* Create Lower Triangular Sparse Matrix Row Indices */
 
-/** @brief A template struct to create a lower triangular index sequence.
+/**
+ * @brief A template struct to concatenate lower triangular row numbers for a
+ * specific block of rows in a sparse matrix.
  *
  * This struct provides a type alias 'type' that is the result of recursively
- * generating a lower triangular index sequence for a given range.
+ * concatenating lower triangular row numbers for a specific block of rows in
+ * the matrix, effectively creating a sequence of row indices that correspond to
+ * the lower triangular part of the matrix for the specified range of rows.
+ *
+ * @tparam Start The starting index of the block of rows.
+ * @tparam Count The number of rows in the block.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * lower triangular part of the matrix for the specified range of rows,
+ * accessible via the nested ::type member.
+ */
+template <std::size_t StartVal, std::size_t Count>
+struct MakeLowerTriangularIndexSequenceBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type = typename Concatenate<
+      typename MakeLowerTriangularIndexSequenceBlock<StartVal, MidCount>::type,
+      typename MakeLowerTriangularIndexSequenceBlock<
+          StartVal + MidCount, Count - MidCount>::type>::type;
+};
+
+/**
+ * @brief Specialization of MakeLowerTriangularIndexSequenceBlock for the case
+ * when Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to an
+ * IndexSequence containing the StartVal index, effectively creating a
+ * lower triangular index block for that single index when there is only one row
+ * to process.
+ *
+ * @tparam StartVal The starting index of the block of rows.
+ */
+template <std::size_t StartVal>
+struct MakeLowerTriangularIndexSequenceBlock<StartVal, 1> {
+  using type = IndexSequence<StartVal>;
+};
+
+/**
+ * @brief Specialization of MakeLowerTriangularIndexSequenceBlock for the case
+ * when Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid row
+ * indices to return when there are no rows to process.
+ *
+ * @tparam StartVal The starting index of the block of rows.
+ */
+template <std::size_t StartVal>
+struct MakeLowerTriangularIndexSequenceBlock<StartVal, 0> {
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to create a lower triangular index sequence.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * lower triangular index block for a given range, starting from Start and
+ * ending at End, with an element size of E_S.
  *
  * @tparam Start The starting index of the sequence.
  * @tparam End The ending index of the sequence.
  * @tparam E_S The current size of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the indices for the
+ * lower triangular sequence, accessible via the nested ::type member.
  */
 template <std::size_t Start, std::size_t End, std::size_t E_S>
 struct MakeLowerTriangularIndexSequence {
-  using type = typename Concatenate<typename MakeLowerTriangularIndexSequence<
-                                        Start, (End - 1), (E_S - 1)>::type,
-                                    IndexSequence<E_S>>::type;
-};
 
-/**
- * @brief Specialization of MakeLowerTriangularIndexSequence for the case when
- * E_S is 0.
- *
- * This specialization defines a type alias 'type' that is set to IndexSequence
- * containing 0, effectively creating a lower triangular index sequence for the
- * specified range.
- *
- * @tparam Start The starting index of the sequence.
- * @tparam End The ending index of the sequence.
- */
-template <std::size_t Start, std::size_t End>
-struct MakeLowerTriangularIndexSequence<Start, End, 0> {
-  using type = IndexSequence<0>;
+  using type = typename MakeLowerTriangularIndexSequenceBlock<0, E_S + 1>::type;
 };
 
 /**
@@ -3163,6 +3208,9 @@ struct MakeLowerTriangularIndexSequence<Start, End, 0> {
  *
  * @tparam Start The starting index of the sequence.
  * @tparam End The ending index of the sequence.
+ *
+ * The resulting type is an IndexSequence containing the indices for the
+ * lower triangular sequence, accessible via the nested ::type member.
  */
 template <std::size_t Start, std::size_t End>
 struct LowerTriangularSequenceList {
