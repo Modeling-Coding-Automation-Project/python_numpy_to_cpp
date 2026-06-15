@@ -3219,36 +3219,86 @@ struct LowerTriangularSequenceList {
 };
 
 /**
- * @brief A template struct to create a sequence of lower triangular row
- * numbers.
+ * @brief A template struct to concatenate lower triangular row numbers for a
+ * specific range of rows in a sparse matrix.
  *
- * This struct provides a type alias 'type' that is the result of recursively
- * generating a sequence of lower triangular row numbers for a given range.
+ * This struct provides a type alias 'type' that is the result of generating a
+ * concatenated sequence of lower triangular row numbers for a given range of
+ * rows, starting from 1 and ending at M, with respect to the total number of
+ * columns N.
  *
- * @tparam M The starting index of the sequence.
- * @tparam N The ending index of the sequence.
+ * @tparam M The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * lower triangular part of the matrix for the specified range of rows,
+ * accessible via the nested ::type member.
+ */
+template <std::size_t StartM, std::size_t Count, std::size_t N>
+struct ConcatenateLowerTriangularBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using type =
+      typename Concatenate<typename ConcatenateLowerTriangularBlock<
+                               StartM + MidCount, Count - MidCount, N>::type,
+                           typename ConcatenateLowerTriangularBlock<
+                               StartM, MidCount, N>::type>::type;
+};
+
+/**
+ * @brief Specialization of ConcatenateLowerTriangularBlock for the case when
+ * Count is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to the result of
+ * LowerTriangularSequenceList for the specified starting index and total number
+ * of columns, effectively creating a sequence of row indices for the lower
+ * triangular part of the matrix for that single row when there is only one row
+ * to process.
+ *
+ * @tparam StartM The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ */
+template <std::size_t StartM, std::size_t N>
+struct ConcatenateLowerTriangularBlock<StartM, 1, N> {
+  using type = typename LowerTriangularSequenceList<StartM, N>::type;
+};
+
+/**
+ * @brief Specialization of ConcatenateLowerTriangularBlock for the case when
+ * Count is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively indicating that there are no valid row
+ * indices to return when there are no rows to process.
+ *
+ * @tparam StartM The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ */
+template <std::size_t StartM, std::size_t N>
+struct ConcatenateLowerTriangularBlock<StartM, 0, N> {
+  using type = InvalidSequence<0>;
+};
+
+/**
+ * @brief A template struct to concatenate lower triangular row numbers for a
+ * specific range of rows in a sparse matrix.
+ *
+ * This struct provides a type alias 'type' that is the result of generating a
+ * concatenated sequence of lower triangular row numbers for a given range of
+ * rows, starting from 1 and ending at M, with respect to the total number of
+ * columns N.
+ *
+ * @tparam M The starting index of the range of rows.
+ * @tparam N The total number of columns in the matrix.
+ *
+ * The resulting type is an IndexSequence containing the row indices for the
+ * lower triangular part of the matrix for the specified range of rows,
+ * accessible via the nested ::type member.
  */
 template <std::size_t M, std::size_t N>
 struct ConcatenateLowerTriangularRowNumbers {
   static_assert(M <= N, "So far, M must be less than or equal to N");
-
-  using type = typename Concatenate<
-      typename LowerTriangularSequenceList<M, N>::type,
-      typename ConcatenateLowerTriangularRowNumbers<(M - 1), N>::type>::type;
-};
-
-/**
- * @brief Specialization of ConcatenateLowerTriangularRowNumbers for the case
- * when M is 1.
- *
- * This specialization defines a type alias 'type' that is set to the result of
- * LowerTriangularSequenceList<1, N>, effectively creating a sequence of lower
- * triangular row numbers for the specified range.
- *
- * @tparam N The ending index of the sequence.
- */
-template <std::size_t N> struct ConcatenateLowerTriangularRowNumbers<1, N> {
-  using type = typename LowerTriangularSequenceList<1, N>::type;
+  using type = typename ConcatenateLowerTriangularBlock<1, M, N>::type;
 };
 
 /**
