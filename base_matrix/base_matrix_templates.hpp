@@ -4371,43 +4371,144 @@ using SparseAvailableTranspose =
 namespace TemplatesOperation {
 
 /**
- * @brief A template struct to validate the SparseAvailable type.
+ * @brief A template struct to combine the results of validating two blocks of
+ * a SparseAvailable type.
+ *
+ * This struct provides a type alias 'type' that is set to void if both blocks
+ * are valid, or it will trigger a static assertion if either block is invalid.
+ *
+ * @tparam Left The result of validating the left block of the SparseAvailable
+ * type.
+ * @tparam Right The result of validating the right block of the SparseAvailable
+ * type.
+ */
+template <typename Left, typename Right> struct CombineValidation {
+  using type = void;
+};
+
+/**
+ * @brief Specialization of CombineValidation for the case when the left block
+ * is invalid.
+ *
+ * This specialization defines a type alias 'type' that will trigger a static
+ * assertion if the left block is invalid, effectively indicating that the
+ * SparseAvailable type is not valid.
+ *
+ * @tparam Right The result of validating the right block of the SparseAvailable
+ * type.
+ */
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
+          std::size_t Count>
+struct ValidateSparseAvailableBlock {
+  static constexpr std::size_t MidCount = Count / 2;
+
+  using RightSparseAvailable =
+      GetRestOfSparseAvailable<SparseAvailable, MidCount>;
+
+  using type = typename CombineValidation<
+      typename ValidateSparseAvailableBlock<SparseAvailable, NumberOfRowsFirst,
+                                            MidCount>::type,
+      typename ValidateSparseAvailableBlock<RightSparseAvailable,
+                                            NumberOfRowsFirst,
+                                            Count - MidCount>::type>::type;
+};
+
+/**
+ * @brief Specialization of ValidateSparseAvailableBlock for the case when Count
+ * is 1.
+ *
+ * This specialization defines a type alias 'type' that is set to void if the
+ * ColumnAvailable size of the SparseAvailable type matches the expected number
+ * of rows, or it will trigger a static assertion if it does not match,
+ * effectively indicating whether the SparseAvailable type is valid or not.
+ *
+ * @tparam SparseAvailable The SparseAvailable type being validated.
+ * @tparam NumberOfRowsFirst The expected number of rows for the ColumnAvailable
+ * types in the SparseAvailable type.
+ */
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
+struct ValidateSparseAvailableBlock<SparseAvailable, NumberOfRowsFirst, 1> {
+  static_assert(SparseAvailable::row_size == NumberOfRowsFirst,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+  using type = void;
+};
+
+/**
+ * @brief Specialization of ValidateSparseAvailableBlock for the case when Count
+ * is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to void,
+ * effectively indicating that there are no blocks to validate when Count is 0,
+ * and thus it does not contribute to the validation of the SparseAvailable
+ * type.
+ *
+ * @tparam SparseAvailable The SparseAvailable type being validated.
+ * @tparam NumberOfRowsFirst The expected number of rows for the ColumnAvailable
+ * types in the SparseAvailable type.
+ */
+template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
+struct ValidateSparseAvailableBlock<SparseAvailable, NumberOfRowsFirst, 0> {
+  using type = void;
+};
+
+/**
+ * @brief A template struct to recursively shift the SparseAvailable type to
+ * access the next block of ColumnAvailable types for validation.
  *
  * This struct provides a type alias 'type' that is the result of recursively
- * validating the SparseAvailable type for each column.
+ * shifting the SparseAvailable type to access the next block of ColumnAvailable
+ * types for validation.
  *
- * @tparam SparseAvailable The SparseAvailable type to be validated.
- * @tparam NumberOfRowsFirst The number of rows in the first row.
- * @tparam ColumnIndex The index of the row being processed.
+ * @tparam SparseAvailable The SparseAvailable type being validated.
+ * @tparam ColumnIndex The index of the current block of ColumnAvailable types
+ * being accessed for validation.
+ */
+template <typename SparseAvailable, std::size_t ColumnIndex>
+struct GetShiftedSparseAvailable {
+  using type = GetRestOfSparseAvailable<SparseAvailable, ColumnIndex>;
+};
+
+/**
+ * @brief Specialization of GetShiftedSparseAvailable for the case when
+ * ColumnIndex is 0.
+ *
+ * This specialization defines a type alias 'type' that is set to the original
+ * SparseAvailable type, effectively indicating that there is no need to shift
+ * the SparseAvailable type when accessing the first block of ColumnAvailable
+ * types for validation.
+ *
+ * @tparam SparseAvailable The SparseAvailable type being validated.
+ */
+template <typename SparseAvailable>
+struct GetShiftedSparseAvailable<SparseAvailable, 0> {
+  using type = SparseAvailable;
+};
+
+/**
+ * @brief A template struct to recursively validate each block of
+ * ColumnAvailable types in a SparseAvailable type.
+ *
+ * This struct provides a type alias 'type' that is the result of recursively
+ * validating each block of ColumnAvailable types in the SparseAvailable type,
+ * effectively determining whether the SparseAvailable type is valid or not.
+ *
+ * @tparam SparseAvailable The SparseAvailable type being validated.
+ * @tparam NumberOfRowsFirst The expected number of rows for the ColumnAvailable
+ * types in the SparseAvailable type.
+ * @tparam ColumnIndex The index of the current block of ColumnAvailable types
+ * being validated.
  */
 template <typename SparseAvailable, std::size_t NumberOfRowsFirst,
           std::size_t ColumnIndex>
 struct ValidateSparseAvailableLoop {
-  static_assert(SparseAvailable::row_size == NumberOfRowsFirst,
-                "Each ColumnAvailable size of SparseAvailable is not the same");
+private:
+  using DummyValidation =
+      typename ValidateSparseAvailableBlock<SparseAvailable, NumberOfRowsFirst,
+                                            ColumnIndex + 1>::type;
 
-  using type = typename ValidateSparseAvailableLoop<
-      GetRestOfSparseAvailable<SparseAvailable, 1>, NumberOfRowsFirst,
-      (ColumnIndex - 1)>::type;
-};
-
-/**
- * @brief Specialization of ValidateSparseAvailableLoop for the case when
- * ColumnIndex is 0.
- *
- * This specialization defines a type alias 'type' that is set to the
- * SparseAvailable type itself, effectively validating the SparseAvailable type
- * for the first row.
- *
- * @tparam SparseAvailable The SparseAvailable type to be validated.
- * @tparam NumberOfRowsFirst The number of rows in the first row.
- */
-template <typename SparseAvailable, std::size_t NumberOfRowsFirst>
-struct ValidateSparseAvailableLoop<SparseAvailable, NumberOfRowsFirst, 0> {
-  static_assert(SparseAvailable::row_size == NumberOfRowsFirst,
-                "Each ColumnAvailable size of SparseAvailable is not the same");
-
-  using type = SparseAvailable;
+public:
+  using type =
+      typename GetShiftedSparseAvailable<SparseAvailable, ColumnIndex>::type;
 };
 
 } // namespace TemplatesOperation
