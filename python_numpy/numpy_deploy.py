@@ -231,7 +231,7 @@ class NumpyDeploy:
 
             for i in range(matrix.shape[0]):
                 for j in range(matrix.shape[1]):
-                    code_text += f"    result.access(" + \
+                    code_text += f"    result.unsafe_access(" + \
                         str(i) + ", " + str(j) + ") = "
                     code_text += NumpyDeploy.value_to_string_with_type(
                         matrix[i, j], type_name)
@@ -245,7 +245,7 @@ class NumpyDeploy:
                 str(matrix.shape[0]) + ">();\n\n"
 
             for i in range(matrix.shape[0]):
-                code_text += "    result.access(" + str(i) + ") = " + \
+                code_text += "    result.unsafe_access(" + str(i) + ") = " + \
                     NumpyDeploy.value_to_string_with_type(
                         matrix[i, i], type_name) + ";\n"
 
@@ -267,7 +267,7 @@ class NumpyDeploy:
                             is_not_zero = True
 
                     if is_not_zero:
-                        code_text += f"    result.access({sparse_count}) = " + \
+                        code_text += f"    result.unsafe_access({sparse_count}) = " + \
                             NumpyDeploy.value_to_string_with_type(
                                 matrix[i, j], type_name) + ";\n"
 
