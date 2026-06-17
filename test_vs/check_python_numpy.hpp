@@ -88,7 +88,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     Matrix<DefDense, T, 3, 3> A({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
     Matrix<DefDense, T, 4, 3> AA({ { 1, 3, 0 }, {0, 0, 2}, {0, 8, 4}, {0, 1, 0} });
 
-    T a_value = A.access(1, 2);
+    T a_value = A.unsafe_access(1, 2);
 
     tester.expect_near(a_value, 6, NEAR_LIMIT_STRICT,
         "check Matrix get value.");
@@ -98,7 +98,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(a_value_outlier, 7, NEAR_LIMIT_STRICT,
         "check Matrix get value outlier.");
 
-    A.access(1, 2) = 100;
+    A.unsafe_access(1, 2) = 100;
 
     Matrix<DefDense, T, 3, 3> A_set_answer({
         {1, 2, 3},
@@ -126,7 +126,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     Matrix<DefDiag, T, 3> B({ 1, 2, 3 });
     Matrix<DefDense, T, 4, 2> BB({ { 1, 2 }, {3, 4}, {5, 6}, {7, 8} });
 
-    T b_value = B.access(1);
+    T b_value = B.unsafe_access(1);
 
     tester.expect_near(b_value, 2, NEAR_LIMIT_STRICT,
         "check DiagMatrix get value.");
@@ -136,7 +136,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(b_value_outlier, 3, NEAR_LIMIT_STRICT,
         "check DiagMatrix get value outlier.");
 
-    B.access(1) = 100;
+    B.unsafe_access(1) = 100;
 
     Matrix<DefDiag, T, 3> B_set_answer({ 1, 100, 3 });
 
@@ -174,7 +174,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     Matrix<DefSparse, T, 3, 3,
         SparseAvailableEmpty<3, 3>> Empty;
 
-    T c_value = C.access(2);
+    T c_value = C.unsafe_access(2);
 
     tester.expect_near(c_value, 8, NEAR_LIMIT_STRICT,
         "check SparseMatrix get value.");
@@ -184,7 +184,7 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(c_value_outlier, 4, NEAR_LIMIT_STRICT,
         "check SparseMatrix get value outlier.");
 
-    C.access(2) = 100;
+    C.unsafe_access(2) = 100;
 
     Matrix<DefDense, T, 3, 3> C_set_dense_1 = C.create_dense();
     Matrix<DefDense, T, 3, 3> C_set_answer_1({

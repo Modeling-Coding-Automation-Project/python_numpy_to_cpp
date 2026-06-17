@@ -2043,8 +2043,8 @@ template <typename T, std::size_t M> struct Loop<T, M, 0> {
  * @param To_matrix The resulting real diagonal matrix after extraction.
  */
 template <typename T, std::size_t M>
-inline void compute(const DiagMatrix<Complex<T>, 3> &From_matrix,
-                    DiagMatrix<T, 3> &To_matrix) {
+inline void compute(const DiagMatrix<Complex<T>, M> &From_matrix,
+                    DiagMatrix<T, M> &To_matrix) {
   Loop<T, M, M - 1>::compute(From_matrix, To_matrix);
 }
 

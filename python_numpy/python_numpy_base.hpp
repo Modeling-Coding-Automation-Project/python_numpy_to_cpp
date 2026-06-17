@@ -334,7 +334,7 @@ public:
    * @note This method is fast but may cause segmentation faults if indices are
    * out of bounds.
    */
-  inline T &access(const std::size_t &row, const std::size_t &col) {
+  inline T &unsafe_access(const std::size_t &row, const std::size_t &col) {
 
     return this->matrix(col)[row];
   }
@@ -350,7 +350,8 @@ public:
    * @note This method is fast but may cause segmentation faults if indices are
    * out of bounds.
    */
-  inline const T &access(const std::size_t &row, const std::size_t &col) const {
+  inline const T &unsafe_access(const std::size_t &row,
+                                const std::size_t &col) const {
     return this->matrix(col)[row];
   }
 
@@ -820,13 +821,13 @@ public:
    * @note This method is fast but may cause segmentation faults if the index is
    * out of bounds.
    */
-  inline T &access(const std::size_t &index) {
+  inline T &unsafe_access(const std::size_t &index) {
     // This is fast but may cause segmentation fault.
 
     return this->matrix[index];
   }
 
-  inline const T &access(const std::size_t &index) const {
+  inline const T &unsafe_access(const std::size_t &index) const {
     // This is fast but may cause segmentation fault.
 
     return this->matrix[index];
@@ -1303,13 +1304,13 @@ public:
    * @note This method is fast but may cause segmentation faults if the index is
    * out of bounds.
    */
-  inline T &access(const std::size_t &value_index) {
+  inline T &unsafe_access(const std::size_t &value_index) {
     // This is fast but may cause segmentation fault.
 
     return this->matrix[value_index];
   }
 
-  inline const T &access(const std::size_t &value_index) const {
+  inline const T &unsafe_access(const std::size_t &value_index) const {
     // This is fast but may cause segmentation fault.
 
     return this->matrix[value_index];
