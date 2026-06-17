@@ -1025,6 +1025,21 @@ struct Concatenate<InvalidSequence<Seq1...>, IndexSequence<Seq2...>> {
   using type = IndexSequence<Seq2...>;
 };
 
+/**
+ * @brief Specialization of Concatenate for two InvalidSequence types.
+ *
+ * This specialization defines a type alias 'type' that is set to
+ * InvalidSequence<0>, effectively returning an invalid sequence when both
+ * sequences are invalid.
+ *
+ * @tparam Seq1 The first invalid sequence.
+ * @tparam Seq2 The second invalid sequence.
+ */
+template <std::size_t... Seq1, std::size_t... Seq2>
+struct Concatenate<InvalidSequence<Seq1...>, InvalidSequence<Seq2...>> {
+  using type = InvalidSequence<0>;
+};
+
 /* Create Dense Matrix Row Indices and Pointers */
 
 /**
