@@ -226,42 +226,34 @@ class NumpyDeploy:
         code_text += "inline auto make(void) -> type {\n\n"
 
         if matrix_type == MatrixType.DENSE:
-            code_text += "  return make_DenseMatrix<" + \
-                str(matrix.shape[0]) + ", " + str(matrix.shape[1]) + ">(\n"
+            code_text += f"  auto result = make_DenseMatrixZeros<{type_name}, " + \
+                str(matrix.shape[0]) + ", " + str(matrix.shape[1]) + ">();\n\n"
 
             for i in range(matrix.shape[0]):
-                code_text += "    "
                 for j in range(matrix.shape[1]):
+                    code_text += f"    result.access(" + \
+                        str(i) + ", " + str(j) + ") = "
                     code_text += NumpyDeploy.value_to_string_with_type(
                         matrix[i, j], type_name)
 
-                    if j != matrix.shape[1] - 1:
-                        code_text += ", "
-                    elif i != matrix.shape[0] - 1:
-                        code_text += ","
+                    code_text += ";\n"
 
-                code_text += "\n"
-
-            code_text += "  );\n\n"
+            code_text += "\n  return result;\n\n"
 
         elif matrix_type == MatrixType.DIAG:
-            code_text += "  return make_DiagMatrix<" + \
-                str(matrix.shape[0]) + ">(\n"
+            code_text += f"  auto result = make_DiagMatrixZeros<{type_name}, " + \
+                str(matrix.shape[0]) + ">();\n\n"
 
             for i in range(matrix.shape[0]):
-                code_text += "    "
-                if i == matrix.shape[0] - 1:
-                    code_text += NumpyDeploy.value_to_string_with_type(
-                        matrix[i, i], type_name) + "\n"
-                else:
-                    code_text += NumpyDeploy.value_to_string_with_type(
-                        matrix[i, i], type_name) + ",\n"
+                code_text += "    result.access(" + str(i) + ") = " + \
+                    NumpyDeploy.value_to_string_with_type(
+                        matrix[i, i], type_name) + ";\n"
 
-            code_text += "  );\n\n"
+            code_text += "\n  return result;\n\n"
 
         elif matrix_type == MatrixType.SPARSE:
-            code_text += "  return make_SparseMatrix<" + \
-                sparse_available_name + ">(\n"
+            code_text += f"  auto result = make_SparseMatrixZeros<{type_name}, " + \
+                sparse_available_name + ">();\n\n"
 
             sparse_count = 0
             for i in range(matrix.shape[0]):
@@ -275,15 +267,13 @@ class NumpyDeploy:
                             is_not_zero = True
 
                     if is_not_zero:
-                        if sparse_count == 0:
-                            code_text += "    " + NumpyDeploy.value_to_string_with_type(
-                                matrix[i, j], type_name)
-                            sparse_count += 1
-                        else:
-                            code_text += ",\n    " + NumpyDeploy.value_to_string_with_type(
-                                matrix[i, j], type_name)
+                        code_text += f"    result.access({sparse_count}) = " + \
+                            NumpyDeploy.value_to_string_with_type(
+                                matrix[i, j], type_name) + ";\n"
 
-            code_text += "\n  );\n\n"
+                        sparse_count += 1
+
+            code_text += "\n  return result;\n\n"
 
         elif matrix_type == MatrixType.SPARSE_EMPTY:
             code_text += "  return make_SparseMatrixEmpty<" + \
