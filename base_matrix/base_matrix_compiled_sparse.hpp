@@ -213,13 +213,13 @@ public:
    * the bounds of the indices and then iterates through the non-zero elements
    * of the specified row to find a match for the column index.
    *
-   * @param col The zero-based column index to check (must be less than M).
-   * @param row The zero-based row index to check (must be less than N).
+   * @param row The zero-based row index to check (must be less than M).
+   * @param col The zero-based column index to check (must be less than N).
    * @return true if the indices correspond to a non-zero element; false
    * otherwise.
    */
-  bool is_valid_indices(const std::size_t &col, const std::size_t &row) const {
-    if (col >= M || row >= N) {
+  bool is_valid_indices(const std::size_t &row, const std::size_t &col) const {
+    if (row >= M || col >= N) {
       return false;
     }
 
@@ -251,9 +251,9 @@ public:
    * @return std::size_t The index of the value in the sparse matrix if valid;
    * static_cast<std::size_t>(-1) otherwise.
    */
-  std::size_t get_value_index(const std::size_t &col,
-                              const std::size_t &row) const {
-    if (col >= M || row >= N) {
+  std::size_t get_value_index(const std::size_t &row,
+                              const std::size_t &col) const {
+    if (row >= M || col >= N) {
       return static_cast<std::size_t>(-1);
     }
 

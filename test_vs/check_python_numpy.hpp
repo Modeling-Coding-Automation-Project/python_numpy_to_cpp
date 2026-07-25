@@ -29,6 +29,7 @@ public:
     void check_python_numpy_transpose_operation(void);
     void check_python_numpy_qr(void);
     void check_python_numpy_eig(void);
+    void check_python_numpy_augmented(void);
 
     void calc(void);
 };
@@ -55,6 +56,8 @@ void CheckPythonNumpy<T>::calc(void) {
     check_python_numpy_qr();
 
     check_python_numpy_eig();
+
+    check_python_numpy_augmented();
 }
 
 template <typename T>
@@ -3991,6 +3994,202 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     tester.expect_near(result_A1_imag.matrix.data, result_A1_imag_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverEig check_validity imag.");
 
+
+    tester.throw_error_if_test_failed();
+}
+
+
+template <typename T>
+void CheckPythonNumpy<T>::check_python_numpy_augmented(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-3);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<DefDense, T, 2, 2> A11({ {1, 2}, {4, 5} });
+    Matrix<DefDense, T, 2, 1> A12({ {3}, {6} });
+    Matrix<DefDense, T, 1, 2> A21({ {7, 8} });
+    Matrix<DefDense, T, 1, 1> A22({ {9} });
+
+    using A_Tuple_Type = std::tuple<
+        Matrix<DefDense, T, 2, 2>,
+        Matrix<DefDense, T, 2, 1>,
+        Matrix<DefDense, T, 1, 2>,
+        Matrix<DefDense, T, 1, 1>
+    >;
+
+    using AugmentedMatrixType = AugmentedMatrix<A_Tuple_Type>;
+
+    auto augmented_matrix_m = make_AugmentedMatrix(A11, A12, A21, A22);
+
+    AugmentedMatrixType augmented_matrix = augmented_matrix_m;
+
+    Matrix<DefDense, T, 3, 3> augmented_matrix_answer({
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+        });
+
+    auto augmented_matrix_dense = augmented_matrix.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    tester.expect_near(augmented_matrix_dense.matrix.data, augmented_matrix_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix to dense.");
+
+    T augmented_matrix_value = augmented_matrix.template get<1, 2>();
+
+    tester.expect_near(augmented_matrix_value, static_cast<T>(6), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix get value template.");
+
+    T augmented_matrix_value_2 = augmented_matrix.template get<2, 1>();
+
+    tester.expect_near(augmented_matrix_value_2, static_cast<T>(8), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix get value template 2.");
+
+    augmented_matrix.template set<1, 2>(static_cast<T>(100));
+
+    Matrix<DefDense, T, 3, 3> augmented_matrix_set_answer({
+        {1, 2, 3},
+        {4, 5, 100},
+        {7, 8, 9}
+        });
+
+    augmented_matrix_dense = augmented_matrix.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    tester.expect_near(augmented_matrix_dense.matrix.data, augmented_matrix_set_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix set value template.");
+
+    augmented_matrix.template set<1, 2>(static_cast<T>(6));
+
+    std::size_t matrix_size = augmented_matrix.size();
+
+    tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix size.");
+
+    std::size_t rows_size;
+    std::size_t cols_size;
+
+    std::tie(rows_size, cols_size) = augmented_matrix.shape();
+
+    tester.expect_near(static_cast<T>(rows_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix shape rows.");
+    tester.expect_near(static_cast<T>(cols_size), static_cast<T>(3), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix shape cols.");
+
+    std::size_t ndim_value = augmented_matrix.ndim();
+
+    tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix ndim.");
+
+    Matrix<DefDense, T, 3, 3> B({ {9, 8, 7}, {6, 5, 4}, {3, 2, 1} });
+
+    auto matrix_plus_augmented = B + augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> matrix_plus_augmented_answer({
+        {10, 10, 10},
+        {10, 10, 10},
+        {10, 10, 10}
+        });
+
+    tester.expect_near(matrix_plus_augmented.matrix.data, matrix_plus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix + AugmentedMatrix.");
+
+    auto augmented_plus_matrix = augmented_matrix + B;
+
+    tester.expect_near(augmented_plus_matrix.matrix.data, matrix_plus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix + Matrix.");
+
+    auto augmented_plus_augmented = augmented_matrix + augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> augmented_plus_augmented_answer({
+        {2, 4, 6},
+        {8, 10, 12},
+        {14, 16, 18}
+        });
+
+    tester.expect_near(augmented_plus_augmented.matrix.data, augmented_plus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix + AugmentedMatrix.");
+
+    auto matrix_minus_augmented = B - augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> matrix_minus_augmented_answer({
+        {8, 6, 4},
+        {2, 0, -2},
+        {-4, -6, -8}
+        });
+
+    tester.expect_near(matrix_minus_augmented.matrix.data, matrix_minus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix - AugmentedMatrix.");
+
+    auto augmented_minus_matrix = augmented_matrix - B;
+
+    Matrix<DefDense, T, 3, 3> augmented_minus_matrix_answer({
+        {-8, -6, -4},
+        {-2, 0, 2},
+        {4, 6, 8}
+        });
+
+    tester.expect_near(augmented_minus_matrix.matrix.data, augmented_minus_matrix_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix - Matrix.");
+
+    auto augmented_minus_augmented = augmented_matrix - augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> augmented_minus_augmented_answer({
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+        });
+
+    tester.expect_near(augmented_minus_augmented.matrix.data, augmented_minus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix - AugmentedMatrix.");
+
+    auto minus_augmented = -augmented_matrix;
+    auto minus_augmented_dense = minus_augmented.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    Matrix<DefDense, T, 3, 3> minus_augmented_answer({
+        {-1, -2, -3},
+        {-4, -5, -6},
+        {-7, -8, -9}
+        });
+
+    tester.expect_near(minus_augmented_dense.matrix.data, minus_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix unary minus.");
+
+    Matrix<DefDense, T, 3, 3> C({ {1, 0, 2}, {0, 1, 3}, {4, 5, 6} });
+
+    auto augmented_mul_matrix = augmented_matrix * C;
+
+    Matrix<DefDense, T, 3, 3> augmented_mul_matrix_answer({
+        {13, 17, 26},
+        {28, 35, 59},
+        {43, 53, 92}
+        });
+
+    tester.expect_near(augmented_mul_matrix.matrix.data, augmented_mul_matrix_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix * Matrix.");
+
+    auto matrix_mul_augmented = C * augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> matrix_mul_augmented_answer({
+        {15, 18, 21},
+        {25, 29, 33},
+        {66, 81, 96}
+        });
+
+    tester.expect_near(matrix_mul_augmented.matrix.data, matrix_mul_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Matrix * AugmentedMatrix.");
+
+    auto augmented_mul_augmented = augmented_matrix * augmented_matrix;
+
+    Matrix<DefDense, T, 3, 3> augmented_mul_augmented_answer({
+        {30, 36, 42},
+        {66, 81, 96},
+        {102, 126, 150}
+        });
+
+    tester.expect_near(augmented_mul_augmented.matrix.data, augmented_mul_augmented_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix * AugmentedMatrix.");
 
     tester.throw_error_if_test_failed();
 }
