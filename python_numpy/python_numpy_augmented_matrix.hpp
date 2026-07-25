@@ -45,10 +45,10 @@ public:
                 "Tuple_Type must be a std::tuple.");
 
   /* Type */
-  static constexpr std::size_t AugmentedMatrix_ColRow =
+  static constexpr std::size_t ColRow_AugmentedMatrix =
       AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value;
 
-  static_assert(AugmentedMatrix_ColRow != 0,
+  static_assert(ColRow_AugmentedMatrix != 0,
                 "Tuple_Type must have a perfect square number of elements.");
 
 public:
