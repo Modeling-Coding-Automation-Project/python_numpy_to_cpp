@@ -53,6 +53,8 @@ public:
                 "Tuple_Type must be a std::tuple.");
 
   /* Type */
+  using T = typename std::tuple_element<0, Tuple_Type>::type::Value_Type;
+
   static constexpr std::size_t COLROW_AUGMENTED_MATRIX =
       AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value;
 
