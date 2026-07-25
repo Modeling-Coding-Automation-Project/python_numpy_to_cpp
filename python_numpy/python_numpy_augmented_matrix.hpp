@@ -622,6 +622,182 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix)
   return result;
 }
 
+/* Matrix Mul AugmentedMatrix */
+
+namespace AugmentedMatrixMulMatrix {
+
+// when K_idx < K (dot product recursion)
+template <typename Matrix_A_Type, typename Matrix_B_Type, typename Value_Type,
+          std::size_t I, std::size_t J, std::size_t K_idx>
+struct DotProduct {
+  static Value_Type compute(const Matrix_A_Type &A, const Matrix_B_Type &B) {
+    return A.template get<I, K_idx>() * B.template get<K_idx, J>() +
+           DotProduct<Matrix_A_Type, Matrix_B_Type, Value_Type, I, J,
+                      K_idx - 1>::compute(A, B);
+  }
+};
+
+// dot product recursion termination
+template <typename Matrix_A_Type, typename Matrix_B_Type, typename Value_Type,
+          std::size_t I, std::size_t J>
+struct DotProduct<Matrix_A_Type, Matrix_B_Type, Value_Type, I, J, 0> {
+  static Value_Type compute(const Matrix_A_Type &A, const Matrix_B_Type &B) {
+    return A.template get<I, 0>() * B.template get<0, J>();
+  }
+};
+
+// when J_idx < N (column recursion)
+template <typename Matrix_A_Type, typename Matrix_B_Type,
+          typename Matrix_Result_Type, std::size_t I, std::size_t J_idx>
+struct Row {
+  static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
+                      Matrix_Result_Type &result) {
+    result.template set<I, J_idx>(
+        DotProduct<Matrix_A_Type, Matrix_B_Type,
+                   typename Matrix_Result_Type::Value_Type, I, J_idx,
+                   Matrix_A_Type::COLS - 1>::compute(A, B));
+    Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I,
+        J_idx - 1>::compute(A, B, result);
+  }
+};
+
+// column recursion termination
+template <typename Matrix_A_Type, typename Matrix_B_Type,
+          typename Matrix_Result_Type, std::size_t I>
+struct Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I, 0> {
+  static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
+                      Matrix_Result_Type &result) {
+    result.template set<I, 0>(
+        DotProduct<Matrix_A_Type, Matrix_B_Type,
+                   typename Matrix_Result_Type::Value_Type, I, 0,
+                   Matrix_A_Type::COLS - 1>::compute(A, B));
+  }
+};
+
+// when I_idx < M (row recursion)
+template <typename Matrix_A_Type, typename Matrix_B_Type,
+          typename Matrix_Result_Type, std::size_t I_idx>
+struct Column {
+  static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
+                      Matrix_Result_Type &result) {
+    Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I_idx,
+        Matrix_Result_Type::COLS - 1>::compute(A, B, result);
+    Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type,
+           I_idx - 1>::compute(A, B, result);
+  }
+};
+
+// row recursion termination
+template <typename Matrix_A_Type, typename Matrix_B_Type,
+          typename Matrix_Result_Type>
+struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
+  static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
+                      Matrix_Result_Type &result) {
+    Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0,
+        Matrix_Result_Type::COLS - 1>::compute(A, B, result);
+  }
+};
+
+template <typename Matrix_A_Type, typename Matrix_B_Type,
+          typename Matrix_Result_Type>
+inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
+                    Matrix_Result_Type &result) {
+  Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type,
+         Matrix_Result_Type::ROWS - 1>::compute(A, B, result);
+}
+
+} // namespace AugmentedMatrixMulMatrix
+
+template <typename Matrix_Type, typename Tuple_Type>
+inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
+                      const Matrix_Type &matrix)
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type,
+              AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS> {
+
+  static_assert(
+      std::is_same<typename Matrix_Type::Value_Type,
+                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  static_assert(AugmentedMatrix<Tuple_Type>::COLS == Matrix_Type::ROWS,
+                "Inner matrix dimensions must agree for multiplication.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename Matrix_Type::Value_Type,
+         AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS>
+      result;
+
+  for (std::size_t i = 0; i < AugmentedMatrix<Tuple_Type>::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      typename Matrix_Type::Value_Type sum = 0;
+      for (std::size_t k = 0; k < AugmentedMatrix<Tuple_Type>::COLS; ++k) {
+        sum += augmented_matrix(i, k) * matrix(k, j);
+      }
+      result(i, j) = sum;
+    }
+  }
+
+  return result;
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename Matrix_Type::Value_Type,
+         AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS>
+      result;
+
+  AugmentedMatrixMulMatrix::compute(augmented_matrix, matrix, result);
+
+  return result;
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+}
+
+template <typename Matrix_Type, typename Tuple_Type>
+inline auto operator*(const Matrix_Type &matrix,
+                      const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+              AugmentedMatrix<Tuple_Type>::COLS> {
+
+  static_assert(
+      std::is_same<typename Matrix_Type::Value_Type,
+                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  static_assert(Matrix_Type::COLS == AugmentedMatrix<Tuple_Type>::ROWS,
+                "Inner matrix dimensions must agree for multiplication.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         AugmentedMatrix<Tuple_Type>::COLS>
+      result;
+
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < AugmentedMatrix<Tuple_Type>::COLS; ++j) {
+      typename Matrix_Type::Value_Type sum = 0;
+      for (std::size_t k = 0; k < Matrix_Type::COLS; ++k) {
+        sum += matrix(i, k) * augmented_matrix(k, j);
+      }
+      result(i, j) = sum;
+    }
+  }
+
+  return result;
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         AugmentedMatrix<Tuple_Type>::COLS>
+      result;
+
+  AugmentedMatrixMulMatrix::compute(matrix, augmented_matrix, result);
+
+  return result;
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+}
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
