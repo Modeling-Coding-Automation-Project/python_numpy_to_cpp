@@ -448,6 +448,37 @@ inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+template <typename Tuple_A_Type, typename Tuple_B_Type>
+inline auto operator+(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
+                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
+    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type>::ROWS,
+              AugmentedMatrix<Tuple_A_Type>::COLS> {
+
+  static_assert(
+      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return augmented_matrix_a
+             .template to_matrix<AugmentedMatrix<Tuple_A_Type>>() +
+         augmented_matrix_b.template to_matrix<AugmentedMatrix<Tuple_B_Type>>();
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+         AugmentedMatrix<Tuple_A_Type>::ROWS,
+         AugmentedMatrix<Tuple_A_Type>::COLS>
+      result;
+  AugmentedMatrixAddMatrix::compute(augmented_matrix_a, augmented_matrix_b,
+                                    result);
+  return result;
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+}
+
 /* Matrix Sub AugmentedMatrix */
 
 namespace AugmentedMatrixSubMatrix {
@@ -556,6 +587,37 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
          Matrix_Type::COLS>
       result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix, matrix, result);
+  return result;
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+}
+
+template <typename Tuple_A_Type, typename Tuple_B_Type>
+inline auto operator-(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
+                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
+    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type>::ROWS,
+              AugmentedMatrix<Tuple_A_Type>::COLS> {
+
+  static_assert(
+      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return augmented_matrix_a
+             .template to_matrix<AugmentedMatrix<Tuple_A_Type>>() -
+         augmented_matrix_b.template to_matrix<AugmentedMatrix<Tuple_B_Type>>();
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+         AugmentedMatrix<Tuple_A_Type>::ROWS,
+         AugmentedMatrix<Tuple_A_Type>::COLS>
+      result;
+  AugmentedMatrixSubMatrix::compute(augmented_matrix_a, augmented_matrix_b,
+                                    result);
   return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
@@ -792,6 +854,57 @@ inline auto operator*(const Matrix_Type &matrix,
       result;
 
   AugmentedMatrixMulMatrix::compute(matrix, augmented_matrix, result);
+
+  return result;
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+}
+
+template <typename Tuple_A_Type, typename Tuple_B_Type>
+inline auto operator*(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
+                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
+    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type>::ROWS,
+              AugmentedMatrix<Tuple_B_Type>::COLS> {
+
+  static_assert(
+      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      "AugmentedMatrix<Tuple_A_Type> and AugmentedMatrix<Tuple_B_Type> must "
+      "have the same value type.");
+
+  static_assert(AugmentedMatrix<Tuple_A_Type>::COLS ==
+                    AugmentedMatrix<Tuple_B_Type>::ROWS,
+                "Inner matrix dimensions must agree for multiplication.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+         AugmentedMatrix<Tuple_A_Type>::ROWS,
+         AugmentedMatrix<Tuple_B_Type>::COLS>
+      result;
+
+  for (std::size_t i = 0; i < AugmentedMatrix<Tuple_A_Type>::ROWS; ++i) {
+    for (std::size_t j = 0; j < AugmentedMatrix<Tuple_B_Type>::COLS; ++j) {
+      typename AugmentedMatrix<Tuple_A_Type>::Value_Type sum = 0;
+      for (std::size_t k = 0; k < AugmentedMatrix<Tuple_A_Type>::COLS; ++k) {
+        sum += augmented_matrix_a(i, k) * augmented_matrix_b(k, j);
+      }
+      result(i, j) = sum;
+    }
+  }
+
+  return result;
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+         AugmentedMatrix<Tuple_A_Type>::ROWS,
+         AugmentedMatrix<Tuple_B_Type>::COLS>
+      result;
+
+  AugmentedMatrixMulMatrix::compute(augmented_matrix_a, augmented_matrix_b,
+                                    result);
 
   return result;
 
