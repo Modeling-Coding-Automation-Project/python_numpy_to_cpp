@@ -194,6 +194,12 @@ public:
   /* Constructor */
   AugmentedMatrix() {}
 
+  template <typename... Matrices,
+            typename std::enable_if<sizeof...(Matrices) ==
+                                        std::tuple_size<Tuple_Type>::value,
+                                    int>::type = 0>
+  explicit AugmentedMatrix(const Matrices &...inputs) : matrix(inputs...) {}
+
   /* Copy Constructor */
   AugmentedMatrix(const AugmentedMatrix<Tuple_Type> &input)
       : matrix(input.matrix) {}
