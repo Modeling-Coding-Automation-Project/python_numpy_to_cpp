@@ -152,6 +152,7 @@
     <ClInclude Include="..\base_matrix\base_matrix_variable_sparse.hpp" />
     <ClInclude Include="..\base_matrix\base_matrix_vector.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_augmented_matrix.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base_simplification.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_base_simplified_action.hpp" />

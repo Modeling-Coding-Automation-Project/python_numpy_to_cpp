@@ -1,6 +1,7 @@
 #ifndef PYTHON_NUMPY_HPP_
 #define PYTHON_NUMPY_HPP_
 
+#include "python_numpy_augmented_matrix.hpp"
 #include "python_numpy_base.hpp"
 #include "python_numpy_base_simplification.hpp"
 #include "python_numpy_base_simplified_action.hpp"
