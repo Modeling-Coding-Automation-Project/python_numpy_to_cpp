@@ -462,9 +462,13 @@ inline auto operator+(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix_a
-             .template to_matrix<AugmentedMatrix<Tuple_A_Type>>() +
-         augmented_matrix_b.template to_matrix<AugmentedMatrix<Tuple_B_Type>>();
+  using Matrix_Type =
+      Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type>::ROWS,
+             AugmentedMatrix<Tuple_A_Type>::COLS>;
+
+  return augmented_matrix_a.template to_matrix<Matrix_Type>() +
+         augmented_matrix_b.template to_matrix<Matrix_Type>();
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
@@ -606,9 +610,13 @@ inline auto operator-(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix_a
-             .template to_matrix<AugmentedMatrix<Tuple_A_Type>>() -
-         augmented_matrix_b.template to_matrix<AugmentedMatrix<Tuple_B_Type>>();
+  using Matrix_Type =
+      Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type>::ROWS,
+             AugmentedMatrix<Tuple_A_Type>::COLS>;
+
+  return augmented_matrix_a.template to_matrix<Matrix_Type>() -
+         augmented_matrix_b.template to_matrix<Matrix_Type>();
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
