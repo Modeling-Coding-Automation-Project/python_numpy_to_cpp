@@ -300,7 +300,7 @@ public:
     return dense_matrix;
   }
 
-  T_ &operator()(std::size_t index) const {
+  T_ operator()(std::size_t index) const {
     if (index >= ROWS * COLS) {
       index = ROWS * COLS - 1;
     }
@@ -315,7 +315,7 @@ public:
     return dense_matrix(row, col);
   }
 
-  T_ &operator()(std::size_t row, std::size_t col) const {
+  T_ operator()(std::size_t row, std::size_t col) const {
     if (row >= ROWS) {
       row = ROWS - 1;
     }

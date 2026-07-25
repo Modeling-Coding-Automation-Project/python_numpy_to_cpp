@@ -406,32 +406,26 @@ public:
   }
 
   /**
-   * @brief Creates a column vector from a specified column of the matrix.
+   * @brief Accesses an element at the specified row and column indices.
    *
-   * This function extracts a column from the matrix and returns it as a Vector
-   * object.
-   *
-   * @param col The index of the row to extract (0-based).
-   * @return Vector<T, N> The extracted column vector.
+   * This function provides access to the element at the specified row and
+   * column indices, allowing both read and write operations.
    */
-  T &operator()(std::size_t col, std::size_t row) {
+  T &operator()(std::size_t row, std::size_t col) {
 
-    return this->data[row][col];
+    return this->data[col][row];
   }
 
   /**
-   * @brief Accesses an element at the specified column and row indices.
+   * @brief Accesses an element at the specified row and column indices (const
+   * version).
    *
-   * This function provides access to the element at the specified column and
-   * row indices, allowing both read and write operations.
-   *
-   * @param col The index of the row (0-based).
-   * @param row The index of the column (0-based).
-   * @return T& Reference to the element at the specified position.
+   * This function provides const access to the element at the specified row and
+   * column indices, allowing read-only operations.
    */
-  const T &operator()(std::size_t col, std::size_t row) const {
+  const T &operator()(std::size_t row, std::size_t col) const {
 
-    return this->data[row][col];
+    return this->data[col][row];
   }
 
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
