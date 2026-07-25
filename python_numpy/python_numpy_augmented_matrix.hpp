@@ -41,6 +41,51 @@ template <typename... Args> struct matrix_shape_extractor<std::tuple<Args...>> {
       Args::COLS...};
 };
 
+/* Check Cols Rows sizes */
+
+template <std::size_t N>
+constexpr bool check_row_compatibility(const std::array<std::size_t, N> &rows,
+                                       std::size_t dim, std::size_t i,
+                                       std::size_t j) {
+  return (j == dim) ? true
+                    : (rows[i * dim + j] == rows[i * dim]) &&
+                          check_row_compatibility(rows, dim, i, j + 1);
+}
+
+template <std::size_t N>
+constexpr bool check_all_rows(const std::array<std::size_t, N> &rows,
+                              std::size_t dim, std::size_t i) {
+  return (i == dim) ? true
+                    : check_row_compatibility(rows, dim, i, 1) &&
+                          check_all_rows(rows, dim, i + 1);
+}
+
+template <std::size_t N>
+constexpr bool check_col_compatibility(const std::array<std::size_t, N> &cols,
+                                       std::size_t dim, std::size_t i,
+                                       std::size_t j) {
+  return (i == dim) ? true
+                    : (cols[i * dim + j] == cols[j]) &&
+                          check_col_compatibility(cols, dim, i + 1, j);
+}
+
+template <std::size_t N>
+constexpr bool check_all_cols(const std::array<std::size_t, N> &cols,
+                              std::size_t dim, std::size_t j) {
+  return (j == dim) ? true
+                    : check_col_compatibility(cols, dim, 1, j) &&
+                          check_all_cols(cols, dim, j + 1);
+}
+
+template <std::size_t N>
+constexpr bool
+is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
+                               const std::array<std::size_t, N> &cols,
+                               std::size_t dim) {
+
+  return check_all_rows(rows, dim, 0) && check_all_cols(cols, dim, 0);
+}
+
 } // namespace AugmentedMatrixAction
 
 /* Augmented Matrix */
@@ -65,6 +110,12 @@ public:
       AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
   static constexpr auto ELEMENT_COLS =
       AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
+
+  /* Check Compatibility */
+  static_assert(AugmentedMatrixAction::is_compatible_augmented_matrix(
+                    ELEMENT_ROWS, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX),
+                "The rows or columns of the nested matrices do not align "
+                "perfectly in the augmented matrix.");
 
 public:
   /* Constructor */
