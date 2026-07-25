@@ -1,6 +1,7 @@
 #ifndef PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 #define PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 
+#include "python_numpy_base.hpp"
 #include "python_numpy_base_substitution.hpp"
 
 #include <array>
@@ -230,6 +231,20 @@ public:
 
 public:
   /* Function */
+
+  constexpr std::size_t cols() const { return COLS; }
+
+  constexpr std::size_t rows() const { return ROWS; }
+
+  constexpr std::size_t size() const { return ROWS * COLS; }
+
+  std::tuple<std::size_t, std::size_t> shape() const {
+    return std::make_tuple(static_cast<std::size_t>(ROWS),
+                           static_cast<std::size_t>(COLS));
+  }
+
+  std::size_t ndim() const { return 2; }
+
   template <std::size_t ROW_IN, std::size_t COL_IN> inline T get() const {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
@@ -278,6 +293,36 @@ public:
     substitute_matrix(dense_matrix, *this);
 
     return dense_matrix;
+  }
+
+  T &operator()(std::size_t index) {
+    if (index >= ROWS * COLS) {
+      index = ROWS * COLS - 1;
+    }
+
+    std::size_t row = index / COLS;
+    std::size_t col = index % COLS;
+
+    Matrix<DefDense, T, ROWS, COLS> dense_matrix;
+
+    substitute_matrix(dense_matrix, *this);
+
+    return dense_matrix(row, col);
+  }
+
+  T &operator()(std::size_t row, std::size_t col) {
+    if (row >= ROWS) {
+      row = ROWS - 1;
+    }
+    if (col >= COLS) {
+      col = COLS - 1;
+    }
+
+    Matrix<DefDense, T, ROWS, COLS> dense_matrix;
+
+    substitute_matrix(dense_matrix, *this);
+
+    return dense_matrix(row, col);
   }
 
 public:
