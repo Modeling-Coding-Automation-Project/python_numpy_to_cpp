@@ -4013,14 +4013,18 @@ void CheckPythonNumpy<T>::check_python_numpy_augmented(void) {
     Matrix<DefDense, T, 1, 2> A21({ {7, 8} });
     Matrix<DefDense, T, 1, 1> A22({ {9} });
 
-    using AugmentedMatrixType = AugmentedMatrix<std::tuple<
+    using A_Tuple_Type = std::tuple<
         Matrix<DefDense, T, 2, 2>,
         Matrix<DefDense, T, 2, 1>,
         Matrix<DefDense, T, 1, 2>,
         Matrix<DefDense, T, 1, 1>
-    >>;
+    >;
 
-    AugmentedMatrixType augmented_matrix(A11, A12, A21, A22);
+    using AugmentedMatrixType = AugmentedMatrix<A_Tuple_Type>;
+
+    auto augmented_matrix_m = make_AugmentedMatrix(A11, A12, A21, A22);
+
+    AugmentedMatrixType augmented_matrix = augmented_matrix_m;
 
     Matrix<DefDense, T, 3, 3> augmented_matrix_answer({
         {1, 2, 3},

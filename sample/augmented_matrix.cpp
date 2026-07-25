@@ -39,12 +39,14 @@ int main(void) {
 
   using A_Type = SparseMatrix_Type<double, SparseAvailable_A>;
 
+  auto A = make_SparseMatrixZeros<double, SparseAvailable_A>();
+
   using AA_Tuple_Type =
       AugmentedMatrix_Tuple_Type<A_Type, A_Type, A_Type, A_Type>;
 
   auto AA = make_AugmentedMatrixZeros<AA_Tuple_Type>();
 
-  auto AB = make_AugmentedMatrixZeros<AA_Tuple_Type>();
+  auto AB = make_AugmentedMatrix(A, A, A, A);
 
   auto C = AA * AB;
 

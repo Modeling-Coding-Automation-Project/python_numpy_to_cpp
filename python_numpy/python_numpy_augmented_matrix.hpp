@@ -1380,8 +1380,8 @@ using AugmentedMatrix_Type = AugmentedMatrix<Matrices...>;
  */
 template <typename... Matrices>
 inline auto make_AugmentedMatrix(const Matrices &...inputs)
-    -> AugmentedMatrix<Matrices...> {
-  return AugmentedMatrix<Matrices...>(inputs...);
+    -> AugmentedMatrix<std::tuple<Matrices...>> {
+  return AugmentedMatrix<std::tuple<Matrices...>>(inputs...);
 }
 
 /**
