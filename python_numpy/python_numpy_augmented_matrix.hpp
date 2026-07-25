@@ -561,6 +561,67 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/* AugmentedMatrix Unary Minus */
+
+namespace AugmentedMatrixUnaryMinus {
+
+// when J_idx < N
+template <typename Matrix_A_Type, typename Matrix_Result_Type, std::size_t I,
+          std::size_t J_idx>
+struct Row {
+  static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
+    result.template set<I, J_idx>(-A.template get<I, J_idx>());
+    Row<Matrix_A_Type, Matrix_Result_Type, I, J_idx - 1>::compute(A, result);
+  }
+};
+
+// column recursion termination
+template <typename Matrix_A_Type, typename Matrix_Result_Type, std::size_t I>
+struct Row<Matrix_A_Type, Matrix_Result_Type, I, 0> {
+  static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
+    result.template set<I, 0>(-A.template get<I, 0>());
+  }
+};
+
+// when I_idx < M
+template <typename Matrix_A_Type, typename Matrix_Result_Type,
+          std::size_t I_idx>
+struct Column {
+  static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
+    Row<Matrix_A_Type, Matrix_Result_Type, I_idx,
+        Matrix_Result_Type::COLS - 1>::compute(A, result);
+    Column<Matrix_A_Type, Matrix_Result_Type, I_idx - 1>::compute(A, result);
+  }
+};
+
+// row recursion termination
+template <typename Matrix_A_Type, typename Matrix_Result_Type>
+struct Column<Matrix_A_Type, Matrix_Result_Type, 0> {
+  static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
+    Row<Matrix_A_Type, Matrix_Result_Type, 0,
+        Matrix_Result_Type::COLS - 1>::compute(A, result);
+  }
+};
+
+template <typename Matrix_A_Type, typename Matrix_Result_Type>
+inline void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
+  Column<Matrix_A_Type, Matrix_Result_Type,
+         Matrix_Result_Type::ROWS - 1>::compute(A, result);
+}
+
+} // namespace AugmentedMatrixUnaryMinus
+
+template <typename Tuple_Type>
+inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type> {
+
+  AugmentedMatrix<Tuple_Type> result;
+
+  AugmentedMatrixUnaryMinus::compute(augmented_matrix, result);
+
+  return result;
+}
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_

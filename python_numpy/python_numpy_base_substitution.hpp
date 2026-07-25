@@ -343,15 +343,15 @@ inline void substitute_matrix(To_Type &to_matrix,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  PartMatrixOperation::substitute_each<0, 0>(to_matrix, from_matrix);
-
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
   for (std::size_t i = 0; i < From_Type::ROWS; ++i) {
     for (std::size_t j = 0; j < From_Type::COLS; ++j) {
       to_matrix(i, j) = from_matrix(i, j);
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  PartMatrixOperation::substitute_each<0, 0>(to_matrix, from_matrix);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
