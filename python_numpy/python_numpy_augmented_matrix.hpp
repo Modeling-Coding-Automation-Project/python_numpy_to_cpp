@@ -1,8 +1,7 @@
 #ifndef PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 #define PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 
-#include "python_numpy_base.hpp"
-
+#include <array>
 #include <tuple>
 #include <type_traits>
 
@@ -33,6 +32,15 @@ template <typename... Args>
 struct tuple_square_root<std::tuple<Args...>>
     : std::integral_constant<std::size_t, get_square_root(sizeof...(Args))> {};
 
+template <typename Tuple> struct matrix_shape_extractor;
+
+template <typename... Args> struct matrix_shape_extractor<std::tuple<Args...>> {
+  static constexpr std::array<std::size_t, sizeof...(Args)> ROWS = {
+      Args::ROWS...};
+  static constexpr std::array<std::size_t, sizeof...(Args)> COLS = {
+      Args::COLS...};
+};
+
 } // namespace AugmentedMatrixAction
 
 /* Augmented Matrix */
@@ -45,11 +53,16 @@ public:
                 "Tuple_Type must be a std::tuple.");
 
   /* Type */
-  static constexpr std::size_t ColRow_AugmentedMatrix =
+  static constexpr std::size_t COLROW_AUGMENTED_MATRIX =
       AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value;
 
-  static_assert(ColRow_AugmentedMatrix != 0,
+  static_assert(COLROW_AUGMENTED_MATRIX != 0,
                 "Tuple_Type must have a perfect square number of elements.");
+
+  static constexpr auto ELEMENT_ROWS =
+      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
+  static constexpr auto ELEMENT_COLS =
+      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
 
 public:
   /* Variable */
