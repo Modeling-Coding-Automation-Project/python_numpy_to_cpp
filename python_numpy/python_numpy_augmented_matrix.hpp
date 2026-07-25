@@ -10,33 +10,66 @@
 
 namespace PythonNumpy {
 
-/* Check std::tuple */
 namespace AugmentedMatrixAction {
 
+/* Check std::tuple */
+
+/**
+ * @brief Checks if a type is a std::tuple.
+ */
 template <typename T> struct is_tuple : std::false_type {};
 
+/**
+ * @brief Specialization for std::tuple types.
+ */
 template <typename... Args>
 struct is_tuple<std::tuple<Args...>> : std::true_type {};
 
 /* Check if a tuple has a perfect square number of elements */
 
+/**
+ * @brief Computes the integer square root of a number at compile time.
+ * @param n The number to compute the square root of.
+ * @return The integer square root of n, or 0 if n is not a perfect square.
+ */
 constexpr std::size_t get_square_root_impl(std::size_t n, std::size_t i) {
   return (i * i == n) ? i : (i * i > n) ? 0 : get_square_root_impl(n, i + 1);
 }
 
+/**
+ * @brief Computes the integer square root of a number at compile time.
+ * @param n The number to compute the square root of.
+ * @return The integer square root of n, or 0 if n is not a perfect square.
+ */
 constexpr std::size_t get_square_root(std::size_t n) {
   return (n == 0) ? 0 : get_square_root_impl(n, 1);
 }
 
+/**
+ * @brief A helper struct to compute the square root of the size of a tuple.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct tuple_square_root : std::integral_constant<std::size_t, 0> {};
 
+/**
+ * @brief Specialization for std::tuple types.
+ * @tparam Args The types contained in the tuple.
+ */
 template <typename... Args>
 struct tuple_square_root<std::tuple<Args...>>
     : std::integral_constant<std::size_t, get_square_root(sizeof...(Args))> {};
 
+/**
+ * @brief A helper struct to extract the rows and columns of matrices contained
+ * in a tuple.
+ */
 template <typename Tuple> struct matrix_shape_extractor;
 
+/**
+ * @brief Specialization for std::tuple types.
+ * @tparam Args The types contained in the tuple.
+ */
 template <typename... Args> struct matrix_shape_extractor<std::tuple<Args...>> {
   static constexpr std::array<std::size_t, sizeof...(Args)> ROWS = {
       Args::ROWS...};
@@ -46,6 +79,16 @@ template <typename... Args> struct matrix_shape_extractor<std::tuple<Args...>> {
 
 /* Check Cols Rows sizes */
 
+/**
+ * @brief Checks if the rows of a matrix are compatible with the augmented
+ * matrix.
+ * @tparam N The size of the rows array.
+ * @param rows The array of rows.
+ * @param dim The dimension of the augmented matrix.
+ * @param i The current row index.
+ * @param j The current column index.
+ * @return True if the rows are compatible, false otherwise.
+ */
 template <std::size_t N>
 constexpr bool check_row_compatibility(const std::array<std::size_t, N> &rows,
                                        std::size_t dim, std::size_t i,
@@ -55,6 +98,15 @@ constexpr bool check_row_compatibility(const std::array<std::size_t, N> &rows,
                           check_row_compatibility(rows, dim, i, j + 1);
 }
 
+/**
+ * @brief Checks if all rows of a matrix are compatible with the augmented
+ * matrix.
+ * @tparam N The size of the rows array.
+ * @param rows The array of rows.
+ * @param dim The dimension of the augmented matrix.
+ * @param i The current row index.
+ * @return True if all rows are compatible, false otherwise.
+ */
 template <std::size_t N>
 constexpr bool check_all_rows(const std::array<std::size_t, N> &rows,
                               std::size_t dim, std::size_t i) {
@@ -63,6 +115,16 @@ constexpr bool check_all_rows(const std::array<std::size_t, N> &rows,
                           check_all_rows(rows, dim, i + 1);
 }
 
+/**
+ * @brief Checks if the columns of a matrix are compatible with the augmented
+ * matrix.
+ * @tparam N The size of the columns array.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @param i The current row index.
+ * @param j The current column index.
+ * @return True if the columns are compatible, false otherwise.
+ */
 template <std::size_t N>
 constexpr bool check_col_compatibility(const std::array<std::size_t, N> &cols,
                                        std::size_t dim, std::size_t i,
@@ -72,6 +134,15 @@ constexpr bool check_col_compatibility(const std::array<std::size_t, N> &cols,
                           check_col_compatibility(cols, dim, i + 1, j);
 }
 
+/**
+ * @brief Checks if all columns of a matrix are compatible with the augmented
+ * matrix.
+ * @tparam N The size of the columns array.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @param j The current column index.
+ * @return True if all columns are compatible, false otherwise.
+ */
 template <std::size_t N>
 constexpr bool check_all_cols(const std::array<std::size_t, N> &cols,
                               std::size_t dim, std::size_t j) {
@@ -80,6 +151,15 @@ constexpr bool check_all_cols(const std::array<std::size_t, N> &cols,
                           check_all_cols(cols, dim, j + 1);
 }
 
+/**
+ * @brief Checks if the rows and columns of a matrix are compatible with the
+ * augmented matrix.
+ * @tparam N The size of the rows and columns arrays.
+ * @param rows The array of rows.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @return True if the rows and columns are compatible, false otherwise.
+ */
 template <std::size_t N>
 constexpr bool
 is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
@@ -91,6 +171,14 @@ is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
 
 /* Calculate total rows and cols for augmented matrix */
 
+/**
+ * @brief Calculates the total number of rows in the augmented matrix.
+ * @tparam Size The size of the rows array.
+ * @param rows The array of rows.
+ * @param dim The dimension of the augmented matrix.
+ * @param i The current row index.
+ * @return The total number of rows in the augmented matrix.
+ */
 template <std::size_t Size>
 constexpr std::size_t
 calculate_total_rows(const std::array<std::size_t, Size> &rows, std::size_t dim,
@@ -99,6 +187,14 @@ calculate_total_rows(const std::array<std::size_t, Size> &rows, std::size_t dim,
                     : rows[i * dim] + calculate_total_rows(rows, dim, i + 1);
 }
 
+/**
+ * @brief Calculates the total number of columns in the augmented matrix.
+ * @tparam Size The size of the columns array.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @param j The current column index.
+ * @return The total number of columns in the augmented matrix.
+ */
 template <std::size_t Size>
 constexpr std::size_t
 calculate_total_cols(const std::array<std::size_t, Size> &cols, std::size_t dim,
@@ -108,6 +204,16 @@ calculate_total_cols(const std::array<std::size_t, Size> &cols, std::size_t dim,
 
 /* get / set */
 
+/**
+ * @brief Gets the block row index for a given global row index.
+ * @tparam N The size of the rows array.
+ * @param global_row The global row index.
+ * @param rows The array of rows.
+ * @param dim The dimension of the augmented matrix.
+ * @param current The current block row index (default is 0).
+ * @param accum The accumulated number of rows (default is 0).
+ * @return The block row index corresponding to the global row index.
+ */
 template <std::size_t N>
 constexpr std::size_t
 get_block_row_idx(std::size_t global_row,
@@ -120,6 +226,16 @@ get_block_row_idx(std::size_t global_row,
                                  accum + rows[current * dim]);
 }
 
+/**
+ * @brief Gets the local row index for a given global row index.
+ * @tparam N The size of the rows array.
+ * @param global_row The global row index.
+ * @param rows The array of rows.
+ * @param dim The dimension of the augmented matrix.
+ * @param current The current block row index (default is 0).
+ * @param accum The accumulated number of rows (default is 0).
+ * @return The local row index corresponding to the global row index.
+ */
 template <std::size_t N>
 constexpr std::size_t
 get_local_row_idx(std::size_t global_row,
@@ -132,6 +248,16 @@ get_local_row_idx(std::size_t global_row,
                                  accum + rows[current * dim]);
 }
 
+/**
+ * @brief Gets the block column index for a given global column index.
+ * @tparam N The size of the columns array.
+ * @param global_col The global column index.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @param current The current block column index (default is 0).
+ * @param accum The accumulated number of columns (default is 0).
+ * @return The block column index corresponding to the global column index.
+ */
 template <std::size_t N>
 constexpr std::size_t
 get_block_col_idx(std::size_t global_col,
@@ -144,6 +270,16 @@ get_block_col_idx(std::size_t global_col,
                                  accum + cols[current]);
 }
 
+/**
+ * @brief Gets the local column index for a given global column index.
+ * @tparam N The size of the columns array.
+ * @param global_col The global column index.
+ * @param cols The array of columns.
+ * @param dim The dimension of the augmented matrix.
+ * @param current The current block column index (default is 0).
+ * @param accum The accumulated number of columns (default is 0).
+ * @return The local column index corresponding to the global column index.
+ */
 template <std::size_t N>
 constexpr std::size_t
 get_local_col_idx(std::size_t global_col,
@@ -160,6 +296,10 @@ get_local_col_idx(std::size_t global_col,
 
 /* Augmented Matrix */
 
+/**
+ * @brief A class representing an augmented matrix composed of smaller matrices.
+ * @tparam Tuple_Type A std::tuple containing the smaller matrices.
+ */
 template <typename Tuple_Type> class AugmentedMatrix {
 public:
   /* Check Compatibility */
@@ -237,19 +377,45 @@ public:
 public:
   /* Function */
 
+  /**
+   * @brief Gets the number of columns of the augmented matrix.
+   * @return The number of columns.
+   */
   constexpr std::size_t cols() const { return COLS; }
 
+  /**
+   * @brief Gets the number of rows of the augmented matrix.
+   * @return The number of rows.
+   */
   constexpr std::size_t rows() const { return ROWS; }
 
+  /**
+   * @brief Gets the total size (number of elements) of the augmented matrix.
+   * @return The total size.
+   */
   constexpr std::size_t size() const { return ROWS * COLS; }
 
+  /**
+   * @brief Gets the shape of the augmented matrix as a tuple (rows, cols).
+   * @return A tuple containing the number of rows and columns.
+   */
   std::tuple<std::size_t, std::size_t> shape() const {
     return std::make_tuple(static_cast<std::size_t>(ROWS),
                            static_cast<std::size_t>(COLS));
   }
 
+  /**
+   * @brief Gets the number of dimensions of the augmented matrix.
+   * @return The number of dimensions (always 2 for a matrix).
+   */
   std::size_t ndim() const { return 2; }
 
+  /**
+   * @brief Gets the value at the specified row and column indices.
+   * @tparam ROW_IN The row index (compile-time constant).
+   * @tparam COL_IN The column index (compile-time constant).
+   * @return The value at the specified indices.
+   */
   template <std::size_t ROW_IN, std::size_t COL_IN> inline T_ get() const {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
@@ -271,6 +437,12 @@ public:
         .template get<local_row, local_col>();
   }
 
+  /**
+   * @brief Sets the value at the specified row and column indices.
+   * @tparam ROW_IN The row index (compile-time constant).
+   * @tparam COL_IN The column index (compile-time constant).
+   * @param value The value to set at the specified indices.
+   */
   template <std::size_t ROW_IN, std::size_t COL_IN>
   inline void set(const T_ &value) {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
@@ -300,6 +472,11 @@ public:
     return dense_matrix;
   }
 
+  /**
+   * @brief Gets the value at the specified linear index.
+   * @param index The linear index.
+   * @return The value at the specified index.
+   */
   T_ operator()(std::size_t index) const {
     if (index >= ROWS * COLS) {
       index = ROWS * COLS - 1;
@@ -315,6 +492,12 @@ public:
     return dense_matrix(row, col);
   }
 
+  /**
+   * @brief Gets the value at the specified row and column indices.
+   * @param row The row index.
+   * @param col The column index.
+   * @return The value at the specified indices.
+   */
   T_ operator()(std::size_t row, std::size_t col) const {
     if (row >= ROWS) {
       row = ROWS - 1;
@@ -339,10 +522,16 @@ public:
 
 namespace AugmentedMatrixAddMatrix {
 
-// when J_idx < N
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I, std::size_t J_idx>
 struct Row {
+  /**
+   * @brief Computes the addition of two matrices for a specific row and column
+   * index.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the sum will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, J_idx>(A.template get<I, J_idx>() +
@@ -352,20 +541,32 @@ struct Row {
   }
 };
 
-// column recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I>
 struct Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I, 0> {
+  /**
+   * @brief Computes the addition of two matrices for a specific row and the
+   * first column index (J_idx = 0).
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the sum will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, 0>(A.template get<I, 0>() + B.template get<I, 0>());
   }
 };
 
-// when I_idx < M
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I_idx>
 struct Column {
+  /**
+   * @brief Computes the addition of two matrices for a specific column index
+   * (I_idx) and all rows.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the sum will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I_idx,
@@ -375,10 +576,16 @@ struct Column {
   }
 };
 
-// row recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
+  /**
+   * @brief Computes the addition of two matrices for the first column index
+   * (I_idx = 0) and all rows.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the sum will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0,
@@ -386,6 +593,16 @@ struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
   }
 };
 
+/**
+ * @brief Computes the addition of two matrices and stores the result in a
+ * third matrix.
+ * @tparam Matrix_A_Type The type of the first matrix.
+ * @tparam Matrix_B_Type The type of the second matrix.
+ * @tparam Matrix_Result_Type The type of the result matrix.
+ * @param A The first matrix.
+ * @param B The second matrix.
+ * @param result The result matrix where the sum will be stored.
+ */
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
@@ -396,6 +613,14 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 
 } // namespace AugmentedMatrixAddMatrix
 
+/**
+ * @brief Overloaded operator+ to add a Matrix and an AugmentedMatrix.
+ * @tparam Matrix_Type The type of the Matrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @param matrix The Matrix to be added.
+ * @param augmented_matrix The AugmentedMatrix to be added.
+ * @return A new Matrix containing the result of the addition.
+ */
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator+(const Matrix_Type &matrix,
                       const AugmentedMatrix<Tuple_Type> &augmented_matrix)
@@ -422,6 +647,16 @@ inline auto operator+(const Matrix_Type &matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator+ to add two AugmentedMatrices.
+ * @tparam Tuple_A_Type The type of the first AugmentedMatrix (tuple of
+ * matrices).
+ * @tparam Tuple_B_Type The type of the second AugmentedMatrix (tuple of
+ * matrices).
+ * @param augmented_matrix_a The first AugmentedMatrix to be added.
+ * @param augmented_matrix_b The second AugmentedMatrix to be added.
+ * @return A new Matrix containing the result of the addition.
+ */
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
                       const Matrix_Type &matrix)
@@ -448,6 +683,16 @@ inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator+ to add two AugmentedMatrices.
+ * @tparam Tuple_A_Type The type of the first AugmentedMatrix (tuple of
+ * matrices).
+ * @tparam Tuple_B_Type The type of the second AugmentedMatrix (tuple of
+ * matrices).
+ * @param augmented_matrix_a The first AugmentedMatrix to be added.
+ * @param augmented_matrix_b The second AugmentedMatrix to be added.
+ * @return A new Matrix containing the result of the addition.
+ */
 template <typename Tuple_A_Type, typename Tuple_B_Type>
 inline auto operator+(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
                       const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
@@ -487,10 +732,16 @@ inline auto operator+(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
 
 namespace AugmentedMatrixSubMatrix {
 
-// when J_idx < N
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I, std::size_t J_idx>
 struct Row {
+  /**
+   * @brief Computes the subtraction of two matrices for a specific row and
+   * column index.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the difference will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, J_idx>(A.template get<I, J_idx>() -
@@ -500,20 +751,32 @@ struct Row {
   }
 };
 
-// column recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I>
 struct Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I, 0> {
+  /**
+   * @brief Computes the subtraction of two matrices for a specific row and the
+   * first column index (J_idx = 0).
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the difference will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, 0>(A.template get<I, 0>() - B.template get<I, 0>());
   }
 };
 
-// when I_idx < M
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I_idx>
 struct Column {
+  /**
+   * @brief Computes the subtraction of two matrices for a specific column index
+   * (I_idx) and all rows.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the difference will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I_idx,
@@ -523,10 +786,16 @@ struct Column {
   }
 };
 
-// row recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
+  /**
+   * @brief Computes the subtraction of two matrices for the first column index
+   * (I_idx = 0) and all rows.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the difference will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0,
@@ -534,6 +803,16 @@ struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
   }
 };
 
+/**
+ * @brief Computes the subtraction of two matrices and stores the result in a
+ * third matrix.
+ * @tparam Matrix_A_Type The type of the first matrix.
+ * @tparam Matrix_B_Type The type of the second matrix.
+ * @tparam Matrix_Result_Type The type of the result matrix.
+ * @param A The first matrix.
+ * @param B The second matrix.
+ * @param result The result matrix where the difference will be stored.
+ */
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
@@ -544,6 +823,14 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 
 } // namespace AugmentedMatrixSubMatrix
 
+/**
+ * @brief Overloaded operator- to subtract an AugmentedMatrix from a Matrix.
+ * @tparam Matrix_Type The type of the Matrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @param matrix The Matrix to be subtracted from.
+ * @param augmented_matrix The AugmentedMatrix to subtract.
+ * @return A new Matrix containing the result of the subtraction.
+ */
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator-(const Matrix_Type &matrix,
                       const AugmentedMatrix<Tuple_Type> &augmented_matrix)
@@ -570,6 +857,14 @@ inline auto operator-(const Matrix_Type &matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator- to subtract a Matrix from an AugmentedMatrix.
+ * @tparam Matrix_Type The type of the Matrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @param augmented_matrix The AugmentedMatrix to be subtracted from.
+ * @param matrix The Matrix to subtract.
+ * @return A new Matrix containing the result of the subtraction.
+ */
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
                       const Matrix_Type &matrix)
@@ -596,6 +891,16 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator- to subtract two AugmentedMatrices.
+ * @tparam Tuple_A_Type The type of the first AugmentedMatrix (tuple of
+ * matrices).
+ * @tparam Tuple_B_Type The type of the second AugmentedMatrix (tuple of
+ * matrices).
+ * @param augmented_matrix_a The first AugmentedMatrix to be subtracted.
+ * @param augmented_matrix_b The second AugmentedMatrix to subtract.
+ * @return A new Matrix containing the result of the subtraction.
+ */
 template <typename Tuple_A_Type, typename Tuple_B_Type>
 inline auto operator-(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
                       const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
@@ -635,28 +940,43 @@ inline auto operator-(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
 
 namespace AugmentedMatrixUnaryMinus {
 
-// when J_idx < N
 template <typename Matrix_A_Type, typename Matrix_Result_Type, std::size_t I,
           std::size_t J_idx>
 struct Row {
+  /**
+   * @brief Computes the unary minus of a matrix for a specific row and column
+   * index.
+   * @param A The input matrix.
+   * @param result The result matrix where the negated values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
     result.template set<I, J_idx>(-A.template get<I, J_idx>());
     Row<Matrix_A_Type, Matrix_Result_Type, I, J_idx - 1>::compute(A, result);
   }
 };
 
-// column recursion termination
 template <typename Matrix_A_Type, typename Matrix_Result_Type, std::size_t I>
 struct Row<Matrix_A_Type, Matrix_Result_Type, I, 0> {
+  /**
+   * @brief Computes the unary minus of a matrix for a specific row and the
+   * first column index (J_idx = 0).
+   * @param A The input matrix.
+   * @param result The result matrix where the negated values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
     result.template set<I, 0>(-A.template get<I, 0>());
   }
 };
 
-// when I_idx < M
 template <typename Matrix_A_Type, typename Matrix_Result_Type,
           std::size_t I_idx>
 struct Column {
+  /**
+   * @brief Computes the unary minus of a matrix for a specific column index
+   * (I_idx) and all rows.
+   * @param A The input matrix.
+   * @param result The result matrix where the negated values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_Result_Type, I_idx,
         Matrix_Result_Type::COLS - 1>::compute(A, result);
@@ -664,15 +984,28 @@ struct Column {
   }
 };
 
-// row recursion termination
 template <typename Matrix_A_Type, typename Matrix_Result_Type>
 struct Column<Matrix_A_Type, Matrix_Result_Type, 0> {
+  /**
+   * @brief Computes the unary minus of a matrix for the first column index
+   * (I_idx = 0) and all rows.
+   * @param A The input matrix.
+   * @param result The result matrix where the negated values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_Result_Type, 0,
         Matrix_Result_Type::COLS - 1>::compute(A, result);
   }
 };
 
+/**
+ * @brief Computes the unary minus of a matrix and stores the result in a
+ * second matrix.
+ * @tparam Matrix_A_Type The type of the input matrix.
+ * @tparam Matrix_Result_Type The type of the result matrix.
+ * @param A The input matrix.
+ * @param result The result matrix where the negated values will be stored.
+ */
 template <typename Matrix_A_Type, typename Matrix_Result_Type>
 inline void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
   Column<Matrix_A_Type, Matrix_Result_Type,
@@ -681,6 +1014,12 @@ inline void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
 
 } // namespace AugmentedMatrixUnaryMinus
 
+/**
+ * @brief Overloaded operator- to compute the unary minus of an AugmentedMatrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @param augmented_matrix The AugmentedMatrix to negate.
+ * @return A new AugmentedMatrix containing the negated values.
+ */
 template <typename Tuple_Type>
 inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix)
     -> AugmentedMatrix<Tuple_Type> {
@@ -696,10 +1035,16 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix)
 
 namespace AugmentedMatrixMulMatrix {
 
-// when K_idx < K (dot product recursion)
 template <typename Matrix_A_Type, typename Matrix_B_Type, typename Value_Type,
           std::size_t I, std::size_t J, std::size_t K_idx>
 struct DotProduct {
+  /**
+   * @brief Computes the dot product of two matrices for a specific row and
+   * column index.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @return The computed dot product value.
+   */
   static Value_Type compute(const Matrix_A_Type &A, const Matrix_B_Type &B) {
     return A.template get<I, K_idx>() * B.template get<K_idx, J>() +
            DotProduct<Matrix_A_Type, Matrix_B_Type, Value_Type, I, J,
@@ -707,19 +1052,31 @@ struct DotProduct {
   }
 };
 
-// dot product recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type, typename Value_Type,
           std::size_t I, std::size_t J>
 struct DotProduct<Matrix_A_Type, Matrix_B_Type, Value_Type, I, J, 0> {
+  /**
+   * @brief Computes the dot product of two matrices for a specific row and
+   * column index when K_idx = 0 (base case).
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @return The computed dot product value.
+   */
   static Value_Type compute(const Matrix_A_Type &A, const Matrix_B_Type &B) {
     return A.template get<I, 0>() * B.template get<0, J>();
   }
 };
 
-// when J_idx < N (column recursion)
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I, std::size_t J_idx>
 struct Row {
+  /**
+   * @brief Computes the dot product of two matrices for a specific row and
+   * column index and stores the result in a third matrix.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the computed values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, J_idx>(
@@ -731,10 +1088,16 @@ struct Row {
   }
 };
 
-// column recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I>
 struct Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I, 0> {
+  /**
+   * @brief Computes the dot product of two matrices for a specific row and the
+   * first column index (J_idx = 0) and stores the result in a third matrix.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the computed values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     result.template set<I, 0>(
@@ -744,10 +1107,16 @@ struct Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I, 0> {
   }
 };
 
-// when I_idx < M (row recursion)
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type, std::size_t I_idx>
 struct Column {
+  /**
+   * @brief Computes the dot product of two matrices for a specific column index
+   * (I_idx) and all rows, storing the results in a third matrix.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the computed values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, I_idx,
@@ -757,10 +1126,16 @@ struct Column {
   }
 };
 
-// row recursion termination
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
+  /**
+   * @brief Computes the dot product of two matrices for the first column index
+   * (I_idx = 0) and all rows, storing the results in a third matrix.
+   * @param A The first matrix.
+   * @param B The second matrix.
+   * @param result The result matrix where the computed values will be stored.
+   */
   static void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
                       Matrix_Result_Type &result) {
     Row<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0,
@@ -768,6 +1143,16 @@ struct Column<Matrix_A_Type, Matrix_B_Type, Matrix_Result_Type, 0> {
   }
 };
 
+/**
+ * @brief Computes the dot product of two matrices and stores the result in a
+ * third matrix.
+ * @tparam Matrix_A_Type The type of the first matrix.
+ * @tparam Matrix_B_Type The type of the second matrix.
+ * @tparam Matrix_Result_Type The type of the result matrix.
+ * @param A The first matrix.
+ * @param B The second matrix.
+ * @param result The result matrix where the computed values will be stored.
+ */
 template <typename Matrix_A_Type, typename Matrix_B_Type,
           typename Matrix_Result_Type>
 inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
@@ -778,6 +1163,14 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 
 } // namespace AugmentedMatrixMulMatrix
 
+/**
+ * @brief Overloaded operator* to multiply an AugmentedMatrix with a Matrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @tparam Matrix_Type The type of the Matrix.
+ * @param augmented_matrix The AugmentedMatrix to be multiplied.
+ * @param matrix The Matrix to multiply with.
+ * @return A new Matrix containing the result of the multiplication.
+ */
 template <typename Tuple_Type, typename Matrix_Type>
 inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
                       const Matrix_Type &matrix)
@@ -827,6 +1220,14 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator* to multiply a Matrix with an AugmentedMatrix.
+ * @tparam Matrix_Type The type of the Matrix.
+ * @tparam Tuple_Type The type of the AugmentedMatrix (tuple of matrices).
+ * @param matrix The Matrix to be multiplied.
+ * @param augmented_matrix The AugmentedMatrix to multiply with.
+ * @return A new Matrix containing the result of the multiplication.
+ */
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator*(const Matrix_Type &matrix,
                       const AugmentedMatrix<Tuple_Type> &augmented_matrix)
@@ -876,6 +1277,16 @@ inline auto operator*(const Matrix_Type &matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Overloaded operator* to multiply two AugmentedMatrices.
+ * @tparam Tuple_A_Type The type of the first AugmentedMatrix (tuple of
+ * matrices).
+ * @tparam Tuple_B_Type The type of the second AugmentedMatrix (tuple of
+ * matrices).
+ * @param augmented_matrix_a The first AugmentedMatrix to be multiplied.
+ * @param augmented_matrix_b The second AugmentedMatrix to multiply with.
+ * @return A new Matrix containing the result of the multiplication.
+ */
 template <typename Tuple_A_Type, typename Tuple_B_Type>
 inline auto operator*(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
                       const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
