@@ -1,6 +1,8 @@
 #ifndef PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 #define PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 
+#include "python_numpy_base_substitution.hpp"
+
 #include <array>
 #include <tuple>
 #include <type_traits>
@@ -184,11 +186,13 @@ public:
                 "perfectly in the augmented matrix.");
 
   /* Type */
-  static constexpr std::size_t M = AugmentedMatrixAction::calculate_total_rows(
-      ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+  static constexpr std::size_t ROWS =
+      AugmentedMatrixAction::calculate_total_rows(ELEMENT_ROWS,
+                                                  COLROW_AUGMENTED_MATRIX);
 
-  static constexpr std::size_t N = AugmentedMatrixAction::calculate_total_cols(
-      ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+  static constexpr std::size_t COLS =
+      AugmentedMatrixAction::calculate_total_cols(ELEMENT_COLS,
+                                                  COLROW_AUGMENTED_MATRIX);
 
 public:
   /* Constructor */
@@ -226,45 +230,54 @@ public:
 
 public:
   /* Function */
-  template <std::size_t ROW, std::size_t COL> inline T get() const {
-    static_assert(ROW < M && COL < N,
+  template <std::size_t ROW_IN, std::size_t COL_IN> inline T get() const {
+    static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
-        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
     constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
-        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
 
     constexpr std::size_t tuple_idx =
         block_row * COLROW_AUGMENTED_MATRIX + block_col;
 
     constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
-        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
     constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
-        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
 
     return std::get<tuple_idx>(this->matrix)
         .template get<local_row, local_col>();
   }
 
-  template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
-    static_assert(ROW < M && COL < N,
+  template <std::size_t ROW_IN, std::size_t COL_IN>
+  inline void set(const T &value) {
+    static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
-        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
     constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
-        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
 
     constexpr std::size_t tuple_idx =
         block_row * COLROW_AUGMENTED_MATRIX + block_col;
 
     constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
-        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
     constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
-        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
 
     std::get<tuple_idx>(this->matrix).template set<local_row, local_col>(value);
+  }
+
+  template <typename Matrix_Type> inline auto to_matrix() const -> Matrix_Type {
+    Matrix_Type dense_matrix;
+
+    substitute_matrix(dense_matrix, *this);
+
+    return dense_matrix;
   }
 
 public:
