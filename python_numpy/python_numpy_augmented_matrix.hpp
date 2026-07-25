@@ -216,6 +216,24 @@ public:
         .template get<local_row, local_col>();
   }
 
+  template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
+
+    constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+    constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
+        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+
+    constexpr std::size_t tuple_idx =
+        block_row * COLROW_AUGMENTED_MATRIX + block_col;
+
+    constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+    constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
+        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+
+    std::get<tuple_idx>(this->matrix).template set<local_row, local_col>(value);
+  }
+
 public:
   /* Variable */
   Tuple_Type matrix;
