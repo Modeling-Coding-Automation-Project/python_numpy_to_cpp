@@ -399,7 +399,8 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator+(const Matrix_Type &matrix,
                       const AugmentedMatrix<Tuple_Type> &augmented_matrix)
-    -> Matrix_Type {
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+              Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
@@ -412,16 +413,20 @@ inline auto operator+(const Matrix_Type &matrix,
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix_Type result;
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         Matrix_Type::COLS>
+      result;
   AugmentedMatrixAddMatrix::compute(matrix, augmented_matrix, result);
   return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
-template <typename Tuple_Type, typename Matrix_Type>
+template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
-                      const Matrix_Type &matrix) -> Matrix_Type {
+                      const Matrix_Type &matrix)
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+              Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
@@ -430,11 +435,13 @@ inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return matrix + augmented_matrix.template to_matrix<Matrix_Type>();
+  return augmented_matrix.template to_matrix<Matrix_Type>() + matrix;
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix_Type result;
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         Matrix_Type::COLS>
+      result;
   AugmentedMatrixAddMatrix::compute(augmented_matrix, matrix, result);
   return result;
 
@@ -505,7 +512,8 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator-(const Matrix_Type &matrix,
                       const AugmentedMatrix<Tuple_Type> &augmented_matrix)
-    -> Matrix_Type {
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+              Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
@@ -518,16 +526,20 @@ inline auto operator-(const Matrix_Type &matrix,
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix_Type result;
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         Matrix_Type::COLS>
+      result;
   AugmentedMatrixSubMatrix::compute(matrix, augmented_matrix, result);
   return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
-template <typename Tuple_Type, typename Matrix_Type>
+template <typename Matrix_Type, typename Tuple_Type>
 inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
-                      const Matrix_Type &matrix) -> Matrix_Type {
+                      const Matrix_Type &matrix)
+    -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+              Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
@@ -540,7 +552,9 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix_Type result;
+  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+         Matrix_Type::COLS>
+      result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix, matrix, result);
   return result;
 
