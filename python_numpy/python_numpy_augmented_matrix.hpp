@@ -1,3 +1,20 @@
+/**
+ * @file python_numpy_augmented_matrix.hpp
+ * @brief Augmented matrix class template and operations for PythonNumpy C++
+ * library.
+ *
+ * This file defines the AugmentedMatrix class template and its associated
+ * operations for the PythonNumpy namespace. The AugmentedMatrix class allows
+ * for the representation of a larger matrix composed of smaller matrices
+ * arranged in a block structure. It provides functionality to access and
+ * manipulate elements within the augmented matrix, as well as to perform matrix
+ * multiplication with other matrices or augmented matrices.
+ *
+ * @note
+ * tparam Tuple_Type is a std::tuple containing the smaller matrices that make
+ * up the augmented matrix. The number of elements in the tuple must be a
+ * perfect square to form a square block structure.
+ */
 #ifndef PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 #define PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
 
