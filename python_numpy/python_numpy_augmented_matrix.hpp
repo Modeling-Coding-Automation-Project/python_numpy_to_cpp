@@ -1355,6 +1355,46 @@ inline auto operator*(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Type alias for a tuple of AugmentedMatrix types.
+ * @tparam Matrices The types of the matrices to be included in the tuple.
+ */
+template <typename... Matrices>
+using AugmentedMatrix_Tuple_Type = std::tuple<Matrices...>;
+
+/**
+ * @brief Type alias for an AugmentedMatrix type constructed from a tuple of
+ * matrices.
+ * @tparam Matrices The types of the matrices to be included in the
+ * AugmentedMatrix.
+ */
+template <typename... Matrices>
+using AugmentedMatrix_Type =
+    AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>;
+
+/**
+ * @brief Creates an AugmentedMatrix from the provided matrices.
+ * @tparam Matrices The types of the matrices to be included in the
+ * AugmentedMatrix.
+ * @param inputs The matrices to be included in the AugmentedMatrix.
+ * @return An AugmentedMatrix containing the provided matrices.
+ */
+template <typename... Matrices>
+inline auto make_AugmentedMatrix(const Matrices &...inputs) {
+  return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>(inputs...);
+}
+
+/**
+ * @brief Creates an AugmentedMatrix filled with zeros from the provided
+ * matrices.
+ * @tparam Matrices The types of the matrices to be included in the
+ * AugmentedMatrix.
+ * @return An AugmentedMatrix filled with zeros.
+ */
+template <typename... Matrices> inline auto make_AugmentedMatrixZeros() {
+  return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>();
+}
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
