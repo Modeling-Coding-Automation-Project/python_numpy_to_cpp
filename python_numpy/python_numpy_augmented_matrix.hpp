@@ -86,6 +86,56 @@ is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
   return check_all_rows(rows, dim, 0) && check_all_cols(cols, dim, 0);
 }
 
+/* get */
+
+template <std::size_t N>
+constexpr std::size_t
+get_block_row_idx(std::size_t global_row,
+                  const std::array<std::size_t, N> &rows, std::size_t dim,
+                  std::size_t current = 0, std::size_t accum = 0) {
+  return (current == dim) ? 0
+         : (global_row < accum + rows[current * dim])
+             ? current
+             : get_block_row_idx(global_row, rows, dim, current + 1,
+                                 accum + rows[current * dim]);
+}
+
+template <std::size_t N>
+constexpr std::size_t
+get_local_row_idx(std::size_t global_row,
+                  const std::array<std::size_t, N> &rows, std::size_t dim,
+                  std::size_t current = 0, std::size_t accum = 0) {
+  return (current == dim) ? 0
+         : (global_row < accum + rows[current * dim])
+             ? (global_row - accum)
+             : get_local_row_idx(global_row, rows, dim, current + 1,
+                                 accum + rows[current * dim]);
+}
+
+template <std::size_t N>
+constexpr std::size_t
+get_block_col_idx(std::size_t global_col,
+                  const std::array<std::size_t, N> &cols, std::size_t dim,
+                  std::size_t current = 0, std::size_t accum = 0) {
+  return (current == dim) ? 0
+         : (global_col < accum + cols[current])
+             ? current
+             : get_block_col_idx(global_col, cols, dim, current + 1,
+                                 accum + cols[current]);
+}
+
+template <std::size_t N>
+constexpr std::size_t
+get_local_col_idx(std::size_t global_col,
+                  const std::array<std::size_t, N> &cols, std::size_t dim,
+                  std::size_t current = 0, std::size_t accum = 0) {
+  return (current == dim) ? 0
+         : (global_col < accum + cols[current])
+             ? (global_col - accum)
+             : get_local_col_idx(global_col, cols, dim, current + 1,
+                                 accum + cols[current]);
+}
+
 } // namespace AugmentedMatrixAction
 
 /* Augmented Matrix */
@@ -143,6 +193,27 @@ public:
       this->matrix = std::move(input.matrix);
     }
     return *this;
+  }
+
+public:
+  /* Function */
+  template <std::size_t ROW, std::size_t COL> inline T get() const {
+
+    constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+    constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
+        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+
+    constexpr std::size_t tuple_idx =
+        block_row * COLROW_AUGMENTED_MATRIX + block_col;
+
+    constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+    constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
+        COL, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+
+    return std::get<tuple_idx>(this->matrix)
+        .template get<local_row, local_col>();
   }
 
 public:
