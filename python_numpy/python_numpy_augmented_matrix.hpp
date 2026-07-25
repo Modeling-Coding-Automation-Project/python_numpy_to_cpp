@@ -167,7 +167,8 @@ public:
                 "Tuple_Type must be a std::tuple.");
 
   /* Type */
-  using T = typename std::tuple_element<0, Tuple_Type>::type::Value_Type;
+  using Value_Type =
+      typename std::tuple_element<0, Tuple_Type>::type::Value_Type;
 
   static constexpr std::size_t COLROW_AUGMENTED_MATRIX =
       AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value;
@@ -194,6 +195,10 @@ public:
   static constexpr std::size_t COLS =
       AugmentedMatrixAction::calculate_total_cols(ELEMENT_COLS,
                                                   COLROW_AUGMENTED_MATRIX);
+
+protected:
+  /* Type */
+  using T_ = Value_Type;
 
 public:
   /* Constructor */
@@ -245,7 +250,7 @@ public:
 
   std::size_t ndim() const { return 2; }
 
-  template <std::size_t ROW_IN, std::size_t COL_IN> inline T get() const {
+  template <std::size_t ROW_IN, std::size_t COL_IN> inline T_ get() const {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
 
@@ -267,7 +272,7 @@ public:
   }
 
   template <std::size_t ROW_IN, std::size_t COL_IN>
-  inline void set(const T &value) {
+  inline void set(const T_ &value) {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
 
@@ -295,7 +300,7 @@ public:
     return dense_matrix;
   }
 
-  T &operator()(std::size_t index) {
+  T_ &operator()(std::size_t index) {
     if (index >= ROWS * COLS) {
       index = ROWS * COLS - 1;
     }
@@ -303,14 +308,14 @@ public:
     std::size_t row = index / COLS;
     std::size_t col = index % COLS;
 
-    Matrix<DefDense, T, ROWS, COLS> dense_matrix;
+    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
 
     substitute_matrix(dense_matrix, *this);
 
     return dense_matrix(row, col);
   }
 
-  T &operator()(std::size_t row, std::size_t col) {
+  T_ &operator()(std::size_t row, std::size_t col) {
     if (row >= ROWS) {
       row = ROWS - 1;
     }
@@ -318,7 +323,7 @@ public:
       col = COLS - 1;
     }
 
-    Matrix<DefDense, T, ROWS, COLS> dense_matrix;
+    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
 
     substitute_matrix(dense_matrix, *this);
 
@@ -329,6 +334,32 @@ public:
   /* Variable */
   Tuple_Type matrix;
 };
+
+/* Matrix Add AugmentedMatrix */
+template <typename Matrix_Type, typename Tuple_Type>
+inline auto operator+(const Matrix_Type &matrix,
+                      const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+    -> Matrix_Type {
+
+  static_assert(
+      std::is_same<typename Matrix_Type::Value_Type,
+                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  return matrix + augmented_matrix.template to_matrix<Matrix_Type>();
+}
+
+template <typename Tuple_Type, typename Matrix_Type>
+inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
+                      const Matrix_Type &matrix) -> Matrix_Type {
+
+  static_assert(
+      std::is_same<typename Matrix_Type::Value_Type,
+                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+      "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  return matrix + augmented_matrix.template to_matrix<Matrix_Type>();
+}
 
 } // namespace PythonNumpy
 
