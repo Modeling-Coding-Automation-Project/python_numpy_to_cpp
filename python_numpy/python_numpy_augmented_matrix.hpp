@@ -1369,8 +1369,7 @@ using AugmentedMatrix_Tuple_Type = std::tuple<Matrices...>;
  * AugmentedMatrix.
  */
 template <typename... Matrices>
-using AugmentedMatrix_Type =
-    AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>;
+using AugmentedMatrix_Type = AugmentedMatrix<Matrices...>;
 
 /**
  * @brief Creates an AugmentedMatrix from the provided matrices.
@@ -1381,8 +1380,8 @@ using AugmentedMatrix_Type =
  */
 template <typename... Matrices>
 inline auto make_AugmentedMatrix(const Matrices &...inputs)
-    -> AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>> {
-  return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>(inputs...);
+    -> AugmentedMatrix<Matrices...> {
+  return AugmentedMatrix<Matrices...>(inputs...);
 }
 
 /**
@@ -1393,9 +1392,8 @@ inline auto make_AugmentedMatrix(const Matrices &...inputs)
  * @return An AugmentedMatrix filled with zeros.
  */
 template <typename... Matrices>
-inline auto make_AugmentedMatrixZeros()
-    -> AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>> {
-  return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>();
+inline auto make_AugmentedMatrixZeros() -> AugmentedMatrix<Matrices...> {
+  return AugmentedMatrix<Matrices...>();
 }
 
 } // namespace PythonNumpy
