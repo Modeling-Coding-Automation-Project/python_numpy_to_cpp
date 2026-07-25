@@ -86,7 +86,24 @@ is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
   return check_all_rows(rows, dim, 0) && check_all_cols(cols, dim, 0);
 }
 
-/* get */
+/* Calculate total rows and cols for augmented matrix */
+
+template <std::size_t Size>
+constexpr std::size_t
+calculate_total_rows(const std::array<std::size_t, Size> &rows, std::size_t dim,
+                     std::size_t i = 0) {
+  return (i == dim) ? 0
+                    : rows[i * dim] + calculate_total_rows(rows, dim, i + 1);
+}
+
+template <std::size_t Size>
+constexpr std::size_t
+calculate_total_cols(const std::array<std::size_t, Size> &cols, std::size_t dim,
+                     std::size_t j = 0) {
+  return (j == dim) ? 0 : cols[j] + calculate_total_cols(cols, dim, j + 1);
+}
+
+/* get / set */
 
 template <std::size_t N>
 constexpr std::size_t
@@ -140,8 +157,7 @@ get_local_col_idx(std::size_t global_col,
 
 /* Augmented Matrix */
 
-template <typename Tuple_Type, std::size_t M, std::size_t N>
-class AugmentedMatrix {
+template <typename Tuple_Type> class AugmentedMatrix {
 public:
   /* Check Compatibility */
   static_assert(AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
@@ -167,16 +183,23 @@ public:
                 "The rows or columns of the nested matrices do not align "
                 "perfectly in the augmented matrix.");
 
+  /* Type */
+  static constexpr std::size_t M = AugmentedMatrixAction::calculate_total_rows(
+      ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+
+  static constexpr std::size_t N = AugmentedMatrixAction::calculate_total_cols(
+      ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+
 public:
   /* Constructor */
   AugmentedMatrix() {}
 
   /* Copy Constructor */
-  AugmentedMatrix(const AugmentedMatrix<Tuple_Type, M, N> &input)
+  AugmentedMatrix(const AugmentedMatrix<Tuple_Type> &input)
       : matrix(input.matrix) {}
 
-  AugmentedMatrix<Tuple_Type, M, N> &
-  operator=(const AugmentedMatrix<Tuple_Type, M, N> &input) {
+  AugmentedMatrix<Tuple_Type> &
+  operator=(const AugmentedMatrix<Tuple_Type> &input) {
     if (this != &input) {
       this->matrix = input.matrix;
     }
@@ -184,11 +207,11 @@ public:
   }
 
   /* Move Constructor */
-  AugmentedMatrix(AugmentedMatrix<Tuple_Type, M, N> &&input) noexcept
+  AugmentedMatrix(AugmentedMatrix<Tuple_Type> &&input) noexcept
       : matrix(std::move(input.matrix)) {}
 
-  AugmentedMatrix<Tuple_Type, M, N> &
-  operator=(AugmentedMatrix<Tuple_Type, M, N> &&input) noexcept {
+  AugmentedMatrix<Tuple_Type> &
+  operator=(AugmentedMatrix<Tuple_Type> &&input) noexcept {
     if (this != &input) {
       this->matrix = std::move(input.matrix);
     }
@@ -198,6 +221,8 @@ public:
 public:
   /* Function */
   template <std::size_t ROW, std::size_t COL> inline T get() const {
+    static_assert(ROW < M && COL < N,
+                  "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
         ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
@@ -217,6 +242,8 @@ public:
   }
 
   template <std::size_t ROW, std::size_t COL> inline void set(const T &value) {
+    static_assert(ROW < M && COL < N,
+                  "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
         ROW, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
