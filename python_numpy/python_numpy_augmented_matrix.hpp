@@ -778,7 +778,7 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
 
 } // namespace AugmentedMatrixMulMatrix
 
-template <typename Matrix_Type, typename Tuple_Type>
+template <typename Tuple_Type, typename Matrix_Type>
 inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
                       const Matrix_Type &matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type,
@@ -792,6 +792,8 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
   static_assert(AugmentedMatrix<Tuple_Type>::COLS == Matrix_Type::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
+  using Value_Type = typename Matrix_Type::Value_Type;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<DefDense, typename Matrix_Type::Value_Type,
@@ -800,9 +802,11 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
 
   for (std::size_t i = 0; i < AugmentedMatrix<Tuple_Type>::ROWS; ++i) {
     for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
-      typename Matrix_Type::Value_Type sum = 0;
+      Value_Type sum = 0;
       for (std::size_t k = 0; k < AugmentedMatrix<Tuple_Type>::COLS; ++k) {
-        sum += augmented_matrix(i, k) * matrix(k, j);
+        Value_Type a = augmented_matrix(i, k);
+        Value_Type b = matrix(k, j);
+        sum += a * b;
       }
       result(i, j) = sum;
     }
@@ -837,6 +841,8 @@ inline auto operator*(const Matrix_Type &matrix,
   static_assert(Matrix_Type::COLS == AugmentedMatrix<Tuple_Type>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
+  using Value_Type = typename Matrix_Type::Value_Type;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
@@ -845,9 +851,11 @@ inline auto operator*(const Matrix_Type &matrix,
 
   for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
     for (std::size_t j = 0; j < AugmentedMatrix<Tuple_Type>::COLS; ++j) {
-      typename Matrix_Type::Value_Type sum = 0;
+      Value_Type sum = 0;
       for (std::size_t k = 0; k < Matrix_Type::COLS; ++k) {
-        sum += matrix(i, k) * augmented_matrix(k, j);
+        Value_Type a = matrix(i, k);
+        Value_Type b = augmented_matrix(k, j);
+        sum += a * b;
       }
       result(i, j) = sum;
     }
