@@ -1380,7 +1380,8 @@ using AugmentedMatrix_Type =
  * @return An AugmentedMatrix containing the provided matrices.
  */
 template <typename... Matrices>
-inline auto make_AugmentedMatrix(const Matrices &...inputs) {
+inline auto make_AugmentedMatrix(const Matrices &...inputs)
+    -> AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>> {
   return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>(inputs...);
 }
 
@@ -1391,7 +1392,9 @@ inline auto make_AugmentedMatrix(const Matrices &...inputs) {
  * AugmentedMatrix.
  * @return An AugmentedMatrix filled with zeros.
  */
-template <typename... Matrices> inline auto make_AugmentedMatrixZeros() {
+template <typename... Matrices>
+inline auto make_AugmentedMatrixZeros()
+    -> AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>> {
   return AugmentedMatrix<AugmentedMatrix_Tuple_Type<Matrices...>>();
 }
 
