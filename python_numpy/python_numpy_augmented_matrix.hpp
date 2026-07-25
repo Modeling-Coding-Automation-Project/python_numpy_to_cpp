@@ -792,9 +792,9 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
   static_assert(AugmentedMatrix<Tuple_Type>::COLS == Matrix_Type::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
-  using Value_Type = typename Matrix_Type::Value_Type;
-
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  using Value_Type = typename Matrix_Type::Value_Type;
 
   Matrix<DefDense, typename Matrix_Type::Value_Type,
          AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS>
@@ -841,9 +841,9 @@ inline auto operator*(const Matrix_Type &matrix,
   static_assert(Matrix_Type::COLS == AugmentedMatrix<Tuple_Type>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
-  using Value_Type = typename Matrix_Type::Value_Type;
-
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  using Value_Type = typename Matrix_Type::Value_Type;
 
   Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
          AugmentedMatrix<Tuple_Type>::COLS>
