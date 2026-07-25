@@ -65,6 +65,34 @@ public:
       AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
 
 public:
+  /* Constructor */
+  AugmentedMatrix() {}
+
+  /* Copy Constructor */
+  AugmentedMatrix(const AugmentedMatrix<Tuple_Type, M, N> &input)
+      : matrix(input.matrix) {}
+
+  AugmentedMatrix<Tuple_Type, M, N> &
+  operator=(const AugmentedMatrix<Tuple_Type, M, N> &input) {
+    if (this != &input) {
+      this->matrix = input.matrix;
+    }
+    return *this;
+  }
+
+  /* Move Constructor */
+  AugmentedMatrix(AugmentedMatrix<Tuple_Type, M, N> &&input) noexcept
+      : matrix(std::move(input.matrix)) {}
+
+  AugmentedMatrix<Tuple_Type, M, N> &
+  operator=(AugmentedMatrix<Tuple_Type, M, N> &&input) noexcept {
+    if (this != &input) {
+      this->matrix = std::move(input.matrix);
+    }
+    return *this;
+  }
+
+public:
   /* Variable */
   Tuple_Type matrix;
 };
