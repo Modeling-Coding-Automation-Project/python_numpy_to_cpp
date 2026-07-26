@@ -531,10 +531,12 @@ public:
                 "The number of elements in Tuple_Type does not match "
                 "ROW_BLOCKS * COL_BLOCKS.");
 
-  static constexpr auto ELEMENT_ROWS =
-      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
-  static constexpr auto ELEMENT_COLS =
-      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
+  static constexpr std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+      ELEMENT_ROWS =
+          AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
+  static constexpr std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+      ELEMENT_COLS =
+          AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
 
   /* Check Compatibility */
   static_assert(AugmentedMatrixAction::is_compatible_augmented_matrix(
@@ -784,6 +786,24 @@ public:
   /* Variable */
   Tuple_Type matrix;
 };
+
+/* Out-of-class definitions for C++11 static constexpr members */
+
+template <typename... Args>
+constexpr std::array<std::size_t, sizeof...(Args)>
+    AugmentedMatrixAction::matrix_shape_extractor<std::tuple<Args...>>::ROWS;
+
+template <typename... Args>
+constexpr std::array<std::size_t, sizeof...(Args)>
+    AugmentedMatrixAction::matrix_shape_extractor<std::tuple<Args...>>::COLS;
+
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks>
+constexpr const std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+    AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ELEMENT_ROWS;
+
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks>
+constexpr const std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+    AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ELEMENT_COLS;
 
 /* Matrix Add AugmentedMatrix */
 
