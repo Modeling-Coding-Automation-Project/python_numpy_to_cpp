@@ -4037,6 +4037,25 @@ void CheckPythonNumpy<T>::check_python_numpy_augmented(void) {
     tester.expect_near(augmented_matrix_dense.matrix.data, augmented_matrix_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check AugmentedMatrix to dense.");
 
+    Matrix<DefDense, T, 1, 2> B11({ {11, 12} });
+    Matrix<DefDense, T, 1, 2> B12({ {13, 14} });
+    Matrix<DefDense, T, 1, 2> B21({ {21, 22} });
+    Matrix<DefDense, T, 1, 2> B22({ {23, 24} });
+    Matrix<DefDense, T, 1, 2> B31({ {31, 32} });
+    Matrix<DefDense, T, 1, 2> B32({ {33, 34} });
+
+    auto augmented_matrix_3x2 = make_AugmentedMatrix<3, 2>(B11, B12, B21, B22, B31, B32);
+    auto augmented_matrix_3x2_dense = augmented_matrix_3x2.template to_matrix<Matrix<DefDense, T, 3, 4>>();
+
+    Matrix<DefDense, T, 3, 4> augmented_matrix_3x2_answer({
+        {11, 12, 13, 14},
+        {21, 22, 23, 24},
+        {31, 32, 33, 34}
+        });
+
+    tester.expect_near(augmented_matrix_3x2_dense.matrix.data, augmented_matrix_3x2_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check AugmentedMatrix<3,2> argument order.");
+
     T augmented_matrix_value = augmented_matrix.template get<1, 2>();
 
     tester.expect_near(augmented_matrix_value, static_cast<T>(6), NEAR_LIMIT_STRICT,
