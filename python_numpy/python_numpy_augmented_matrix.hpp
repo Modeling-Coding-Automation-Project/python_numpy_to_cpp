@@ -108,11 +108,12 @@ template <typename... Args> struct matrix_shape_extractor<std::tuple<Args...>> {
  */
 template <std::size_t N>
 constexpr bool check_row_compatibility(const std::array<std::size_t, N> &rows,
-                                       std::size_t dim, std::size_t i,
+                                       std::size_t col_blocks, std::size_t i,
                                        std::size_t j) {
-  return (j == dim) ? true
-                    : (rows[i * dim + j] == rows[i * dim]) &&
-                          check_row_compatibility(rows, dim, i, j + 1);
+  return (j == col_blocks)
+             ? true
+             : (rows[i * col_blocks + j] == rows[i * col_blocks]) &&
+                   check_row_compatibility(rows, col_blocks, i, j + 1);
 }
 
 /**
@@ -126,10 +127,12 @@ constexpr bool check_row_compatibility(const std::array<std::size_t, N> &rows,
  */
 template <std::size_t N>
 constexpr bool check_all_rows(const std::array<std::size_t, N> &rows,
-                              std::size_t dim, std::size_t i) {
-  return (i == dim) ? true
-                    : check_row_compatibility(rows, dim, i, 1) &&
-                          check_all_rows(rows, dim, i + 1);
+                              std::size_t row_blocks, std::size_t col_blocks,
+                              std::size_t i) {
+  return (i == row_blocks)
+             ? true
+             : check_row_compatibility(rows, col_blocks, i, 1) &&
+                   check_all_rows(rows, row_blocks, col_blocks, i + 1);
 }
 
 /**
@@ -144,11 +147,13 @@ constexpr bool check_all_rows(const std::array<std::size_t, N> &rows,
  */
 template <std::size_t N>
 constexpr bool check_col_compatibility(const std::array<std::size_t, N> &cols,
-                                       std::size_t dim, std::size_t i,
+                                       std::size_t row_blocks,
+                                       std::size_t col_blocks, std::size_t i,
                                        std::size_t j) {
-  return (i == dim) ? true
-                    : (cols[i * dim + j] == cols[j]) &&
-                          check_col_compatibility(cols, dim, i + 1, j);
+  return (i == row_blocks) ? true
+                           : (cols[i * col_blocks + j] == cols[j]) &&
+                                 check_col_compatibility(cols, row_blocks,
+                                                         col_blocks, i + 1, j);
 }
 
 /**
@@ -162,10 +167,12 @@ constexpr bool check_col_compatibility(const std::array<std::size_t, N> &cols,
  */
 template <std::size_t N>
 constexpr bool check_all_cols(const std::array<std::size_t, N> &cols,
-                              std::size_t dim, std::size_t j) {
-  return (j == dim) ? true
-                    : check_col_compatibility(cols, dim, 1, j) &&
-                          check_all_cols(cols, dim, j + 1);
+                              std::size_t row_blocks, std::size_t col_blocks,
+                              std::size_t j) {
+  return (j == col_blocks)
+             ? true
+             : check_col_compatibility(cols, row_blocks, col_blocks, 1, j) &&
+                   check_all_cols(cols, row_blocks, col_blocks, j + 1);
 }
 
 /**
@@ -181,9 +188,10 @@ template <std::size_t N>
 constexpr bool
 is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
                                const std::array<std::size_t, N> &cols,
-                               std::size_t dim) {
+                               std::size_t row_blocks, std::size_t col_blocks) {
 
-  return check_all_rows(rows, dim, 0) && check_all_cols(cols, dim, 0);
+  return check_all_rows(rows, row_blocks, col_blocks, 0) &&
+         check_all_cols(cols, row_blocks, col_blocks, 0);
 }
 
 /* Calculate total rows and cols for augmented matrix */
@@ -198,10 +206,13 @@ is_compatible_augmented_matrix(const std::array<std::size_t, N> &rows,
  */
 template <std::size_t Size>
 constexpr std::size_t
-calculate_total_rows(const std::array<std::size_t, Size> &rows, std::size_t dim,
+calculate_total_rows(const std::array<std::size_t, Size> &rows,
+                     std::size_t row_blocks, std::size_t col_blocks,
                      std::size_t i = 0) {
-  return (i == dim) ? 0
-                    : rows[i * dim] + calculate_total_rows(rows, dim, i + 1);
+  return (i == row_blocks)
+             ? 0
+             : rows[i * col_blocks] +
+                   calculate_total_rows(rows, row_blocks, col_blocks, i + 1);
 }
 
 /**
@@ -214,9 +225,11 @@ calculate_total_rows(const std::array<std::size_t, Size> &rows, std::size_t dim,
  */
 template <std::size_t Size>
 constexpr std::size_t
-calculate_total_cols(const std::array<std::size_t, Size> &cols, std::size_t dim,
-                     std::size_t j = 0) {
-  return (j == dim) ? 0 : cols[j] + calculate_total_cols(cols, dim, j + 1);
+calculate_total_cols(const std::array<std::size_t, Size> &cols,
+                     std::size_t col_blocks, std::size_t j = 0) {
+  return (j == col_blocks)
+             ? 0
+             : cols[j] + calculate_total_cols(cols, col_blocks, j + 1);
 }
 
 /* get / set */
@@ -234,13 +247,15 @@ calculate_total_cols(const std::array<std::size_t, Size> &cols, std::size_t dim,
 template <std::size_t N>
 constexpr std::size_t
 get_block_row_idx(std::size_t global_row,
-                  const std::array<std::size_t, N> &rows, std::size_t dim,
+                  const std::array<std::size_t, N> &rows,
+                  std::size_t row_blocks, std::size_t col_blocks,
                   std::size_t current = 0, std::size_t accum = 0) {
-  return (current == dim) ? 0
-         : (global_row < accum + rows[current * dim])
+  return (current == row_blocks) ? 0
+         : (global_row < accum + rows[current * col_blocks])
              ? current
-             : get_block_row_idx(global_row, rows, dim, current + 1,
-                                 accum + rows[current * dim]);
+             : get_block_row_idx(global_row, rows, row_blocks, col_blocks,
+                                 current + 1,
+                                 accum + rows[current * col_blocks]);
 }
 
 /**
@@ -256,13 +271,15 @@ get_block_row_idx(std::size_t global_row,
 template <std::size_t N>
 constexpr std::size_t
 get_local_row_idx(std::size_t global_row,
-                  const std::array<std::size_t, N> &rows, std::size_t dim,
+                  const std::array<std::size_t, N> &rows,
+                  std::size_t row_blocks, std::size_t col_blocks,
                   std::size_t current = 0, std::size_t accum = 0) {
-  return (current == dim) ? 0
-         : (global_row < accum + rows[current * dim])
+  return (current == row_blocks) ? 0
+         : (global_row < accum + rows[current * col_blocks])
              ? (global_row - accum)
-             : get_local_row_idx(global_row, rows, dim, current + 1,
-                                 accum + rows[current * dim]);
+             : get_local_row_idx(global_row, rows, row_blocks, col_blocks,
+                                 current + 1,
+                                 accum + rows[current * col_blocks]);
 }
 
 /**
@@ -276,14 +293,15 @@ get_local_row_idx(std::size_t global_row,
  * @return The block column index corresponding to the global column index.
  */
 template <std::size_t N>
-constexpr std::size_t
-get_block_col_idx(std::size_t global_col,
-                  const std::array<std::size_t, N> &cols, std::size_t dim,
-                  std::size_t current = 0, std::size_t accum = 0) {
-  return (current == dim) ? 0
+constexpr std::size_t get_block_col_idx(std::size_t global_col,
+                                        const std::array<std::size_t, N> &cols,
+                                        std::size_t col_blocks,
+                                        std::size_t current = 0,
+                                        std::size_t accum = 0) {
+  return (current == col_blocks) ? 0
          : (global_col < accum + cols[current])
              ? current
-             : get_block_col_idx(global_col, cols, dim, current + 1,
+             : get_block_col_idx(global_col, cols, col_blocks, current + 1,
                                  accum + cols[current]);
 }
 
@@ -298,15 +316,185 @@ get_block_col_idx(std::size_t global_col,
  * @return The local column index corresponding to the global column index.
  */
 template <std::size_t N>
-constexpr std::size_t
-get_local_col_idx(std::size_t global_col,
-                  const std::array<std::size_t, N> &cols, std::size_t dim,
-                  std::size_t current = 0, std::size_t accum = 0) {
-  return (current == dim) ? 0
+constexpr std::size_t get_local_col_idx(std::size_t global_col,
+                                        const std::array<std::size_t, N> &cols,
+                                        std::size_t col_blocks,
+                                        std::size_t current = 0,
+                                        std::size_t accum = 0) {
+  return (current == col_blocks) ? 0
          : (global_col < accum + cols[current])
              ? (global_col - accum)
-             : get_local_col_idx(global_col, cols, dim, current + 1,
+             : get_local_col_idx(global_col, cols, col_blocks, current + 1,
                                  accum + cols[current]);
+}
+
+/* Dynamic Tuple Access for C++11 */
+
+/**
+ * @brief A helper struct to represent an index sequence for template
+ * metaprogramming.
+ * @tparam Is The indices in the sequence.
+ */
+template <std::size_t... Is> struct index_sequence {};
+
+/**
+ * @brief A helper struct to generate an index sequence for a given size.
+ * @tparam N The size of the index sequence.
+ * @tparam Is The indices in the sequence (default is empty).
+ */
+template <std::size_t N, std::size_t... Is>
+struct make_index_sequence_impl
+    : make_index_sequence_impl<N - 1, N - 1, Is...> {};
+
+/**
+ * @brief Specialization for the base case of the index sequence generation.
+ * @tparam Is The indices in the sequence.
+ */
+template <std::size_t... Is> struct make_index_sequence_impl<0, Is...> {
+  using type = index_sequence<Is...>;
+};
+
+/**
+ * @brief A helper alias to generate an index sequence for a given size.
+ * @tparam N The size of the index sequence.
+ */
+template <std::size_t N>
+using make_index_sequence = typename make_index_sequence_impl<N>::type;
+
+/**
+ * @brief Gets the element of a matrix from a tuple of matrices at the specified
+ * local row and column indices.
+ * @tparam TupleIdx The index of the matrix in the tuple.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
+template <std::size_t TupleIdx, typename Tuple_Type, typename Value_Type>
+inline Value_Type get_matrix_element(const Tuple_Type &matrix_tuple,
+                                     std::size_t local_row,
+                                     std::size_t local_col) {
+  return std::get<TupleIdx>(matrix_tuple)(local_row, local_col);
+}
+
+/**
+ * @brief Gets a reference to the element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam TupleIdx The index of the matrix in the tuple.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
+template <std::size_t TupleIdx, typename Tuple_Type, typename Value_Type>
+inline Value_Type &get_matrix_element_ref(Tuple_Type &matrix_tuple,
+                                          std::size_t local_row,
+                                          std::size_t local_col) {
+  return std::get<TupleIdx>(matrix_tuple)(local_row, local_col);
+}
+
+/**
+ * @brief Dynamically accesses an element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @tparam Indices The indices in the index sequence.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @param index_sequence An index sequence for template metaprogramming.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
+template <typename Tuple_Type, typename Value_Type, std::size_t... Indices>
+inline Value_Type
+dynamic_tuple_access_impl(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                          std::size_t local_row, std::size_t local_col,
+                          index_sequence<Indices...>) {
+  using FuncType = Value_Type (*)(const Tuple_Type &, std::size_t, std::size_t);
+  static const FuncType func_array[] = {
+      &get_matrix_element<Indices, Tuple_Type, Value_Type>...};
+
+  return func_array[tuple_idx](matrix_tuple, local_row, local_col);
+}
+
+/**
+ * @brief Dynamically accesses a reference to an element of a matrix from a
+ * tuple of matrices at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @tparam Indices The indices in the index sequence.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @param index_sequence An index sequence for template metaprogramming.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
+template <typename Tuple_Type, typename Value_Type, std::size_t... Indices>
+inline Value_Type &
+dynamic_tuple_access_ref_impl(Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                              std::size_t local_row, std::size_t local_col,
+                              index_sequence<Indices...>) {
+  using FuncType = Value_Type &(*)(Tuple_Type &, std::size_t, std::size_t);
+  static const FuncType func_array[] = {
+      &get_matrix_element_ref<Indices, Tuple_Type, Value_Type>...};
+
+  return func_array[tuple_idx](matrix_tuple, local_row, local_col);
+}
+
+/**
+ * @brief Dynamically accesses an element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
+template <typename Tuple_Type, typename Value_Type>
+inline Value_Type
+dynamic_tuple_access(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                     std::size_t local_row, std::size_t local_col) {
+  constexpr std::size_t TupleSize = std::tuple_size<Tuple_Type>::value;
+
+  return dynamic_tuple_access_impl<Tuple_Type, Value_Type>(
+      matrix_tuple, tuple_idx, local_row, local_col,
+      make_index_sequence<TupleSize>{});
+}
+
+/**
+ * @brief Dynamically accesses a reference to an element of a matrix from a
+ * tuple of matrices at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
+template <typename Tuple_Type, typename Value_Type>
+inline Value_Type &
+dynamic_tuple_access_ref(Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                         std::size_t local_row, std::size_t local_col) {
+  constexpr std::size_t TupleSize = std::tuple_size<Tuple_Type>::value;
+
+  return dynamic_tuple_access_ref_impl<Tuple_Type, Value_Type>(
+      matrix_tuple, tuple_idx, local_row, local_col,
+      make_index_sequence<TupleSize>{});
 }
 
 } // namespace AugmentedMatrixAction
@@ -317,7 +505,9 @@ get_local_col_idx(std::size_t global_col,
  * @brief A class representing an augmented matrix composed of smaller matrices.
  * @tparam Tuple_Type A std::tuple containing the smaller matrices.
  */
-template <typename Tuple_Type> class AugmentedMatrix {
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+class AugmentedMatrix {
 public:
   /* Check Compatibility */
   static_assert(AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
@@ -327,31 +517,40 @@ public:
   using Value_Type =
       typename std::tuple_element<0, Tuple_Type>::type::Value_Type;
 
-  static constexpr std::size_t COLROW_AUGMENTED_MATRIX =
-      AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value;
+  static constexpr std::size_t ROW_BLOCKS =
+      (Row_Blocks == 0 && Col_Blocks == 0)
+          ? AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value
+          : Row_Blocks;
 
-  static_assert(COLROW_AUGMENTED_MATRIX != 0,
-                "Tuple_Type must have a perfect square number of elements.");
+  static constexpr std::size_t COL_BLOCKS =
+      (Row_Blocks == 0 && Col_Blocks == 0)
+          ? AugmentedMatrixAction::tuple_square_root<Tuple_Type>::value
+          : Col_Blocks;
 
-  static constexpr auto ELEMENT_ROWS =
-      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
-  static constexpr auto ELEMENT_COLS =
-      AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
+  static_assert(ROW_BLOCKS * COL_BLOCKS == std::tuple_size<Tuple_Type>::value,
+                "The number of elements in Tuple_Type does not match "
+                "ROW_BLOCKS * COL_BLOCKS.");
+
+  static constexpr std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+      ELEMENT_ROWS =
+          AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::ROWS;
+  static constexpr std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+      ELEMENT_COLS =
+          AugmentedMatrixAction::matrix_shape_extractor<Tuple_Type>::COLS;
 
   /* Check Compatibility */
   static_assert(AugmentedMatrixAction::is_compatible_augmented_matrix(
-                    ELEMENT_ROWS, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX),
+                    ELEMENT_ROWS, ELEMENT_COLS, ROW_BLOCKS, COL_BLOCKS),
                 "The rows or columns of the nested matrices do not align "
                 "perfectly in the augmented matrix.");
 
   /* Type */
   static constexpr std::size_t ROWS =
-      AugmentedMatrixAction::calculate_total_rows(ELEMENT_ROWS,
-                                                  COLROW_AUGMENTED_MATRIX);
+      AugmentedMatrixAction::calculate_total_rows(ELEMENT_ROWS, ROW_BLOCKS,
+                                                  COL_BLOCKS);
 
   static constexpr std::size_t COLS =
-      AugmentedMatrixAction::calculate_total_cols(ELEMENT_COLS,
-                                                  COLROW_AUGMENTED_MATRIX);
+      AugmentedMatrixAction::calculate_total_cols(ELEMENT_COLS, COL_BLOCKS);
 
 protected:
   /* Type */
@@ -368,11 +567,12 @@ public:
   explicit AugmentedMatrix(const Matrices &...inputs) : matrix(inputs...) {}
 
   /* Copy Constructor */
-  AugmentedMatrix(const AugmentedMatrix<Tuple_Type> &input)
+  AugmentedMatrix(
+      const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &input)
       : matrix(input.matrix) {}
 
-  AugmentedMatrix<Tuple_Type> &
-  operator=(const AugmentedMatrix<Tuple_Type> &input) {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &
+  operator=(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &input) {
     if (this != &input) {
       this->matrix = input.matrix;
     }
@@ -380,11 +580,12 @@ public:
   }
 
   /* Move Constructor */
-  AugmentedMatrix(AugmentedMatrix<Tuple_Type> &&input) noexcept
+  AugmentedMatrix(
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &&input) noexcept
       : matrix(std::move(input.matrix)) {}
 
-  AugmentedMatrix<Tuple_Type> &
-  operator=(AugmentedMatrix<Tuple_Type> &&input) noexcept {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &operator=(
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &&input) noexcept {
     if (this != &input) {
       this->matrix = std::move(input.matrix);
     }
@@ -438,17 +639,16 @@ public:
                   "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
-        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
     constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
-        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COL_BLOCKS);
 
-    constexpr std::size_t tuple_idx =
-        block_row * COLROW_AUGMENTED_MATRIX + block_col;
+    constexpr std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
 
     constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
-        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
     constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
-        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COL_BLOCKS);
 
     return std::get<tuple_idx>(this->matrix)
         .template get<local_row, local_col>();
@@ -466,17 +666,16 @@ public:
                   "ROW and COL must be within the bounds of the matrix.");
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
-        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
     constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
-        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COL_BLOCKS);
 
-    constexpr std::size_t tuple_idx =
-        block_row * COLROW_AUGMENTED_MATRIX + block_col;
+    constexpr std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
 
     constexpr std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
-        ROW_IN, ELEMENT_ROWS, COLROW_AUGMENTED_MATRIX);
+        ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
     constexpr std::size_t local_col = AugmentedMatrixAction::get_local_col_idx(
-        COL_IN, ELEMENT_COLS, COLROW_AUGMENTED_MATRIX);
+        COL_IN, ELEMENT_COLS, COL_BLOCKS);
 
     std::get<tuple_idx>(this->matrix).template set<local_row, local_col>(value);
   }
@@ -490,7 +689,23 @@ public:
   }
 
   /**
-   * @brief Gets the value at the specified linear index.
+   * @brief Gets the reference to the element at the specified linear index.
+   * @param index The linear index.
+   * @return Reference to the element at the specified index.
+   */
+  T_ &operator()(std::size_t index) {
+    if (index >= ROWS * COLS) {
+      index = ROWS * COLS - 1;
+    }
+
+    std::size_t row = index / COLS;
+    std::size_t col = index % COLS;
+
+    return this->operator()(row, col);
+  }
+
+  /**
+   * @brief Gets the value at the specified linear index (const version).
    * @param index The linear index.
    * @return The value at the specified index.
    */
@@ -502,15 +717,43 @@ public:
     std::size_t row = index / COLS;
     std::size_t col = index % COLS;
 
-    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
-
-    substitute_matrix(dense_matrix, *this);
-
-    return dense_matrix(row, col);
+    return this->operator()(row, col);
   }
 
   /**
-   * @brief Gets the value at the specified row and column indices.
+   * @brief Gets the reference to the element at the specified row and column
+   * indices.
+   * @param row The row index.
+   * @param col The column index.
+   * @return Reference to the element at the specified indices.
+   */
+  T_ &operator()(std::size_t row, std::size_t col) {
+    if (row >= ROWS) {
+      row = ROWS - 1;
+    }
+    if (col >= COLS) {
+      col = COLS - 1;
+    }
+
+    std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t block_col =
+        AugmentedMatrixAction::get_block_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
+
+    std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t local_col =
+        AugmentedMatrixAction::get_local_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    return AugmentedMatrixAction::dynamic_tuple_access_ref<Tuple_Type, T_>(
+        this->matrix, tuple_idx, local_row, local_col);
+  }
+
+  /**
+   * @brief Gets the value at the specified row and column indices (const
+   * version).
    * @param row The row index.
    * @param col The column index.
    * @return The value at the specified indices.
@@ -523,17 +766,44 @@ public:
       col = COLS - 1;
     }
 
-    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
+    std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t block_col =
+        AugmentedMatrixAction::get_block_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
 
-    substitute_matrix(dense_matrix, *this);
+    std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
 
-    return dense_matrix(row, col);
+    std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t local_col =
+        AugmentedMatrixAction::get_local_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    return AugmentedMatrixAction::dynamic_tuple_access<Tuple_Type, T_>(
+        this->matrix, tuple_idx, local_row, local_col);
   }
 
 public:
   /* Variable */
   Tuple_Type matrix;
 };
+
+/* Out-of-class definitions for C++11 static constexpr members */
+
+template <typename... Args>
+constexpr std::array<std::size_t, sizeof...(Args)>
+    AugmentedMatrixAction::matrix_shape_extractor<std::tuple<Args...>>::ROWS;
+
+template <typename... Args>
+constexpr std::array<std::size_t, sizeof...(Args)>
+    AugmentedMatrixAction::matrix_shape_extractor<std::tuple<Args...>>::COLS;
+
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks>
+constexpr const std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+    AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ELEMENT_ROWS;
+
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks>
+constexpr const std::array<std::size_t, std::tuple_size<Tuple_Type>::value>
+    AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ELEMENT_COLS;
 
 /* Matrix Add AugmentedMatrix */
 
@@ -638,30 +908,40 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
  * @param augmented_matrix The AugmentedMatrix to be added.
  * @return A new Matrix containing the result of the addition.
  */
-template <typename Matrix_Type, typename Tuple_Type>
-inline auto operator+(const Matrix_Type &matrix,
-                      const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+template <typename Matrix_Type, typename Tuple_Type, std::size_t Row_Blocks,
+          std::size_t Col_Blocks>
+inline auto operator+(
+    const Matrix_Type &matrix,
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
               Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return matrix + augmented_matrix.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = matrix(i, j) + augmented_matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(matrix, augmented_matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -674,30 +954,40 @@ inline auto operator+(const Matrix_Type &matrix,
  * @param augmented_matrix_b The second AugmentedMatrix to be added.
  * @return A new Matrix containing the result of the addition.
  */
-template <typename Matrix_Type, typename Tuple_Type>
-inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
-                      const Matrix_Type &matrix)
+template <typename Matrix_Type, typename Tuple_Type, std::size_t Row_Blocks,
+          std::size_t Col_Blocks>
+inline auto operator+(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
+    const Matrix_Type &matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
               Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix.template to_matrix<Matrix_Type>() + matrix;
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix(i, j) + matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(augmented_matrix, matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -710,39 +1000,46 @@ inline auto operator+(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
  * @param augmented_matrix_b The second AugmentedMatrix to be added.
  * @return A new Matrix containing the result of the addition.
  */
-template <typename Tuple_A_Type, typename Tuple_B_Type>
-inline auto operator+(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
-                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
-    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-              AugmentedMatrix<Tuple_A_Type>::ROWS,
-              AugmentedMatrix<Tuple_A_Type>::COLS> {
+template <typename Tuple_A_Type, std::size_t RA, std::size_t CA,
+          typename Tuple_B_Type, std::size_t RB, std::size_t CB>
+inline auto
+operator+(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
+          const AugmentedMatrix<Tuple_B_Type, RB, CB> &augmented_matrix_b)
+    -> Matrix<DefDense,
+              typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+              AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS> {
 
   static_assert(
-      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      std::is_same<
+          typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+          typename AugmentedMatrix<Tuple_B_Type, RB, CB>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type =
+      Matrix<DefDense,
+             typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  using Matrix_Type =
-      Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-             AugmentedMatrix<Tuple_A_Type>::ROWS,
-             AugmentedMatrix<Tuple_A_Type>::COLS>;
-
-  return augmented_matrix_a.template to_matrix<Matrix_Type>() +
-         augmented_matrix_b.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Result_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Result_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix_a(i, j) + augmented_matrix_b(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type>::ROWS,
-         AugmentedMatrix<Tuple_A_Type>::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /* Matrix Sub AugmentedMatrix */
@@ -848,30 +1145,40 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
  * @param augmented_matrix The AugmentedMatrix to subtract.
  * @return A new Matrix containing the result of the subtraction.
  */
-template <typename Matrix_Type, typename Tuple_Type>
-inline auto operator-(const Matrix_Type &matrix,
-                      const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+template <typename Matrix_Type, typename Tuple_Type, std::size_t Row_Blocks,
+          std::size_t Col_Blocks>
+inline auto operator-(
+    const Matrix_Type &matrix,
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
               Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return matrix - augmented_matrix.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = matrix(i, j) - augmented_matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(matrix, augmented_matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -882,30 +1189,40 @@ inline auto operator-(const Matrix_Type &matrix,
  * @param matrix The Matrix to subtract.
  * @return A new Matrix containing the result of the subtraction.
  */
-template <typename Matrix_Type, typename Tuple_Type>
-inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
-                      const Matrix_Type &matrix)
+template <typename Matrix_Type, typename Tuple_Type, std::size_t Row_Blocks,
+          std::size_t Col_Blocks>
+inline auto operator-(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
+    const Matrix_Type &matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
               Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix.template to_matrix<Matrix_Type>() - matrix;
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix(i, j) - matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix, matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -918,39 +1235,46 @@ inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
  * @param augmented_matrix_b The second AugmentedMatrix to subtract.
  * @return A new Matrix containing the result of the subtraction.
  */
-template <typename Tuple_A_Type, typename Tuple_B_Type>
-inline auto operator-(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
-                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
-    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-              AugmentedMatrix<Tuple_A_Type>::ROWS,
-              AugmentedMatrix<Tuple_A_Type>::COLS> {
+template <typename Tuple_A_Type, std::size_t RA, std::size_t CA,
+          typename Tuple_B_Type, std::size_t RB, std::size_t CB>
+inline auto
+operator-(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
+          const AugmentedMatrix<Tuple_B_Type, RB, CB> &augmented_matrix_b)
+    -> Matrix<DefDense,
+              typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+              AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS> {
 
   static_assert(
-      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      std::is_same<
+          typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+          typename AugmentedMatrix<Tuple_B_Type, RB, CB>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
+
+  using Result_Type =
+      Matrix<DefDense,
+             typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  using Matrix_Type =
-      Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-             AugmentedMatrix<Tuple_A_Type>::ROWS,
-             AugmentedMatrix<Tuple_A_Type>::COLS>;
-
-  return augmented_matrix_a.template to_matrix<Matrix_Type>() -
-         augmented_matrix_b.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Result_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Result_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix_a(i, j) - augmented_matrix_b(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type>::ROWS,
-         AugmentedMatrix<Tuple_A_Type>::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /* AugmentedMatrix Unary Minus */
@@ -1037,13 +1361,31 @@ inline void compute(const Matrix_A_Type &A, Matrix_Result_Type &result) {
  * @param augmented_matrix The AugmentedMatrix to negate.
  * @return A new AugmentedMatrix containing the negated values.
  */
-template <typename Tuple_Type>
-inline auto operator-(const AugmentedMatrix<Tuple_Type> &augmented_matrix)
-    -> AugmentedMatrix<Tuple_Type> {
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks>
+inline auto operator-(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
 
-  AugmentedMatrix<Tuple_Type> result;
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  constexpr std::size_t ROWS_NUM =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS;
+  constexpr std::size_t COLS_NUM =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
+
+  for (std::size_t i = 0; i < ROWS_NUM; ++i) {
+    for (std::size_t j = 0; j < COLS_NUM; ++j) {
+      result(i, j) = -augmented_matrix(i, j);
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   AugmentedMatrixUnaryMinus::compute(augmented_matrix, result);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1188,32 +1530,46 @@ inline void compute(const Matrix_A_Type &A, const Matrix_B_Type &B,
  * @param matrix The Matrix to multiply with.
  * @return A new Matrix containing the result of the multiplication.
  */
-template <typename Tuple_Type, typename Matrix_Type>
-inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
-                      const Matrix_Type &matrix)
+template <typename Tuple_Type, std::size_t Row_Blocks, std::size_t Col_Blocks,
+          typename Matrix_Type>
+inline auto operator*(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
+    const Matrix_Type &matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type,
-              AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS> {
+              AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
+              Matrix_Type::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
-  static_assert(AugmentedMatrix<Tuple_Type>::COLS == Matrix_Type::ROWS,
+  static_assert(AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS ==
+                    Matrix_Type::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
+
+  using Result_Type =
+      Matrix<DefDense, typename Matrix_Type::Value_Type,
+             AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
+             Matrix_Type::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using Value_Type = typename Matrix_Type::Value_Type;
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type,
-         AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS>
-      result;
+  static constexpr std::size_t AUG_ROWS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS;
+  static constexpr std::size_t AUG_COLS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
+  static constexpr std::size_t MATRIX_COLS = Matrix_Type::COLS;
 
-  for (std::size_t i = 0; i < AugmentedMatrix<Tuple_Type>::ROWS; ++i) {
-    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+  for (std::size_t i = 0; i < AUG_ROWS; ++i) {
+    for (std::size_t j = 0; j < AUG_COLS; ++j) {
       Value_Type sum = 0;
-      for (std::size_t k = 0; k < AugmentedMatrix<Tuple_Type>::COLS; ++k) {
+      for (std::size_t k = 0; k < MATRIX_COLS; ++k) {
         Value_Type a = augmented_matrix(i, k);
         Value_Type b = matrix(k, j);
         sum += a * b;
@@ -1222,19 +1578,13 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename Matrix_Type::Value_Type,
-         AugmentedMatrix<Tuple_Type>::ROWS, Matrix_Type::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(augmented_matrix, matrix, result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1245,32 +1595,43 @@ inline auto operator*(const AugmentedMatrix<Tuple_Type> &augmented_matrix,
  * @param augmented_matrix The AugmentedMatrix to multiply with.
  * @return A new Matrix containing the result of the multiplication.
  */
-template <typename Matrix_Type, typename Tuple_Type>
-inline auto operator*(const Matrix_Type &matrix,
-                      const AugmentedMatrix<Tuple_Type> &augmented_matrix)
+template <typename Matrix_Type, typename Tuple_Type, std::size_t Row_Blocks,
+          std::size_t Col_Blocks>
+inline auto operator*(
+    const Matrix_Type &matrix,
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
     -> Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-              AugmentedMatrix<Tuple_Type>::COLS> {
+              AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS> {
 
   static_assert(
       std::is_same<typename Matrix_Type::Value_Type,
-                   typename AugmentedMatrix<Tuple_Type>::Value_Type>::value,
+                   typename AugmentedMatrix<Tuple_Type, Row_Blocks,
+                                            Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
-  static_assert(Matrix_Type::COLS == AugmentedMatrix<Tuple_Type>::ROWS,
+  static_assert(Matrix_Type::COLS ==
+                    AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
+
+  using Result_Type =
+      Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+             AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
+  static constexpr std::size_t MATRIX_ROWS = Matrix_Type::ROWS;
+  static constexpr std::size_t MATRIX_COLS = Matrix_Type::COLS;
+  static constexpr std::size_t AUG_COLS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
+
   using Value_Type = typename Matrix_Type::Value_Type;
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         AugmentedMatrix<Tuple_Type>::COLS>
-      result;
-
-  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
-    for (std::size_t j = 0; j < AugmentedMatrix<Tuple_Type>::COLS; ++j) {
+  for (std::size_t i = 0; i < MATRIX_ROWS; ++i) {
+    for (std::size_t j = 0; j < AUG_COLS; ++j) {
       Value_Type sum = 0;
-      for (std::size_t k = 0; k < Matrix_Type::COLS; ++k) {
+      for (std::size_t k = 0; k < MATRIX_COLS; ++k) {
         Value_Type a = matrix(i, k);
         Value_Type b = augmented_matrix(k, j);
         sum += a * b;
@@ -1279,19 +1640,13 @@ inline auto operator*(const Matrix_Type &matrix,
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         AugmentedMatrix<Tuple_Type>::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(matrix, augmented_matrix, result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1304,55 +1659,64 @@ inline auto operator*(const Matrix_Type &matrix,
  * @param augmented_matrix_b The second AugmentedMatrix to multiply with.
  * @return A new Matrix containing the result of the multiplication.
  */
-template <typename Tuple_A_Type, typename Tuple_B_Type>
-inline auto operator*(const AugmentedMatrix<Tuple_A_Type> &augmented_matrix_a,
-                      const AugmentedMatrix<Tuple_B_Type> &augmented_matrix_b)
-    -> Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-              AugmentedMatrix<Tuple_A_Type>::ROWS,
-              AugmentedMatrix<Tuple_B_Type>::COLS> {
+template <typename Tuple_A_Type, std::size_t RA, std::size_t CA,
+          typename Tuple_B_Type, std::size_t RB, std::size_t CB>
+inline auto
+operator*(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
+          const AugmentedMatrix<Tuple_B_Type, RB, CB> &augmented_matrix_b)
+    -> Matrix<DefDense,
+              typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+              AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+              AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS> {
 
   static_assert(
-      std::is_same<typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-                   typename AugmentedMatrix<Tuple_B_Type>::Value_Type>::value,
+      std::is_same<
+          typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+          typename AugmentedMatrix<Tuple_B_Type, RB, CB>::Value_Type>::value,
       "AugmentedMatrix<Tuple_A_Type> and AugmentedMatrix<Tuple_B_Type> must "
       "have the same value type.");
 
-  static_assert(AugmentedMatrix<Tuple_A_Type>::COLS ==
-                    AugmentedMatrix<Tuple_B_Type>::ROWS,
+  static_assert(AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS ==
+                    AugmentedMatrix<Tuple_B_Type, RB, CB>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
+
+  using Result_Type =
+      Matrix<DefDense,
+             typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+             AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS>;
+
+  Result_Type result;
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type>::ROWS,
-         AugmentedMatrix<Tuple_B_Type>::COLS>
-      result;
+  static constexpr std::size_t ROWS_A =
+      AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS;
+  static constexpr std::size_t COLS_A =
+      AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS;
+  static constexpr std::size_t COLS_B =
+      AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS;
 
-  for (std::size_t i = 0; i < AugmentedMatrix<Tuple_A_Type>::ROWS; ++i) {
-    for (std::size_t j = 0; j < AugmentedMatrix<Tuple_B_Type>::COLS; ++j) {
-      typename AugmentedMatrix<Tuple_A_Type>::Value_Type sum = 0;
-      for (std::size_t k = 0; k < AugmentedMatrix<Tuple_A_Type>::COLS; ++k) {
+  using Value_Type = typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type;
+
+  for (std::size_t i = 0; i < ROWS_A; ++i) {
+    for (std::size_t j = 0; j < COLS_B; ++j) {
+      Value_Type sum = 0;
+      for (std::size_t k = 0; k < COLS_A; ++k) {
         sum += augmented_matrix_a(i, k) * augmented_matrix_b(k, j);
       }
       result(i, j) = sum;
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type>::ROWS,
-         AugmentedMatrix<Tuple_B_Type>::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1369,7 +1733,7 @@ using AugmentedMatrix_Tuple_Type = std::tuple<Matrices...>;
  * AugmentedMatrix.
  */
 template <typename... Matrices>
-using AugmentedMatrix_Type = AugmentedMatrix<Matrices...>;
+using AugmentedMatrix_Type = AugmentedMatrix<std::tuple<Matrices...>>;
 
 /**
  * @brief Creates an AugmentedMatrix from the provided matrices.
@@ -1378,10 +1742,12 @@ using AugmentedMatrix_Type = AugmentedMatrix<Matrices...>;
  * @param inputs The matrices to be included in the AugmentedMatrix.
  * @return An AugmentedMatrix containing the provided matrices.
  */
-template <typename... Matrices>
+template <std::size_t Row_Blocks = 0, std::size_t Col_Blocks = 0,
+          typename... Matrices>
 inline auto make_AugmentedMatrix(const Matrices &...inputs)
-    -> AugmentedMatrix<std::tuple<Matrices...>> {
-  return AugmentedMatrix<std::tuple<Matrices...>>(inputs...);
+    -> AugmentedMatrix<std::tuple<Matrices...>, Row_Blocks, Col_Blocks> {
+  return AugmentedMatrix<std::tuple<Matrices...>, Row_Blocks, Col_Blocks>(
+      inputs...);
 }
 
 /**
@@ -1391,9 +1757,25 @@ inline auto make_AugmentedMatrix(const Matrices &...inputs)
  * AugmentedMatrix.
  * @return An AugmentedMatrix filled with zeros.
  */
-template <typename... Matrices>
-inline auto make_AugmentedMatrixZeros() -> AugmentedMatrix<Matrices...> {
-  return AugmentedMatrix<Matrices...>();
+template <std::size_t Row_Blocks = 0, std::size_t Col_Blocks = 0,
+          typename... Matrices>
+inline auto make_AugmentedMatrixZeros()
+    -> AugmentedMatrix<std::tuple<Matrices...>, Row_Blocks, Col_Blocks> {
+  return AugmentedMatrix<std::tuple<Matrices...>, Row_Blocks, Col_Blocks>();
+}
+
+/**
+ * @brief Creates an AugmentedMatrix filled with zeros from a tuple type.
+ * @tparam Tuple_Type A std::tuple type that stores matrix block types.
+ * @return An AugmentedMatrix filled with zeros.
+ */
+template <
+    typename Tuple_Type, std::size_t Row_Blocks = 0, std::size_t Col_Blocks = 0,
+    typename std::enable_if<AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
+                            int>::type = 0>
+inline auto make_AugmentedMatrixZeros()
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  return AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>();
 }
 
 } // namespace PythonNumpy

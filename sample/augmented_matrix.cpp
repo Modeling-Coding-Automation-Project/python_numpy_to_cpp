@@ -39,7 +39,7 @@ int main(void) {
 
   using A_Type = SparseMatrix_Type<double, SparseAvailable_A>;
 
-  auto A = make_SparseMatrixZeros<double, SparseAvailable_A>();
+  auto A = make_SparseMatrixOnes<double, SparseAvailable_A>();
 
   using AA_Tuple_Type =
       AugmentedMatrix_Tuple_Type<A_Type, A_Type, A_Type, A_Type>;
@@ -50,7 +50,12 @@ int main(void) {
 
   auto C = AA * AB;
 
-  std::cout << "C(19, 19) = " << C.template get<19, 19>() << std::endl;
+  for (std::size_t i = 0; i < C.ROWS; ++i) {
+    for (std::size_t j = 0; j < C.COLS; ++j) {
+      std::cout << C(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
 
   return 0;
 }
