@@ -808,19 +808,26 @@ inline auto operator+(
                                             Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return matrix + augmented_matrix.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = matrix(i, j) + augmented_matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(matrix, augmented_matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -847,19 +854,26 @@ inline auto operator+(
                                             Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix.template to_matrix<Matrix_Type>() + matrix;
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix(i, j) + matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(augmented_matrix, matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -888,28 +902,30 @@ operator+(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
           typename AugmentedMatrix<Tuple_B_Type, RB, CB>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  using Matrix_Type =
+  using Result_Type =
       Matrix<DefDense,
              typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
              AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
              AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>;
 
-  return augmented_matrix_a.template to_matrix<Matrix_Type>() +
-         augmented_matrix_b.template to_matrix<Matrix_Type>();
+  Result_Type result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < Result_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Result_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix_a(i, j) + augmented_matrix_b(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>
-      result;
   AugmentedMatrixAddMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /* Matrix Sub AugmentedMatrix */
@@ -1029,19 +1045,26 @@ inline auto operator-(
                                             Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return matrix - augmented_matrix.template to_matrix<Matrix_Type>();
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = matrix(i, j) - augmented_matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(matrix, augmented_matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1066,19 +1089,26 @@ inline auto operator-(
                                             Col_Blocks>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
+  using Result_Type = Matrix<DefDense, typename Matrix_Type::Value_Type,
+                             Matrix_Type::ROWS, Matrix_Type::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return augmented_matrix.template to_matrix<Matrix_Type>() - matrix;
+  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix(i, j) - matrix(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         Matrix_Type::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix, matrix, result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1107,28 +1137,30 @@ operator-(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
           typename AugmentedMatrix<Tuple_B_Type, RB, CB>::Value_Type>::value,
       "Matrix_Type and AugmentedMatrix_Type must have the same value type.");
 
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  using Matrix_Type =
+  using Result_Type =
       Matrix<DefDense,
              typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
              AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
              AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>;
 
-  return augmented_matrix_a.template to_matrix<Matrix_Type>() -
-         augmented_matrix_b.template to_matrix<Matrix_Type>();
+  Result_Type result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < Result_Type::ROWS; ++i) {
+    for (std::size_t j = 0; j < Result_Type::COLS; ++j) {
+      result(i, j) = augmented_matrix_a(i, j) - augmented_matrix_b(i, j);
+    }
+  }
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS>
-      result;
   AugmentedMatrixSubMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
-  return result;
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /* AugmentedMatrix Unary Minus */
@@ -1222,7 +1254,24 @@ inline auto operator-(
 
   AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  constexpr std::size_t ROWS_NUM =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS;
+  constexpr std::size_t COLS_NUM =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
+
+  for (std::size_t i = 0; i < ROWS_NUM; ++i) {
+    for (std::size_t j = 0; j < COLS_NUM; ++j) {
+      result(i, j) = -augmented_matrix(i, j);
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   AugmentedMatrixUnaryMinus::compute(augmented_matrix, result);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
@@ -1386,21 +1435,27 @@ inline auto operator*(
                     Matrix_Type::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
+  using Result_Type =
+      Matrix<DefDense, typename Matrix_Type::Value_Type,
+             AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
+             Matrix_Type::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   using Value_Type = typename Matrix_Type::Value_Type;
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type,
-         AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
-         Matrix_Type::COLS>
-      result;
+  static constexpr std::size_t AUG_ROWS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS;
+  static constexpr std::size_t AUG_COLS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
+  static constexpr std::size_t MATRIX_COLS = Matrix_Type::COLS;
 
-  for (std::size_t i = 0;
-       i < AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS; ++i) {
-    for (std::size_t j = 0; j < Matrix_Type::COLS; ++j) {
+  for (std::size_t i = 0; i < AUG_ROWS; ++i) {
+    for (std::size_t j = 0; j < AUG_COLS; ++j) {
       Value_Type sum = 0;
-      for (std::size_t k = 0;
-           k < AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS; ++k) {
+      for (std::size_t k = 0; k < MATRIX_COLS; ++k) {
         Value_Type a = augmented_matrix(i, k);
         Value_Type b = matrix(k, j);
         sum += a * b;
@@ -1409,20 +1464,13 @@ inline auto operator*(
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename Matrix_Type::Value_Type,
-         AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
-         Matrix_Type::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(augmented_matrix, matrix, result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1451,19 +1499,25 @@ inline auto operator*(
                     AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
+  using Result_Type =
+      Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
+             AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  static constexpr std::size_t MATRIX_ROWS = Matrix_Type::ROWS;
+  static constexpr std::size_t MATRIX_COLS = Matrix_Type::COLS;
+  static constexpr std::size_t AUG_COLS =
+      AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS;
 
   using Value_Type = typename Matrix_Type::Value_Type;
 
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS>
-      result;
-
-  for (std::size_t i = 0; i < Matrix_Type::ROWS; ++i) {
-    for (std::size_t j = 0;
-         j < AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS; ++j) {
+  for (std::size_t i = 0; i < MATRIX_ROWS; ++i) {
+    for (std::size_t j = 0; j < AUG_COLS; ++j) {
       Value_Type sum = 0;
-      for (std::size_t k = 0; k < Matrix_Type::COLS; ++k) {
+      for (std::size_t k = 0; k < MATRIX_COLS; ++k) {
         Value_Type a = matrix(i, k);
         Value_Type b = augmented_matrix(k, j);
         sum += a * b;
@@ -1472,19 +1526,13 @@ inline auto operator*(
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename Matrix_Type::Value_Type, Matrix_Type::ROWS,
-         AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(matrix, augmented_matrix, result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
@@ -1518,41 +1566,43 @@ operator*(const AugmentedMatrix<Tuple_A_Type, RA, CA> &augmented_matrix_a,
                     AugmentedMatrix<Tuple_B_Type, RB, CB>::ROWS,
                 "Inner matrix dimensions must agree for multiplication.");
 
+  using Result_Type =
+      Matrix<DefDense,
+             typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
+             AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
+             AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS>;
+
+  Result_Type result;
+
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
-         AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS>
-      result;
+  static constexpr std::size_t ROWS_A =
+      AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS;
+  static constexpr std::size_t COLS_A =
+      AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS;
+  static constexpr std::size_t COLS_B =
+      AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS;
 
-  for (std::size_t i = 0; i < AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS;
-       ++i) {
-    for (std::size_t j = 0; j < AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS;
-         ++j) {
-      typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type sum = 0;
-      for (std::size_t k = 0; k < AugmentedMatrix<Tuple_A_Type, RA, CA>::COLS;
-           ++k) {
+  using Value_Type = typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type;
+
+  for (std::size_t i = 0; i < ROWS_A; ++i) {
+    for (std::size_t j = 0; j < COLS_B; ++j) {
+      Value_Type sum = 0;
+      for (std::size_t k = 0; k < COLS_A; ++k) {
         sum += augmented_matrix_a(i, k) * augmented_matrix_b(k, j);
       }
       result(i, j) = sum;
     }
   }
 
-  return result;
-
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  Matrix<DefDense, typename AugmentedMatrix<Tuple_A_Type, RA, CA>::Value_Type,
-         AugmentedMatrix<Tuple_A_Type, RA, CA>::ROWS,
-         AugmentedMatrix<Tuple_B_Type, RB, CB>::COLS>
-      result;
 
   AugmentedMatrixMulMatrix::compute(augmented_matrix_a, augmented_matrix_b,
                                     result);
 
-  return result;
-
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return result;
 }
 
 /**
