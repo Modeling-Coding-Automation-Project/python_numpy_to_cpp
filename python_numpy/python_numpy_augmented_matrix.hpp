@@ -330,19 +330,49 @@ constexpr std::size_t get_local_col_idx(std::size_t global_col,
 
 /* Dynamic Tuple Access for C++11 */
 
+/**
+ * @brief A helper struct to represent an index sequence for template
+ * metaprogramming.
+ * @tparam Is The indices in the sequence.
+ */
 template <std::size_t... Is> struct index_sequence {};
 
+/**
+ * @brief A helper struct to generate an index sequence for a given size.
+ * @tparam N The size of the index sequence.
+ * @tparam Is The indices in the sequence (default is empty).
+ */
 template <std::size_t N, std::size_t... Is>
 struct make_index_sequence_impl
     : make_index_sequence_impl<N - 1, N - 1, Is...> {};
 
+/**
+ * @brief Specialization for the base case of the index sequence generation.
+ * @tparam Is The indices in the sequence.
+ */
 template <std::size_t... Is> struct make_index_sequence_impl<0, Is...> {
   using type = index_sequence<Is...>;
 };
 
+/**
+ * @brief A helper alias to generate an index sequence for a given size.
+ * @tparam N The size of the index sequence.
+ */
 template <std::size_t N>
 using make_index_sequence = typename make_index_sequence_impl<N>::type;
 
+/**
+ * @brief Gets the element of a matrix from a tuple of matrices at the specified
+ * local row and column indices.
+ * @tparam TupleIdx The index of the matrix in the tuple.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
 template <std::size_t TupleIdx, typename Tuple_Type, typename Value_Type>
 inline Value_Type get_matrix_element(const Tuple_Type &matrix_tuple,
                                      std::size_t local_row,
@@ -350,6 +380,18 @@ inline Value_Type get_matrix_element(const Tuple_Type &matrix_tuple,
   return std::get<TupleIdx>(matrix_tuple)(local_row, local_col);
 }
 
+/**
+ * @brief Gets a reference to the element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam TupleIdx The index of the matrix in the tuple.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
 template <std::size_t TupleIdx, typename Tuple_Type, typename Value_Type>
 inline Value_Type &get_matrix_element_ref(Tuple_Type &matrix_tuple,
                                           std::size_t local_row,
@@ -357,6 +399,20 @@ inline Value_Type &get_matrix_element_ref(Tuple_Type &matrix_tuple,
   return std::get<TupleIdx>(matrix_tuple)(local_row, local_col);
 }
 
+/**
+ * @brief Dynamically accesses an element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @tparam Indices The indices in the index sequence.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @param index_sequence An index sequence for template metaprogramming.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
 template <typename Tuple_Type, typename Value_Type, std::size_t... Indices>
 inline Value_Type
 dynamic_tuple_access_impl(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
@@ -369,6 +425,20 @@ dynamic_tuple_access_impl(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
   return func_array[tuple_idx](matrix_tuple, local_row, local_col);
 }
 
+/**
+ * @brief Dynamically accesses a reference to an element of a matrix from a
+ * tuple of matrices at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @tparam Indices The indices in the index sequence.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @param index_sequence An index sequence for template metaprogramming.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
 template <typename Tuple_Type, typename Value_Type, std::size_t... Indices>
 inline Value_Type &
 dynamic_tuple_access_ref_impl(Tuple_Type &matrix_tuple, std::size_t tuple_idx,
@@ -381,6 +451,18 @@ dynamic_tuple_access_ref_impl(Tuple_Type &matrix_tuple, std::size_t tuple_idx,
   return func_array[tuple_idx](matrix_tuple, local_row, local_col);
 }
 
+/**
+ * @brief Dynamically accesses an element of a matrix from a tuple of matrices
+ * at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return The value at the specified local row and column indices in the
+ * selected matrix.
+ */
 template <typename Tuple_Type, typename Value_Type>
 inline Value_Type
 dynamic_tuple_access(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
@@ -392,6 +474,18 @@ dynamic_tuple_access(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
       make_index_sequence<TupleSize>{});
 }
 
+/**
+ * @brief Dynamically accesses a reference to an element of a matrix from a
+ * tuple of matrices at the specified local row and column indices.
+ * @tparam Tuple_Type The type of the tuple containing the matrices.
+ * @tparam Value_Type The type of the value in the matrix.
+ * @param matrix_tuple The tuple containing the matrices.
+ * @param tuple_idx The index of the matrix in the tuple to access.
+ * @param local_row The local row index within the selected matrix.
+ * @param local_col The local column index within the selected matrix.
+ * @return A reference to the value at the specified local row and column
+ * indices in the selected matrix.
+ */
 template <typename Tuple_Type, typename Value_Type>
 inline Value_Type &
 dynamic_tuple_access_ref(Tuple_Type &matrix_tuple, std::size_t tuple_idx,
