@@ -328,6 +328,51 @@ constexpr std::size_t get_local_col_idx(std::size_t global_col,
                                  accum + cols[current]);
 }
 
+/* Dynamic Tuple Access for C++11 */
+
+template <std::size_t... Is> struct index_sequence {};
+
+template <std::size_t N, std::size_t... Is>
+struct make_index_sequence_impl
+    : make_index_sequence_impl<N - 1, N - 1, Is...> {};
+
+template <std::size_t... Is> struct make_index_sequence_impl<0, Is...> {
+  using type = index_sequence<Is...>;
+};
+
+template <std::size_t N>
+using make_index_sequence = typename make_index_sequence_impl<N>::type;
+
+template <std::size_t TupleIdx, typename Tuple_Type, typename Value_Type>
+inline Value_Type get_matrix_element(const Tuple_Type &matrix_tuple,
+                                     std::size_t local_row,
+                                     std::size_t local_col) {
+  return std::get<TupleIdx>(matrix_tuple)(local_row, local_col);
+}
+
+template <typename Tuple_Type, typename Value_Type, std::size_t... Indices>
+inline Value_Type
+dynamic_tuple_access_impl(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                          std::size_t local_row, std::size_t local_col,
+                          index_sequence<Indices...>) {
+  using FuncType = Value_Type (*)(const Tuple_Type &, std::size_t, std::size_t);
+  static const FuncType func_array[] = {
+      &get_matrix_element<Indices, Tuple_Type, Value_Type>...};
+
+  return func_array[tuple_idx](matrix_tuple, local_row, local_col);
+}
+
+template <typename Tuple_Type, typename Value_Type>
+inline Value_Type
+dynamic_tuple_access(const Tuple_Type &matrix_tuple, std::size_t tuple_idx,
+                     std::size_t local_row, std::size_t local_col) {
+  constexpr std::size_t TupleSize = std::tuple_size<Tuple_Type>::value;
+
+  return dynamic_tuple_access_impl<Tuple_Type, Value_Type>(
+      matrix_tuple, tuple_idx, local_row, local_col,
+      make_index_sequence<TupleSize>{});
+}
+
 } // namespace AugmentedMatrixAction
 
 /* Augmented Matrix */
@@ -522,7 +567,7 @@ public:
    * @param index The linear index.
    * @return The value at the specified index.
    */
-  T_ operator()(std::size_t index) const {
+  T_ &operator()(std::size_t index) {
     if (index >= ROWS * COLS) {
       index = ROWS * COLS - 1;
     }
@@ -530,11 +575,18 @@ public:
     std::size_t row = index / COLS;
     std::size_t col = index % COLS;
 
-    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
+    return this->operator()(row, col);
+  }
 
-    substitute_matrix(dense_matrix, *this);
+  const T_ &operator()(std::size_t index) const {
+    if (index >= ROWS * COLS) {
+      index = ROWS * COLS - 1;
+    }
 
-    return dense_matrix(row, col);
+    std::size_t row = index / COLS;
+    std::size_t col = index % COLS;
+
+    return this->operator()(row, col);
   }
 
   /**
@@ -543,7 +595,7 @@ public:
    * @param col The column index.
    * @return The value at the specified indices.
    */
-  T_ operator()(std::size_t row, std::size_t col) const {
+  T_ &operator()(std::size_t row, std::size_t col) {
     if (row >= ROWS) {
       row = ROWS - 1;
     }
@@ -551,11 +603,44 @@ public:
       col = COLS - 1;
     }
 
-    Matrix<DefDense, T_, ROWS, COLS> dense_matrix;
+    std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t block_col =
+        AugmentedMatrixAction::get_block_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
 
-    substitute_matrix(dense_matrix, *this);
+    std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
 
-    return dense_matrix(row, col);
+    std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t local_col =
+        AugmentedMatrixAction::get_local_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    return AugmentedMatrixAction::dynamic_tuple_access<Tuple_Type, T_>(
+        this->matrix, tuple_idx, local_row, local_col);
+  }
+
+  const T_ &operator()(std::size_t row, std::size_t col) const {
+    if (row >= ROWS) {
+      row = ROWS - 1;
+    }
+    if (col >= COLS) {
+      col = COLS - 1;
+    }
+
+    std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t block_col =
+        AugmentedMatrixAction::get_block_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
+
+    std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
+        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
+    std::size_t local_col =
+        AugmentedMatrixAction::get_local_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
+
+    return AugmentedMatrixAction::dynamic_tuple_access<Tuple_Type, T_>(
+        this->matrix, tuple_idx, local_row, local_col);
   }
 
 public:
@@ -1477,11 +1562,10 @@ inline auto make_AugmentedMatrixZeros()
  * @tparam Tuple_Type A std::tuple type that stores matrix block types.
  * @return An AugmentedMatrix filled with zeros.
  */
-template <typename Tuple_Type, std::size_t Row_Blocks = 0,
-          std::size_t Col_Blocks = 0,
-          typename std::enable_if<
-              AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
-              int>::type = 0>
+template <
+    typename Tuple_Type, std::size_t Row_Blocks = 0, std::size_t Col_Blocks = 0,
+    typename std::enable_if<AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
+                            int>::type = 0>
 inline auto make_AugmentedMatrixZeros()
     -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
   return AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>();
