@@ -4086,9 +4086,10 @@ void CheckPythonNumpy<T>::check_python_numpy_augmented(void) {
     tester.expect_near(static_cast<T>(matrix_size), static_cast<T>(9), NEAR_LIMIT_STRICT,
         "check AugmentedMatrix size.");
 
+    augmented_matrix(1, 2) = static_cast<T>(100);
     T value_2_2 = augmented_matrix(1, 2);
 
-    tester.expect_near(value_2_2, static_cast<T>(6), NEAR_LIMIT_STRICT,
+    tester.expect_near(value_2_2, static_cast<T>(100), NEAR_LIMIT_STRICT,
         "check AugmentedMatrix operator() get value.");
 
     std::size_t rows_size;
