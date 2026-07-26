@@ -567,18 +567,7 @@ public:
    * @param index The linear index.
    * @return The value at the specified index.
    */
-  T_ &operator()(std::size_t index) {
-    if (index >= ROWS * COLS) {
-      index = ROWS * COLS - 1;
-    }
-
-    std::size_t row = index / COLS;
-    std::size_t col = index % COLS;
-
-    return this->operator()(row, col);
-  }
-
-  const T_ &operator()(std::size_t index) const {
+  T_ operator()(std::size_t index) {
     if (index >= ROWS * COLS) {
       index = ROWS * COLS - 1;
     }
@@ -595,31 +584,7 @@ public:
    * @param col The column index.
    * @return The value at the specified indices.
    */
-  T_ &operator()(std::size_t row, std::size_t col) {
-    if (row >= ROWS) {
-      row = ROWS - 1;
-    }
-    if (col >= COLS) {
-      col = COLS - 1;
-    }
-
-    std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
-        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
-    std::size_t block_col =
-        AugmentedMatrixAction::get_block_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
-
-    std::size_t tuple_idx = block_row * COL_BLOCKS + block_col;
-
-    std::size_t local_row = AugmentedMatrixAction::get_local_row_idx(
-        row, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
-    std::size_t local_col =
-        AugmentedMatrixAction::get_local_col_idx(col, ELEMENT_COLS, COL_BLOCKS);
-
-    return AugmentedMatrixAction::dynamic_tuple_access<Tuple_Type, T_>(
-        this->matrix, tuple_idx, local_row, local_col);
-  }
-
-  const T_ &operator()(std::size_t row, std::size_t col) const {
+  T_ operator()(std::size_t row, std::size_t col) {
     if (row >= ROWS) {
       row = ROWS - 1;
     }
