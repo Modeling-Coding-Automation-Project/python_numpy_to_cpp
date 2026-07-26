@@ -542,6 +542,12 @@ public:
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
 
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    return this->operator()(ROW_IN, COL_IN);
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
         ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
     constexpr std::size_t block_col = AugmentedMatrixAction::get_block_col_idx(
@@ -556,6 +562,8 @@ public:
 
     return std::get<tuple_idx>(this->matrix)
         .template get<local_row, local_col>();
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 
   /**
@@ -568,6 +576,12 @@ public:
   inline void set(const T_ &value) {
     static_assert(ROW_IN < ROWS && COL_IN < COLS,
                   "ROW and COL must be within the bounds of the matrix.");
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    this->operator()(ROW_IN, COL_IN) = value;
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
     constexpr std::size_t block_row = AugmentedMatrixAction::get_block_row_idx(
         ROW_IN, ELEMENT_ROWS, ROW_BLOCKS, COL_BLOCKS);
@@ -582,6 +596,8 @@ public:
         COL_IN, ELEMENT_COLS, COL_BLOCKS);
 
     std::get<tuple_idx>(this->matrix).template set<local_row, local_col>(value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 
   template <typename Matrix_Type> inline auto to_matrix() const -> Matrix_Type {
