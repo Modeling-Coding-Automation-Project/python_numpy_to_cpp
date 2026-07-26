@@ -1472,6 +1472,21 @@ inline auto make_AugmentedMatrixZeros()
   return AugmentedMatrix<std::tuple<Matrices...>, Row_Blocks, Col_Blocks>();
 }
 
+/**
+ * @brief Creates an AugmentedMatrix filled with zeros from a tuple type.
+ * @tparam Tuple_Type A std::tuple type that stores matrix block types.
+ * @return An AugmentedMatrix filled with zeros.
+ */
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0,
+          typename std::enable_if<
+              AugmentedMatrixAction::is_tuple<Tuple_Type>::value,
+              int>::type = 0>
+inline auto make_AugmentedMatrixZeros()
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  return AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>();
+}
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_AUGMENTED_MATRIX_HPP_
