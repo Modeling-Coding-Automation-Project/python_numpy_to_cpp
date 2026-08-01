@@ -10,6 +10,18 @@
 namespace Base {
 namespace Matrix {
 
+/* Constants */
+
+constexpr double PI = PythonMath::PI;
+constexpr double TWO_PI = PythonMath::TWO_PI;
+constexpr double HALF_PI = PythonMath::HALF_PI;
+constexpr double TAU = PythonMath::TAU;
+
+constexpr double E = PythonMath::E;
+
+constexpr double LN_2 = PythonMath::LN_2;
+constexpr double LN_10 = PythonMath::LN_10;
+
 /* abs */
 template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type

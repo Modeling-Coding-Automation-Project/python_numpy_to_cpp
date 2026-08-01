@@ -259,16 +259,16 @@ void CheckBaseMatrix<T>::check_matrix_multiply(void) {
         "check Row Vector multiply Matrix.");
 
     /* 行列と行列の積 */
-    Matrix<T, 2, 3> E;
-    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
-    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
+    Matrix<T, 2, 3> E_;
+    E_(0, 0) = 1.0F; E_(0, 1) = 2.0F; E_(0, 2) = 3.0F;
+    E_(1, 0) = 4.0F; E_(1, 1) = 5.0F; E_(1, 2) = 6.0F;
 
     Matrix<T, 3, 2> F;
     F(0, 0) = 7.0F; F(1, 0) = 8.0F; F(2, 0) = 9.0F;
     F(0, 1) = 10.0F; F(1, 1) = 11.0F; F(2, 1) = 12.0F;
 
-    Matrix<T, 3, 3> G = F * E;
-    //std::cout << "F * E = " << std::endl;
+    Matrix<T, 3, 3> G = F * E_;
+    //std::cout << "F * E_ = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 3; ++i) {
     //        std::cout << G(j, i) << " ";
@@ -427,14 +427,14 @@ void CheckBaseMatrix<T>::check_matrix_transpose_multiply(void) {
     b[1] = 2.0F;
     b[2] = 3.0F;
 
-    Matrix<T, 2, 3> E;
-    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
-    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
+    Matrix<T, 2, 3> E_;
+    E_(0, 0) = 1.0F; E_(0, 1) = 2.0F; E_(0, 2) = 3.0F;
+    E_(1, 0) = 4.0F; E_(1, 1) = 5.0F; E_(1, 2) = 6.0F;
 
     Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
     /* 転置積 */
-    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E);
+    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E_);
     //std::cout << "Trans = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 2; ++i) {
