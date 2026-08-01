@@ -11,7 +11,11 @@ namespace Base {
 namespace Matrix {
 
 /* abs */
-template <typename T> inline T abs(const T &x) { return PythonMath::abs(x); }
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+abs(const T &x) {
+  return PythonMath::abs(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> abs(const Matrix<T, M, N> &matrix) {
