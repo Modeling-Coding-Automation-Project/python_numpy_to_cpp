@@ -33,6 +33,7 @@ public:
     void check_triangular_matrix(void);
     void check_complex(void);
     void check_eigen_values_and_vectors(void);
+    void check_math(void);
     void calc(void);
 };
 
@@ -74,6 +75,8 @@ void CheckBaseMatrix<T>::calc(void) {
     check_complex();
 
     check_eigen_values_and_vectors();
+
+    check_math();
 }
 
 template <typename T>
@@ -2261,5 +2264,61 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     tester.throw_error_if_test_failed();
 }
+
+template <typename T>
+void CheckBaseMatrix<T>::check_math(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    T scalar_x = static_cast<T>(-3.5F);
+    T scalar_abs = Base::Matrix::abs(scalar_x);
+    T scalar_abs_answer = static_cast<T>(3.5F);
+
+    tester.expect_near(scalar_abs, scalar_abs_answer, NEAR_LIMIT_STRICT,
+        "check abs scalar.");
+
+    Matrix<T, 2, 3> mat_x({
+        {-1, 2, -3},
+        {4, -5, -6}
+        });
+    Matrix<T, 2, 3> mat_abs = Base::Matrix::abs(mat_x);
+    Matrix<T, 2, 3> mat_abs_answer({
+        {1, 2, 3},
+        {4, 5, 6}
+        });
+
+    tester.expect_near(mat_abs.data, mat_abs_answer.data, NEAR_LIMIT_STRICT,
+        "check abs Matrix.");
+
+    DiagMatrix<T, 3> diag_x({ -1, 2, -3 });
+    DiagMatrix<T, 3> diag_abs = Base::Matrix::abs(diag_x);
+    DiagMatrix<T, 3> diag_abs_answer({ 1, 2, 3 });
+
+    tester.expect_near(diag_abs.data, diag_abs_answer.data, NEAR_LIMIT_STRICT,
+        "check abs DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> sparse_x({ -1.0F, -3.0F, 8.0F, -2.0F, 4.0F });
+
+    auto sparse_abs = Base::Matrix::abs(sparse_x);
+    Matrix<T, 3, 3> sparse_abs_dense = output_dense_matrix(sparse_abs);
+
+    Matrix<T, 3, 3> sparse_abs_dense_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(sparse_abs_dense.data, sparse_abs_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check abs CompiledSparseMatrix.");
+
+    tester.throw_error_if_test_failed();
+}
+
 
 #endif // CHECK_BASE_MATRIX_HPP_
