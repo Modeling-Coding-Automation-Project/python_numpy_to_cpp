@@ -86,6 +86,20 @@ struct FmodCoreColMajor {
     result[Index] = PythonMath::fmod(matrix[Index], y);
     FmodCoreColMajor<T, M, N, Index - 1>::compute(result, matrix, y);
   }
+
+  /**
+   * @brief Recursively computes the element-wise floating-point modulus of a
+   * 2D std::vector (matrix) in column-major order.
+   *
+   * @param result The 2D vector to store the results.
+   * @param matrix The input 2D vector whose elements will be processed.
+   * @param y The divisor to use for the modulus operation.
+   */
+  static void compute(std::vector<std::vector<T>> &result,
+                      const std::vector<std::vector<T>> &matrix, const T &y) {
+    result[Index] = PythonMath::fmod(matrix[Index], y);
+    FmodCoreColMajor<T, M, N, Index - 1>::compute(result, matrix, y);
+  }
 };
 
 template <typename T, std::size_t M, std::size_t N>
@@ -101,6 +115,18 @@ struct FmodCoreColMajor<T, M, N, 0> {
   static void compute(std::array<std::array<T, M>, N> &result,
                       const std::array<std::array<T, M>, N> &matrix,
                       const T &y) {
+    result[0] = PythonMath::fmod(matrix[0], y);
+  }
+
+  /**
+   * @brief Base case for the recursive computation of floating-point modulus
+   * in a 2D std::vector (matrix) in column-major order.
+   * @param result The 2D vector to store the results.
+   * @param matrix The input 2D vector whose elements will be processed.
+   * @param y The divisor to use for the modulus operation.
+   */
+  static void compute(std::vector<std::vector<T>> &result,
+                      const std::vector<std::vector<T>> &matrix, const T &y) {
     result[0] = PythonMath::fmod(matrix[0], y);
   }
 };
@@ -123,6 +149,27 @@ struct FmodCoreColMajor<T, M, N, 0> {
 template <typename T, std::size_t M, std::size_t N>
 inline void compute(std::array<std::array<T, M>, N> &result,
                     const std::array<std::array<T, M>, N> &matrix, const T &y) {
+  FmodCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
+}
+
+/**
+ * @brief Computes the element-wise floating-point modulus of a 2D std::vector
+ * (matrix) in column-major order.
+ *
+ * This function takes a 2D std::vector (matrix) and computes the floating-point
+ * modulus of each element with respect to a given divisor y. The results are
+ * stored in the provided result vector.
+ *
+ * @tparam T The type of the elements in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param result The 2D vector to store the results.
+ * @param matrix The input 2D vector whose elements will be processed.
+ * @param y The divisor to use for the modulus operation.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(std::vector<std::vector<T>> &result,
+                    const std::vector<std::vector<T>> &matrix, const T &y) {
   FmodCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
 }
 
