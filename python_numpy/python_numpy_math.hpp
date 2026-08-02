@@ -153,6 +153,45 @@ inline auto fmod(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
   return result;
 }
 
+namespace FmodAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyFmodTupleCore {
+  template <typename T>
+  static void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::fmod(std::get<Index>(input).matrix, y);
+    ApplyFmodTupleCore<Tuple_Type, Index - 1>::compute(input, output, y);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyFmodTupleCore<Tuple_Type, 0> {
+  template <typename T>
+  static void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+    std::get<0>(output).matrix =
+        Base::Matrix::fmod(std::get<0>(input).matrix, y);
+  }
+};
+
+template <typename Tuple_Type, typename T>
+inline void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+  ApplyFmodTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output, y);
+}
+
+} // namespace FmodAugmentedMatrixAction
+
+template <typename Tuple_Type, typename T, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto fmod(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
+    const T &y) -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  FmodAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix, y);
+
+  return result;
+}
+
 /* sqrt */
 
 template <typename T, std::size_t M, std::size_t N>
@@ -584,6 +623,45 @@ inline auto pow(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
   Matrix<DefSparse, T, M, N, SparseAvailable> result;
 
   result.matrix = Base::Matrix::pow(matrix.matrix, y);
+
+  return result;
+}
+
+namespace PowAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyPowTupleCore {
+  template <typename T>
+  static void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::pow(std::get<Index>(input).matrix, y);
+    ApplyPowTupleCore<Tuple_Type, Index - 1>::compute(input, output, y);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyPowTupleCore<Tuple_Type, 0> {
+  template <typename T>
+  static void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+    std::get<0>(output).matrix =
+        Base::Matrix::pow(std::get<0>(input).matrix, y);
+  }
+};
+
+template <typename Tuple_Type, typename T>
+inline void compute(const Tuple_Type &input, Tuple_Type &output, const T &y) {
+  ApplyPowTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output, y);
+}
+
+} // namespace PowAugmentedMatrixAction
+
+template <typename Tuple_Type, typename T, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+pow(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
+    const T &y) -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  PowAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix, y);
 
   return result;
 }
