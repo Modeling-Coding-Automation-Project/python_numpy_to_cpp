@@ -2607,6 +2607,60 @@ void CheckBaseMatrix<T>::check_math(void) {
     tester.expect_near(scalar_atan2, scalar_atan2_answer, NEAR_LIMIT_STRICT,
         "check atan2 scalar.");
 
+    /* atan2 for Matrix */
+    Matrix<T, 2, 2> mat_atan2_y({
+        {0, 1},
+        {1, 1}
+        });
+    Matrix<T, 2, 2> mat_atan2_x({
+        {1, 0},
+        {1, 0}
+        });
+    Matrix<T, 2, 2> mat_atan2 = Base::Matrix::atan2(mat_atan2_y, mat_atan2_x);
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(mat_atan2(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[0,0].");
+    tester.expect_near(mat_atan2(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[0,1].");
+    tester.expect_near(mat_atan2(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[1,0].");
+    tester.expect_near(mat_atan2(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[1,1].");
+
+    /* atan2 for DiagMatrix */
+    DiagMatrix<T, 3> diag_atan2_y({ 0, 1, 1 });
+    DiagMatrix<T, 3> diag_atan2_x({ 1, 1, 0 });
+    DiagMatrix<T, 3> diag_atan2 = Base::Matrix::atan2(diag_atan2_y, diag_atan2_x);
+    // Expected values: atan2(0,1)=0, atan2(1,1)~0.7854, atan2(1,0)~1.5708
+    Vector<T, 3> diag_atan2_answer({ 0.0F, 0.7854F, 1.5708F });
+
+    tester.expect_near(diag_atan2.data[0], diag_atan2_answer[0], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[0].");
+    tester.expect_near(diag_atan2.data[1], diag_atan2_answer[1], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[1].");
+    tester.expect_near(diag_atan2.data[2], diag_atan2_answer[2], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[2].");
+
+    /* atan2 for CompiledSparseMatrix */
+    CompiledSparseMatrix<T, 2, 2,
+        CSRIndices<0, 1, 0, 1>,
+        CSRPointers<0, 2, 4>> sparse_atan2_y({ 0.0F, 1.0F, 1.0F, 1.0F });
+    CompiledSparseMatrix<T, 2, 2,
+        CSRIndices<0, 1, 0, 1>,
+        CSRPointers<0, 2, 4>> sparse_atan2_x({ 1.0F, 0.0F, 1.0F, 0.0F });
+    auto sparse_atan2 = Base::Matrix::atan2(sparse_atan2_y, sparse_atan2_x);
+    Matrix<T, 2, 2> sparse_atan2_dense = output_dense_matrix(sparse_atan2);
+
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(sparse_atan2_dense(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[0,0].");
+    tester.expect_near(sparse_atan2_dense(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[0,1].");
+    tester.expect_near(sparse_atan2_dense(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[1,0].");
+    tester.expect_near(sparse_atan2_dense(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[1,1].");
+
     /* sinh */
     T scalar_sinh = Base::Matrix::sinh(static_cast<T>(0.0F));
     T scalar_sinh_answer = static_cast<T>(0.0F);

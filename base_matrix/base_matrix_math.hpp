@@ -1743,6 +1743,88 @@ atan2(const T &y, const T &x) {
   return PythonMath::atan2(y, x);
 }
 
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two Matrices.
+ *
+ * This function takes two constant references to Matrices of type T and size M
+ * x N, and returns a new Matrix where each element is computed as
+ * atan2(y_ij, x_ij).
+ *
+ * @tparam T The type of the elements in the matrices.
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @param y The numerator Matrix.
+ * @param x The denominator Matrix.
+ * @return Matrix<T, M, N> A new Matrix containing the element-wise atan2
+ * results.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline Matrix<T, M, N> atan2(const Matrix<T, M, N> &y,
+                             const Matrix<T, M, N> &x) {
+  Matrix<T, M, N> result;
+
+  result.data = PythonMath::atan2(y.data, x.data);
+
+  return result;
+}
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two
+ * DiagMatrices.
+ *
+ * This function takes two constant references to DiagMatrices of type T and
+ * size M, and returns a new DiagMatrix where each diagonal element is computed
+ * as atan2(y_i, x_i).
+ *
+ * @tparam T The type of the elements in the diagonal matrices.
+ * @tparam M The size of the diagonal matrices.
+ * @param y The numerator DiagMatrix.
+ * @param x The denominator DiagMatrix.
+ * @return DiagMatrix<T, M> A new DiagMatrix containing the element-wise atan2
+ * results.
+ */
+template <typename T, std::size_t M>
+inline DiagMatrix<T, M> atan2(const DiagMatrix<T, M> &y,
+                              const DiagMatrix<T, M> &x) {
+  DiagMatrix<T, M> result;
+
+  result.data = PythonMath::atan2(y.data, x.data);
+
+  return result;
+}
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two
+ * CompiledSparseMatrices.
+ *
+ * This function takes two constant references to CompiledSparseMatrices of
+ * type T and size M x N, and returns a new CompiledSparseMatrix where each
+ * stored value is computed as atan2(y_k, x_k).
+ *
+ * @tparam T The type of the elements in the sparse matrices.
+ * @tparam M The number of rows in the sparse matrices.
+ * @tparam N The number of columns in the sparse matrices.
+ * @tparam CSRIndices The type representing the indices in the compressed
+ * sparse row format.
+ * @tparam CSRPointers The type representing the pointers in the compressed
+ * sparse row format.
+ * @param y The numerator CompiledSparseMatrix.
+ * @param x The denominator CompiledSparseMatrix.
+ * @return CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> A new
+ * CompiledSparseMatrix containing the element-wise atan2 results.
+ */
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
+          typename CSRPointers>
+inline CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers>
+atan2(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &y,
+      const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &x) {
+  CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> result;
+
+  result.values = PythonMath::atan2(y.values, x.values);
+
+  return result;
+}
+
 /* sinh */
 
 /**
