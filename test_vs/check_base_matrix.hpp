@@ -2465,6 +2465,50 @@ void CheckBaseMatrix<T>::check_math(void) {
     tester.expect_near(mat_log2(1, 1), static_cast<T>(3.0F), NEAR_LIMIT_STRICT,
         "check log2 Matrix[1,1].");
 
+    /* pow */
+    // pow スカラー版のテスト
+    T scalar_pow = Base::Matrix::pow(static_cast<T>(2.0F), static_cast<T>(3.0F));
+    T scalar_pow_answer = static_cast<T>(8.0F);
+    tester.expect_near(scalar_pow, scalar_pow_answer, NEAR_LIMIT_STRICT,
+        "check pow scalar.");
+
+    Matrix<T, 2, 3> mat_pow_x({
+        {1.0F, 2.0F, 3.0F},
+        {4.0F, 5.0F, 6.0F}
+        });
+
+    Matrix<T, 2, 3> mat_pow = Base::Matrix::pow(mat_pow_x, static_cast<T>(2.0F));
+
+    Matrix<T, 2, 3> mat_pow_answer({
+        {1.0F, 4.0F, 9.0F},
+        {16.0F, 25.0F, 36.0F}
+        });
+
+    tester.expect_near(mat_pow.data, mat_pow_answer.data, NEAR_LIMIT_STRICT,
+        "check pow Matrix.");
+
+    DiagMatrix<T, 3> diag_pow_x({ 1.0F, 2.0F, 3.0F });
+    DiagMatrix<T, 3> diag_pow = Base::Matrix::pow(diag_pow_x, static_cast<T>(2.0F));
+    DiagMatrix <T, 3> diag_pow_answer({ 1.0F, 4.0F, 9.0F });
+
+    tester.expect_near(diag_pow.data, diag_pow_answer.data, NEAR_LIMIT_STRICT,
+        "check pow DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 1, 2>,
+        CSRPointers<0, 1, 2, 3>> sparse_pow_x({ 1.0F, 2.0F, 3.0F });
+    auto sparse_pow = Base::Matrix::pow(sparse_pow_x, static_cast<T>(2.0F));
+    Matrix<T, 3, 3> sparse_pow_dense = output_dense_matrix(sparse_pow);
+
+    Matrix<T, 3, 3> sparse_pow_dense_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 4.0F, 0.0F},
+        {0.0F, 0.0F, 9.0F}
+        });
+
+    tester.expect_near(sparse_pow_dense.data, sparse_pow_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check pow CompiledSparseMatrix.");
+
     /* log10 */
     T scalar_log10 = Base::Matrix::log10(static_cast<T>(100.0F));
     T scalar_log10_answer = static_cast<T>(2.0F);
