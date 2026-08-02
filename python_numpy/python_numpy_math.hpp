@@ -129,6 +129,12 @@ abs(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* fmod */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+fmod(const T &x, const T &y) {
+  return Base::Matrix::fmod(x, y);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto fmod(const Matrix<DefDense, T, M, N> &matrix, const T &y)
     -> Matrix<DefDense, T, M, N> {
@@ -200,6 +206,12 @@ inline auto fmod(
 
 /* sqrt */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+sqrt(const T &x) {
+  return Base::Matrix::sqrt(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto sqrt(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -266,6 +278,12 @@ inline auto sqrt(
 }
 
 /* exp */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+exp(const T &x) {
+  return Base::Matrix::exp(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto exp(const Matrix<DefDense, T, M, N> &matrix)
@@ -334,6 +352,12 @@ exp(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* exp2 */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+exp2(const T &x) {
+  return Base::Matrix::exp2(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto exp2(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -400,6 +424,12 @@ inline auto exp2(
 }
 
 /* log */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+log(const T &x) {
+  return Base::Matrix::log(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto log(const Matrix<DefDense, T, M, N> &matrix)
@@ -468,6 +498,12 @@ log(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* log2 */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+log2(const T &x) {
+  return Base::Matrix::log2(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto log2(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -534,6 +570,12 @@ inline auto log2(
 }
 
 /* log10 */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+log10(const T &x) {
+  return Base::Matrix::log10(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto log10(const Matrix<DefDense, T, M, N> &matrix)
@@ -602,6 +644,12 @@ inline auto log10(
 }
 
 /* pow */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+pow(const T &x, const T &y) {
+  return Base::Matrix::pow(x, y);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto pow(const Matrix<DefDense, T, M, N> &matrix, const T &y)
@@ -674,6 +722,12 @@ pow(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
 
 /* sin */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+sin(const T &x) {
+  return Base::Matrix::sin(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto sin(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -740,6 +794,12 @@ sin(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 }
 
 /* cos */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+cos(const T &x) {
+  return Base::Matrix::cos(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto cos(const Matrix<DefDense, T, M, N> &matrix)
@@ -808,6 +868,12 @@ cos(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* tan */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+tan(const T &x) {
+  return Base::Matrix::tan(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto tan(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -874,6 +940,12 @@ tan(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 }
 
 /* asin */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+asin(const T &x) {
+  return Base::Matrix::asin(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto asin(const Matrix<DefDense, T, M, N> &matrix)
@@ -942,6 +1014,12 @@ inline auto asin(
 
 /* acos */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+acos(const T &x) {
+  return Base::Matrix::acos(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto acos(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -1008,6 +1086,12 @@ inline auto acos(
 }
 
 /* atan */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+atan(const T &x) {
+  return Base::Matrix::atan(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto atan(const Matrix<DefDense, T, M, N> &matrix)
@@ -1076,6 +1160,12 @@ inline auto atan(
 
 /* atan2 */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+atan2(const T &x, const T &y) {
+  return Base::Matrix::atan2(x, y);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto atan2(const Matrix<DefDense, T, M, N> &matrix, const T &y)
     -> Matrix<DefDense, T, M, N> {
@@ -1107,6 +1197,12 @@ inline auto atan2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
 }
 
 /* sinh */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+sinh(const T &x) {
+  return Base::Matrix::sinh(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto sinh(const Matrix<DefDense, T, M, N> &matrix)
@@ -1175,6 +1271,12 @@ inline auto sinh(
 
 /* cosh */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+cosh(const T &x) {
+  return Base::Matrix::cosh(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto cosh(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {
@@ -1241,6 +1343,12 @@ inline auto cosh(
 }
 
 /* tanh */
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+tanh(const T &x) {
+  return Base::Matrix::tanh(x);
+}
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto tanh(const Matrix<DefDense, T, M, N> &matrix)
