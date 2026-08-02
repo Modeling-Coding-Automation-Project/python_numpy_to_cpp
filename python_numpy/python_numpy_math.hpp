@@ -1,5 +1,5 @@
-#ifndef PYTHON_MATH_HPP_
-#define PYTHON_MATH_HPP_
+#ifndef PYTHON_NUMPY_MATH_HPP_
+#define PYTHON_NUMPY_MATH_HPP_
 
 #include "base_matrix.hpp"
 
@@ -123,4 +123,4 @@ abs(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 } // namespace PythonNumpy
 
-#endif // PYTHON_MATH_HPP_
+#endif // PYTHON_NUMPY_MATH_HPP_
