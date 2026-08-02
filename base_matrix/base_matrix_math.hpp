@@ -67,11 +67,48 @@ fmod(const T &x, const T &y) {
   return PythonMath::fmod(x, y);
 }
 
+namespace BaseMatrixFmodAction {
+
+// Specialization for column-major data layout: std::array<std::array<T, M>, N>
+template <typename T, std::size_t M, std::size_t N, std::size_t Index>
+struct FmodCoreColMajor {
+
+  static void compute(std::array<std::array<T, M>, N> &result,
+                      const std::array<std::array<T, M>, N> &matrix,
+                      const T &y) {
+    result[Index] = PythonMath::fmod(matrix[Index], y);
+    FmodCoreColMajor<T, M, N, Index - 1>::compute(result, matrix, y);
+  }
+};
+
+// Specialization to end the recursion (column-major)
+template <typename T, std::size_t M, std::size_t N>
+struct FmodCoreColMajor<T, M, N, 0> {
+
+  static void compute(std::array<std::array<T, M>, N> &result,
+                      const std::array<std::array<T, M>, N> &matrix,
+                      const T &y) {
+    result[0] = PythonMath::fmod(matrix[0], y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N> struct Fmod2DAction {
+
+  static inline void apply(std::array<std::array<T, M>, N> &result,
+                           const std::array<std::array<T, M>, N> &matrix,
+                           const T &y) {
+    FmodCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
+  }
+};
+
+} // namespace BaseMatrixFmodAction
+
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> fmod(const Matrix<T, M, N> &matrix, const T &y) {
   Matrix<T, M, N> result;
 
-  result.data = PythonMath::fmod(matrix.data, y);
+  BaseMatrixFmodAction::Fmod2DAction<T, M, N>::apply(result.data, matrix.data,
+                                                     y);
 
   return result;
 }
