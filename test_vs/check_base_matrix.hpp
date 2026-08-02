@@ -2326,20 +2326,20 @@ void CheckBaseMatrix<T>::check_math(void) {
     tester.expect_near(scalar_fmod, scalar_fmod_answer, NEAR_LIMIT_STRICT,
         "check fmod scalar.");
 
-    //Matrix<T, 2, 3> mat_fmod_x({
-    //    {7.5F, 8.5F, 9.5F},
-    //    {10.5F, 11.5F, 12.5F}
-    //    });
+    Matrix<T, 2, 3> mat_fmod_x({
+        {7.5F, 8.5F, 9.5F},
+        {10.5F, 11.5F, 12.5F}
+        });
 
-    //Matrix<T, 2, 3> mat_fmod = Base::Matrix::fmod(mat_fmod_x, static_cast<T>(2.5F));
+    Matrix<T, 2, 3> mat_fmod = Base::Matrix::fmod(mat_fmod_x, static_cast<T>(2.5F));
 
-    //Matrix<T, 2, 3> mat_fmod_answer({
-    //    {0.0F, 1.0F, 2.0F},
-    //    {0.5F, 1.5F, 2.5F}
-    //    });
+    Matrix<T, 2, 3> mat_fmod_answer({
+        {0.0F, 1.0F, 2.0F},
+        {0.5F, 1.5F, 0.0F}
+        });
 
-    //tester.expect_near(mat_fmod.data, mat_fmod_answer.data, NEAR_LIMIT_STRICT,
-    //    "check fmod Matrix.");
+    tester.expect_near(mat_fmod.data, mat_fmod_answer.data, NEAR_LIMIT_STRICT,
+        "check fmod Matrix.");
 
     DiagMatrix<T, 3> diag_fmod_x({ 7.5F, 8.5F, 9.5F });
     DiagMatrix<T, 3> diag_fmod = Base::Matrix::fmod(diag_fmod_x, static_cast<T>(2.5F));
