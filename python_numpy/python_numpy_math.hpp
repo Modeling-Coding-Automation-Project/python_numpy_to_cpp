@@ -22,6 +22,12 @@ constexpr double LN_10 = Base::Matrix::LN_10;
 
 /* abs */
 
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+abs(const T &x) {
+  return Base::Matrix::abs(x);
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline auto abs(const Matrix<DefDense, T, M, N> &matrix)
     -> Matrix<DefDense, T, M, N> {

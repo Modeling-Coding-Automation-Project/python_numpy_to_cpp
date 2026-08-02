@@ -4233,13 +4233,20 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
+    /* abs - Scalar */
+    T scalar_input = -5;
+    T scalar_result = PythonNumpy::abs(scalar_input);
+    T scalar_expected = 5;
+    tester.expect_near(scalar_result, scalar_expected, NEAR_LIMIT_STRICT,
+        "check abs Scalar.");
+
     /* abs - Dense Matrix */
     Matrix<DefDense, T, 2, 3> dense_input({
         {1, -2, 3},
         {-4, 5, -6}
     });
 
-    Matrix<DefDense, T, 2, 3> dense_result = abs(dense_input);
+    Matrix<DefDense, T, 2, 3> dense_result = PythonNumpy::abs(dense_input);
 
     Matrix<DefDense, T, 2, 3> dense_expected({
         {1, 2, 3},
@@ -4253,7 +4260,7 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     T diag_input_array[3] = { -1, 2, -3 };
     Matrix<DefDiag, T, 3> diag_input(diag_input_array);
 
-    Matrix<DefDiag, T, 3> diag_result = abs(diag_input);
+    Matrix<DefDiag, T, 3> diag_result = PythonNumpy::abs(diag_input);
 
     T diag_expected_array[3] = { 1, 2, 3 };
     Matrix<DefDiag, T, 3> diag_expected(diag_expected_array);
@@ -4269,7 +4276,7 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
         ColumnAvailable<false, true, false>>
         > sparse_input({ -1, -5, 3 });
 
-    auto sparse_result = abs(sparse_input);
+    auto sparse_result = PythonNumpy::abs(sparse_input);
 
     Matrix<DefSparse, T, 3, 3,
         SparseAvailable<
@@ -4293,7 +4300,7 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
 
     auto augmented_input = make_AugmentedMatrix(aug_A11, aug_A12, aug_A21, aug_A22);
 
-    auto augmented_result = abs(augmented_input);
+    auto augmented_result = PythonNumpy::abs(augmented_input);
 
     auto augmented_result_dense = augmented_result.template to_matrix<Matrix<DefDense, T, 3, 3>>();
 
