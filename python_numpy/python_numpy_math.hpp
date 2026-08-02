@@ -121,6 +121,1108 @@ abs(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
   return result;
 }
 
+/* fmod */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto fmod(const Matrix<DefDense, T, M, N> &matrix, const T &y)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::fmod(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto fmod(const Matrix<DefDiag, T, M> &matrix, const T &y)
+    -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::fmod(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto fmod(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                 const T &y) -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::fmod(matrix.matrix, y);
+
+  return result;
+}
+
+/* sqrt */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto sqrt(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::sqrt(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto sqrt(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::sqrt(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto sqrt(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::sqrt(matrix.matrix);
+
+  return result;
+}
+
+namespace SqrtAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplySqrtTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::sqrt(std::get<Index>(input).matrix);
+    ApplySqrtTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplySqrtTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::sqrt(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplySqrtTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace SqrtAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto sqrt(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  SqrtAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* exp */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto exp(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::exp(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto exp(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::exp(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto exp(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::exp(matrix.matrix);
+
+  return result;
+}
+
+namespace ExpAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyExpTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::exp(std::get<Index>(input).matrix);
+    ApplyExpTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyExpTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::exp(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyExpTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output);
+}
+
+} // namespace ExpAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+exp(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  ExpAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* exp2 */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto exp2(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::exp2(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto exp2(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::exp2(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto exp2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::exp2(matrix.matrix);
+
+  return result;
+}
+
+namespace Exp2AugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyExp2TupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::exp2(std::get<Index>(input).matrix);
+    ApplyExp2TupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyExp2TupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::exp2(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyExp2TupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace Exp2AugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto exp2(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  Exp2AugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* log */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto log(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::log(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto log(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::log(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto log(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::log(matrix.matrix);
+
+  return result;
+}
+
+namespace LogAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyLogTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::log(std::get<Index>(input).matrix);
+    ApplyLogTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyLogTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::log(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyLogTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output);
+}
+
+} // namespace LogAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+log(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  LogAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* log2 */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto log2(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::log2(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto log2(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::log2(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto log2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::log2(matrix.matrix);
+
+  return result;
+}
+
+namespace Log2AugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyLog2TupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::log2(std::get<Index>(input).matrix);
+    ApplyLog2TupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyLog2TupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::log2(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyLog2TupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace Log2AugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto log2(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  Log2AugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* log10 */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto log10(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::log10(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto log10(const Matrix<DefDiag, T, M> &matrix)
+    -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::log10(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto log10(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::log10(matrix.matrix);
+
+  return result;
+}
+
+namespace Log10AugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyLog10TupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::log10(std::get<Index>(input).matrix);
+    ApplyLog10TupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyLog10TupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::log10(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyLog10TupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                      1>::compute(input, output);
+}
+
+} // namespace Log10AugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto log10(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  Log10AugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* pow */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto pow(const Matrix<DefDense, T, M, N> &matrix, const T &y)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::pow(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto pow(const Matrix<DefDiag, T, M> &matrix, const T &y)
+    -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::pow(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto pow(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                const T &y) -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::pow(matrix.matrix, y);
+
+  return result;
+}
+
+/* sin */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto sin(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::sin(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto sin(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::sin(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto sin(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::sin(matrix.matrix);
+
+  return result;
+}
+
+namespace SinAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplySinTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::sin(std::get<Index>(input).matrix);
+    ApplySinTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplySinTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::sin(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplySinTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output);
+}
+
+} // namespace SinAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+sin(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  SinAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* cos */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto cos(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::cos(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto cos(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::cos(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto cos(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::cos(matrix.matrix);
+
+  return result;
+}
+
+namespace CosAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyCosTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::cos(std::get<Index>(input).matrix);
+    ApplyCosTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyCosTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::cos(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyCosTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output);
+}
+
+} // namespace CosAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+cos(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  CosAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* tan */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto tan(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::tan(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto tan(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::tan(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto tan(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::tan(matrix.matrix);
+
+  return result;
+}
+
+namespace TanAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyTanTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::tan(std::get<Index>(input).matrix);
+    ApplyTanTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyTanTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::tan(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyTanTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                    1>::compute(input, output);
+}
+
+} // namespace TanAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto
+tan(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  TanAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* asin */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto asin(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::asin(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto asin(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::asin(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto asin(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::asin(matrix.matrix);
+
+  return result;
+}
+
+namespace AsinAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyAsinTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::asin(std::get<Index>(input).matrix);
+    ApplyAsinTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyAsinTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::asin(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyAsinTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace AsinAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto asin(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  AsinAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* acos */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto acos(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::acos(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto acos(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::acos(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto acos(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::acos(matrix.matrix);
+
+  return result;
+}
+
+namespace AcosAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyAcosTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::acos(std::get<Index>(input).matrix);
+    ApplyAcosTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyAcosTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::acos(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyAcosTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace AcosAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto acos(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  AcosAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* atan */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto atan(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::atan(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto atan(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::atan(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto atan(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::atan(matrix.matrix);
+
+  return result;
+}
+
+namespace AtanAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyAtanTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::atan(std::get<Index>(input).matrix);
+    ApplyAtanTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyAtanTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::atan(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyAtanTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace AtanAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto atan(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  AtanAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* atan2 */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto atan2(const Matrix<DefDense, T, M, N> &matrix, const T &y)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto atan2(const Matrix<DefDiag, T, M> &matrix, const T &y)
+    -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto atan2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
+                  const T &y) -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
+
+  return result;
+}
+
+/* sinh */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto sinh(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::sinh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto sinh(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::sinh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto sinh(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::sinh(matrix.matrix);
+
+  return result;
+}
+
+namespace SinhAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplySinhTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::sinh(std::get<Index>(input).matrix);
+    ApplySinhTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplySinhTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::sinh(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplySinhTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace SinhAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto sinh(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  SinhAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* cosh */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto cosh(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::cosh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto cosh(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::cosh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto cosh(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::cosh(matrix.matrix);
+
+  return result;
+}
+
+namespace CoshAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyCoshTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::cosh(std::get<Index>(input).matrix);
+    ApplyCoshTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyCoshTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::cosh(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyCoshTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace CoshAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto cosh(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  CoshAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
+/* tanh */
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto tanh(const Matrix<DefDense, T, M, N> &matrix)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::tanh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M>
+inline auto tanh(const Matrix<DefDiag, T, M> &matrix) -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::tanh(matrix.matrix);
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto tanh(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::tanh(matrix.matrix);
+
+  return result;
+}
+
+namespace TanhAugmentedMatrixAction {
+
+template <typename Tuple_Type, std::size_t Index> struct ApplyTanhTupleCore {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<Index>(output).matrix =
+        Base::Matrix::tanh(std::get<Index>(input).matrix);
+    ApplyTanhTupleCore<Tuple_Type, Index - 1>::compute(input, output);
+  }
+};
+
+template <typename Tuple_Type> struct ApplyTanhTupleCore<Tuple_Type, 0> {
+  static void compute(const Tuple_Type &input, Tuple_Type &output) {
+    std::get<0>(output).matrix = Base::Matrix::tanh(std::get<0>(input).matrix);
+  }
+};
+
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input, Tuple_Type &output) {
+  ApplyTanhTupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                     1>::compute(input, output);
+}
+
+} // namespace TanhAugmentedMatrixAction
+
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto tanh(
+    const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  TanhAugmentedMatrixAction::compute(augmented_matrix.matrix, result.matrix);
+
+  return result;
+}
+
 } // namespace PythonNumpy
 
 #endif // PYTHON_NUMPY_MATH_HPP_
