@@ -179,7 +179,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> fmod(const Matrix<T, M, N> &matrix, const T &y) {
   Matrix<T, M, N> result;
 
-  BaseMatrixFmodAction::compute(result.data, matrix.data, y);
+  BaseMatrixFmodAction::compute<T, M, N>(result.data, matrix.data, y);
 
   return result;
 }
