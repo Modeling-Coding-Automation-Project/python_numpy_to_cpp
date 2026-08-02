@@ -33,6 +33,7 @@ public:
     void check_triangular_matrix(void);
     void check_complex(void);
     void check_eigen_values_and_vectors(void);
+    void check_math(void);
     void calc(void);
 };
 
@@ -74,6 +75,8 @@ void CheckBaseMatrix<T>::calc(void) {
     check_complex();
 
     check_eigen_values_and_vectors();
+
+    check_math();
 }
 
 template <typename T>
@@ -256,16 +259,16 @@ void CheckBaseMatrix<T>::check_matrix_multiply(void) {
         "check Row Vector multiply Matrix.");
 
     /* 行列と行列の積 */
-    Matrix<T, 2, 3> E;
-    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
-    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
+    Matrix<T, 2, 3> E_;
+    E_(0, 0) = 1.0F; E_(0, 1) = 2.0F; E_(0, 2) = 3.0F;
+    E_(1, 0) = 4.0F; E_(1, 1) = 5.0F; E_(1, 2) = 6.0F;
 
     Matrix<T, 3, 2> F;
     F(0, 0) = 7.0F; F(1, 0) = 8.0F; F(2, 0) = 9.0F;
     F(0, 1) = 10.0F; F(1, 1) = 11.0F; F(2, 1) = 12.0F;
 
-    Matrix<T, 3, 3> G = F * E;
-    //std::cout << "F * E = " << std::endl;
+    Matrix<T, 3, 3> G = F * E_;
+    //std::cout << "F * E_ = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 3; ++i) {
     //        std::cout << G(j, i) << " ";
@@ -424,14 +427,14 @@ void CheckBaseMatrix<T>::check_matrix_transpose_multiply(void) {
     b[1] = 2.0F;
     b[2] = 3.0F;
 
-    Matrix<T, 2, 3> E;
-    E(0, 0) = 1.0F; E(0, 1) = 2.0F; E(0, 2) = 3.0F;
-    E(1, 0) = 4.0F; E(1, 1) = 5.0F; E(1, 2) = 6.0F;
+    Matrix<T, 2, 3> E_;
+    E_(0, 0) = 1.0F; E_(0, 1) = 2.0F; E_(0, 2) = 3.0F;
+    E_(1, 0) = 4.0F; E_(1, 1) = 5.0F; E_(1, 2) = 6.0F;
 
     Matrix<T, 3, 3> H({ {1, 2, 9}, {8, 5, 4}, {6, 3, 7} });
 
     /* 転置積 */
-    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E);
+    Matrix<T, 3, 2> Trans = matrix_multiply_A_mul_BTranspose(H, E_);
     //std::cout << "Trans = " << std::endl;
     //for (size_t j = 0; j < 3; ++j) {
     //    for (size_t i = 0; i < 2; ++i) {
@@ -2261,5 +2264,447 @@ void CheckBaseMatrix<T>::check_eigen_values_and_vectors(void) {
 
     tester.throw_error_if_test_failed();
 }
+
+template <typename T>
+void CheckBaseMatrix<T>::check_math(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    /* abs */
+
+    T scalar_x = static_cast<T>(-3.5F);
+    T scalar_abs = Base::Matrix::abs(scalar_x);
+    T scalar_abs_answer = static_cast<T>(3.5F);
+
+    tester.expect_near(scalar_abs, scalar_abs_answer, NEAR_LIMIT_STRICT,
+        "check abs scalar.");
+
+    Matrix<T, 2, 3> mat_x({
+        {-1, 2, -3},
+        {4, -5, -6}
+        });
+    Matrix<T, 2, 3> mat_abs = Base::Matrix::abs(mat_x);
+    Matrix<T, 2, 3> mat_abs_answer({
+        {1, 2, 3},
+        {4, 5, 6}
+        });
+
+    tester.expect_near(mat_abs.data, mat_abs_answer.data, NEAR_LIMIT_STRICT,
+        "check abs Matrix.");
+
+    DiagMatrix<T, 3> diag_x({ -1, 2, -3 });
+    DiagMatrix<T, 3> diag_abs = Base::Matrix::abs(diag_x);
+    DiagMatrix<T, 3> diag_abs_answer({ 1, 2, 3 });
+
+    tester.expect_near(diag_abs.data, diag_abs_answer.data, NEAR_LIMIT_STRICT,
+        "check abs DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> sparse_x({ -1.0F, -3.0F, 8.0F, -2.0F, 4.0F });
+
+    auto sparse_abs = Base::Matrix::abs(sparse_x);
+    Matrix<T, 3, 3> sparse_abs_dense = output_dense_matrix(sparse_abs);
+
+    Matrix<T, 3, 3> sparse_abs_dense_answer({
+        {1, 0, 0},
+        {3, 0, 8},
+        {0, 2, 4}
+        });
+
+    tester.expect_near(sparse_abs_dense.data, sparse_abs_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check abs CompiledSparseMatrix.");
+
+    /* fmod */
+    // fmod スカラー版のテスト
+    T scalar_fmod = Base::Matrix::fmod(static_cast<T>(7.5F), static_cast<T>(2.5F));
+    T scalar_fmod_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_fmod, scalar_fmod_answer, NEAR_LIMIT_STRICT,
+        "check fmod scalar.");
+
+    Matrix<T, 2, 3> mat_fmod_x({
+        {7.5F, 8.5F, 9.5F},
+        {10.5F, 11.5F, 12.5F}
+        });
+
+    Matrix<T, 2, 3> mat_fmod = Base::Matrix::fmod(mat_fmod_x, static_cast<T>(2.5F));
+
+    Matrix<T, 2, 3> mat_fmod_answer({
+        {0.0F, 1.0F, 2.0F},
+        {0.5F, 1.5F, 0.0F}
+        });
+
+    tester.expect_near(mat_fmod.data, mat_fmod_answer.data, NEAR_LIMIT_STRICT,
+        "check fmod Matrix.");
+
+    DiagMatrix<T, 3> diag_fmod_x({ 7.5F, 8.5F, 9.5F });
+    DiagMatrix<T, 3> diag_fmod = Base::Matrix::fmod(diag_fmod_x, static_cast<T>(2.5F));
+    DiagMatrix <T, 3> diag_fmod_answer({ 0.0F, 1.0F, 2.0F });
+
+    tester.expect_near(diag_fmod.data, diag_fmod_answer.data, NEAR_LIMIT_STRICT,
+        "check fmod DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 1, 2>,
+        CSRPointers<0, 1, 2, 3>> sparse_fmod_x({ 7.5F, 8.5F, 9.5F });
+    auto sparse_fmod = Base::Matrix::fmod(sparse_fmod_x, static_cast<T>(2.5F));
+    Matrix<T, 3, 3> sparse_fmod_dense = output_dense_matrix(sparse_fmod);
+
+    Matrix<T, 3, 3> sparse_fmod_dense_answer({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 2.0F}
+        });
+
+    tester.expect_near(sparse_fmod_dense.data, sparse_fmod_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check fmod CompiledSparseMatrix.");
+
+    /* sqrt */
+
+    T scalar_sqrt = Base::Matrix::sqrt(static_cast<T>(4.0F));
+    T scalar_sqrt_answer = static_cast<T>(2.0F);
+    tester.expect_near(scalar_sqrt, scalar_sqrt_answer, NEAR_LIMIT_STRICT,
+        "check sqrt scalar.");
+
+    Matrix<T, 2, 2> mat_sqrt_x({
+        {1, 4},
+        {9, 16}
+        });
+    Matrix<T, 2, 2> mat_sqrt = Base::Matrix::sqrt(mat_sqrt_x);
+    Matrix<T, 2, 2> mat_sqrt_answer({
+        {1, 2},
+        {3, 4}
+        });
+    tester.expect_near(mat_sqrt.data, mat_sqrt_answer.data, NEAR_LIMIT_STRICT,
+        "check sqrt Matrix.");
+
+    DiagMatrix<T, 3> diag_sqrt_x({ 1, 4, 9 });
+    DiagMatrix<T, 3> diag_sqrt = Base::Matrix::sqrt(diag_sqrt_x);
+    DiagMatrix<T, 3> diag_sqrt_answer({ 1, 2, 3 });
+    tester.expect_near(diag_sqrt.data, diag_sqrt_answer.data, NEAR_LIMIT_STRICT,
+        "check sqrt DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 1, 2>,
+        CSRPointers<0, 1, 2, 3>> sparse_sqrt_x({ 1.0F, 4.0F, 9.0F });
+    auto sparse_sqrt = Base::Matrix::sqrt(sparse_sqrt_x);
+    Matrix<T, 3, 3> sparse_sqrt_dense = output_dense_matrix(sparse_sqrt);
+    Matrix<T, 3, 3> sparse_sqrt_dense_answer({
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+        });
+    tester.expect_near(sparse_sqrt_dense.data, sparse_sqrt_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check sqrt CompiledSparseMatrix.");
+
+    /* exp */
+    T scalar_exp = Base::Matrix::exp(static_cast<T>(0.0F));
+    T scalar_exp_answer = static_cast<T>(1.0F);
+    tester.expect_near(scalar_exp, scalar_exp_answer, NEAR_LIMIT_STRICT,
+        "check exp scalar.");
+
+    Matrix<T, 2, 2> mat_exp_x({
+        {0, 1},
+        {0, 0}
+        });
+    Matrix<T, 2, 2> mat_exp = Base::Matrix::exp(mat_exp_x);
+    tester.expect_near(mat_exp(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check exp Matrix[0,0].");
+    tester.expect_near(mat_exp(0, 1), static_cast<T>(2.71828F), NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
+        "check exp Matrix[0,1].");
+
+    /* exp2 */
+    T scalar_exp2 = Base::Matrix::exp2(static_cast<T>(3.0F));
+    T scalar_exp2_answer = static_cast<T>(8.0F);
+    tester.expect_near(scalar_exp2, scalar_exp2_answer, NEAR_LIMIT_STRICT,
+        "check exp2 scalar.");
+
+    Matrix<T, 2, 2> mat_exp2_x({
+        {0, 1},
+        {2, 0}
+        });
+    Matrix<T, 2, 2> mat_exp2 = Base::Matrix::exp2(mat_exp2_x);
+    tester.expect_near(mat_exp2(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check exp2 Matrix[0,0].");
+    tester.expect_near(mat_exp2(0, 1), static_cast<T>(2.0F), NEAR_LIMIT_STRICT,
+        "check exp2 Matrix[0,1].");
+    tester.expect_near(mat_exp2(1, 0), static_cast<T>(4.0F), NEAR_LIMIT_STRICT,
+        "check exp2 Matrix[1,0].");
+
+    /* log */
+    T scalar_log = Base::Matrix::log(static_cast<T>(2.71828F));
+    T scalar_log_answer = static_cast<T>(1.0F);
+    tester.expect_near(scalar_log, scalar_log_answer, NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
+        "check log scalar.");
+
+    Matrix<T, 2, 2> mat_log_x({
+        {1, 2.71828F},
+        {7.389F, 1}
+        });
+    Matrix<T, 2, 2> mat_log = Base::Matrix::log(mat_log_x);
+    tester.expect_near(mat_log(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check log Matrix[0,0].");
+    tester.expect_near(mat_log(0, 1), static_cast<T>(1.0F), NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
+        "check log Matrix[0,1].");
+
+    /* log2 */
+    T scalar_log2 = Base::Matrix::log2(static_cast<T>(8.0F));
+    T scalar_log2_answer = static_cast<T>(3.0F);
+    tester.expect_near(scalar_log2, scalar_log2_answer, NEAR_LIMIT_STRICT,
+        "check log2 scalar.");
+
+    Matrix<T, 2, 2> mat_log2_x({
+        {1, 2},
+        {4, 8}
+        });
+    Matrix<T, 2, 2> mat_log2 = Base::Matrix::log2(mat_log2_x);
+    tester.expect_near(mat_log2(1, 1), static_cast<T>(3.0F), NEAR_LIMIT_STRICT,
+        "check log2 Matrix[1,1].");
+
+    /* pow */
+    // pow スカラー版のテスト
+    T scalar_pow = Base::Matrix::pow(static_cast<T>(2.0F), static_cast<T>(3.0F));
+    T scalar_pow_answer = static_cast<T>(8.0F);
+    tester.expect_near(scalar_pow, scalar_pow_answer, NEAR_LIMIT_STRICT,
+        "check pow scalar.");
+
+    Matrix<T, 2, 3> mat_pow_x({
+        {1.0F, 2.0F, 3.0F},
+        {4.0F, 5.0F, 6.0F}
+        });
+
+    Matrix<T, 2, 3> mat_pow = Base::Matrix::pow(mat_pow_x, static_cast<T>(2.0F));
+
+    Matrix<T, 2, 3> mat_pow_answer({
+        {1.0F, 4.0F, 9.0F},
+        {16.0F, 25.0F, 36.0F}
+        });
+
+    tester.expect_near(mat_pow.data, mat_pow_answer.data, NEAR_LIMIT_STRICT,
+        "check pow Matrix.");
+
+    DiagMatrix<T, 3> diag_pow_x({ 1.0F, 2.0F, 3.0F });
+    DiagMatrix<T, 3> diag_pow = Base::Matrix::pow(diag_pow_x, static_cast<T>(2.0F));
+    DiagMatrix <T, 3> diag_pow_answer({ 1.0F, 4.0F, 9.0F });
+
+    tester.expect_near(diag_pow.data, diag_pow_answer.data, NEAR_LIMIT_STRICT,
+        "check pow DiagMatrix.");
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 1, 2>,
+        CSRPointers<0, 1, 2, 3>> sparse_pow_x({ 1.0F, 2.0F, 3.0F });
+    auto sparse_pow = Base::Matrix::pow(sparse_pow_x, static_cast<T>(2.0F));
+    Matrix<T, 3, 3> sparse_pow_dense = output_dense_matrix(sparse_pow);
+
+    Matrix<T, 3, 3> sparse_pow_dense_answer({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 4.0F, 0.0F},
+        {0.0F, 0.0F, 9.0F}
+        });
+
+    tester.expect_near(sparse_pow_dense.data, sparse_pow_dense_answer.data, NEAR_LIMIT_STRICT,
+        "check pow CompiledSparseMatrix.");
+
+    /* log10 */
+    T scalar_log10 = Base::Matrix::log10(static_cast<T>(100.0F));
+    T scalar_log10_answer = static_cast<T>(2.0F);
+    tester.expect_near(scalar_log10, scalar_log10_answer, NEAR_LIMIT_STRICT,
+        "check log10 scalar.");
+
+    Matrix<T, 2, 2> mat_log10_x({
+        {1, 10},
+        {100, 1}
+        });
+    Matrix<T, 2, 2> mat_log10 = Base::Matrix::log10(mat_log10_x);
+    tester.expect_near(mat_log10(1, 0), static_cast<T>(2.0F), NEAR_LIMIT_STRICT,
+        "check log10 Matrix[1,0].");
+
+    /* sin */
+    T scalar_sin = Base::Matrix::sin(static_cast<T>(0.0F));
+    T scalar_sin_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_sin, scalar_sin_answer, NEAR_LIMIT_STRICT,
+        "check sin scalar.");
+
+    Matrix<T, 2, 2> mat_sin_x({
+        {0, static_cast<T>(Base::Matrix::HALF_PI)},
+        {static_cast<T>(Base::Matrix::PI), 0}
+        });
+    Matrix<T, 2, 2> mat_sin = Base::Matrix::sin(mat_sin_x);
+    tester.expect_near(mat_sin(0, 1), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check sin Matrix[0,1].");
+
+    /* cos */
+    T scalar_cos = Base::Matrix::cos(static_cast<T>(0.0F));
+    T scalar_cos_answer = static_cast<T>(1.0F);
+    tester.expect_near(scalar_cos, scalar_cos_answer, NEAR_LIMIT_STRICT,
+        "check cos scalar.");
+
+    Matrix<T, 2, 2> mat_cos_x({
+        {0, static_cast<T>(Base::Matrix::PI)},
+        {static_cast<T>(Base::Matrix::HALF_PI), 0}
+        });
+    Matrix<T, 2, 2> mat_cos = Base::Matrix::cos(mat_cos_x);
+    tester.expect_near(mat_cos(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cos Matrix[0,0].");
+    tester.expect_near(mat_cos(0, 1), static_cast<T>(-1.0F), NEAR_LIMIT_STRICT,
+        "check cos Matrix[0,1].");
+
+    /* tan */
+    T scalar_tan = Base::Matrix::tan(static_cast<T>(0.0F));
+    T scalar_tan_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_tan, scalar_tan_answer, NEAR_LIMIT_STRICT,
+        "check tan scalar.");
+
+    /* asin */
+    T scalar_asin = Base::Matrix::asin(static_cast<T>(0.0F));
+    T scalar_asin_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_asin, scalar_asin_answer, NEAR_LIMIT_STRICT,
+        "check asin scalar.");
+
+    Matrix<T, 2, 2> mat_asin_x({
+        {0, 0.5F},
+        {1, 0}
+        });
+    Matrix<T, 2, 2> mat_asin = Base::Matrix::asin(mat_asin_x);
+    tester.expect_near(mat_asin(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check asin Matrix[0,0].");
+
+    /* acos */
+    T scalar_acos = Base::Matrix::acos(static_cast<T>(1.0F));
+    T scalar_acos_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_acos, scalar_acos_answer, NEAR_LIMIT_STRICT,
+        "check acos scalar.");
+
+    Matrix<T, 2, 2> mat_acos_x({
+        {1, 0.5F},
+        {0, 1}
+        });
+    Matrix<T, 2, 2> mat_acos = Base::Matrix::acos(mat_acos_x);
+    tester.expect_near(mat_acos(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check acos Matrix[0,0].");
+
+    /* atan */
+    T scalar_atan = Base::Matrix::atan(static_cast<T>(0.0F));
+    T scalar_atan_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_atan, scalar_atan_answer, NEAR_LIMIT_STRICT,
+        "check atan scalar.");
+
+    Matrix<T, 2, 2> mat_atan_x({
+        {0, 1},
+        {0, 1}
+        });
+    Matrix<T, 2, 2> mat_atan = Base::Matrix::atan(mat_atan_x);
+    tester.expect_near(mat_atan(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan Matrix[0,0].");
+
+    /* atan2 */
+    T scalar_atan2 = Base::Matrix::atan2(static_cast<T>(0.0F), static_cast<T>(1.0F));
+    T scalar_atan2_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_atan2, scalar_atan2_answer, NEAR_LIMIT_STRICT,
+        "check atan2 scalar.");
+
+    /* atan2 for Matrix */
+    Matrix<T, 2, 2> mat_atan2_y({
+        {0, 1},
+        {1, 1}
+        });
+    Matrix<T, 2, 2> mat_atan2_x({
+        {1, 0},
+        {1, 0}
+        });
+    Matrix<T, 2, 2> mat_atan2 = Base::Matrix::atan2(mat_atan2_y, mat_atan2_x);
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(mat_atan2(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[0,0].");
+    tester.expect_near(mat_atan2(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[0,1].");
+    tester.expect_near(mat_atan2(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[1,0].");
+    tester.expect_near(mat_atan2(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Matrix[1,1].");
+
+    /* atan2 for DiagMatrix */
+    DiagMatrix<T, 3> diag_atan2_y({ 0, 1, 1 });
+    DiagMatrix<T, 3> diag_atan2_x({ 1, 1, 0 });
+    DiagMatrix<T, 3> diag_atan2 = Base::Matrix::atan2(diag_atan2_y, diag_atan2_x);
+    // Expected values: atan2(0,1)=0, atan2(1,1)~0.7854, atan2(1,0)~1.5708
+    Vector<T, 3> diag_atan2_answer({ 0.0F, 0.7854F, 1.5708F });
+
+    tester.expect_near(diag_atan2.data[0], diag_atan2_answer[0], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[0].");
+    tester.expect_near(diag_atan2.data[1], diag_atan2_answer[1], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[1].");
+    tester.expect_near(diag_atan2.data[2], diag_atan2_answer[2], NEAR_LIMIT_STRICT,
+        "check atan2 DiagMatrix[2].");
+
+    /* atan2 for CompiledSparseMatrix */
+    CompiledSparseMatrix<T, 2, 2,
+        CSRIndices<0, 1, 0, 1>,
+        CSRPointers<0, 2, 4>> sparse_atan2_y({ 0.0F, 1.0F, 1.0F, 1.0F });
+    CompiledSparseMatrix<T, 2, 2,
+        CSRIndices<0, 1, 0, 1>,
+        CSRPointers<0, 2, 4>> sparse_atan2_x({ 1.0F, 0.0F, 1.0F, 0.0F });
+    auto sparse_atan2 = Base::Matrix::atan2(sparse_atan2_y, sparse_atan2_x);
+    Matrix<T, 2, 2> sparse_atan2_dense = output_dense_matrix(sparse_atan2);
+
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(sparse_atan2_dense(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[0,0].");
+    tester.expect_near(sparse_atan2_dense(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[0,1].");
+    tester.expect_near(sparse_atan2_dense(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[1,0].");
+    tester.expect_near(sparse_atan2_dense(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 CompiledSparseMatrix[1,1].");
+
+    /* sinh */
+    T scalar_sinh = Base::Matrix::sinh(static_cast<T>(0.0F));
+    T scalar_sinh_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_sinh, scalar_sinh_answer, NEAR_LIMIT_STRICT,
+        "check sinh scalar.");
+
+    Matrix<T, 2, 2> mat_sinh_x({
+        {0, 1},
+        {0, 0}
+        });
+    Matrix<T, 2, 2> mat_sinh = Base::Matrix::sinh(mat_sinh_x);
+    tester.expect_near(mat_sinh(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sinh Matrix[0,0].");
+
+    /* cosh */
+    T scalar_cosh = Base::Matrix::cosh(static_cast<T>(0.0F));
+    T scalar_cosh_answer = static_cast<T>(1.0F);
+    tester.expect_near(scalar_cosh, scalar_cosh_answer, NEAR_LIMIT_STRICT,
+        "check cosh scalar.");
+
+    Matrix<T, 2, 2> mat_cosh_x({
+        {0, 1},
+        {0, 0}
+        });
+    Matrix<T, 2, 2> mat_cosh = Base::Matrix::cosh(mat_cosh_x);
+    tester.expect_near(mat_cosh(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cosh Matrix[0,0].");
+
+    /* tanh */
+    T scalar_tanh = Base::Matrix::tanh(static_cast<T>(0.0F));
+    T scalar_tanh_answer = static_cast<T>(0.0F);
+    tester.expect_near(scalar_tanh, scalar_tanh_answer, NEAR_LIMIT_STRICT,
+        "check tanh scalar.");
+
+    Matrix<T, 2, 2> mat_tanh_x({
+        {0, 1},
+        {0, 0}
+        });
+    Matrix<T, 2, 2> mat_tanh = Base::Matrix::tanh(mat_tanh_x);
+    tester.expect_near(mat_tanh(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tanh Matrix[0,0].");
+
+    tester.throw_error_if_test_failed();
+}
+
 
 #endif // CHECK_BASE_MATRIX_HPP_
