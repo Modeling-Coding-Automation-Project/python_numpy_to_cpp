@@ -69,10 +69,17 @@ fmod(const T &x, const T &y) {
 
 namespace BaseMatrixFmodAction {
 
-// Specialization for column-major data layout: std::array<std::array<T, M>, N>
 template <typename T, std::size_t M, std::size_t N, std::size_t Index>
 struct FmodCoreColMajor {
 
+  /**
+   * @brief Recursively computes the element-wise floating-point modulus of a
+   * 2D std::array (matrix) in column-major order.
+   *
+   * @param result The 2D array to store the results.
+   * @param matrix The input 2D array whose elements will be processed.
+   * @param y The divisor to use for the modulus operation.
+   */
   static void compute(std::array<std::array<T, M>, N> &result,
                       const std::array<std::array<T, M>, N> &matrix,
                       const T &y) {
@@ -81,10 +88,16 @@ struct FmodCoreColMajor {
   }
 };
 
-// Specialization to end the recursion (column-major)
 template <typename T, std::size_t M, std::size_t N>
 struct FmodCoreColMajor<T, M, N, 0> {
 
+  /**
+   * @brief Base case for the recursive computation of floating-point modulus
+   * in a 2D std::array (matrix) in column-major order.
+   * @param result The 2D array to store the results.
+   * @param matrix The input 2D array whose elements will be processed.
+   * @param y The divisor to use for the modulus operation.
+   */
   static void compute(std::array<std::array<T, M>, N> &result,
                       const std::array<std::array<T, M>, N> &matrix,
                       const T &y) {
@@ -92,14 +105,26 @@ struct FmodCoreColMajor<T, M, N, 0> {
   }
 };
 
-template <typename T, std::size_t M, std::size_t N> struct Fmod2DAction {
-
-  static inline void apply(std::array<std::array<T, M>, N> &result,
-                           const std::array<std::array<T, M>, N> &matrix,
-                           const T &y) {
-    FmodCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
-  }
-};
+/**
+ * @brief Computes the element-wise floating-point modulus of a 2D std::array
+ * (matrix) in column-major order.
+ *
+ * This function takes a 2D std::array (matrix) and computes the floating-point
+ * modulus of each element with respect to a given divisor y. The results are
+ * stored in the provided result array.
+ *
+ * @tparam T The type of the elements in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param result The 2D array to store the results.
+ * @param matrix The input 2D array whose elements will be processed.
+ * @param y The divisor to use for the modulus operation.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(std::array<std::array<T, M>, N> &result,
+                    const std::array<std::array<T, M>, N> &matrix, const T &y) {
+  FmodCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
+}
 
 } // namespace BaseMatrixFmodAction
 
@@ -107,8 +132,7 @@ template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> fmod(const Matrix<T, M, N> &matrix, const T &y) {
   Matrix<T, M, N> result;
 
-  BaseMatrixFmodAction::Fmod2DAction<T, M, N>::apply(result.data, matrix.data,
-                                                     y);
+  BaseMatrixFmodAction::compute(result.data, matrix.data, y);
 
   return result;
 }
