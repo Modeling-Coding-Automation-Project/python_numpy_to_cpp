@@ -1160,10 +1160,206 @@ inline auto atan(
 
 /* atan2 */
 
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two values.
+ *
+ * This function computes the arctangent of the quotient of two values, `x` and
+ * `y`, and returns the angle in radians. It is a wrapper around the
+ * Base::Matrix::atan2 function, which handles both scalar and matrix inputs.
+ *
+ * @tparam T The type of the input values (must be arithmetic).
+ * @param x The numerator value.
+ * @param y The denominator value.
+ * @return The angle in radians as a value of type T.
+ */
 template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
 atan2(const T &x, const T &y) {
   return Base::Matrix::atan2(x, y);
+}
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two matrices.
+ *
+ * This function computes the arctangent of the quotient of two matrices,
+ * `matrix_y` and `matrix_x`, and returns a matrix containing the angles in
+ * radians. It is a wrapper around the Base::Matrix::atan2 function, which
+ * handles both dense and sparse matrix inputs.
+ *
+ * @tparam T The type of the elements in the matrices (must be arithmetic).
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @param matrix_y The numerator matrix.
+ * @param matrix_x The denominator matrix.
+ * @return A matrix containing the angles in radians, with the same dimensions
+ *         as the input matrices.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline auto atan2(const Matrix<DefDense, T, M, N> &matrix_y,
+                  const Matrix<DefDense, T, M, N> &matrix_x)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  result.matrix = Base::Matrix::atan2(matrix_y.matrix, matrix_x.matrix);
+
+  return result;
+}
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two diagonal
+ * matrices.
+ *
+ * This function computes the arctangent of the quotient of two diagonal
+ * matrices, `matrix_y` and `matrix_x`, and returns a diagonal matrix containing
+ * the angles in radians. It is a wrapper around the Base::Matrix::atan2
+ * function, which handles both dense and sparse matrix inputs.
+ *
+ * @tparam T The type of the elements in the matrices (must be arithmetic).
+ * @tparam M The number of rows (and columns) in the diagonal matrices.
+ * @param matrix_y The numerator diagonal matrix.
+ * @param matrix_x The denominator diagonal matrix.
+ * @return A diagonal matrix containing the angles in radians, with the same
+ *         dimensions as the input matrices.
+ */
+template <typename T, std::size_t M>
+inline auto atan2(const Matrix<DefDiag, T, M> &matrix_y,
+                  const Matrix<DefDiag, T, M> &matrix_x)
+    -> Matrix<DefDiag, T, M> {
+  Matrix<DefDiag, T, M> result;
+
+  result.matrix = Base::Matrix::atan2(matrix_y.matrix, matrix_x.matrix);
+
+  return result;
+}
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two sparse
+ * matrices.
+ *
+ * This function computes the arctangent of the quotient of two sparse
+ * matrices, `matrix_y` and `matrix_x`, and returns a sparse matrix containing
+ * the angles in radians. It is a wrapper around the Base::Matrix::atan2
+ * function, which handles both dense and sparse matrix inputs.
+ *
+ * @tparam T The type of the elements in the matrices (must be arithmetic).
+ * @tparam M The number of rows in the matrices.
+ * @tparam N The number of columns in the matrices.
+ * @tparam SparseAvailable A type trait indicating whether sparse storage is
+ * available for the matrices.
+ * @param matrix_y The numerator sparse matrix.
+ * @param matrix_x The denominator sparse matrix.
+ * @return A sparse matrix containing the angles in radians, with the same
+ *         dimensions as the input matrices.
+ */
+template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
+inline auto atan2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix_y,
+                  const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix_x)
+    -> Matrix<DefSparse, T, M, N, SparseAvailable> {
+  Matrix<DefSparse, T, M, N, SparseAvailable> result;
+
+  result.matrix = Base::Matrix::atan2(matrix_y.matrix, matrix_x.matrix);
+
+  return result;
+}
+
+namespace Atan2AugmentedMatrixAction {
+
+/**
+ * @brief Helper struct to apply atan2 to each element of two std::tuples
+ * using template metaprogramming.
+ *
+ * This struct recursively applies Base::Matrix::atan2 to each element pair of
+ * the input tuples. Uses index-based recursion for C++11 compatibility.
+ *
+ * @tparam Tuple_Type The type of the tuples.
+ * @tparam Index The current index in the tuples (decremented recursively).
+ */
+template <typename Tuple_Type, std::size_t Index> struct ApplyAtan2TupleCore {
+  /**
+   * @brief Recursively applies atan2 to tuple elements.
+   *
+   * @param input_y The input numerator tuple (const reference).
+   * @param output The output tuple (reference) where atan2 results are stored.
+   * @param input_x The input denominator tuple (const reference).
+   */
+  static void compute(const Tuple_Type &input_y, Tuple_Type &output,
+                      const Tuple_Type &input_x) {
+    std::get<Index>(output).matrix = Base::Matrix::atan2(
+        std::get<Index>(input_y).matrix, std::get<Index>(input_x).matrix);
+    ApplyAtan2TupleCore<Tuple_Type, Index - 1>::compute(input_y, output,
+                                                        input_x);
+  }
+};
+
+/**
+ * @brief Base case specialization for index 0.
+ *
+ * @tparam Tuple_Type The type of the tuples.
+ */
+template <typename Tuple_Type> struct ApplyAtan2TupleCore<Tuple_Type, 0> {
+  /**
+   * @brief Base case: processes the first (index 0) element pair.
+   *
+   * @param input_y The input numerator tuple (const reference).
+   * @param output The output tuple (reference) where atan2 results are stored.
+   * @param input_x The input denominator tuple (const reference).
+   */
+  static void compute(const Tuple_Type &input_y, Tuple_Type &output,
+                      const Tuple_Type &input_x) {
+    std::get<0>(output).matrix = Base::Matrix::atan2(
+        std::get<0>(input_y).matrix, std::get<0>(input_x).matrix);
+  }
+};
+
+/**
+ * @brief Wrapper function to apply atan2 to all element pairs of two tuples.
+ *
+ * @tparam Tuple_Type The type of the tuples.
+ * @param input_y The input numerator tuple.
+ * @param output The output tuple where atan2 results are stored.
+ * @param input_x The input denominator tuple.
+ */
+template <typename Tuple_Type>
+inline void compute(const Tuple_Type &input_y, Tuple_Type &output,
+                    const Tuple_Type &input_x) {
+  ApplyAtan2TupleCore<Tuple_Type, std::tuple_size<Tuple_Type>::value -
+                                      1>::compute(input_y, output, input_x);
+}
+
+} // namespace Atan2AugmentedMatrixAction
+
+/**
+ * @brief Computes the element-wise arctangent of the quotient of two
+ * AugmentedMatrix objects.
+ *
+ * This function computes the arctangent of the quotient of two
+ * AugmentedMatrix objects, `augmented_matrix_y` and `augmented_matrix_x`, and
+ * returns an AugmentedMatrix containing the angles in radians. It is a wrapper
+ * around the Base::Matrix::atan2 function, which handles both dense and sparse
+ * matrix inputs.
+ *
+ * @tparam Tuple_Type The type of the elements in the AugmentedMatrix (must be
+ * arithmetic).
+ * @tparam Row_Blocks The number of row blocks in the AugmentedMatrix.
+ * @tparam Col_Blocks The number of column blocks in the AugmentedMatrix.
+ * @param augmented_matrix_y The numerator AugmentedMatrix.
+ * @param augmented_matrix_x The denominator AugmentedMatrix.
+ * @return An AugmentedMatrix containing the angles in radians, with the same
+ *         dimensions as the input AugmentedMatrix objects.
+ */
+template <typename Tuple_Type, std::size_t Row_Blocks = 0,
+          std::size_t Col_Blocks = 0>
+inline auto atan2(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>
+                      &augmented_matrix_y,
+                  const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>
+                      &augmented_matrix_x)
+    -> AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> {
+  AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> result;
+
+  Atan2AugmentedMatrixAction::compute(augmented_matrix_y.matrix, result.matrix,
+                                      augmented_matrix_x.matrix);
+
+  return result;
 }
 
 /* sinh */

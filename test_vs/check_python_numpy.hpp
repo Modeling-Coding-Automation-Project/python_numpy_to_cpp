@@ -5266,6 +5266,100 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     tester.expect_near(atan2_scalar_result, atan2_scalar_expected, NEAR_LIMIT_STRICT,
         "check atan2 Scalar.");
 
+    /* atan2 - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> atan2_dense_y({
+        {0, 1},
+        {1, 1}
+    });
+
+    Matrix<DefDense, T, 2, 2> atan2_dense_x({
+        {1, 0},
+        {1, 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> atan2_dense_result = PythonNumpy::atan2(atan2_dense_y, atan2_dense_x);
+
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(atan2_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 Dense Matrix[0,0].");
+    tester.expect_near(atan2_dense_result.matrix(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Dense Matrix[0,1].");
+    tester.expect_near(atan2_dense_result.matrix(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 Dense Matrix[1,0].");
+    tester.expect_near(atan2_dense_result.matrix(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Dense Matrix[1,1].");
+
+    /* atan2 - Diagonal Matrix */
+    T atan2_diag_y_array[3] = { 0, 1, 1 };
+    Matrix<DefDiag, T, 3> atan2_diag_y(atan2_diag_y_array);
+
+    T atan2_diag_x_array[3] = { 1, 1, 0 };
+    Matrix<DefDiag, T, 3> atan2_diag_x(atan2_diag_x_array);
+
+    Matrix<DefDiag, T, 3> atan2_diag_result = PythonNumpy::atan2(atan2_diag_y, atan2_diag_x);
+
+    // Expected values: atan2(0,1)=0, atan2(1,1)~0.7854, atan2(1,0)~1.5708
+    tester.expect_near(atan2_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 Diagonal Matrix[0].");
+    tester.expect_near(atan2_diag_result.matrix.data[1], static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 Diagonal Matrix[1].");
+    tester.expect_near(atan2_diag_result.matrix.data[2], static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Diagonal Matrix[2].");
+
+    /* atan2 - Sparse Matrix */
+    Matrix<DefSparse, T, 2, 2,
+        SparseAvailable<
+        ColumnAvailable<true, true>,
+        ColumnAvailable<true, true>>
+        > atan2_sparse_y({ 0.0F, 1.0F, 1.0F, 1.0F });
+
+    Matrix<DefSparse, T, 2, 2,
+        SparseAvailable<
+        ColumnAvailable<true, true>,
+        ColumnAvailable<true, true>>
+        > atan2_sparse_x({ 1.0F, 0.0F, 1.0F, 0.0F });
+
+    auto atan2_sparse_result = PythonNumpy::atan2(atan2_sparse_y, atan2_sparse_x);
+
+    auto atan2_sparse_result_dense = atan2_sparse_result.create_dense();
+
+    // Expected values: atan2(0,1)=0, atan2(1,0)~1.5708, atan2(1,1)~0.7854
+    tester.expect_near(atan2_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 Sparse Matrix[0,0].");
+    tester.expect_near(atan2_sparse_result_dense.matrix(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Sparse Matrix[0,1].");
+    tester.expect_near(atan2_sparse_result_dense.matrix(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 Sparse Matrix[1,0].");
+    tester.expect_near(atan2_sparse_result_dense.matrix(1, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 Sparse Matrix[1,1].");
+
+    /* atan2 - Augmented Matrix */
+    Matrix<DefDense, T, 2, 2> atan2_aug_A11_y({ {0, 1}, {1, 1} });
+    Matrix<DefDense, T, 2, 1> atan2_aug_A12_y({ {0}, {1} });
+    Matrix<DefDense, T, 1, 2> atan2_aug_A21_y({ {1, 0} });
+    Matrix<DefDense, T, 1, 1> atan2_aug_A22_y({ {1} });
+
+    auto atan2_augmented_y = make_AugmentedMatrix(atan2_aug_A11_y, atan2_aug_A12_y, atan2_aug_A21_y, atan2_aug_A22_y);
+
+    Matrix<DefDense, T, 2, 2> atan2_aug_A11_x({ {1, 0}, {1, 0} });
+    Matrix<DefDense, T, 2, 1> atan2_aug_A12_x({ {1}, {1} });
+    Matrix<DefDense, T, 1, 2> atan2_aug_A21_x({ {0, 1} });
+    Matrix<DefDense, T, 1, 1> atan2_aug_A22_x({ {0} });
+
+    auto atan2_augmented_x = make_AugmentedMatrix(atan2_aug_A11_x, atan2_aug_A12_x, atan2_aug_A21_x, atan2_aug_A22_x);
+
+    auto atan2_augmented_result = PythonNumpy::atan2(atan2_augmented_y, atan2_augmented_x);
+
+    auto atan2_augmented_result_dense = atan2_augmented_result.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    // Expected values based on atan2(y_ij, x_ij)
+    tester.expect_near(atan2_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan2 AugmentedMatrix[0,0].");
+    tester.expect_near(atan2_augmented_result_dense.matrix(0, 1), static_cast<T>(1.5708F), NEAR_LIMIT_STRICT,
+        "check atan2 AugmentedMatrix[0,1].");
+    tester.expect_near(atan2_augmented_result_dense.matrix(1, 0), static_cast<T>(0.7854F), NEAR_LIMIT_STRICT,
+        "check atan2 AugmentedMatrix[1,0].");
+
     /* sinh - Scalar */
     T sinh_scalar_input = static_cast<T>(0.0F);
     T sinh_scalar_result = PythonNumpy::sinh(sinh_scalar_input);
