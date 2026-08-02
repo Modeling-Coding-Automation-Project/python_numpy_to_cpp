@@ -435,11 +435,119 @@ pow(const T &x, const T &y) {
   return PythonMath::pow(x, y);
 }
 
+namespace BaseMatrixPowAction {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t Index>
+struct PowCoreColMajor {
+
+  /**
+   * @brief Recursively computes the element-wise power of a 2D std::array
+   * (matrix) in column-major order.
+   *
+   * @param result The 2D array to store the results.
+   * @param matrix The input 2D array whose elements will be processed.
+   * @param y The exponent to use for the power operation.
+   */
+  static void compute(std::array<std::array<T, M>, N> &result,
+                      const std::array<std::array<T, M>, N> &matrix,
+                      const T &y) {
+    result[Index] = PythonMath::pow(matrix[Index], y);
+    PowCoreColMajor<T, M, N, Index - 1>::compute(result, matrix, y);
+  }
+
+  /**
+   * @brief Recursively computes the element-wise power of a 2D std::vector
+   * (matrix) in column-major order.
+   *
+   * @param result The 2D vector to store the results.
+   * @param matrix The input 2D vector whose elements will be processed.
+   * @param y The exponent to use for the power operation.
+   */
+  static void compute(std::vector<std::vector<T>> &result,
+                      const std::vector<std::vector<T>> &matrix, const T &y) {
+    result[Index] = PythonMath::pow(matrix[Index], y);
+    PowCoreColMajor<T, M, N, Index - 1>::compute(result, matrix, y);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N>
+struct PowCoreColMajor<T, M, N, 0> {
+
+  /**
+   * @brief Base case for the recursive computation of power in a 2D
+   * std::array (matrix) in column-major order.
+   * @param result The 2D array to store the results.
+   * @param matrix The input 2D array whose elements will be processed.
+   * @param y The exponent to use for the power operation.
+   */
+  static void compute(std::array<std::array<T, M>, N> &result,
+                      const std::array<std::array<T, M>, N> &matrix,
+                      const T &y) {
+    result[0] = PythonMath::pow(matrix[0], y);
+  }
+
+  /**
+   * @brief Base case for the recursive computation of power in a 2D
+   * std::vector (matrix) in column-major order.
+   * @param result The 2D vector to store the results.
+   * @param matrix The input 2D vector whose elements will be processed.
+   * @param y The exponent to use for the power operation.
+   */
+  static void compute(std::vector<std::vector<T>> &result,
+                      const std::vector<std::vector<T>> &matrix, const T &y) {
+    result[0] = PythonMath::pow(matrix[0], y);
+  }
+};
+
+/**
+ * @brief Computes the element-wise power of a 2D std::array (matrix) in
+ * column-major order.
+ *
+ * This function takes a 2D std::array (matrix) and computes the power of each
+ * element with respect to a given exponent y. The results are stored in the
+ * provided result array.
+ *
+ * @tparam T The type of the elements in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param result The 2D array to store the results.
+ * @param matrix The input 2D array whose elements will be processed.
+ * @param y The exponent to use for the power operation.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(std::array<std::array<T, M>, N> &result,
+                    const std::array<std::array<T, M>, N> &matrix, const T &y) {
+  PowCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
+}
+
+/**
+ * @brief Computes the element-wise power of a 2D std::vector (matrix) in
+ * column-major order.
+ *
+ * This function takes a 2D std::vector (matrix) and computes the power of each
+ * element with respect to a given exponent y. The results are stored in the
+ * provided result vector.
+ *
+ * @tparam T The type of the elements in the matrix.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param result The 2D vector to store the results.
+ * @param matrix The input 2D vector whose elements will be processed.
+ * @param y The exponent to use for the power operation.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(std::vector<std::vector<T>> &result,
+                    const std::vector<std::vector<T>> &matrix, const T &y) {
+  PowCoreColMajor<T, M, N, N - 1>::compute(result, matrix, y);
+}
+
+} // namespace BaseMatrixPowAction
+
 template <typename T, std::size_t M, std::size_t N>
 inline Matrix<T, M, N> pow(const Matrix<T, M, N> &matrix, const T &y) {
   Matrix<T, M, N> result;
 
-  result.data = PythonMath::pow(matrix.data, y);
+  BaseMatrixPowAction::compute<T, M, N>(result.data, matrix.data, y);
 
   return result;
 }
