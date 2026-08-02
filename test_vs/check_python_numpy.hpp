@@ -30,6 +30,7 @@ public:
     void check_python_numpy_qr(void);
     void check_python_numpy_eig(void);
     void check_python_numpy_augmented(void);
+    void check_python_numpy_math(void);
 
     void calc(void);
 };
@@ -58,6 +59,8 @@ void CheckPythonNumpy<T>::calc(void) {
     check_python_numpy_eig();
 
     check_python_numpy_augmented();
+
+    check_python_numpy_math();
 }
 
 template <typename T>
@@ -4221,5 +4224,18 @@ void CheckPythonNumpy<T>::check_python_numpy_augmented(void) {
     tester.throw_error_if_test_failed();
 }
 
+template <typename T>
+void CheckPythonNumpy<T>::check_python_numpy_math(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+
+
+    tester.throw_error_if_test_failed();
+}
 
 #endif // CHECK_PYTHON_NUMPY_HPP_
