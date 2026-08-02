@@ -4370,6 +4370,27 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     tester.expect_near(fmod_sparse_result_dense.matrix.data, fmod_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
         "check fmod Sparse Matrix.");
 
+    /* fmod - Augmented Matrix */
+    Matrix<DefDense, T, 2, 2> fmod_aug_A11({ {7.5F, 8.5F}, {9.5F, 10.5F} });
+    Matrix<DefDense, T, 2, 1> fmod_aug_A12({ {11.5F}, {12.5F} });
+    Matrix<DefDense, T, 1, 2> fmod_aug_A21({ {13.5F, 14.5F} });
+    Matrix<DefDense, T, 1, 1> fmod_aug_A22({ {15.5F} });
+
+    auto fmod_augmented_input = make_AugmentedMatrix(fmod_aug_A11, fmod_aug_A12, fmod_aug_A21, fmod_aug_A22);
+
+    auto fmod_augmented_result = PythonNumpy::fmod(fmod_augmented_input, static_cast<T>(2.5F));
+
+    auto fmod_augmented_result_dense = fmod_augmented_result.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    Matrix<DefDense, T, 3, 3> fmod_augmented_expected({
+        {0.0F, 1.0F, 1.5F},
+        {2.0F, 0.5F, 0.0F},
+        {1.0F, 2.0F, 0.5F}
+    });
+
+    tester.expect_near(fmod_augmented_result_dense.matrix.data, fmod_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check fmod AugmentedMatrix.");
+
     /* sqrt - Scalar */
     T sqrt_scalar_input = static_cast<T>(4.0F);
     T sqrt_scalar_result = PythonNumpy::sqrt(sqrt_scalar_input);
@@ -4426,6 +4447,27 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     tester.expect_near(sqrt_sparse_result_dense.matrix.data, sqrt_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
         "check sqrt Sparse Matrix.");
 
+    /* sqrt - Augmented Matrix */
+    Matrix<DefDense, T, 2, 2> sqrt_aug_A11({ {1, 4}, {9, 16} });
+    Matrix<DefDense, T, 2, 1> sqrt_aug_A12({ {25}, {36} });
+    Matrix<DefDense, T, 1, 2> sqrt_aug_A21({ {49, 64} });
+    Matrix<DefDense, T, 1, 1> sqrt_aug_A22({ {81} });
+
+    auto sqrt_augmented_input = make_AugmentedMatrix(sqrt_aug_A11, sqrt_aug_A12, sqrt_aug_A21, sqrt_aug_A22);
+
+    auto sqrt_augmented_result = PythonNumpy::sqrt(sqrt_augmented_input);
+
+    auto sqrt_augmented_result_dense = sqrt_augmented_result.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    Matrix<DefDense, T, 3, 3> sqrt_augmented_expected({
+        {1, 2, 5},
+        {3, 4, 6},
+        {7, 8, 9}
+    });
+
+    tester.expect_near(sqrt_augmented_result_dense.matrix.data, sqrt_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check sqrt AugmentedMatrix.");
+
     /* exp - Scalar */
     T exp_scalar_input = static_cast<T>(0.0F);
     T exp_scalar_result = PythonNumpy::exp(exp_scalar_input);
@@ -4445,6 +4487,59 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
         "check exp Dense Matrix[0,0].");
     tester.expect_near(exp_dense_result.matrix(0, 1), static_cast<T>(2.71828F), NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
         "check exp Dense Matrix[0,1].");
+
+    /* exp - Diagonal Matrix */
+    T exp_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> exp_diag_input(exp_diag_input_array);
+
+    Matrix<DefDiag, T, 3> exp_diag_result = PythonNumpy::exp(exp_diag_input);
+
+    T exp_diag_expected_array[3] = { 1, static_cast<T>(2.71828F), 1 };
+    Matrix<DefDiag, T, 3> exp_diag_expected(exp_diag_expected_array);
+
+    tester.expect_near(exp_diag_result.matrix.data[0], exp_diag_expected.matrix.data[0], NEAR_LIMIT_STRICT,
+        "check exp Diagonal Matrix[0].");
+
+    /* exp - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>,
+        ColumnAvailable<false, false, false>>
+        > exp_sparse_input({ 1.0F });
+
+    auto exp_sparse_result = PythonNumpy::exp(exp_sparse_input);
+
+    auto exp_sparse_result_dense = exp_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> exp_sparse_expected_dense({
+        {0.0F, static_cast<T>(2.71828F), 0.0F},
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+    });
+
+    tester.expect_near(exp_sparse_result_dense.matrix(0, 0), exp_sparse_expected_dense.matrix(0, 0), NEAR_LIMIT_STRICT,
+        "check exp Sparse Matrix[0,0].");
+
+    /* exp - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> exp_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> exp_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> exp_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> exp_aug_A22({ {0} });
+
+    auto exp_augmented_input = make_AugmentedMatrix(exp_aug_A11, exp_aug_A12, exp_aug_A21, exp_aug_A22);
+
+    auto exp_augmented_result = PythonNumpy::exp(exp_augmented_input);
+
+    auto exp_augmented_result_dense = exp_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    Matrix<DefDense, T, 2, 2> exp_augmented_expected({
+        {1.0F, static_cast<T>(2.71828F)},
+        {1.0F, 1.0F}
+    });
+
+    tester.expect_near(exp_augmented_result_dense.matrix(0, 0), exp_augmented_expected.matrix(0, 0), NEAR_LIMIT_STRICT,
+        "check exp AugmentedMatrix[0,0].");
 
     /* exp2 - Scalar */
     T exp2_scalar_input = static_cast<T>(3.0F);
@@ -4468,6 +4563,59 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     tester.expect_near(exp2_dense_result.matrix(1, 0), static_cast<T>(4.0F), NEAR_LIMIT_STRICT,
         "check exp2 Dense Matrix[1,0].");
 
+    /* exp2 - Diagonal Matrix */
+    T exp2_diag_input_array[3] = { 0, 1, 2 };
+    Matrix<DefDiag, T, 3> exp2_diag_input(exp2_diag_input_array);
+
+    Matrix<DefDiag, T, 3> exp2_diag_result = PythonNumpy::exp2(exp2_diag_input);
+
+    T exp2_diag_expected_array[3] = { 1, 2, 4 };
+    Matrix<DefDiag, T, 3> exp2_diag_expected(exp2_diag_expected_array);
+
+    tester.expect_near(exp2_diag_result.matrix.data, exp2_diag_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check exp2 Diagonal Matrix.");
+
+    /* exp2 - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, true>>
+        > exp2_sparse_input({ 1.0F, 2.0F, 0.0F });
+
+    auto exp2_sparse_result = PythonNumpy::exp2(exp2_sparse_input);
+
+    auto exp2_sparse_result_dense = exp2_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> exp2_sparse_expected_dense({
+        {2.0F, 0.0F, 0.0F},
+        {0.0F, 4.0F, 0.0F},
+        {0.0F, 0.0F, 1.0F}
+    });
+
+    tester.expect_near(exp2_sparse_result_dense.matrix.data, exp2_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
+        "check exp2 Sparse Matrix.");
+
+    /* exp2 - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> exp2_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> exp2_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> exp2_aug_A21({ {2} });
+    Matrix<DefDense, T, 1, 1> exp2_aug_A22({ {0} });
+
+    auto exp2_augmented_input = make_AugmentedMatrix(exp2_aug_A11, exp2_aug_A12, exp2_aug_A21, exp2_aug_A22);
+
+    auto exp2_augmented_result = PythonNumpy::exp2(exp2_augmented_input);
+
+    auto exp2_augmented_result_dense = exp2_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    Matrix<DefDense, T, 2, 2> exp2_augmented_expected({
+        {1.0F, 2.0F},
+        {4.0F, 1.0F}
+    });
+
+    tester.expect_near(exp2_augmented_result_dense.matrix.data, exp2_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check exp2 AugmentedMatrix.");
+
     /* log - Scalar */
     T log_scalar_input = static_cast<T>(2.71828F);
     T log_scalar_result = PythonNumpy::log(log_scalar_input);
@@ -4487,6 +4635,53 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
         "check log Dense Matrix[0,0].");
     tester.expect_near(log_dense_result.matrix(0, 1), static_cast<T>(1.0F), NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
         "check log Dense Matrix[0,1].");
+
+    /* log - Diagonal Matrix */
+    T log_diag_input_array[3] = { 1, 2.71828F, 7.389F };
+    Matrix<DefDiag, T, 3> log_diag_input(log_diag_input_array);
+
+    Matrix<DefDiag, T, 3> log_diag_result = PythonNumpy::log(log_diag_input);
+
+    tester.expect_near(log_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check log Diagonal Matrix[0].");
+    tester.expect_near(log_diag_result.matrix.data[1], static_cast<T>(1.0F), NEAR_LIMIT_STRICT * static_cast<T>(10.0F),
+        "check log Diagonal Matrix[1].");
+
+    /* log - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > log_sparse_input({ 1.0F, 2.71828F });
+
+    auto log_sparse_result = PythonNumpy::log(log_sparse_input);
+
+    auto log_sparse_result_dense = log_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> log_sparse_expected_dense({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 0.0F}
+    });
+
+    tester.expect_near(log_sparse_result_dense.matrix(0, 0), log_sparse_expected_dense.matrix(0, 0), NEAR_LIMIT_STRICT,
+        "check log Sparse Matrix[0,0].");
+
+    /* log - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> log_aug_A11({ {1} });
+    Matrix<DefDense, T, 1, 1> log_aug_A12({ {2.71828F} });
+    Matrix<DefDense, T, 1, 1> log_aug_A21({ {7.389F} });
+    Matrix<DefDense, T, 1, 1> log_aug_A22({ {1} });
+
+    auto log_augmented_input = make_AugmentedMatrix(log_aug_A11, log_aug_A12, log_aug_A21, log_aug_A22);
+
+    auto log_augmented_result = PythonNumpy::log(log_augmented_input);
+
+    auto log_augmented_result_dense = log_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(log_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check log AugmentedMatrix[0,0].");
 
     /* log2 - Scalar */
     T log2_scalar_input = static_cast<T>(8.0F);
@@ -4509,6 +4704,741 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
         "check log2 Dense Matrix[0,1].");
     tester.expect_near(log2_dense_result.matrix(1, 0), static_cast<T>(2.0F), NEAR_LIMIT_STRICT,
         "check log2 Dense Matrix[1,0].");
+
+    /* log2 - Diagonal Matrix */
+    T log2_diag_input_array[3] = { 1, 2, 4 };
+    Matrix<DefDiag, T, 3> log2_diag_input(log2_diag_input_array);
+
+    Matrix<DefDiag, T, 3> log2_diag_result = PythonNumpy::log2(log2_diag_input);
+
+    T log2_diag_expected_array[3] = { 0, 1, 2 };
+    Matrix<DefDiag, T, 3> log2_diag_expected(log2_diag_expected_array);
+
+    tester.expect_near(log2_diag_result.matrix.data, log2_diag_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check log2 Diagonal Matrix.");
+
+    /* log2 - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, true>>
+        > log2_sparse_input({ 1.0F, 2.0F, 4.0F });
+
+    auto log2_sparse_result = PythonNumpy::log2(log2_sparse_input);
+
+    auto log2_sparse_result_dense = log2_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> log2_sparse_expected_dense({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 2.0F}
+    });
+
+    tester.expect_near(log2_sparse_result_dense.matrix.data, log2_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
+        "check log2 Sparse Matrix.");
+
+    /* log2 - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> log2_aug_A11({ {1} });
+    Matrix<DefDense, T, 1, 1> log2_aug_A12({ {2} });
+    Matrix<DefDense, T, 1, 1> log2_aug_A21({ {4} });
+    Matrix<DefDense, T, 1, 1> log2_aug_A22({ {8} });
+
+    auto log2_augmented_input = make_AugmentedMatrix(log2_aug_A11, log2_aug_A12, log2_aug_A21, log2_aug_A22);
+
+    auto log2_augmented_result = PythonNumpy::log2(log2_augmented_input);
+
+    auto log2_augmented_result_dense = log2_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    Matrix<DefDense, T, 2, 2> log2_augmented_expected({
+        {0.0F, 1.0F},
+        {2.0F, 3.0F}
+    });
+
+    tester.expect_near(log2_augmented_result_dense.matrix.data, log2_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check log2 AugmentedMatrix.");
+
+    /* log10 - Scalar */
+    T log10_scalar_input = static_cast<T>(100.0F);
+    T log10_scalar_result = PythonNumpy::log10(log10_scalar_input);
+    T log10_scalar_expected = static_cast<T>(2.0F);
+    tester.expect_near(log10_scalar_result, log10_scalar_expected, NEAR_LIMIT_STRICT,
+        "check log10 Scalar.");
+
+    /* log10 - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> log10_dense_input({
+        {1, 10},
+        {100, 1}
+    });
+
+    Matrix<DefDense, T, 2, 2> log10_dense_result = PythonNumpy::log10(log10_dense_input);
+
+    tester.expect_near(log10_dense_result.matrix(1, 0), static_cast<T>(2.0F), NEAR_LIMIT_STRICT,
+        "check log10 Dense Matrix[1,0].");
+
+    /* log10 - Diagonal Matrix */
+    T log10_diag_input_array[3] = { 1, 10, 100 };
+    Matrix<DefDiag, T, 3> log10_diag_input(log10_diag_input_array);
+
+    Matrix<DefDiag, T, 3> log10_diag_result = PythonNumpy::log10(log10_diag_input);
+
+    T log10_diag_expected_array[3] = { 0, 1, 2 };
+    Matrix<DefDiag, T, 3> log10_diag_expected(log10_diag_expected_array);
+
+    tester.expect_near(log10_diag_result.matrix.data, log10_diag_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check log10 Diagonal Matrix.");
+
+    /* log10 - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, true>>
+        > log10_sparse_input({ 1.0F, 10.0F, 100.0F });
+
+    auto log10_sparse_result = PythonNumpy::log10(log10_sparse_input);
+
+    auto log10_sparse_result_dense = log10_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> log10_sparse_expected_dense({
+        {0.0F, 0.0F, 0.0F},
+        {0.0F, 1.0F, 0.0F},
+        {0.0F, 0.0F, 2.0F}
+    });
+
+    tester.expect_near(log10_sparse_result_dense.matrix.data, log10_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
+        "check log10 Sparse Matrix.");
+
+    /* log10 - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> log10_aug_A11({ {1} });
+    Matrix<DefDense, T, 1, 1> log10_aug_A12({ {10} });
+    Matrix<DefDense, T, 1, 1> log10_aug_A21({ {100} });
+    Matrix<DefDense, T, 1, 1> log10_aug_A22({ {1000} });
+
+    auto log10_augmented_input = make_AugmentedMatrix(log10_aug_A11, log10_aug_A12, log10_aug_A21, log10_aug_A22);
+
+    auto log10_augmented_result = PythonNumpy::log10(log10_augmented_input);
+
+    auto log10_augmented_result_dense = log10_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    Matrix<DefDense, T, 2, 2> log10_augmented_expected({
+        {0.0F, 1.0F},
+        {2.0F, 3.0F}
+    });
+
+    tester.expect_near(log10_augmented_result_dense.matrix.data, log10_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check log10 AugmentedMatrix.");
+
+    /* pow - Scalar */
+    T pow_scalar_input1 = static_cast<T>(2.0F);
+    T pow_scalar_input2 = static_cast<T>(3.0F);
+    T pow_scalar_result = PythonNumpy::pow(pow_scalar_input1, pow_scalar_input2);
+    T pow_scalar_expected = static_cast<T>(8.0F);
+    tester.expect_near(pow_scalar_result, pow_scalar_expected, NEAR_LIMIT_STRICT,
+        "check pow Scalar.");
+
+    /* pow - Dense Matrix */
+    Matrix<DefDense, T, 2, 3> pow_dense_input({
+        {1.0F, 2.0F, 3.0F},
+        {4.0F, 5.0F, 6.0F}
+    });
+
+    Matrix<DefDense, T, 2, 3> pow_dense_result = PythonNumpy::pow(pow_dense_input, static_cast<T>(2.0F));
+
+    Matrix<DefDense, T, 2, 3> pow_dense_expected({
+        {1.0F, 4.0F, 9.0F},
+        {16.0F, 25.0F, 36.0F}
+    });
+
+    tester.expect_near(pow_dense_result.matrix.data, pow_dense_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check pow Dense Matrix.");
+
+    /* pow - Diagonal Matrix */
+    T pow_diag_input_array[3] = { 1.0F, 2.0F, 3.0F };
+    Matrix<DefDiag, T, 3> pow_diag_input(pow_diag_input_array);
+
+    Matrix<DefDiag, T, 3> pow_diag_result = PythonNumpy::pow(pow_diag_input, static_cast<T>(2.0F));
+
+    T pow_diag_expected_array[3] = { 1.0F, 4.0F, 9.0F };
+    Matrix<DefDiag, T, 3> pow_diag_expected(pow_diag_expected_array);
+
+    tester.expect_near(pow_diag_result.matrix.data, pow_diag_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check pow Diagonal Matrix.");
+
+    /* pow - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, true>>
+        > pow_sparse_input({ 1.0F, 2.0F, 3.0F });
+
+    auto pow_sparse_result = PythonNumpy::pow(pow_sparse_input, static_cast<T>(2.0F));
+
+    auto pow_sparse_result_dense = pow_sparse_result.create_dense();
+
+    Matrix<DefDense, T, 3, 3> pow_sparse_expected_dense({
+        {1.0F, 0.0F, 0.0F},
+        {0.0F, 4.0F, 0.0F},
+        {0.0F, 0.0F, 9.0F}
+    });
+
+    tester.expect_near(pow_sparse_result_dense.matrix.data, pow_sparse_expected_dense.matrix.data, NEAR_LIMIT_STRICT,
+        "check pow Sparse Matrix.");
+
+    /* pow - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> pow_aug_A11({ {1} });
+    Matrix<DefDense, T, 1, 1> pow_aug_A12({ {2} });
+    Matrix<DefDense, T, 1, 1> pow_aug_A21({ {3} });
+    Matrix<DefDense, T, 1, 1> pow_aug_A22({ {4} });
+
+    auto pow_augmented_input = make_AugmentedMatrix(pow_aug_A11, pow_aug_A12, pow_aug_A21, pow_aug_A22);
+
+    auto pow_augmented_result = PythonNumpy::pow(pow_augmented_input, static_cast<T>(2.0F));
+
+    auto pow_augmented_result_dense = pow_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    Matrix<DefDense, T, 2, 2> pow_augmented_expected({
+        {1.0F, 4.0F},
+        {9.0F, 16.0F}
+    });
+
+    tester.expect_near(pow_augmented_result_dense.matrix.data, pow_augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check pow AugmentedMatrix.");
+
+    /* sin - Scalar */
+    T sin_scalar_input = static_cast<T>(0.0F);
+    T sin_scalar_result = PythonNumpy::sin(sin_scalar_input);
+    T sin_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(sin_scalar_result, sin_scalar_expected, NEAR_LIMIT_STRICT,
+        "check sin Scalar.");
+
+    /* sin - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> sin_dense_input({
+        {0, static_cast<T>(PythonNumpy::HALF_PI)},
+        {static_cast<T>(PythonNumpy::PI), 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> sin_dense_result = PythonNumpy::sin(sin_dense_input);
+
+    tester.expect_near(sin_dense_result.matrix(0, 1), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check sin Dense Matrix[0,1].");
+
+    /* sin - Diagonal Matrix */
+    T sin_diag_input_array[3] = { 0, static_cast<T>(PythonNumpy::HALF_PI), static_cast<T>(PythonNumpy::PI) };
+    Matrix<DefDiag, T, 3> sin_diag_input(sin_diag_input_array);
+
+    Matrix<DefDiag, T, 3> sin_diag_result = PythonNumpy::sin(sin_diag_input);
+
+    tester.expect_near(sin_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sin Diagonal Matrix[0].");
+    tester.expect_near(sin_diag_result.matrix.data[1], static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check sin Diagonal Matrix[1].");
+
+    /* sin - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > sin_sparse_input({ 0.0F, static_cast<T>(PythonNumpy::HALF_PI) });
+
+    auto sin_sparse_result = PythonNumpy::sin(sin_sparse_input);
+
+    auto sin_sparse_result_dense = sin_sparse_result.create_dense();
+
+    tester.expect_near(sin_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sin Sparse Matrix[0,0].");
+    tester.expect_near(sin_sparse_result_dense.matrix(1, 1), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check sin Sparse Matrix[1,1].");
+
+    /* sin - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> sin_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> sin_aug_A12({ {static_cast<T>(PythonNumpy::HALF_PI)} });
+    Matrix<DefDense, T, 1, 1> sin_aug_A21({ {static_cast<T>(PythonNumpy::PI)} });
+    Matrix<DefDense, T, 1, 1> sin_aug_A22({ {0} });
+
+    auto sin_augmented_input = make_AugmentedMatrix(sin_aug_A11, sin_aug_A12, sin_aug_A21, sin_aug_A22);
+
+    auto sin_augmented_result = PythonNumpy::sin(sin_augmented_input);
+
+    auto sin_augmented_result_dense = sin_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(sin_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sin AugmentedMatrix[0,0].");
+
+    /* cos - Scalar */
+    T cos_scalar_input = static_cast<T>(0.0F);
+    T cos_scalar_result = PythonNumpy::cos(cos_scalar_input);
+    T cos_scalar_expected = static_cast<T>(1.0F);
+    tester.expect_near(cos_scalar_result, cos_scalar_expected, NEAR_LIMIT_STRICT,
+        "check cos Scalar.");
+
+    /* cos - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> cos_dense_input({
+        {0, static_cast<T>(PythonNumpy::PI)},
+        {static_cast<T>(PythonNumpy::HALF_PI), 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> cos_dense_result = PythonNumpy::cos(cos_dense_input);
+
+    tester.expect_near(cos_dense_result.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cos Dense Matrix[0,0].");
+    tester.expect_near(cos_dense_result.matrix(0, 1), static_cast<T>(-1.0F), NEAR_LIMIT_STRICT,
+        "check cos Dense Matrix[0,1].");
+
+    /* cos - Diagonal Matrix */
+    T cos_diag_input_array[3] = { 0, static_cast<T>(PythonNumpy::PI), static_cast<T>(PythonNumpy::HALF_PI) };
+    Matrix<DefDiag, T, 3> cos_diag_input(cos_diag_input_array);
+
+    Matrix<DefDiag, T, 3> cos_diag_result = PythonNumpy::cos(cos_diag_input);
+
+    tester.expect_near(cos_diag_result.matrix.data[0], static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cos Diagonal Matrix[0].");
+    tester.expect_near(cos_diag_result.matrix.data[1], static_cast<T>(-1.0F), NEAR_LIMIT_STRICT,
+        "check cos Diagonal Matrix[1].");
+
+    /* cos - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > cos_sparse_input({ 0.0F, static_cast<T>(PythonNumpy::PI) });
+
+    auto cos_sparse_result = PythonNumpy::cos(cos_sparse_input);
+
+    auto cos_sparse_result_dense = cos_sparse_result.create_dense();
+
+    tester.expect_near(cos_sparse_result_dense.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cos Sparse Matrix[0,0].");
+    tester.expect_near(cos_sparse_result_dense.matrix(1, 1), static_cast<T>(-1.0F), NEAR_LIMIT_STRICT,
+        "check cos Sparse Matrix[1,1].");
+
+    /* cos - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> cos_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> cos_aug_A12({ {static_cast<T>(PythonNumpy::PI)} });
+    Matrix<DefDense, T, 1, 1> cos_aug_A21({ {static_cast<T>(PythonNumpy::HALF_PI)} });
+    Matrix<DefDense, T, 1, 1> cos_aug_A22({ {0} });
+
+    auto cos_augmented_input = make_AugmentedMatrix(cos_aug_A11, cos_aug_A12, cos_aug_A21, cos_aug_A22);
+
+    auto cos_augmented_result = PythonNumpy::cos(cos_augmented_input);
+
+    auto cos_augmented_result_dense = cos_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(cos_augmented_result_dense.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cos AugmentedMatrix[0,0].");
+
+    /* tan - Scalar */
+    T tan_scalar_input = static_cast<T>(0.0F);
+    T tan_scalar_result = PythonNumpy::tan(tan_scalar_input);
+    T tan_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(tan_scalar_result, tan_scalar_expected, NEAR_LIMIT_STRICT,
+        "check tan Scalar.");
+
+    /* tan - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> tan_dense_input({
+        {0, static_cast<T>(PythonNumpy::PI)},
+        {static_cast<T>(PythonNumpy::HALF_PI), 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> tan_dense_result = PythonNumpy::tan(tan_dense_input);
+
+    tester.expect_near(tan_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tan Dense Matrix[0,0].");
+
+    /* tan - Diagonal Matrix */
+    T tan_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> tan_diag_input(tan_diag_input_array);
+
+    Matrix<DefDiag, T, 3> tan_diag_result = PythonNumpy::tan(tan_diag_input);
+
+    tester.expect_near(tan_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tan Diagonal Matrix[0].");
+
+    /* tan - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, false, false>,
+        ColumnAvailable<false, false, false>>
+        > tan_sparse_input({ 0.0F });
+
+    auto tan_sparse_result = PythonNumpy::tan(tan_sparse_input);
+
+    auto tan_sparse_result_dense = tan_sparse_result.create_dense();
+
+    tester.expect_near(tan_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tan Sparse Matrix[0,0].");
+
+    /* tan - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> tan_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> tan_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> tan_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> tan_aug_A22({ {0} });
+
+    auto tan_augmented_input = make_AugmentedMatrix(tan_aug_A11, tan_aug_A12, tan_aug_A21, tan_aug_A22);
+
+    auto tan_augmented_result = PythonNumpy::tan(tan_augmented_input);
+
+    auto tan_augmented_result_dense = tan_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(tan_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tan AugmentedMatrix[0,0].");
+
+    /* asin - Scalar */
+    T asin_scalar_input = static_cast<T>(0.0F);
+    T asin_scalar_result = PythonNumpy::asin(asin_scalar_input);
+    T asin_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(asin_scalar_result, asin_scalar_expected, NEAR_LIMIT_STRICT,
+        "check asin Scalar.");
+
+    /* asin - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> asin_dense_input({
+        {0, 0.5F},
+        {1, 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> asin_dense_result = PythonNumpy::asin(asin_dense_input);
+
+    tester.expect_near(asin_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check asin Dense Matrix[0,0].");
+
+    /* asin - Diagonal Matrix */
+    T asin_diag_input_array[3] = { 0, 0.5F, 1 };
+    Matrix<DefDiag, T, 3> asin_diag_input(asin_diag_input_array);
+
+    Matrix<DefDiag, T, 3> asin_diag_result = PythonNumpy::asin(asin_diag_input);
+
+    tester.expect_near(asin_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check asin Diagonal Matrix[0].");
+
+    /* asin - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > asin_sparse_input({ 0.0F, 0.5F });
+
+    auto asin_sparse_result = PythonNumpy::asin(asin_sparse_input);
+
+    auto asin_sparse_result_dense = asin_sparse_result.create_dense();
+
+    tester.expect_near(asin_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check asin Sparse Matrix[0,0].");
+
+    /* asin - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> asin_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> asin_aug_A12({ {0.5F} });
+    Matrix<DefDense, T, 1, 1> asin_aug_A21({ {1} });
+    Matrix<DefDense, T, 1, 1> asin_aug_A22({ {0} });
+
+    auto asin_augmented_input = make_AugmentedMatrix(asin_aug_A11, asin_aug_A12, asin_aug_A21, asin_aug_A22);
+
+    auto asin_augmented_result = PythonNumpy::asin(asin_augmented_input);
+
+    auto asin_augmented_result_dense = asin_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(asin_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check asin AugmentedMatrix[0,0].");
+
+    /* acos - Scalar */
+    T acos_scalar_input = static_cast<T>(1.0F);
+    T acos_scalar_result = PythonNumpy::acos(acos_scalar_input);
+    T acos_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(acos_scalar_result, acos_scalar_expected, NEAR_LIMIT_STRICT,
+        "check acos Scalar.");
+
+    /* acos - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> acos_dense_input({
+        {1, 0.5F},
+        {0, 1}
+    });
+
+    Matrix<DefDense, T, 2, 2> acos_dense_result = PythonNumpy::acos(acos_dense_input);
+
+    tester.expect_near(acos_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check acos Dense Matrix[0,0].");
+
+    /* acos - Diagonal Matrix */
+    T acos_diag_input_array[3] = { 1, 0.5F, 0 };
+    Matrix<DefDiag, T, 3> acos_diag_input(acos_diag_input_array);
+
+    Matrix<DefDiag, T, 3> acos_diag_result = PythonNumpy::acos(acos_diag_input);
+
+    tester.expect_near(acos_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check acos Diagonal Matrix[0].");
+
+    /* acos - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > acos_sparse_input({ 1.0F, 0.5F });
+
+    auto acos_sparse_result = PythonNumpy::acos(acos_sparse_input);
+
+    auto acos_sparse_result_dense = acos_sparse_result.create_dense();
+
+    tester.expect_near(acos_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check acos Sparse Matrix[0,0].");
+
+    /* acos - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> acos_aug_A11({ {1} });
+    Matrix<DefDense, T, 1, 1> acos_aug_A12({ {0.5F} });
+    Matrix<DefDense, T, 1, 1> acos_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> acos_aug_A22({ {1} });
+
+    auto acos_augmented_input = make_AugmentedMatrix(acos_aug_A11, acos_aug_A12, acos_aug_A21, acos_aug_A22);
+
+    auto acos_augmented_result = PythonNumpy::acos(acos_augmented_input);
+
+    auto acos_augmented_result_dense = acos_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(acos_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check acos AugmentedMatrix[0,0].");
+
+    /* atan - Scalar */
+    T atan_scalar_input = static_cast<T>(0.0F);
+    T atan_scalar_result = PythonNumpy::atan(atan_scalar_input);
+    T atan_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(atan_scalar_result, atan_scalar_expected, NEAR_LIMIT_STRICT,
+        "check atan Scalar.");
+
+    /* atan - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> atan_dense_input({
+        {0, 1},
+        {0, 1}
+    });
+
+    Matrix<DefDense, T, 2, 2> atan_dense_result = PythonNumpy::atan(atan_dense_input);
+
+    tester.expect_near(atan_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan Dense Matrix[0,0].");
+
+    /* atan - Diagonal Matrix */
+    T atan_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> atan_diag_input(atan_diag_input_array);
+
+    Matrix<DefDiag, T, 3> atan_diag_result = PythonNumpy::atan(atan_diag_input);
+
+    tester.expect_near(atan_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan Diagonal Matrix[0].");
+
+    /* atan - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > atan_sparse_input({ 0.0F, 1.0F });
+
+    auto atan_sparse_result = PythonNumpy::atan(atan_sparse_input);
+
+    auto atan_sparse_result_dense = atan_sparse_result.create_dense();
+
+    tester.expect_near(atan_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan Sparse Matrix[0,0].");
+
+    /* atan - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> atan_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> atan_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> atan_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> atan_aug_A22({ {1} });
+
+    auto atan_augmented_input = make_AugmentedMatrix(atan_aug_A11, atan_aug_A12, atan_aug_A21, atan_aug_A22);
+
+    auto atan_augmented_result = PythonNumpy::atan(atan_augmented_input);
+
+    auto atan_augmented_result_dense = atan_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(atan_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check atan AugmentedMatrix[0,0].");
+
+    /* atan2 - Scalar */
+    T atan2_scalar_input1 = static_cast<T>(0.0F);
+    T atan2_scalar_input2 = static_cast<T>(1.0F);
+    T atan2_scalar_result = PythonNumpy::atan2(atan2_scalar_input1, atan2_scalar_input2);
+    T atan2_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(atan2_scalar_result, atan2_scalar_expected, NEAR_LIMIT_STRICT,
+        "check atan2 Scalar.");
+
+    /* sinh - Scalar */
+    T sinh_scalar_input = static_cast<T>(0.0F);
+    T sinh_scalar_result = PythonNumpy::sinh(sinh_scalar_input);
+    T sinh_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(sinh_scalar_result, sinh_scalar_expected, NEAR_LIMIT_STRICT,
+        "check sinh Scalar.");
+
+    /* sinh - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> sinh_dense_input({
+        {0, 1},
+        {0, 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> sinh_dense_result = PythonNumpy::sinh(sinh_dense_input);
+
+    tester.expect_near(sinh_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sinh Dense Matrix[0,0].");
+
+    /* sinh - Diagonal Matrix */
+    T sinh_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> sinh_diag_input(sinh_diag_input_array);
+
+    Matrix<DefDiag, T, 3> sinh_diag_result = PythonNumpy::sinh(sinh_diag_input);
+
+    tester.expect_near(sinh_diag_result.matrix.data[0], static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sinh Diagonal Matrix[0].");
+
+    /* sinh - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > sinh_sparse_input({ 0.0F, 1.0F });
+
+    auto sinh_sparse_result = PythonNumpy::sinh(sinh_sparse_input);
+
+    auto sinh_sparse_result_dense = sinh_sparse_result.create_dense();
+
+    tester.expect_near(sinh_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sinh Sparse Matrix[0,0].");
+
+    /* sinh - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> sinh_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> sinh_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> sinh_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> sinh_aug_A22({ {0} });
+
+    auto sinh_augmented_input = make_AugmentedMatrix(sinh_aug_A11, sinh_aug_A12, sinh_aug_A21, sinh_aug_A22);
+
+    auto sinh_augmented_result = PythonNumpy::sinh(sinh_augmented_input);
+
+    auto sinh_augmented_result_dense = sinh_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(sinh_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check sinh AugmentedMatrix[0,0].");
+
+    /* cosh - Scalar */
+    T cosh_scalar_input = static_cast<T>(0.0F);
+    T cosh_scalar_result = PythonNumpy::cosh(cosh_scalar_input);
+    T cosh_scalar_expected = static_cast<T>(1.0F);
+    tester.expect_near(cosh_scalar_result, cosh_scalar_expected, NEAR_LIMIT_STRICT,
+        "check cosh Scalar.");
+
+    /* cosh - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> cosh_dense_input({
+        {0, 1},
+        {0, 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> cosh_dense_result = PythonNumpy::cosh(cosh_dense_input);
+
+    tester.expect_near(cosh_dense_result.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cosh Dense Matrix[0,0].");
+
+    /* cosh - Diagonal Matrix */
+    T cosh_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> cosh_diag_input(cosh_diag_input_array);
+
+    Matrix<DefDiag, T, 3> cosh_diag_result = PythonNumpy::cosh(cosh_diag_input);
+
+    tester.expect_near(cosh_diag_result.matrix.data[0], static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cosh Diagonal Matrix[0].");
+
+    /* cosh - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > cosh_sparse_input({ 0.0F, 1.0F });
+
+    auto cosh_sparse_result = PythonNumpy::cosh(cosh_sparse_input);
+
+    auto cosh_sparse_result_dense = cosh_sparse_result.create_dense();
+
+    tester.expect_near(cosh_sparse_result_dense.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cosh Sparse Matrix[0,0].");
+
+    /* cosh - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> cosh_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> cosh_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> cosh_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> cosh_aug_A22({ {0} });
+
+    auto cosh_augmented_input = make_AugmentedMatrix(cosh_aug_A11, cosh_aug_A12, cosh_aug_A21, cosh_aug_A22);
+
+    auto cosh_augmented_result = PythonNumpy::cosh(cosh_augmented_input);
+
+    auto cosh_augmented_result_dense = cosh_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(cosh_augmented_result_dense.matrix(0, 0), static_cast<T>(1.0F), NEAR_LIMIT_STRICT,
+        "check cosh AugmentedMatrix[0,0].");
+
+    /* tanh - Scalar */
+    T tanh_scalar_input = static_cast<T>(0.0F);
+    T tanh_scalar_result = PythonNumpy::tanh(tanh_scalar_input);
+    T tanh_scalar_expected = static_cast<T>(0.0F);
+    tester.expect_near(tanh_scalar_result, tanh_scalar_expected, NEAR_LIMIT_STRICT,
+        "check tanh Scalar.");
+
+    /* tanh - Dense Matrix */
+    Matrix<DefDense, T, 2, 2> tanh_dense_input({
+        {0, 1},
+        {0, 0}
+    });
+
+    Matrix<DefDense, T, 2, 2> tanh_dense_result = PythonNumpy::tanh(tanh_dense_input);
+
+    tester.expect_near(tanh_dense_result.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tanh Dense Matrix[0,0].");
+
+    /* tanh - Diagonal Matrix */
+    T tanh_diag_input_array[3] = { 0, 1, 0 };
+    Matrix<DefDiag, T, 3> tanh_diag_input(tanh_diag_input_array);
+
+    Matrix<DefDiag, T, 3> tanh_diag_result = PythonNumpy::tanh(tanh_diag_input);
+
+    T tanh_diag_expected_array[3] = { 0, static_cast<T>(0.76159F), 0 };
+    Matrix<DefDiag, T, 3> tanh_diag_expected(tanh_diag_expected_array);
+
+    tester.expect_near(tanh_diag_result.matrix.data[0], tanh_diag_expected.matrix.data[0], NEAR_LIMIT_STRICT,
+        "check tanh Diagonal Matrix[0].");
+
+    /* tanh - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, false, false>>
+        > tanh_sparse_input({ 0.0F, 1.0F });
+
+    auto tanh_sparse_result = PythonNumpy::tanh(tanh_sparse_input);
+
+    auto tanh_sparse_result_dense = tanh_sparse_result.create_dense();
+
+    tester.expect_near(tanh_sparse_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tanh Sparse Matrix[0,0].");
+
+    /* tanh - Augmented Matrix */
+    Matrix<DefDense, T, 1, 1> tanh_aug_A11({ {0} });
+    Matrix<DefDense, T, 1, 1> tanh_aug_A12({ {1} });
+    Matrix<DefDense, T, 1, 1> tanh_aug_A21({ {0} });
+    Matrix<DefDense, T, 1, 1> tanh_aug_A22({ {0} });
+
+    auto tanh_augmented_input = make_AugmentedMatrix(tanh_aug_A11, tanh_aug_A12, tanh_aug_A21, tanh_aug_A22);
+
+    auto tanh_augmented_result = PythonNumpy::tanh(tanh_augmented_input);
+
+    auto tanh_augmented_result_dense = tanh_augmented_result.template to_matrix<Matrix<DefDense, T, 2, 2>>();
+
+    tester.expect_near(tanh_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
+        "check tanh AugmentedMatrix[0,0].");
 
     tester.throw_error_if_test_failed();
 }
