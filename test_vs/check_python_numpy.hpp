@@ -4285,6 +4285,27 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
         NEAR_LIMIT_STRICT,
         "check abs Sparse Matrix.");
 
+    /* abs - AugmentedMatrix */
+    Matrix<DefDense, T, 2, 2> aug_A11({ {-1, -2}, {-4, -5} });
+    Matrix<DefDense, T, 2, 1> aug_A12({ {-3}, {-6} });
+    Matrix<DefDense, T, 1, 2> aug_A21({ {-7, -8} });
+    Matrix<DefDense, T, 1, 1> aug_A22({ {-9} });
+
+    auto augmented_input = make_AugmentedMatrix(aug_A11, aug_A12, aug_A21, aug_A22);
+
+    auto augmented_result = abs(augmented_input);
+
+    auto augmented_result_dense = augmented_result.template to_matrix<Matrix<DefDense, T, 3, 3>>();
+
+    Matrix<DefDense, T, 3, 3> augmented_expected({
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+        });
+
+    tester.expect_near(augmented_result_dense.matrix.data, augmented_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check abs AugmentedMatrix.");
+
     tester.throw_error_if_test_failed();
 }
 
