@@ -1166,36 +1166,6 @@ atan2(const T &x, const T &y) {
   return Base::Matrix::atan2(x, y);
 }
 
-template <typename T, std::size_t M, std::size_t N>
-inline auto atan2(const Matrix<DefDense, T, M, N> &matrix, const T &y)
-    -> Matrix<DefDense, T, M, N> {
-  Matrix<DefDense, T, M, N> result;
-
-  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
-
-  return result;
-}
-
-template <typename T, std::size_t M>
-inline auto atan2(const Matrix<DefDiag, T, M> &matrix, const T &y)
-    -> Matrix<DefDiag, T, M> {
-  Matrix<DefDiag, T, M> result;
-
-  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
-
-  return result;
-}
-
-template <typename T, std::size_t M, std::size_t N, typename SparseAvailable>
-inline auto atan2(const Matrix<DefSparse, T, M, N, SparseAvailable> &matrix,
-                  const T &y) -> Matrix<DefSparse, T, M, N, SparseAvailable> {
-  Matrix<DefSparse, T, M, N, SparseAvailable> result;
-
-  result.matrix = Base::Matrix::atan2(matrix.matrix, y);
-
-  return result;
-}
-
 /* sinh */
 
 template <typename T>
