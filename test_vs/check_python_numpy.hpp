@@ -4233,7 +4233,57 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
+    /* abs - Dense Matrix */
+    Matrix<DefDense, T, 2, 3> dense_input({
+        {1, -2, 3},
+        {-4, 5, -6}
+    });
 
+    Matrix<DefDense, T, 2, 3> dense_result = abs(dense_input);
+
+    Matrix<DefDense, T, 2, 3> dense_expected({
+        {1, 2, 3},
+        {4, 5, 6}
+    });
+
+    tester.expect_near(dense_result.matrix.data, dense_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check abs Dense Matrix.");
+
+    /* abs - Diagonal Matrix */
+    T diag_input_array[3] = { -1, 2, -3 };
+    Matrix<DefDiag, T, 3> diag_input(diag_input_array);
+
+    Matrix<DefDiag, T, 3> diag_result = abs(diag_input);
+
+    T diag_expected_array[3] = { 1, 2, 3 };
+    Matrix<DefDiag, T, 3> diag_expected(diag_expected_array);
+
+    tester.expect_near(diag_result.matrix.data, diag_expected.matrix.data, NEAR_LIMIT_STRICT,
+        "check abs Diagonal Matrix.");
+
+    /* abs - Sparse Matrix */
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, true, false>>
+        > sparse_input({ -1, -5, 3 });
+
+    auto sparse_result = abs(sparse_input);
+
+    Matrix<DefSparse, T, 3, 3,
+        SparseAvailable<
+        ColumnAvailable<true, false, false>,
+        ColumnAvailable<false, true, false>,
+        ColumnAvailable<false, true, false>>
+        > sparse_expected({ 1, 5, 3 });
+
+    auto sparse_result_dense = sparse_result.create_dense();
+    auto sparse_expected_dense = sparse_expected.create_dense();
+
+    tester.expect_near(sparse_result_dense.matrix.data, sparse_expected_dense.matrix.data,
+        NEAR_LIMIT_STRICT,
+        "check abs Sparse Matrix.");
 
     tester.throw_error_if_test_failed();
 }
