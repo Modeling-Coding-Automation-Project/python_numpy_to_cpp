@@ -575,6 +575,18 @@ inline void compute(const std::array<T, M> &row_major,
 
 } // namespace MakeDenseMatrixFromRowMajorArray1D
 
+/**
+ * @brief Creates a dense matrix from a std::array in row-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::array<T, M> with row-major layout. Uses template metaprogramming
+ * to unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param row_major The source row-major array.
+ * @return Matrix<DefDense, T, 1, M> A dense matrix initialized from row_major.
+ */
 template <typename T, std::size_t M>
 inline auto make_DenseMatrix_from_row_major(
     const std::array<T, M> &row_major,
@@ -642,6 +654,18 @@ inline void compute(const std::vector<T> &row_major,
 
 } // namespace MakeDenseMatrixFromRowMajorVector1D
 
+/**
+ * @brief Creates a dense matrix from a std::vector in row-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::vector<T> with row-major layout. Uses template metaprogramming to
+ * unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of columns in the matrix.
+ * @param row_major The source row-major vector.
+ * @return Matrix<DefDense, T, 1, M> A dense matrix initialized from row_major.
+ */
 template <typename T, std::size_t M>
 inline auto make_DenseMatrix_from_row_major(
     const std::vector<T> &row_major,
@@ -650,6 +674,164 @@ inline auto make_DenseMatrix_from_row_major(
 
   Matrix<DefDense, T, 1, M> result;
   MakeDenseMatrixFromRowMajorVector1D::compute(row_major, result);
+  return result;
+}
+
+namespace MakeDenseMatrixFromColMajorArray1D {
+
+// Vector Add Scalar Core Template: M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Assigns a value from a 1D array to the matrix.
+   *
+   * This function recursively assigns values from a 1D std::array to a dense
+   * matrix, starting from the last index and moving towards the first.
+   *
+   * @param col_major The source 1D array in column-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::array<T, M> &col_major,
+                      Matrix<DefDense, T, M, 1> &result) {
+    result.template set<M_idx, 0>(col_major[M_idx]);
+    Core<T, M, M_idx - 1>::compute(col_major, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Assigns the first value from a 1D array to the matrix.
+   *
+   * This function is called when the recursion reaches the first index, and it
+   * assigns the first value from the 1D std::array to the dense matrix.
+   *
+   * @param col_major The source 1D array in column-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::array<T, M> &col_major,
+                      Matrix<DefDense, T, M, 1> &result) {
+    result.template set<0, 0>(col_major[0]);
+  }
+};
+
+/**
+ * @brief Initiates the recursive assignment of values from a 1D array.
+ *
+ * This function uses template metaprogramming to unroll loops and assign values
+ * from a 1D std::array to a dense matrix.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param col_major The source 1D array in column-major format.
+ * @param result The target dense matrix to assign values to.
+ */
+template <typename T, std::size_t M>
+inline void compute(const std::array<T, M> &col_major,
+                    Matrix<DefDense, T, M, 1> &result) {
+  Core<T, M, M - 1>::compute(col_major, result);
+}
+
+} // namespace MakeDenseMatrixFromColMajorArray1D
+
+/**
+ * @brief Creates a dense matrix from a std::array in column-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::array<T, M> with column-major layout. Uses template
+ * metaprogramming to unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param col_major The source column-major array.
+ * @return Matrix<DefDense, T, M, 1> A dense matrix initialized from col_major.
+ */
+template <typename T, std::size_t M>
+inline auto make_DenseMatrix_from_col_major(
+    const std::array<T, M> &col_major,
+    typename std::enable_if<!is_std_array<T>::value>::type * = nullptr)
+    -> Matrix<DefDense, T, M, 1> {
+
+  Matrix<DefDense, T, M, 1> result;
+  MakeDenseMatrixFromColMajorArray1D::compute(col_major, result);
+  return result;
+}
+
+namespace MakeDenseMatrixFromColMajorVector1D {
+
+// Vector Add Scalar Core Template: M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Assigns a value from a 1D vector to the matrix.
+   *
+   * This function recursively assigns values from a 1D std::vector to a dense
+   * matrix, starting from the last index and moving towards the first.
+   *
+   * @param col_major The source 1D vector in column-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::vector<T> &col_major,
+                      Matrix<DefDense, T, M, 1> &result) {
+    result.template set<M_idx, 0>(col_major[M_idx]);
+    Core<T, M, M_idx - 1>::compute(col_major, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Assigns the first value from a 1D vector to the matrix.
+   *
+   * This function is called when the recursion reaches the first index, and it
+   * assigns the first value from the 1D std::vector to the dense matrix.
+   *
+   * @param col_major The source 1D vector in column-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::vector<T> &col_major,
+                      Matrix<DefDense, T, M, 1> &result) {
+    result.template set<0, 0>(col_major[0]);
+  }
+};
+
+/**
+ * @brief Initiates the recursive assignment of values from a 1D vector.
+ *
+ * This function uses template metaprogramming to unroll loops and assign values
+ * from a 1D std::vector to a dense matrix.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param col_major The source 1D vector in column-major format.
+ * @param result The target dense matrix to assign values to.
+ */
+template <typename T, std::size_t M>
+inline void compute(const std::vector<T> &col_major,
+                    Matrix<DefDense, T, M, 1> &result) {
+  Core<T, M, M - 1>::compute(col_major, result);
+}
+
+} // namespace MakeDenseMatrixFromColMajorVector1D
+
+/**
+ * @brief Creates a dense matrix from a std::vector in column-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::vector<T> with column-major layout. Uses template metaprogramming
+ * to unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param col_major The source column-major vector.
+ * @return Matrix<DefDense, T, M, 1> A dense matrix initialized from col_major.
+ */
+template <typename T, std::size_t M>
+inline auto make_DenseMatrix_from_col_major(
+    const std::vector<T> &col_major,
+    typename std::enable_if<!is_std_array<T>::value>::type * = nullptr)
+    -> Matrix<DefDense, T, M, 1> {
+
+  Matrix<DefDense, T, M, 1> result;
+  MakeDenseMatrixFromColMajorVector1D::compute(col_major, result);
   return result;
 }
 
