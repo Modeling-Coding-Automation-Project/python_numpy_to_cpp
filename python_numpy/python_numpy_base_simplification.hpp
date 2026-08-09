@@ -264,33 +264,275 @@ inline auto make_DenseMatrix(T value_1, Args... args)
   return result;
 }
 
+namespace MakeDenseMatrixFromRowMajorArray {
+
+/**
+ * @brief Recursively assigns values to matrix columns from a std::array.
+ *
+ * This struct handles the column iteration when loading from row_major array.
+ * It recursively processes columns from N-1 down to 0 for each row.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The current row index in the recursion.
+ * @tparam J_idx The current column index in the recursion.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct Row {
+  /**
+   * @brief Recursively assigns a value to the matrix from row_major array.
+   *
+   * @param row_major The source row-major array.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::array<std::array<T, N>, M> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    result.template set<I, J_idx>(row_major[I][J_idx]);
+    Row<T, M, N, I, J_idx - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Base case for column recursion from row_major array.
+ *
+ * This specialization terminates the column recursion when J_idx == 0.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct Row<T, M, N, I, 0> {
+  /**
+   * @brief Assigns the first column value and terminates recursion.
+   *
+   * @param row_major The source row-major array.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::array<std::array<T, N>, M> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    result.template set<I, 0>(row_major[I][0]);
+  }
+};
+
+/**
+ * @brief Recursively assigns values to matrix rows from a std::array.
+ *
+ * This struct handles the row iteration when loading from row_major array.
+ * It processes rows from M-1 down to 0.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I_idx The current row index in the recursion.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct Column {
+  /**
+   * @brief Recursively processes a row and continues to the next.
+   *
+   * @param row_major The source row-major array.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::array<std::array<T, N>, M> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    Row<T, M, N, I_idx, N - 1>::compute(row_major, result);
+    Column<T, M, N, I_idx - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Base case for row recursion from row_major array.
+ *
+ * This specialization terminates the row recursion when I_idx == 0.
+ */
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
+  /**
+   * @brief Processes the first row and terminates recursion.
+   *
+   * @param row_major The source row-major array.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::array<std::array<T, N>, M> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    Row<T, M, N, 0, N - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Initiates the recursive assignment of values from row_major array.
+ *
+ * This function uses template metaprogramming to unroll loops and assign values
+ * from a std::array to a dense matrix.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param row_major The source row-major array.
+ * @param result The target matrix to assign values to.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(const std::array<std::array<T, N>, M> &row_major,
+                    Matrix<DefDense, T, M, N> &result) {
+  Column<T, M, N, M - 1>::compute(row_major, result);
+}
+
+} // namespace MakeDenseMatrixFromRowMajorArray
+
+namespace MakeDenseMatrixFromRowMajorVector {
+
+/**
+ * @brief Recursively assigns values to matrix columns from a std::vector.
+ *
+ * This struct handles the column iteration when loading from row_major vector.
+ * It recursively processes columns from N-1 down to 0 for each row.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I The current row index in the recursion.
+ * @tparam J_idx The current column index in the recursion.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I,
+          std::size_t J_idx>
+struct Row {
+  /**
+   * @brief Recursively assigns a value to the matrix from row_major vector.
+   *
+   * @param row_major The source row-major vector.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::vector<std::vector<T>> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    result.template set<I, J_idx>(row_major[I][J_idx]);
+    Row<T, M, N, I, J_idx - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Base case for column recursion from row_major vector.
+ *
+ * This specialization terminates the column recursion when J_idx == 0.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I>
+struct Row<T, M, N, I, 0> {
+  /**
+   * @brief Assigns the first column value and terminates recursion.
+   *
+   * @param row_major The source row-major vector.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::vector<std::vector<T>> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    result.template set<I, 0>(row_major[I][0]);
+  }
+};
+
+/**
+ * @brief Recursively assigns values to matrix rows from a std::vector.
+ *
+ * This struct handles the row iteration when loading from row_major vector.
+ * It processes rows from M-1 down to 0.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @tparam I_idx The current row index in the recursion.
+ */
+template <typename T, std::size_t M, std::size_t N, std::size_t I_idx>
+struct Column {
+  /**
+   * @brief Recursively processes a row and continues to the next.
+   *
+   * @param row_major The source row-major vector.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::vector<std::vector<T>> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    Row<T, M, N, I_idx, N - 1>::compute(row_major, result);
+    Column<T, M, N, I_idx - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Base case for row recursion from row_major vector.
+ *
+ * This specialization terminates the row recursion when I_idx == 0.
+ */
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
+  /**
+   * @brief Processes the first row and terminates recursion.
+   *
+   * @param row_major The source row-major vector.
+   * @param result The target matrix to assign values to.
+   */
+  static void compute(const std::vector<std::vector<T>> &row_major,
+                      Matrix<DefDense, T, M, N> &result) {
+    Row<T, M, N, 0, N - 1>::compute(row_major, result);
+  }
+};
+
+/**
+ * @brief Initiates the recursive assignment of values from row_major vector.
+ *
+ * This function uses template metaprogramming to unroll loops and assign values
+ * from a std::vector to a dense matrix.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param row_major The source row-major vector.
+ * @param result The target matrix to assign values to.
+ */
+template <typename T, std::size_t M, std::size_t N>
+inline void compute(const std::vector<std::vector<T>> &row_major,
+                    Matrix<DefDense, T, M, N> &result) {
+  Column<T, M, N, M - 1>::compute(row_major, result);
+}
+
+} // namespace MakeDenseMatrixFromRowMajorVector
+
+/**
+ * @brief Creates a dense matrix from a std::array in row-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::array<std::array<T, N>, M> with row-major layout. Uses template
+ * metaprogramming to unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param row_major The source row-major array.
+ * @return Matrix<DefDense, T, M, N> A dense matrix initialized from row_major.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline auto make_DenseMatrix_from_row_major(
     const std::array<std::array<T, N>, M> &row_major)
     -> Matrix<DefDense, T, M, N> {
+
   Matrix<DefDense, T, M, N> result;
-
-  for (std::size_t i = 0; i < M; ++i) {
-    for (std::size_t j = 0; j < N; ++j) {
-      result(i, j) = row_major[i][j];
-    }
-  }
-
+  MakeDenseMatrixFromRowMajorArray::compute(row_major, result);
   return result;
 }
 
+/**
+ * @brief Creates a dense matrix from a std::vector in row-major format.
+ *
+ * This function template constructs and returns a dense matrix initialized
+ * from a std::vector<std::vector<T>> with row-major layout. Uses template
+ * metaprogramming to unroll the initialization loops at compile-time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @tparam N The number of columns in the matrix.
+ * @param row_major The source row-major vector.
+ * @return Matrix<DefDense, T, M, N> A dense matrix initialized from row_major.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline auto
 make_DenseMatrix_from_row_major(const std::vector<std::vector<T>> &row_major)
     -> Matrix<DefDense, T, M, N> {
+
   Matrix<DefDense, T, M, N> result;
-
-  for (std::size_t i = 0; i < M; ++i) {
-    for (std::size_t j = 0; j < N; ++j) {
-      result(i, j) = row_major[i][j];
-    }
-  }
-
+  MakeDenseMatrixFromRowMajorVector::compute(row_major, result);
   return result;
 }
 
