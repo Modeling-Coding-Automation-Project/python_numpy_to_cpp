@@ -264,6 +264,36 @@ inline auto make_DenseMatrix(T value_1, Args... args)
   return result;
 }
 
+template <typename T, std::size_t M, std::size_t N>
+inline auto make_DenseMatrix_from_row_major(
+    const std::array<std::array<T, N>, M> &row_major)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(i, j) = row_major[i][j];
+    }
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t M, std::size_t N>
+inline auto
+make_DenseMatrix_from_row_major(const std::vector<std::vector<T>> &row_major)
+    -> Matrix<DefDense, T, M, N> {
+  Matrix<DefDense, T, M, N> result;
+
+  for (std::size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+      result(i, j) = row_major[i][j];
+    }
+  }
+
+  return result;
+}
+
 namespace MakeDiagMatrixOperation {
 
 /**
