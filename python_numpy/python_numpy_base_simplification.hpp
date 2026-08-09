@@ -34,6 +34,12 @@
 
 namespace PythonNumpy {
 
+// Helper struct to check if a type is std::array
+template <typename T> struct is_std_array : std::false_type {};
+
+template <typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type {};
+
 /**
  * @brief Creates a dense matrix of zeros.
  *
@@ -510,6 +516,73 @@ inline auto make_DenseMatrix_from_row_major(
 
   Matrix<DefDense, T, M, N> result;
   MakeDenseMatrixFromRowMajorArray::compute(row_major, result);
+  return result;
+}
+
+namespace MakeDenseMatrixFromRowMajorArray1D {
+
+// Vector Add Scalar Core Template: M_idx < M
+template <typename T, std::size_t M, std::size_t M_idx> struct Core {
+  /**
+   * @brief Assigns a value from a 1D array to the matrix.
+   *
+   * This function recursively assigns values from a 1D std::array to a dense
+   * matrix, starting from the last index and moving towards the first.
+   *
+   * @param row_major The source 1D array in row-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::array<T, M> &row_major,
+                      Matrix<DefDense, T, 1, M> &result) {
+    result.template set<0, M_idx>(row_major[M_idx]);
+    Core<T, M, M_idx - 1>::compute(row_major, result);
+  }
+};
+
+// Termination condition: M_idx == 0
+template <typename T, std::size_t M> struct Core<T, M, 0> {
+  /**
+   * @brief Assigns the first value from a 1D array to the matrix.
+   *
+   * This function is called when the recursion reaches the first index, and it
+   * assigns the first value from the 1D std::array to the dense matrix.
+   *
+   * @param row_major The source 1D array in row-major format.
+   * @param result The target dense matrix to assign values to.
+   */
+  static void compute(const std::array<T, M> &row_major,
+                      Matrix<DefDense, T, 1, M> &result) {
+    result.template set<0, 0>(row_major[0]);
+  }
+};
+
+/**
+ * @brief Initiates the recursive assignment of values from a 1D array.
+ *
+ * This function uses template metaprogramming to unroll loops and assign values
+ * from a 1D std::array to a dense matrix.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The number of rows in the matrix.
+ * @param row_major The source 1D array in row-major format.
+ * @param result The target dense matrix to assign values to.
+ */
+template <typename T, std::size_t M>
+inline void compute(const std::array<T, M> &row_major,
+                    Matrix<DefDense, T, 1, M> &result) {
+  Core<T, M, M - 1>::compute(row_major, result);
+}
+
+} // namespace MakeDenseMatrixFromRowMajorArray1D
+
+template <typename T, std::size_t M>
+inline auto make_DenseMatrix_from_row_major(
+    const std::array<T, M> &row_major,
+    typename std::enable_if<!is_std_array<T>::value>::type * = nullptr)
+    -> Matrix<DefDense, T, 1, M> {
+
+  Matrix<DefDense, T, 1, M> result;
+  MakeDenseMatrixFromRowMajorArray1D::compute(row_major, result);
   return result;
 }
 
