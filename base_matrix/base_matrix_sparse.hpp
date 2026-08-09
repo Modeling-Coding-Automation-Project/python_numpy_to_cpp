@@ -251,9 +251,7 @@ public:
    */
   std::size_t csr_index(std::size_t i) { return this->csr_indices[i]; }
 
-  const std::size_t csr_index(std::size_t i) const {
-    return this->csr_indices[i];
-  }
+  std::size_t csr_index(std::size_t i) const { return this->csr_indices[i]; }
 
   /**
    * @brief Returns the pointer to the start of the specified row.
@@ -275,9 +273,7 @@ public:
    * @param i The index of the column to retrieve the pointer for.
    * @return The starting index of the specified row.
    */
-  const std::size_t csr_pointer(std::size_t i) const {
-    return this->csr_pointers[i];
-  }
+  std::size_t csr_pointer(std::size_t i) const { return this->csr_pointers[i]; }
 
   /**
    * @brief Returns the number of non-zero values in the sparse matrix.

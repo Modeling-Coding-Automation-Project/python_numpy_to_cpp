@@ -139,9 +139,7 @@ public:
    * @param i The index of the column index to access.
    * @return The row index at index i.
    */
-  const std::size_t csr_index(std::size_t i) const {
-    return this->csr_indices[i];
-  }
+  std::size_t csr_index(std::size_t i) const { return this->csr_indices[i]; }
 
   /**
    * @brief Accessor for the row pointer at index i.
@@ -163,9 +161,7 @@ public:
    * @param i The index of the column pointer to access.
    * @return The row pointer at index i.
    */
-  const std::size_t csr_pointer(std::size_t i) const {
-    return this->csr_pointers[i];
-  }
+  std::size_t csr_pointer(std::size_t i) const { return this->csr_pointers[i]; }
 
 /* Variable */
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
