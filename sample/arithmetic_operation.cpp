@@ -205,5 +205,32 @@ int main() {
   }
   std::cout << std::endl;
 
+  /* create dense matrix from std::array */
+
+  std::array<std::array<double, 3>, 3> array_input = {
+      {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}};
+
+  auto Dense_from_array = make_DenseMatrix_from_row_major(array_input);
+
+  std::cout << "Dense_from_array = " << std::endl;
+  for (size_t i = 0; i < Dense_from_array.rows(); ++i) {
+    for (size_t j = 0; j < Dense_from_array.cols(); ++j) {
+      std::cout << Dense_from_array(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  auto Dense_from_col_major = make_DenseMatrix_from_col_major(array_input);
+
+  std::cout << "Dense_from_col_major = " << std::endl;
+  for (size_t i = 0; i < Dense_from_col_major.rows(); ++i) {
+    for (size_t j = 0; j < Dense_from_col_major.cols(); ++j) {
+      std::cout << Dense_from_col_major(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
   return 0;
 }
