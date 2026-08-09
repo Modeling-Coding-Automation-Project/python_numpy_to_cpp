@@ -1396,6 +1396,50 @@ void CheckPythonNumpy<T>::check_python_numpy_base_simplification(void) {
     tester.expect_near(from_vector_col.matrix.data, from_vector_col_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check make_DenseMatrix_from_col_major from std::vector.");
 
+    std::array<T, 4> data = { 1.0, 2.0, 3.0, 4.0 };
+
+    auto VA = make_DenseMatrix_from_row_major(data);
+
+    auto VA_answer = make_DenseMatrix<1, 4>(
+        static_cast<T>(1), static_cast<T>(2),
+        static_cast<T>(3), static_cast<T>(4));
+
+    tester.expect_near(VA.matrix.data, VA_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DenseMatrix_from_row_major from std::array<T>.");
+
+    std::vector<T> data2 = { 5.0, 6.0, 7.0, 8.0 };
+
+    auto VB = make_DenseMatrix_from_row_major<T, 4>(data2);
+
+    auto VB_answer = make_DenseMatrix<1, 4>(
+        static_cast<T>(5), static_cast<T>(6),
+        static_cast<T>(7), static_cast<T>(8));
+
+    tester.expect_near(VB.matrix.data, VB_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DenseMatrix_from_row_major from std::vector<T>.");
+
+    auto VA_col = make_DenseMatrix_from_col_major(data);
+
+    auto VA_col_answer = make_DenseMatrix<4, 1>(
+        static_cast<T>(1),
+        static_cast<T>(2),
+        static_cast<T>(3),
+        static_cast<T>(4));
+
+    tester.expect_near(VA_col.matrix.data, VA_col_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DenseMatrix_from_col_major from std::array<T>.");
+
+    auto VB_col = make_DenseMatrix_from_col_major<T, 4>(data2);
+
+    auto VB_col_answer = make_DenseMatrix<4, 1>(
+        static_cast<T>(5),
+        static_cast<T>(6),
+        static_cast<T>(7),
+        static_cast<T>(8));
+
+    tester.expect_near(VB_col.matrix.data, VB_col_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check make_DenseMatrix_from_col_major from std::vector<T>.");
+
 
     tester.throw_error_if_test_failed();
 }
