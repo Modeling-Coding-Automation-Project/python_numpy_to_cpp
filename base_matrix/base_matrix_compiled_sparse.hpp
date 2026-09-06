@@ -196,12 +196,51 @@ public:
    * @return CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers>
    *         A sparse matrix with all elements set to the specified value.
    */
+  /* Compile-time full via template metaprogramming */
+
+  // when I_idx > 0
+  template <typename U, std::size_t O, std::size_t P, typename CI, typename CP,
+            std::size_t I_idx>
+  struct SparseMatrixFull {
+    static void compute(CompiledSparseMatrix<U, O, P, CI, CP> &Full,
+                        const U &value) {
+      Full[I_idx] = value;
+      SparseMatrixFull<U, O, P, CI, CP, I_idx - 1>::compute(Full, value);
+    }
+  };
+
+  // recursion termination at index 0
+  template <typename U, std::size_t O, std::size_t P, typename CI, typename CP>
+  struct SparseMatrixFull<U, O, P, CI, CP, 0> {
+    static void compute(CompiledSparseMatrix<U, O, P, CI, CP> &Full,
+                        const U &value) {
+      Full[0] = value;
+    }
+  };
+
+  template <typename U, std::size_t O, std::size_t P, typename CI, typename CP>
+  static inline void
+  COMPILED_SPARSE_MATRIX_FULL(CompiledSparseMatrix<U, O, P, CI, CP> &Full,
+                              const U &value) {
+    SparseMatrixFull<U, O, P, CI, CP, CP::list[O] - 1>::compute(Full, value);
+  }
+
   static inline CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers>
   full(const T &value) {
-    CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> full(
-        std::vector<T>(CSRPointers::list[M], value));
+    CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> Full;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-    return full;
+    for (std::size_t i = 0; i < CSRPointers::list[M]; i++) {
+      Full[i] = value;
+    }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    COMPILED_SPARSE_MATRIX_FULL<T, M, N, CSRIndices, CSRPointers>(Full, value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    return Full;
   }
 
   /**
@@ -214,9 +253,18 @@ public:
    * @param value The value to fill all stored elements with.
    */
   inline void fill(const T &value) {
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < CSRPointers::list[M]; i++) {
       this->values[i] = value;
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    COMPILED_SPARSE_MATRIX_FULL<T, M, N, CSRIndices, CSRPointers>(*this, value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 
   /**

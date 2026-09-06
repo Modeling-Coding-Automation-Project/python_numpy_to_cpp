@@ -136,6 +136,30 @@ public:
     return identity;
   }
 
+  /* Compile-time full via template metaprogramming */
+
+  // when I_idx > 0
+  template <typename U, std::size_t O, std::size_t I_idx>
+  struct DiagMatrixFull {
+    static void compute(DiagMatrix<U, O> &Full, const U &value) {
+      Full[I_idx] = value;
+      DiagMatrixFull<U, O, I_idx - 1>::compute(Full, value);
+    }
+  };
+
+  // recursion termination at index 0
+  template <typename U, std::size_t O> struct DiagMatrixFull<U, O, 0> {
+    static void compute(DiagMatrix<U, O> &Full, const U &value) {
+      Full[0] = value;
+    }
+  };
+
+  template <typename U, std::size_t O>
+  static inline void COMPILED_DIAG_MATRIX_FULL(DiagMatrix<U, O> &Full,
+                                               const U &value) {
+    DiagMatrixFull<U, O, O - 1>::compute(Full, value);
+  }
+
   /**
    * @brief Creates and returns a diagonal matrix filled with a specified value.
    *
@@ -150,9 +174,20 @@ public:
    * the specified value.
    */
   static inline DiagMatrix<T, M> full(const T &value) {
-    DiagMatrix<T, M> full(std::vector<T>(M, value));
+    DiagMatrix<T, M> Full;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-    return full;
+    for (std::size_t i = 0; i < M; i++) {
+      Full[i] = value;
+    }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    COMPILED_DIAG_MATRIX_FULL<T, M>(Full, value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    return Full;
   }
 
   /**
@@ -165,9 +200,18 @@ public:
    * @param value The value to fill all diagonal elements with.
    */
   inline void fill(const T &value) {
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < M; i++) {
       this->data[i] = value;
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    COMPILED_DIAG_MATRIX_FULL<T, M>(*this, value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 
   /**
