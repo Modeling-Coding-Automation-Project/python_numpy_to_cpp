@@ -26,7 +26,7 @@ public:
     void check_determinant_and_trace(void);
     void check_diag_matrix(void);
     void check_sparse_matrix(void);
-    void check_matrix_cocatenation(void);
+    void check_matrix_concatenation(void);
     void check_cholesky_decomposition(void);
     void check_qr_decomposition(void);
     void check_variable_sparse_matrix(void);
@@ -62,7 +62,7 @@ void CheckBaseMatrix<T>::calc(void) {
 
     check_sparse_matrix();
 
-    check_matrix_cocatenation();
+    check_matrix_concatenation();
 
     check_cholesky_decomposition();
 
@@ -147,6 +147,18 @@ void CheckBaseMatrix<T>::check_matrix_vector_creation(void) {
 
     T b_dot_answer = 14.0F;
     tester.expect_near(b_dot, b_dot_answer, NEAR_LIMIT_STRICT, "check Vector dot.");
+
+    /* Matrix fill */
+    Matrix<T, 2, 3> A_fill;
+    A_fill.fill(static_cast<T>(7));
+
+    Matrix<T, 2, 3> A_fill_answer({
+        {7, 7, 7},
+        {7, 7, 7}
+        });
+
+    tester.expect_near(A_fill.data, A_fill_answer.data, NEAR_LIMIT_STRICT,
+        "check Matrix fill.");
 
 
     tester.throw_error_if_test_failed();
@@ -595,6 +607,14 @@ void CheckBaseMatrix<T>::check_diag_matrix(void) {
     tester.expect_near(Diagonal_vector.data, Diagonal_vector_answer.data, NEAR_LIMIT_STRICT,
         "check DiagMatrix create diagonal vector.");
 
+    /* DiagMatrix fill */
+    DiagMatrix<T, 3> D_fill;
+    D_fill.fill(static_cast<T>(5));
+
+    DiagMatrix<T, 3> D_fill_answer({ 5, 5, 5 });
+
+    tester.expect_near(D_fill.data, D_fill_answer.data, NEAR_LIMIT_STRICT,
+        "check DiagMatrix fill.");
 
 
     tester.throw_error_if_test_failed();
@@ -1289,12 +1309,25 @@ void CheckBaseMatrix<T>::check_sparse_matrix(void) {
     tester.expect_near(static_cast<T>(value_index_1_1), static_cast<T>(static_cast<std::size_t>(-1)), NEAR_LIMIT_STRICT,
         "check value index 1, 1.");
 
+    /* CompiledSparseMatrix fill */
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc_fill({ 1.0F, 3.0F, 8.0F, 2.0F, 4.0F });
+    SparseCc_fill.fill(static_cast<T>(9));
+
+    CompiledSparseMatrix<T, 3, 3,
+        CSRIndices<0, 0, 2, 1, 2>,
+        CSRPointers<0, 1, 3, 5>> SparseCc_fill_answer({ 9.0F, 9.0F, 9.0F, 9.0F, 9.0F });
+
+    tester.expect_near(SparseCc_fill.values, SparseCc_fill_answer.values, NEAR_LIMIT_STRICT,
+        "check CompiledSparseMatrix fill.");
+
 
     tester.throw_error_if_test_failed();
 }
 
 template <typename T>
-void CheckBaseMatrix<T>::check_matrix_cocatenation(void) {
+void CheckBaseMatrix<T>::check_matrix_concatenation(void) {
     using namespace Base::Matrix;
 
     MCAPTester<T> tester;
