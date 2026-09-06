@@ -385,6 +385,22 @@ public:
   }
 
   /**
+   * @brief Fills all elements of the matrix with the specified value.
+   *
+   * This method overwrites every element in the matrix with the given scalar
+   * value.
+   *
+   * @param value The value to fill all elements with.
+   */
+  inline void fill(const T &value) {
+    for (std::size_t i = 0; i < M; i++) {
+      for (std::size_t j = 0; j < N; j++) {
+        this->data[j][i] = value;
+      }
+    }
+  }
+
+  /**
    * @brief Creates a row vector from a specified row of the matrix.
    *
    * This function extracts a row from the matrix and returns it as a Vector

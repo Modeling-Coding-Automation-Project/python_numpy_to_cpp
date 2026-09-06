@@ -205,6 +205,21 @@ public:
   }
 
   /**
+   * @brief Fills all stored non-zero elements of the sparse matrix with the
+   * specified value.
+   *
+   * This method overwrites every stored element in the underlying sparse
+   * storage with the given scalar value. The sparsity pattern is unchanged.
+   *
+   * @param value The value to fill all stored elements with.
+   */
+  inline void fill(const T &value) {
+    for (std::size_t i = 0; i < CSRPointers::list[M]; i++) {
+      this->values[i] = value;
+    }
+  }
+
+  /**
    * @brief Checks if the given column and row indices correspond to a non-zero
    * element in the sparse matrix.
    *

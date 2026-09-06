@@ -156,6 +156,21 @@ public:
   }
 
   /**
+   * @brief Fills all diagonal elements of the diagonal matrix with the
+   * specified value.
+   *
+   * This method overwrites every diagonal element in the diagonal matrix with
+   * the given scalar value.
+   *
+   * @param value The value to fill all diagonal elements with.
+   */
+  inline void fill(const T &value) {
+    for (std::size_t i = 0; i < M; i++) {
+      this->data[i] = value;
+    }
+  }
+
+  /**
    * @brief Creates and returns a diagonal matrix filled with zeros.
    *
    * This static method constructs a diagonal matrix of size M x M,
