@@ -393,11 +393,19 @@ public:
    * @param value The value to fill all elements with.
    */
   inline void fill(const T &value) {
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < M; i++) {
       for (std::size_t j = 0; j < N; j++) {
         this->data[j][i] = value;
       }
     }
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    COMPILED_MATRIX_FULL<T, M, N>(*this, value);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 
   /**
