@@ -888,6 +888,37 @@ void CheckPythonNumpy<T>::check_python_numpy_base(void) {
     tester.expect_near(static_cast<T>(ndim_value), static_cast<T>(2), NEAR_LIMIT_STRICT,
         "check Sparse Matrix ndim.");
 
+    /* Dense Matrix fill */
+    Matrix<DefDense, T, 3, 3> A_fill({ { 1, 2, 3 }, {5, 4, 6}, {9, 8, 7} });
+    A_fill.fill(static_cast<T>(7));
+
+    Matrix<DefDense, T, 3, 3> A_fill_answer({
+        {7, 7, 7},
+        {7, 7, 7},
+        {7, 7, 7}
+        });
+
+    tester.expect_near(A_fill.matrix.data, A_fill_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Dense Matrix fill.");
+
+    /* Diag Matrix fill */
+    Matrix<DefDiag, T, 3> B_fill({ 1, 2, 3 });
+    B_fill.fill(static_cast<T>(5));
+
+    Matrix<DefDiag, T, 3> B_fill_answer({ 5, 5, 5 });
+
+    tester.expect_near(B_fill.matrix.data, B_fill_answer.matrix.data, NEAR_LIMIT_STRICT,
+        "check Diag Matrix fill.");
+
+    /* Sparse Matrix fill */
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> C_fill({ 1, 3, 8, 2, 4 });
+    C_fill.fill(static_cast<T>(9));
+
+    Matrix<DefSparse, T, 3, 3, SparseAvailable_C> C_fill_answer({ 9, 9, 9, 9, 9 });
+
+    tester.expect_near(C_fill.matrix.values, C_fill_answer.matrix.values, NEAR_LIMIT_STRICT,
+        "check Sparse Matrix fill.");
+
 
     tester.throw_error_if_test_failed();
 }

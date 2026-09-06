@@ -457,6 +457,16 @@ public:
             Value_Type, T, M, N, IS_COMPLEX>::get(this->matrix));
   }
 
+  /**
+   * @brief Fills all elements of the dense matrix with the specified value.
+   *
+   * This method overwrites every element in the dense matrix with the given
+   * scalar value.
+   *
+   * @param value The value to fill all elements with.
+   */
+  inline void fill(const T &value) { this->matrix.fill(value); }
+
 public:
   /* Variable */
   Base::Matrix::Matrix<T, M, N> matrix;
@@ -938,6 +948,17 @@ public:
             Value_Type, T, M, IS_COMPLEX>::get(this->matrix));
   }
 
+  /**
+   * @brief Fills all diagonal elements of the diagonal matrix with the
+   * specified value.
+   *
+   * This method overwrites every diagonal element in the diagonal matrix with
+   * the given scalar value.
+   *
+   * @param value The value to fill all diagonal elements with.
+   */
+  inline void fill(const T &value) { this->matrix.fill(value); }
+
 public:
   /* Variable */
   Base::Matrix::DiagMatrix<T, M> matrix;
@@ -1400,6 +1421,17 @@ public:
             Value_Type, T, M, N, SparseAvailable,
             IS_COMPLEX>::get(this->matrix));
   }
+
+  /**
+   * @brief Fills all stored non-zero elements of the sparse matrix with the
+   * specified value.
+   *
+   * This method overwrites every stored element in the underlying sparse
+   * storage with the given scalar value. The sparsity pattern is unchanged.
+   *
+   * @param value The value to fill all stored elements with.
+   */
+  inline void fill(const T &value) { this->matrix.fill(value); }
 
 public:
   /* Variable */
