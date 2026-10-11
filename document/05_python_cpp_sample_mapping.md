@@ -16,7 +16,7 @@
 | `qr.py` | `qr.cpp` | QR 分解 |
 | `eigen_values_vectors_real.py` | `eigen_values_vectors_real.cpp` | 実固有値・固有ベクトル |
 | `eigen_values_vectors_complex.py` | `eigen_values_vectors_complex.cpp` | 複素固有値・固有ベクトル |
-| `trigonometric.py` | `trigonometric.cpp` | 行列に対する `sin` |
+| `trigonometric.py` | `trigonometric.cpp` | 行列を引数にした数学関数（`sin`） |
 | （なし） | `augmented_matrix.cpp` | AugmentedMatrix の C++ 専用例 |
 
 ---
@@ -47,6 +47,9 @@
 | `np.linalg.eig(A)` | `make_LinalgSolverEig*<...>()` + `solve_eigen_*/get_*` |
 | `np.sin(2*np.pi*time)` | `sin(2.0 * PI * time)` |
 
+> 補足: `python_numpy` の数学関数は、スカラーだけでなく行列も引数に取れます。
+> そのため `sin`, `cos`, `tan`, `exp`, `sqrt`, `log`, `abs`, `pow` などを、NumPy と同じ感覚で行列へ適用できます。
+
 ---
 
 ## 5.3 `numpy_deploy.py` の使いどころ
@@ -56,4 +59,3 @@
 - Dense / Diag / Sparse を自動判定
 - 生成コードは `python_numpy.hpp` の API 形式（`DenseMatrix_Type` など）で出力
 - Python 側で作った行列定義を C++ 側へ移す初期作業を減らせる
-

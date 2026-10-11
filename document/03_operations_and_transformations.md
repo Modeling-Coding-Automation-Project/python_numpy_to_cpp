@@ -1,6 +1,6 @@
 # 03. 行列操作（積・転置・連結・reshape・置換・ノルム）
 
-この章では、`sample/arithmetic_operation.cpp` / `sample/concatenation.cpp` / `sample/matrix_action.cpp` の使い方をまとめます。
+この章では、`sample/arithmetic_operation.cpp` / `sample/concatenation.cpp` / `sample/matrix_action.cpp` / `sample/trigonometric.cpp` の使い方をまとめます。
 
 ## 3.1 基本演算と表示
 
@@ -136,3 +136,29 @@ auto C = AA * AB;
 
 可変長のブロック行列を「型として固定」して扱いたいときのパターンです。
 
+---
+
+## 3.8 行列を引数にした数学関数（`sample/trigonometric.cpp`）
+
+`python_numpy` では、数学関数を **スカラーだけでなく行列全体に適用**できます。  
+`sample/trigonometric.cpp` は、その使い方を示すサンプルです。
+
+```cpp
+auto time = PythonNumpy::make_DenseMatrix<11, 1>(
+  0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
+);
+
+auto series_data = PythonNumpy::sin(2.0 * PythonNumpy::PI * time);
+```
+
+この例でユーザーが押さえるべき点は次の 2 つです。
+
+1. `time` が行列でも、`sin(...)` をそのまま呼べる  
+2. 関数は要素ごとに適用され、戻り値も同じ形状の行列になる
+
+NumPy との対応は直感的で、次と同じ発想で記述できます。
+
+- NumPy: `np.sin(2 * np.pi * time)`
+- C++: `sin(2.0 * PI * time)`
+
+`sin` 以外にも同様の行列引数 API が用意されています（例: `cos`, `tan`, `exp`, `sqrt`, `log`, `abs`, `pow`）。
