@@ -27,10 +27,6 @@ C++11
 
 機能説明ドキュメント（サンプル中心）は [document/README.md](./document/README.md) を参照してください。
 
-また、詳細については記事をご参照ください。
-
-https://note.com/claude_a/n/n131a654a4c41
-
 ## サポート
 
 新規にissueを作成して、詳細をお知らせください。

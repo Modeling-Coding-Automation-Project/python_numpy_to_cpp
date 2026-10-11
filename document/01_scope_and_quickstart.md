@@ -18,11 +18,11 @@
 
 ```mermaid
 flowchart LR
-    A[ユーザーコード sample/*.cpp] --> B[#include \"python_numpy.hpp\"]
+    A[ユーザーコード sample/*.cpp] --> B["#include python_numpy.hpp"]
     B --> C[行列生成 make_DenseMatrix / make_DiagMatrix / make_SparseMatrix]
     C --> D[演算 + - * transpose concatenate reshape]
     C --> E[線形代数 solve inv cholesky qr eig]
-    D --> F[結果表示 rows cols operator()]
+    D --> F["結果表示 rows cols operator()"]
     E --> F
 ```
 
