@@ -25,9 +25,7 @@ C++11
 
 「sample」ディレクトリに使い方の例を示しています。
 
-また、詳細については記事をご参照ください。
-
-https://note.com/claude_a/n/n131a654a4c41
+機能説明ドキュメント（サンプル中心）は [document/README.md](./document/README.md) を参照してください。
 
 ## サポート
 
