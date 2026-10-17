@@ -8,6 +8,7 @@
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_concatenate.hpp"
+#include "base_matrix_convolve.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_eigen_solver.hpp"
 #include "base_matrix_inverse.hpp"
