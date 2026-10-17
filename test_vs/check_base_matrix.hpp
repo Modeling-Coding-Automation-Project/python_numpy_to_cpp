@@ -2743,7 +2743,7 @@ void CheckBaseMatrix<T>::check_math(void) {
 }
 
 template <typename T>
-void check_convolve(void) {
+void CheckBaseMatrix<T>::check_convolve(void) {
     using namespace Base::Matrix;
 
     MCAPTester<T> tester;
