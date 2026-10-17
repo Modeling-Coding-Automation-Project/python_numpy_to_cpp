@@ -161,6 +161,7 @@
     <ClInclude Include="..\python_numpy\python_numpy_base_substitution.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_complex.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_concatenate.hpp" />
+    <ClInclude Include="..\python_numpy\python_numpy_convolve.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_cholesky.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_eig.hpp" />
     <ClInclude Include="..\python_numpy\python_numpy_linalg_lu.hpp" />

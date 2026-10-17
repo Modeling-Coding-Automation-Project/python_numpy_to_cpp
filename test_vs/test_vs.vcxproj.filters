@@ -140,5 +140,8 @@
     <ClInclude Include="..\base_matrix\base_matrix_convolve.hpp">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\python_numpy\python_numpy_convolve.hpp">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
