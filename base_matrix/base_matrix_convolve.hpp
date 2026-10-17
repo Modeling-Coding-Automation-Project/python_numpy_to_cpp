@@ -44,6 +44,63 @@ inline void validate_inputs() {
                 "Input arrays must not be empty.");
 }
 
+template <bool IsRow, std::size_t FullIndex, std::size_t AIndex,
+          std::size_t LengthA, std::size_t LengthB, typename A, typename B,
+          typename ResultValue>
+struct ConvolveTerms {
+  static void compute(const A &a, const B &b, ResultValue &value) {
+    if (FullIndex >= AIndex && FullIndex - AIndex < LengthB) {
+      value += get_element(a, AIndex, IsRow) *
+               get_element(b, FullIndex - AIndex, IsRow);
+    }
+    ConvolveTerms<IsRow, FullIndex, AIndex + 1, LengthA, LengthB, A, B,
+                  ResultValue>::compute(a, b, value);
+  }
+};
+
+template <bool IsRow, std::size_t FullIndex, std::size_t LengthA,
+          std::size_t LengthB, typename A, typename B, typename ResultValue>
+struct ConvolveTerms<IsRow, FullIndex, LengthA, LengthA, LengthB, A, B,
+                     ResultValue> {
+  static void compute(const A &a, const B &b, ResultValue &value) {
+    static_cast<void>(a);
+    static_cast<void>(b);
+    static_cast<void>(value);
+  }
+};
+
+template <bool IsRow, std::size_t OutputIndex, std::size_t OutputLength,
+          std::size_t Start, std::size_t LengthA, std::size_t LengthB,
+          typename A, typename B, typename Result, typename ResultValue>
+struct ConvolveOutputs {
+  static void compute(const A &a, const B &b, Result &result) {
+    ResultValue value = static_cast<ResultValue>(0);
+    ConvolveTerms<IsRow, Start + OutputIndex, 0, LengthA, LengthB, A, B,
+                  ResultValue>::compute(a, b, value);
+
+    if (IsRow) {
+      result(0, OutputIndex) = value;
+    } else {
+      result(OutputIndex, 0) = value;
+    }
+
+    ConvolveOutputs<IsRow, OutputIndex + 1, OutputLength, Start, LengthA,
+                    LengthB, A, B, Result, ResultValue>::compute(a, b, result);
+  }
+};
+
+template <bool IsRow, std::size_t OutputLength, std::size_t Start,
+          std::size_t LengthA, std::size_t LengthB, typename A, typename B,
+          typename Result, typename ResultValue>
+struct ConvolveOutputs<IsRow, OutputLength, OutputLength, Start, LengthA,
+                       LengthB, A, B, Result, ResultValue> {
+  static void compute(const A &a, const B &b, Result &result) {
+    static_cast<void>(a);
+    static_cast<void>(b);
+    static_cast<void>(result);
+  }
+};
+
 template <bool IsRow, std::size_t OutputLength, std::size_t Start,
           std::size_t LengthA, std::size_t LengthB, typename A, typename B>
 inline auto convolve_impl(const A &a, const B &b)
@@ -55,6 +112,8 @@ inline auto convolve_impl(const A &a, const B &b)
                                    get_element(b, 0, IsRow))>::type ResultValue;
   Matrix<ResultValue, (IsRow ? 1 : OutputLength), (IsRow ? OutputLength : 1)>
       result;
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t output_index = 0; output_index < OutputLength;
        ++output_index) {
@@ -74,6 +133,13 @@ inline auto convolve_impl(const A &a, const B &b)
       result(output_index, 0) = value;
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  ConvolveOutputs<IsRow, 0, OutputLength, Start, LengthA, LengthB, A, B,
+                  decltype(result), ResultValue>::compute(a, b, result);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   return result;
 }
