@@ -44,15 +44,32 @@ inline void validate_inputs() {
                 "Input arrays must not be empty.");
 }
 
+template <bool IsValid, bool IsRow, std::size_t FullIndex, std::size_t AIndex,
+          typename A, typename B, typename ResultValue>
+struct ConvolveTerm {
+  static void compute(const A &a, const B &b, ResultValue &value) {
+    static_cast<void>(a);
+    static_cast<void>(b);
+    static_cast<void>(value);
+  }
+};
+
+template <bool IsRow, std::size_t FullIndex, std::size_t AIndex, typename A,
+          typename B, typename ResultValue>
+struct ConvolveTerm<true, IsRow, FullIndex, AIndex, A, B, ResultValue> {
+  static void compute(const A &a, const B &b, ResultValue &value) {
+    value += get_element(a, AIndex, IsRow) *
+             get_element(b, FullIndex - AIndex, IsRow);
+  }
+};
+
 template <bool IsRow, std::size_t FullIndex, std::size_t AIndex,
           std::size_t LengthA, std::size_t LengthB, typename A, typename B,
           typename ResultValue>
 struct ConvolveTerms {
   static void compute(const A &a, const B &b, ResultValue &value) {
-    if (FullIndex >= AIndex && FullIndex - AIndex < LengthB) {
-      value += get_element(a, AIndex, IsRow) *
-               get_element(b, FullIndex - AIndex, IsRow);
-    }
+    ConvolveTerm<(FullIndex >= AIndex && FullIndex - AIndex < LengthB), IsRow,
+                 FullIndex, AIndex, A, B, ResultValue>::compute(a, b, value);
     ConvolveTerms<IsRow, FullIndex, AIndex + 1, LengthA, LengthB, A, B,
                   ResultValue>::compute(a, b, value);
   }
@@ -69,6 +86,21 @@ struct ConvolveTerms<IsRow, FullIndex, LengthA, LengthA, LengthB, A, B,
   }
 };
 
+template <bool IsRow, std::size_t OutputIndex, typename Result,
+          typename ResultValue>
+struct SetConvolveOutput {
+  static void compute(Result &result, const ResultValue &value) {
+    result(OutputIndex, 0) = value;
+  }
+};
+
+template <std::size_t OutputIndex, typename Result, typename ResultValue>
+struct SetConvolveOutput<true, OutputIndex, Result, ResultValue> {
+  static void compute(Result &result, const ResultValue &value) {
+    result(0, OutputIndex) = value;
+  }
+};
+
 template <bool IsRow, std::size_t OutputIndex, std::size_t OutputLength,
           std::size_t Start, std::size_t LengthA, std::size_t LengthB,
           typename A, typename B, typename Result, typename ResultValue>
@@ -78,11 +110,8 @@ struct ConvolveOutputs {
     ConvolveTerms<IsRow, Start + OutputIndex, 0, LengthA, LengthB, A, B,
                   ResultValue>::compute(a, b, value);
 
-    if (IsRow) {
-      result(0, OutputIndex) = value;
-    } else {
-      result(OutputIndex, 0) = value;
-    }
+    SetConvolveOutput<IsRow, OutputIndex, Result, ResultValue>::compute(result,
+                                                                        value);
 
     ConvolveOutputs<IsRow, OutputIndex + 1, OutputLength, Start, LengthA,
                     LengthB, A, B, Result, ResultValue>::compute(a, b, result);
