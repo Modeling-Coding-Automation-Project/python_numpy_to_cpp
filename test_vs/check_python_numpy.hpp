@@ -31,6 +31,7 @@ public:
     void check_python_numpy_eig(void);
     void check_python_numpy_augmented(void);
     void check_python_numpy_math(void);
+    void check_python_numpy_convolve(void);
 
     void calc(void);
 };
@@ -61,6 +62,8 @@ void CheckPythonNumpy<T>::calc(void) {
     check_python_numpy_augmented();
 
     check_python_numpy_math();
+
+    check_python_numpy_convolve();
 }
 
 template <typename T>
@@ -5654,6 +5657,103 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
 
     tester.expect_near(tanh_augmented_result_dense.matrix(0, 0), static_cast<T>(0.0F), NEAR_LIMIT_STRICT,
         "check tanh AugmentedMatrix[0,0].");
+
+    tester.throw_error_if_test_failed();
+}
+
+template <typename T>
+void CheckPythonNumpy<T>::check_python_numpy_convolve(void) {
+    using namespace PythonNumpy;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
+
+    typedef SparseAvailable<ColumnAvailable<true, true, true, true, true>>
+        SparseRowA;
+    typedef SparseAvailable<ColumnAvailable<true, true, true>> SparseRowB;
+    typedef SparseAvailable<
+        ColumnAvailable<true>,
+        ColumnAvailable<true>,
+        ColumnAvailable<true>,
+        ColumnAvailable<true>,
+        ColumnAvailable<true>> SparseColumnA;
+    typedef SparseAvailable<
+        ColumnAvailable<true>,
+        ColumnAvailable<true>,
+        ColumnAvailable<true>> SparseColumnB;
+
+    Matrix<DefDense, T, 1, 5> row_a({ { 1, 2, 3, 4, 5 } });
+    Matrix<DefDense, T, 1, 3> row_b({ { 1, 1, 1 } });
+    Matrix<DefSparse, T, 1, 5, SparseRowA> sparse_row_a({ 1, 2, 3, 4, 5 });
+    Matrix<DefSparse, T, 1, 3, SparseRowB> sparse_row_b({ 1, 1, 1 });
+
+    Matrix<DefDense, T, 1, 7> row_full_answer({ { 1, 3, 6, 9, 12, 9, 5 } });
+    Matrix<DefDense, T, 1, 5> row_same_answer({ { 3, 6, 9, 12, 9 } });
+    Matrix<DefDense, T, 1, 3> row_valid_answer({ { 6, 9, 12 } });
+
+    tester.expect_near(convolve_full(row_a, row_b).matrix.data, row_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense row inputs.");
+    tester.expect_near(convolve_full(row_a, sparse_row_b).matrix.data, row_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense and sparse row inputs.");
+    tester.expect_near(convolve_full(sparse_row_a, row_b).matrix.data, row_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse and dense row inputs.");
+    tester.expect_near(convolve_full(sparse_row_a, sparse_row_b).matrix.data, row_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse row inputs.");
+
+    tester.expect_near(convolve_same(row_a, row_b).matrix.data, row_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense row inputs.");
+    tester.expect_near(convolve_same(row_a, sparse_row_b).matrix.data, row_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense and sparse row inputs.");
+    tester.expect_near(convolve_same(sparse_row_a, row_b).matrix.data, row_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse and dense row inputs.");
+    tester.expect_near(convolve_same(sparse_row_a, sparse_row_b).matrix.data, row_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse row inputs.");
+
+    tester.expect_near(convolve_valid(row_a, row_b).matrix.data, row_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense row inputs.");
+    tester.expect_near(convolve_valid(row_a, sparse_row_b).matrix.data, row_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense and sparse row inputs.");
+    tester.expect_near(convolve_valid(sparse_row_a, row_b).matrix.data, row_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse and dense row inputs.");
+    tester.expect_near(convolve_valid(sparse_row_a, sparse_row_b).matrix.data, row_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse row inputs.");
+
+    Matrix<DefDense, T, 5, 1> column_a({ { 1 }, { 2 }, { 3 }, { 4 }, { 5 } });
+    Matrix<DefDense, T, 3, 1> column_b({ { 1 }, { 1 }, { 1 } });
+    Matrix<DefSparse, T, 5, 1, SparseColumnA> sparse_column_a({ 1, 2, 3, 4, 5 });
+    Matrix<DefSparse, T, 3, 1, SparseColumnB> sparse_column_b({ 1, 1, 1 });
+
+    Matrix<DefDense, T, 7, 1> column_full_answer({ { 1 }, { 3 }, { 6 }, { 9 }, { 12 }, { 9 }, { 5 } });
+    Matrix<DefDense, T, 5, 1> column_same_answer({ { 3 }, { 6 }, { 9 }, { 12 }, { 9 } });
+    Matrix<DefDense, T, 3, 1> column_valid_answer({ { 6 }, { 9 }, { 12 } });
+
+    tester.expect_near(convolve_full(column_a, column_b).matrix.data, column_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense column inputs.");
+    tester.expect_near(convolve_full(column_a, sparse_column_b).matrix.data, column_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense and sparse column inputs.");
+    tester.expect_near(convolve_full(sparse_column_a, column_b).matrix.data, column_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse and dense column inputs.");
+    tester.expect_near(convolve_full(sparse_column_a, sparse_column_b).matrix.data, column_full_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse column inputs.");
+
+    tester.expect_near(convolve_same(column_a, column_b).matrix.data, column_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense column inputs.");
+    tester.expect_near(convolve_same(column_a, sparse_column_b).matrix.data, column_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense and sparse column inputs.");
+    tester.expect_near(convolve_same(sparse_column_a, column_b).matrix.data, column_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse and dense column inputs.");
+    tester.expect_near(convolve_same(sparse_column_a, sparse_column_b).matrix.data, column_same_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse column inputs.");
+
+    tester.expect_near(convolve_valid(column_a, column_b).matrix.data, column_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense column inputs.");
+    tester.expect_near(convolve_valid(column_a, sparse_column_b).matrix.data, column_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense and sparse column inputs.");
+    tester.expect_near(convolve_valid(sparse_column_a, column_b).matrix.data, column_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse and dense column inputs.");
+    tester.expect_near(convolve_valid(sparse_column_a, sparse_column_b).matrix.data, column_valid_answer.matrix.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse column inputs.");
 
     tester.throw_error_if_test_failed();
 }

@@ -8,6 +8,7 @@
 #include "python_numpy_base_substitution.hpp"
 #include "python_numpy_complex.hpp"
 #include "python_numpy_concatenate.hpp"
+#include "python_numpy_convolve.hpp"
 #include "python_numpy_linalg_cholesky.hpp"
 #include "python_numpy_linalg_eig.hpp"
 #include "python_numpy_linalg_lu.hpp"

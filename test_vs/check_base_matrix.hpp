@@ -34,6 +34,7 @@ public:
     void check_complex(void);
     void check_eigen_values_and_vectors(void);
     void check_math(void);
+    void check_convolve(void);
     void calc(void);
 };
 
@@ -77,6 +78,8 @@ void CheckBaseMatrix<T>::calc(void) {
     check_eigen_values_and_vectors();
 
     check_math();
+
+    check_convolve();
 }
 
 template <typename T>
@@ -2738,6 +2741,99 @@ void CheckBaseMatrix<T>::check_math(void) {
 
     tester.throw_error_if_test_failed();
 }
+
+template <typename T>
+void CheckBaseMatrix<T>::check_convolve(void) {
+    using namespace Base::Matrix;
+
+    MCAPTester<T> tester;
+
+    constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
+    //const T NEAR_LIMIT_SOFT = 1.0e-2F;
+
+    Matrix<T, 1, 5> row_a({ { 1, 2, 3, 4, 5 } });
+    Matrix<T, 1, 3> row_b({ { 1, 1, 1 } });
+    CompiledSparseMatrix<T, 1, 5,
+        CSRIndices<0, 1, 2, 3, 4>,
+        CSRPointers<0, 5>> sparse_row_a({ 1, 2, 3, 4, 5 });
+    CompiledSparseMatrix<T, 1, 3,
+        CSRIndices<0, 1, 2>,
+        CSRPointers<0, 3>> sparse_row_b({ 1, 1, 1 });
+
+    Matrix<T, 1, 7> row_full_answer({ { 1, 3, 6, 9, 12, 9, 5 } });
+    Matrix<T, 1, 5> row_same_answer({ { 3, 6, 9, 12, 9 } });
+    Matrix<T, 1, 3> row_valid_answer({ { 6, 9, 12 } });
+
+    tester.expect_near(convolve_full(row_a, row_b).data, row_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense row inputs.");
+    tester.expect_near(convolve_full(row_a, sparse_row_b).data, row_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense and sparse row inputs.");
+    tester.expect_near(convolve_full(sparse_row_a, row_b).data, row_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse and dense row inputs.");
+    tester.expect_near(convolve_full(sparse_row_a, sparse_row_b).data, row_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse row inputs.");
+
+    tester.expect_near(convolve_same(row_a, row_b).data, row_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense row inputs.");
+    tester.expect_near(convolve_same(row_a, sparse_row_b).data, row_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense and sparse row inputs.");
+    tester.expect_near(convolve_same(sparse_row_a, row_b).data, row_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse and dense row inputs.");
+    tester.expect_near(convolve_same(sparse_row_a, sparse_row_b).data, row_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse row inputs.");
+
+    tester.expect_near(convolve_valid(row_a, row_b).data, row_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense row inputs.");
+    tester.expect_near(convolve_valid(row_a, sparse_row_b).data, row_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense and sparse row inputs.");
+    tester.expect_near(convolve_valid(sparse_row_a, row_b).data, row_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse and dense row inputs.");
+    tester.expect_near(convolve_valid(sparse_row_a, sparse_row_b).data, row_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse row inputs.");
+
+    Matrix<T, 5, 1> column_a({ { 1 }, { 2 }, { 3 }, { 4 }, { 5 } });
+    Matrix<T, 3, 1> column_b({ { 1 }, { 1 }, { 1 } });
+    CompiledSparseMatrix<T, 5, 1,
+        CSRIndices<0, 0, 0, 0, 0>,
+        CSRPointers<0, 1, 2, 3, 4, 5>> sparse_column_a({ 1, 2, 3, 4, 5 });
+    CompiledSparseMatrix<T, 3, 1,
+        CSRIndices<0, 0, 0>,
+        CSRPointers<0, 1, 2, 3>> sparse_column_b({ 1, 1, 1 });
+
+    Matrix<T, 7, 1> column_full_answer({ { 1 }, { 3 }, { 6 }, { 9 }, { 12 }, { 9 }, { 5 } });
+    Matrix<T, 5, 1> column_same_answer({ { 3 }, { 6 }, { 9 }, { 12 }, { 9 } });
+    Matrix<T, 3, 1> column_valid_answer({ { 6 }, { 9 }, { 12 } });
+
+    tester.expect_near(convolve_full(column_a, column_b).data, column_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense column inputs.");
+    tester.expect_near(convolve_full(column_a, sparse_column_b).data, column_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full dense and sparse column inputs.");
+    tester.expect_near(convolve_full(sparse_column_a, column_b).data, column_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse and dense column inputs.");
+    tester.expect_near(convolve_full(sparse_column_a, sparse_column_b).data, column_full_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_full sparse column inputs.");
+
+    tester.expect_near(convolve_same(column_a, column_b).data, column_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense column inputs.");
+    tester.expect_near(convolve_same(column_a, sparse_column_b).data, column_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same dense and sparse column inputs.");
+    tester.expect_near(convolve_same(sparse_column_a, column_b).data, column_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse and dense column inputs.");
+    tester.expect_near(convolve_same(sparse_column_a, sparse_column_b).data, column_same_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_same sparse column inputs.");
+
+    tester.expect_near(convolve_valid(column_a, column_b).data, column_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense column inputs.");
+    tester.expect_near(convolve_valid(column_a, sparse_column_b).data, column_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid dense and sparse column inputs.");
+    tester.expect_near(convolve_valid(sparse_column_a, column_b).data, column_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse and dense column inputs.");
+    tester.expect_near(convolve_valid(sparse_column_a, sparse_column_b).data, column_valid_answer.data,
+        NEAR_LIMIT_STRICT, "check convolve_valid sparse column inputs.");
+
+    tester.throw_error_if_test_failed();
+}
+
 
 
 #endif // CHECK_BASE_MATRIX_HPP_
