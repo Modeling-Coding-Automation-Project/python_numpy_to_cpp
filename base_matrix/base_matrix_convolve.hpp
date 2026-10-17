@@ -1,3 +1,18 @@
+/**
+ * @file base_matrix_convolve.hpp
+ * @brief Provides one-dimensional convolution operations for dense and
+ * compiled sparse matrices.
+ *
+ * This header defines full, same, and valid convolution functions for
+ * one-dimensional matrices. It supports row and column vectors, with
+ * compile-time validation of input shapes and orientation. The computation
+ * uses either for loops or template-recursive expansion, depending on
+ * BASE_MATRIX_USE_FOR_LOOP_OPERATION_.
+ *
+ * @note
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
+ */
 #ifndef BASE_MATRIX_CONVOLVE_HPP_
 #define BASE_MATRIX_CONVOLVE_HPP_
 

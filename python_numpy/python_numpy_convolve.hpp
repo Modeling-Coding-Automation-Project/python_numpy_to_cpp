@@ -1,3 +1,17 @@
+/**
+ * @file python_numpy_convolve.hpp
+ * @brief Provides one-dimensional convolution functions similar to
+ * numpy.convolve.
+ *
+ * This header defines full, same, and valid convolution functions in the
+ * PythonNumpy namespace. Each function accepts dense and sparse one-dimensional
+ * matrices in any supported combination, delegates computation to the
+ * corresponding Base::Matrix function, and returns a dense matrix.
+ *
+ * @note
+ * tparam M is the number of rows in the matrix.
+ * tparam N is the number of columns in the matrix.
+ */
 #ifndef PYTHON_NUMPY_CONVOLVE_HPP_
 #define PYTHON_NUMPY_CONVOLVE_HPP_
 
