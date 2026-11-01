@@ -2979,15 +2979,122 @@ struct SparseAvailableMatrixMultiplyColumnLoop<SparseAvailable_A,
           (SparseAvailable_B::row_size - 1)>::type>;
 };
 
+namespace SparseMetadata {
+
+/**
+ * @brief Joins two zero-based index sequences, offsetting the second sequence.
+ */
+template <typename First, typename Second> struct JoinIndexSequences;
+
+template <std::size_t... First, std::size_t... Second>
+struct JoinIndexSequences<IndexSequence<First...>, IndexSequence<Second...>> {
+  using type = IndexSequence<First..., (sizeof...(First) + Second)...>;
+};
+
+/**
+ * @brief Builds indices [0, Size) with logarithmic template recursion depth.
+ *
+ * This C++11 sequence builder lets sparse metadata expand the final rows and
+ * columns directly instead of constructing a type for every intermediate cell.
+ */
+template <std::size_t Size> struct MakeBalancedIndexSequence {
+  using type = typename JoinIndexSequences<
+      typename MakeBalancedIndexSequence<Size / 2>::type,
+      typename MakeBalancedIndexSequence<Size - Size / 2>::type>::type;
+};
+
+template <> struct MakeBalancedIndexSequence<0> {
+  using type = IndexSequence<>;
+};
+
+template <> struct MakeBalancedIndexSequence<1> {
+  using type = IndexSequence<0>;
+};
+
+/**
+ * @brief Computes one boolean product entry over the range [begin, end).
+ *
+ * Coordinates are constexpr function arguments, so each inner-product term
+ * does not require its own template specialization. Balanced recursion keeps
+ * the evaluation depth logarithmic, including for long all-zero inner products.
+ * Calls from ProductRow are required constant expressions; no runtime sparsity
+ * search is introduced.
+ */
+template <typename SparseAvailable_A, typename SparseAvailable_B>
+constexpr bool product_element(std::size_t row, std::size_t column,
+                               std::size_t begin, std::size_t end) {
+  return begin == end ? false
+         : begin + 1 == end
+             ? (SparseAvailable_A::lists[row][begin] &&
+                SparseAvailable_B::lists[begin][column])
+             : product_element<SparseAvailable_A, SparseAvailable_B>(
+                   row, column, begin, begin + (end - begin) / 2) ||
+                   product_element<SparseAvailable_A, SparseAvailable_B>(
+                       row, column, begin + (end - begin) / 2, end);
+}
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t Row, typename Columns>
+struct ProductRow;
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t Row, std::size_t... Columns>
+struct ProductRow<SparseAvailable_A, SparseAvailable_B, Row,
+                  IndexSequence<Columns...>> {
+  using type =
+      ColumnAvailable<product_element<SparseAvailable_A, SparseAvailable_B>(
+          Row, Columns, 0, SparseAvailable_A::row_size)...>;
+};
+
+template <typename SparseAvailable_A, typename SparseAvailable_B, typename Rows>
+struct Product;
+
+template <typename SparseAvailable_A, typename SparseAvailable_B,
+          std::size_t... Rows>
+struct Product<SparseAvailable_A, SparseAvailable_B, IndexSequence<Rows...>> {
+  using Columns =
+      typename MakeBalancedIndexSequence<SparseAvailable_B::row_size>::type;
+  using type =
+      SparseAvailable<typename ProductRow<SparseAvailable_A, SparseAvailable_B,
+                                          Rows, Columns>::type...>;
+};
+
+template <typename SparseAvailable_In, std::size_t Row, typename Columns>
+struct TransposeRow;
+
+template <typename SparseAvailable_In, std::size_t Row, std::size_t... Columns>
+struct TransposeRow<SparseAvailable_In, Row, IndexSequence<Columns...>> {
+  using type = ColumnAvailable<SparseAvailable_In::lists[Columns][Row]...>;
+};
+
+/**
+ * @brief Builds the transpose directly from its boolean entries.
+ *
+ * The output is the same canonical SparseAvailable type as a symbolic product
+ * with a diagonal pattern, without constructing that product's intermediate
+ * types.
+ */
+template <typename SparseAvailable_In, typename Rows> struct Transpose;
+
+template <typename SparseAvailable_In, std::size_t... Rows>
+struct Transpose<SparseAvailable_In, IndexSequence<Rows...>> {
+  using Columns = typename MakeBalancedIndexSequence<
+      SparseAvailable_In::number_of_rows>::type;
+  using type = SparseAvailable<
+      typename TransposeRow<SparseAvailable_In, Rows, Columns>::type...>;
+};
+
+} // namespace SparseMetadata
+
 } // namespace TemplatesOperation
 
 /**
  * @brief A template alias to perform matrix multiplication of two
  * SparseAvailable types.
  *
- * This alias uses the
- * TemplatesOperation::SparseAvailableMatrixMultiplyColumnLoop to generate a
- * type representing the result of multiplying two SparseAvailable types.
+ * Each output flag is evaluated as a constexpr boolean inner product. Only the
+ * final rows are materialized as ColumnAvailable types, preserving the result
+ * type without constructing a type for each intermediate inner-product term.
  *
  * @tparam SparseAvailable_A The first SparseAvailable type.
  * @tparam SparseAvailable_B The second SparseAvailable type.
@@ -2997,9 +3104,10 @@ struct SparseAvailableMatrixMultiplyColumnLoop<SparseAvailable_A,
  */
 template <typename SparseAvailable_A, typename SparseAvailable_B>
 using SparseAvailableMatrixMultiply =
-    typename TemplatesOperation::SparseAvailableMatrixMultiplyColumnLoop<
+    typename TemplatesOperation::SparseMetadata::Product<
         SparseAvailable_A, SparseAvailable_B,
-        (SparseAvailable_A::number_of_rows - 1)>::type;
+        typename TemplatesOperation::SparseMetadata::MakeBalancedIndexSequence<
+            SparseAvailable_A::number_of_rows>::type>::type;
 
 /* SparseAvailable Multiply Transpose
  * (SparseAvailable_BT will be calculated as transpose) */
@@ -3184,24 +3292,19 @@ using SparseAvailableMatrixMultiplyTranspose =
 } // namespace TemplatesOperation
 
 /**
- *  @brief A template alias to perform matrix multiplication of a
- * SparseAvailable type with the transpose of another SparseAvailable type,
- * where the first SparseAvailable type is diagonal.
+ * @brief Transposes a SparseAvailable pattern at compile time.
  *
- * This alias uses the
- * TemplatesOperation::SparseAvailableMatrixMultiplyTranspose to generate a type
- * representing the result of multiplying a diagonal SparseAvailable type with
- * the transpose of another SparseAvailable type.
+ * Directly expands the transposed boolean entries into the canonical
+ * SparseAvailable type, avoiding a symbolic product with a diagonal pattern.
  *
- * @tparam SparseAvailable The SparseAvailable type to be multiplied.
- *
- * The resulting type is a SparseAvailable type containing the result of the
- * multiplication for each column.
+ * @tparam SparseAvailable The pattern to transpose.
  */
 template <typename SparseAvailable>
 using SparseAvailableTranspose =
-    TemplatesOperation::SparseAvailableMatrixMultiplyTranspose<
-        DiagAvailable<SparseAvailable::row_size>, SparseAvailable>;
+    typename TemplatesOperation::SparseMetadata::Transpose<
+        SparseAvailable,
+        typename TemplatesOperation::SparseMetadata::MakeBalancedIndexSequence<
+            SparseAvailable::row_size>::type>::type;
 
 /* Check SparseAvailable is valid or not */
 

@@ -818,6 +818,146 @@ inline auto create_compiled_sparse(std::initializer_list<T> values)
   return Y;
 }
 
+/**
+ * @brief Compile-time lookup for fixed sparse matrix coordinates.
+ *
+ * Search positions are constexpr function arguments, so a row search does not
+ * instantiate one helper class per entry. Balanced recursion also supports rows
+ * longer than the compiler's default constexpr recursion limit. Access helpers
+ * receive the resulting positions as template arguments; no search runs when
+ * reading or writing the matrix values.
+ */
+namespace StaticSparseLookup {
+
+constexpr std::size_t missing = static_cast<std::size_t>(-1);
+
+template <typename Indices>
+constexpr std::size_t first(std::size_t column, std::size_t begin,
+                            std::size_t end);
+
+template <typename Indices>
+constexpr std::size_t last(std::size_t column, std::size_t begin,
+                           std::size_t end);
+
+/**
+ * @brief Search the second half only when the first searched half has no match.
+ */
+template <typename Indices>
+constexpr std::size_t first_or_search(std::size_t position, std::size_t column,
+                                      std::size_t begin, std::size_t end) {
+  return position != missing ? position : first<Indices>(column, begin, end);
+}
+
+/**
+ * @brief Search the first half only when the second searched half has no match.
+ */
+template <typename Indices>
+constexpr std::size_t last_or_search(std::size_t position, std::size_t column,
+                                     std::size_t begin, std::size_t end) {
+  return position != missing ? position : last<Indices>(column, begin, end);
+}
+
+/**
+ * @brief Search for the first occurrence of a column in a range of indices.
+ */
+template <typename Indices>
+constexpr std::size_t first(std::size_t column, std::size_t begin,
+                            std::size_t end) {
+  return begin == end ? missing
+         : end - begin == 1
+             ? (Indices::list[begin] == column ? begin : missing)
+             : first_or_search<Indices>(
+                   first<Indices>(column, begin, begin + (end - begin) / 2),
+                   column, begin + (end - begin) / 2, end);
+}
+
+/**
+ * @brief Search for the last occurrence of a column in a range of indices.
+ */
+template <typename Indices>
+constexpr std::size_t last(std::size_t column, std::size_t begin,
+                           std::size_t end) {
+  return begin == end ? missing
+         : end - begin == 1
+             ? (Indices::list[begin] == column ? begin : missing)
+             : last_or_search<Indices>(
+                   last<Indices>(column, begin + (end - begin) / 2, end),
+                   column, begin, begin + (end - begin) / 2);
+}
+
+/**
+ * @brief Recursive write operation for sparse matrix with potential duplicate
+ * indices.
+ *
+ * This template struct splits the write operation into two halves to maintain
+ * ascending write order when a low-level CSR descriptor contains repeated
+ * indices.
+ */
+template <typename Indices, std::size_t Column, std::size_t Begin,
+          std::size_t End,
+          std::size_t First = first<Indices>(Column, Begin, End),
+          std::size_t Last = last<Indices>(Column, Begin, End)>
+struct Write {
+  /**
+   * @brief Apply the recursive write operation for the given matrix and value.
+   */
+  template <typename Matrix, typename T>
+  static void apply(Matrix &matrix, const T &value) {
+    constexpr std::size_t middle = First + (Last - First) / 2 + 1;
+    Write<Indices, Column, First, middle, First,
+          last<Indices>(Column, First, middle)>::apply(matrix, value);
+    Write<Indices, Column, middle, Last + 1,
+          first<Indices>(Column, middle, Last + 1), Last>::apply(matrix, value);
+  }
+};
+
+template <typename Indices, std::size_t Column, std::size_t Begin,
+          std::size_t End, std::size_t Position>
+struct Write<Indices, Column, Begin, End, Position, Position> {
+  /**
+   * @brief Specialization for the case where the write position is known and
+   * unique.
+   */
+  template <typename Matrix, typename T>
+  static void apply(Matrix &matrix, const T &value) {
+    matrix.values[Position] = value;
+  }
+};
+
+template <typename Indices, std::size_t Column, std::size_t Begin,
+          std::size_t End>
+struct Write<Indices, Column, Begin, End, missing, missing> {
+  /**
+   * @brief Specialization for the case where the write position is missing.
+   */
+  template <typename Matrix, typename T>
+  static void apply(Matrix &, const T &) {}
+};
+
+/**
+ * @brief Read operation for sparse matrix with a known or missing position.
+ */
+template <std::size_t Position> struct Read {
+  /**
+   * @brief Apply the read operation for the given matrix and value.
+   */
+  template <typename Matrix, typename T>
+  static void apply(const Matrix &matrix, T &value) {
+    value = matrix.values[Position];
+  }
+};
+
+template <> struct Read<missing> {
+  /**
+   * @brief Apply the read operation for the case where the read position is
+   * missing.
+   */
+  template <typename Matrix, typename T>
+  static void apply(const Matrix &, T &) {}
+};
+
+} // namespace StaticSparseLookup
+
 /* Set Sparse Matrix Value */
 namespace SetSparseMatrixValue {
 
@@ -1191,8 +1331,8 @@ compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
  * @brief Sets a value in the sparse matrix at a specific column and row index.
  *
  * This function updates the value at the specified column and row index in the
- * sparse matrix. It uses a compile-time loop to find the correct position in
- * the sparse matrix and set the value.
+ * sparse matrix. The default implementation resolves matching CSR positions at
+ * compile time and writes them directly. Absent coordinates are unchanged.
  *
  * @tparam ColumnToSet  The column index to set.
  * @tparam RowToSet     The row index to check against.
@@ -1232,8 +1372,10 @@ inline void set_sparse_matrix_value(
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  SetSparseMatrixValue::compute<ColumnToSet, RowToSet, T, M, N, CSRIndices_A,
-                                CSRPointers_A>(A, value);
+  StaticSparseLookup::Write<CSRIndices_A, RowToSet,
+                            CSRPointers_A::list[ColumnToSet],
+                            CSRPointers_A::list[ColumnToSet + 1]>::apply(A,
+                                                                         value);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
@@ -1642,9 +1784,9 @@ compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
  * @brief Retrieves the value at a specific column and row index in the sparse
  * matrix.
  *
- * This function uses compile-time loops to find the value at the specified
- * column and row index in the sparse matrix. It returns the value if found,
- * otherwise returns zero.
+ * The default implementation resolves the CSR position at compile time and
+ * reads it directly. It returns zero for absent coordinates and the last
+ * matching value when a low-level CSR descriptor contains duplicate indices.
  *
  * @tparam ColumnToGet  The column index to get.
  * @tparam RowToGet     The row index to check against.
@@ -1686,8 +1828,10 @@ inline T get_sparse_matrix_value(
 
 #else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  GetSparseMatrixValue::compute<ColumnToGet, RowToGet, T, M, N, CSRIndices_A,
-                                CSRPointers_A>(A, value);
+  constexpr std::size_t position = StaticSparseLookup::last<CSRIndices_A>(
+      RowToGet, CSRPointers_A::list[ColumnToGet],
+      CSRPointers_A::list[ColumnToGet + 1]);
+  StaticSparseLookup::Read<position>::apply(A, value);
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
