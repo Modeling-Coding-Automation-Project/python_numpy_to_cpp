@@ -19,6 +19,11 @@ int main() {
 
     StaticSparseTests::check_access<double>();
     StaticSparseTests::check_access<float>();
+    StaticSparseTests::check_multiply<double>();
+    StaticSparseTests::check_multiply<float>();
+    StaticSparseTests::check_multiply<Base::Matrix::Complex<double>>();
+    StaticSparseTests::check_multiply<Base::Matrix::Complex<float>>();
+    StaticSparseTests::check_multiply_contracts();
 
 
     return 0;
