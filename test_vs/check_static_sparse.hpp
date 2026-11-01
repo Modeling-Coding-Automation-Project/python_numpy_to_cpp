@@ -34,6 +34,10 @@ double from_other_translation_unit();
 
 } // namespace StaticSparseLinkTests
 
+double StaticSparseLinkTests::from_other_translation_unit() {
+  return row_end(1) == 3 ? multiply() : -1.0;
+}
+
 namespace StaticSparseTests {
 
 using namespace Base::Matrix;
@@ -375,8 +379,9 @@ template <typename T> void check_multiply() {
   }
 
   // Reassociating these terms can lose the final 3 for both float and double.
+  const T large = TestValue<T>::make(1000000000, 0);
   CompiledSparseMatrix<T, 1, 3, CSRIndices<0, 1, 2>, CSRPointers<0, 3>> cancel{
-      T(1.0e30), T(-1.0e30), T(3)};
+      large, -large, T(3)};
   Matrix<T, 3, 1> ones{{T(1)}, {T(1)}, {T(1)}};
   const auto cancellation_result = cancel * ones;
   expect_equal(tester, cancellation_result.template get<0, 0>(), T(3),
