@@ -1,6 +1,9 @@
 #ifndef BASE_MATRIX_MACROS_HPP_
 #define BASE_MATRIX_MACROS_HPP_
 
+/* Uncomment if you want to use conventional template metaprogramming */
+#define BASE_MATRIX_REDUCE_TEMPLATE_PATTERN_
+
 /* Uncomment if you want to use std::vector */
 // #define BASE_MATRIX_USE_STD_VECTOR_
 

@@ -649,9 +649,17 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
+#ifdef BASE_MATRIX_REDUCE_TEMPLATE_PATTERN_
+
   RowUnroll::RunDispatch<T>::run(
       A, B, Y,
       typename TemplatesOperation::SparseDetail::MakeIndexPack<K>::type{});
+
+#else
+
+  Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+
+#endif // BASE_MATRIX_REDUCE_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplyDenseMatrix
