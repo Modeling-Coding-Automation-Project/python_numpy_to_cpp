@@ -11,7 +11,8 @@ The file defines:
 - Row kernels with fixed input/output offsets and ordered arithmetic.
 - Compile-time sparse coordinate mapping, including duplicate indices.
 - Compile-time checks corresponding to the original dense/sparse accessors.
-- Dispatch helpers for BASE_MATRIX_REDUCE_TEMPLATE_PATTERN_.
+- Dispatch helpers for the reduced-template implementation used when
+  BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_ is not defined.
 
 The existing recursive helpers remain available, including for bool storage.
 Sequencing arrays preserve the operation order in unoptimized builds and can be
