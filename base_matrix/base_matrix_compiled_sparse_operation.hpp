@@ -48,6 +48,12 @@ namespace Matrix {
 /* Sparse Matrix minus */
 namespace SparseMatrixMinus {
 
+template <typename T> inline T negate_sparse_value(const T &value) {
+  return -value;
+}
+
+inline bool negate_sparse_value(bool value) { return value; }
+
 // Core loop for addition
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
           typename CSRPointers, std::size_t J, std::size_t K, std::size_t Start,
@@ -74,7 +80,7 @@ struct Loop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
-    Y.values[Start] = -A.values[Start];
+    Y.values[Start] = negate_sparse_value(A.values[Start]);
     Loop<T, M, N, CSRIndices, CSRPointers, J, K, Start + 1, End>::compute(A, Y);
   }
 };

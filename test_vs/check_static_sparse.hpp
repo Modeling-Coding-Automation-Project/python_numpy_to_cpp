@@ -625,15 +625,15 @@ void fill(CompiledSparseMatrix<T, M, N, CI, CP> &matrix) {
 }
 template <typename T, std::size_t N> void fill(Vector<T, N> &vector) {
   for (std::size_t i = 0; i < N; ++i)
-    vector[i] = T(i + 2);
+    vector[i] = TestValue<T>::make(static_cast<int>(i + 2), 0);
 }
 template <typename T, std::size_t N> void fill(ColVector<T, N> &vector) {
   for (std::size_t i = 0; i < N; ++i)
-    vector[i] = T(i + 2);
+    vector[i] = TestValue<T>::make(static_cast<int>(i + 2), 0);
 }
 template <typename T, std::size_t N> void fill(DiagMatrix<T, N> &matrix) {
   for (std::size_t i = 0; i < N; ++i)
-    matrix[i] = T(i + 2);
+    matrix[i] = TestValue<T>::make(static_cast<int>(i + 2), 0);
 }
 
 template <typename T, std::size_t M, std::size_t N>
