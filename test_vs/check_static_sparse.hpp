@@ -544,6 +544,16 @@ template <typename T> void check_access() {
   tester.throw_error_if_test_failed();
 }
 
+inline void run_all() {
+  check_access<double>();
+  check_access<float>();
+  check_multiply<double>();
+  check_multiply<float>();
+  check_multiply<Complex<double>>();
+  check_multiply<Complex<float>>();
+  check_multiply_contracts();
+}
+
 } // namespace StaticSparseTests
 
 #endif // CHECK_STATIC_SPARSE_HPP_
