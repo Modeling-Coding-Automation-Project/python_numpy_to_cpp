@@ -6,6 +6,8 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <vector>
+#include <string>
 
 namespace StaticSparseLinkTests {
 
@@ -544,6 +546,717 @@ template <typename T> void check_access() {
   tester.throw_error_if_test_failed();
 }
 
+// Keep the recursive helper calls as independent reference implementations.
+// These tests compare stored values AND the arithmetic event sequence: a
+// faster template expansion must not introduce extra arithmetic or reassociate
+// expressions, even when duplicate/missing sparse output positions are used.
+namespace ExtendedKernelTests {
+
+struct Event {
+  char operation;
+  double left;
+  double right;
+  bool operator==(const Event &other) const {
+    return operation == other.operation && left == other.left &&
+           right == other.right;
+  }
+};
+
+inline std::vector<Event> &events() {
+  static std::vector<Event> value;
+  return value;
+}
+
+struct Number {
+  double value;
+  Number(double v = 0) : value(v) {}
+  // Matrix::get() copies from const storage. A raw-pointer replacement must
+  // retain that category even when it reads an output accumulator.
+  Number(Number &other) : value(other.value + 1000) {}
+  Number(const Number &other) : value(other.value) {}
+  Number &operator=(const Number &) = default;
+  static Number binary(char operation, double a, double b, double result) {
+    events().push_back(Event{operation, a, b});
+    return Number(result);
+  }
+  Number operator+(const Number &other) const {
+    return binary('+', value, other.value, value + other.value);
+  }
+  Number operator-(const Number &other) const {
+    return binary('-', value, other.value, value - other.value);
+  }
+  Number operator*(const Number &other) const {
+    return binary('*', value, other.value, value * other.value);
+  }
+  Number operator*(Number &&other) const {
+    return binary('R', value, other.value, value * other.value);
+  }
+  Number operator-() const { return binary('N', value, 0, -value); }
+  Number &operator+=(const Number &other) {
+    events().push_back(Event{'A', value, other.value});
+    value += other.value;
+    return *this;
+  }
+  Number &operator-=(const Number &other) {
+    events().push_back(Event{'S', value, other.value});
+    value -= other.value;
+    return *this;
+  }
+  int operator,(int) {
+    events().push_back(Event{'C', value, 0});
+    return 0;
+  }
+  bool operator==(const Number &other) const { return value == other.value; }
+};
+
+template <typename T, std::size_t M, std::size_t N>
+void fill(Matrix<T, M, N> &matrix) {
+  for (std::size_t c = 0; c < N; ++c)
+    for (std::size_t r = 0; r < M; ++r)
+      matrix(r, c) =
+          TestValue<T>::make(static_cast<int>(1 + r + 3 * c),
+                             static_cast<int>(r) - static_cast<int>(c));
+}
+template <typename T, std::size_t M, std::size_t N, typename CI, typename CP>
+void fill(CompiledSparseMatrix<T, M, N, CI, CP> &matrix) {
+  for (std::size_t i = 0; i < matrix.values.size(); ++i)
+    matrix.values[i] = TestValue<T>::make(static_cast<int>(i + 2),
+                                          static_cast<int>(i % 3) - 1);
+}
+template <typename T, std::size_t N> void fill(Vector<T, N> &vector) {
+  for (std::size_t i = 0; i < N; ++i)
+    vector[i] = T(i + 2);
+}
+template <typename T, std::size_t N> void fill(ColVector<T, N> &vector) {
+  for (std::size_t i = 0; i < N; ++i)
+    vector[i] = T(i + 2);
+}
+template <typename T, std::size_t N> void fill(DiagMatrix<T, N> &matrix) {
+  for (std::size_t i = 0; i < N; ++i)
+    matrix[i] = T(i + 2);
+}
+
+template <typename T, std::size_t M, std::size_t N>
+bool same(const Matrix<T, M, N> &a, const Matrix<T, M, N> &b) {
+  for (std::size_t c = 0; c < N; ++c)
+    for (std::size_t r = 0; r < M; ++r)
+      if (!exactly_equal(a(r, c), b(r, c)))
+        return false;
+  return true;
+}
+template <typename T, std::size_t M, std::size_t N, typename CI, typename CP>
+bool same(const CompiledSparseMatrix<T, M, N, CI, CP> &a,
+          const CompiledSparseMatrix<T, M, N, CI, CP> &b) {
+  for (std::size_t i = 0; i < a.values.size(); ++i)
+    if (!exactly_equal(T(a.values[i]), T(b.values[i])))
+      return false;
+  return true;
+}
+template <typename T, std::size_t N>
+bool same(const Vector<T, N> &a, const Vector<T, N> &b) {
+  for (std::size_t i = 0; i < N; ++i)
+    if (!exactly_equal(a[i], b[i]))
+      return false;
+  return true;
+}
+template <typename T, std::size_t N>
+bool same(const ColVector<T, N> &a, const ColVector<T, N> &b) {
+  for (std::size_t i = 0; i < N; ++i)
+    if (!exactly_equal(a[i], b[i]))
+      return false;
+  return true;
+}
+
+template <typename Output, typename Current, typename Legacy>
+void compare(Tester::MCAPTester<double> &tester, const Output &seed,
+             Current current, Legacy legacy, const char *name) {
+  Output actual(seed), expected(seed);
+  events().clear();
+  current(actual);
+  const auto actual_events = events();
+  events().clear();
+  legacy(expected);
+  tester.expect_near(same(actual, expected) ? 1.0 : 0.0, 1.0, 0.0,
+                     std::string(name) + ": stored results");
+  tester.expect_near(actual_events == events() ? 1.0 : 0.0, 1.0, 0.0,
+                     std::string(name) +
+                         ": arithmetic counts, order and operand categories");
+  events().clear();
+}
+
+template <typename T, std::size_t M, std::size_t N>
+using FullSparse =
+    CompiledSparseMatrix<T, M, N,
+                         CSRIndicesFromSparseAvailable<DenseAvailable<M, N>>,
+                         CSRPointersFromSparseAvailable<DenseAvailable<M, N>>>;
+
+template <typename T> void check_elementwise_and_mixed() {
+  Tester::MCAPTester<double> tester;
+  using CI = CSRIndices<3, 1, 3, 0>;
+  using CP = CSRPointers<0, 3, 3, 4>;
+  using Sparse = CompiledSparseMatrix<T, 3, 4, CI, CP>;
+  Sparse a, sparse_seed;
+  fill(a);
+  fill(sparse_seed);
+  Matrix<T, 3, 4> dense_seed;
+  fill(dense_seed);
+  const T scale(3);
+
+  compare(
+      tester, sparse_seed, [&](Sparse &y) { SparseMatrixMinus::compute(a, y); },
+      [&](Sparse &y) {
+        SparseMatrixMinus::Column<T, 3, 4, CI, CP, 2>::compute(a, y);
+      },
+      "Sparse unary minus");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { SparseMatrixMultiplyScalar::compute(a, scale, y); },
+      [&](Sparse &y) {
+        SparseMatrixMultiplyScalar::Loop<T, 3, 4, CI, CP, 0, CI::size>::compute(
+            a, scale, y);
+      },
+      "Sparse scalar product");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) {
+        DenseMatrixSubstituteSparseMatrix::compute(y, dense_seed);
+      },
+      [&](Sparse &y) {
+        DenseMatrixSubstituteSparseMatrix::Column<T, 3, 4, CI, CP, 2>::compute(
+            y, dense_seed);
+      },
+      "Dense assignment to sparse");
+  compare(
+      tester, dense_seed,
+      [&](Matrix<T, 3, 4> &y) { SparseMatrixAddDenseMatrix::compute(a, y); },
+      [&](Matrix<T, 3, 4> &y) {
+        SparseMatrixAddDenseMatrix::Column<T, 3, 4, CI, CP, 2>::compute(a, y);
+      },
+      "Sparse add dense");
+  compare(
+      tester, dense_seed,
+      [&](Matrix<T, 3, 4> &y) { DenseMatrixSubSparseMatrix::compute(a, y); },
+      [&](Matrix<T, 3, 4> &y) {
+        DenseMatrixSubSparseMatrix::Column<T, 3, 4, CI, CP, 2>::compute(a, y);
+      },
+      "Dense subtract sparse");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { SparseMatrixAddSparseMatrix::compute(a, y); },
+      [&](Sparse &y) {
+        SparseMatrixAddSparseMatrix::Column<T, 3, 4, CI, CP, CI, CP,
+                                            2>::compute(a, y);
+      },
+      "Sparse add sparse with duplicate destination");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { SparseMatrixSubSparseMatrix::compute(a, y); },
+      [&](Sparse &y) {
+        SparseMatrixSubSparseMatrix::Column<T, 3, 4, CI, CP, CI, CP,
+                                            2>::compute(a, y);
+      },
+      "Sparse subtract sparse with duplicate destination");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { DiagMatrixSubSparseMatrix::compute(a, y); },
+      [&](Sparse &y) {
+        DiagMatrixSubSparseMatrix::Column<T, 3, 4, CI, CP, CI, CP, 2>::compute(
+            a, y);
+      },
+      "Diagonal subtract sparse update");
+
+  DiagMatrix<T, 3> d3;
+  fill(d3);
+  DiagMatrix<T, 4> d4;
+  fill(d4);
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { SparseMatrixMultiplyDiagMatrix::compute(a, d4, y); },
+      [&](Sparse &y) {
+        SparseMatrixMultiplyDiagMatrix::Column<T, 3, 4, CI, CP, 2>::compute(
+            a, d4, y);
+      },
+      "Sparse times diagonal");
+  compare(
+      tester, sparse_seed,
+      [&](Sparse &y) { DiagMatrixMultiplySparseMatrix::compute(d3, a, y); },
+      [&](Sparse &y) {
+        DiagMatrixMultiplySparseMatrix::Column<T, 3, 4, CI, CP, 2>::compute(
+            d3, a, y);
+      },
+      "Diagonal times sparse");
+  using Square = FullSparse<T, 3, 3>;
+  using SQI = CSRIndicesFromSparseAvailable<DenseAvailable<3, 3>>;
+  using SQP = CSRPointersFromSparseAvailable<DenseAvailable<3, 3>>;
+  Square square;
+  fill(square);
+  compare(
+      tester, square,
+      [&](Square &y) {
+        SetDiagMatrixToValuesSparseMatrix::compute<T, 3, 3, SQI, SQP>(y, d3);
+      },
+      [&](Square &y) {
+        SetDiagMatrixToValuesSparseMatrix::Core<T, 3, 3, SQI, SQP, 2>::apply(
+            y, d3);
+      },
+      "Set sparse diagonal");
+  using Transposed = FullSparse<T, 4, 3>;
+  Transposed transposed;
+  fill(transposed);
+  // Cover both ordinary rows and the empty-row guard in the recursive helper.
+  using TP = CSRPointers<0, 2, 3, 4>;
+  CompiledSparseMatrix<T, 3, 4, CI, TP> no_empty_rows;
+  fill(no_empty_rows);
+  compare(
+      tester, transposed,
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::compute(d3, no_empty_rows, y);
+      },
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::List<T, 3, 4, CI, TP, Transposed,
+                                                  2>::compute(d3, no_empty_rows,
+                                                              y);
+      },
+      "Transpose of diagonal times sparse");
+  compare(
+      tester, transposed,
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::compute(d3, a, y);
+      },
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::List<T, 3, 4, CI, CP, Transposed,
+                                                  2>::compute(d3, a, y);
+      },
+      "Transpose of diagonal times sparse with an empty row");
+
+  Matrix<T, 4, 2> b42;
+  fill(b42);
+  Matrix<T, 2, 3> b23;
+  fill(b23);
+  Matrix<T, 2, 4> b24;
+  fill(b24);
+  Matrix<T, 3, 2> b32;
+  fill(b32);
+  compare(
+      tester, b32,
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseMatrix::compute(a, b42, y);
+      },
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseMatrix::Row<T, 3, 4, 2, CI, CP, 1>::compute(
+            a, b42, y);
+      },
+      "Sparse times dense");
+  compare(
+      tester, b24,
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixMultiplySparseMatrix::compute(b23, a, y);
+      },
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixMultiplySparseMatrix::Row<T, 2, 3, 4, CI, CP, 2>::compute(
+            b23, a, y);
+      },
+      "Dense times sparse");
+  compare(
+      tester, b32,
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseTranspose::compute(a, b24, y);
+      },
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseTranspose::Row<T, 3, 4, 2, CI, CP, 1>::compute(
+            a, b24, y);
+      },
+      "Sparse times dense transpose");
+  compare(
+      tester, b23,
+      [&](Matrix<T, 2, 3> &y) {
+        DenseMatrixMultiplySparseTranspose::compute(b24, a, y);
+      },
+      [&](Matrix<T, 2, 3> &y) {
+        DenseMatrixMultiplySparseTranspose::Row<T, 2, 3, 4, CI, CP, 2>::compute(
+            b24, a, y);
+      },
+      "Dense times sparse transpose");
+  compare(
+      tester, b24,
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixTransposeMultiplySparse::compute(b32, a, y);
+      },
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixTransposeMultiplySparse::OuterLoop<T, 2, 3, 4, CI, CP, 2,
+                                                      3>::compute(b32, a, y);
+      },
+      "Dense transpose times sparse");
+  compare(
+      tester, b42,
+      [&](Matrix<T, 4, 2> &y) {
+        SparseTransposeMatrixMultiplyDenseMatrix::compute(a, b32, y);
+      },
+      [&](Matrix<T, 4, 2> &y) {
+        SparseTransposeMatrixMultiplyDenseMatrix::Row<T, 3, 4, 2, CI, CP,
+                                                      1>::compute(a, b32, y);
+      },
+      "Sparse transpose times dense");
+
+  Vector<T, 4> v4;
+  fill(v4);
+  Vector<T, 3> v3;
+  fill(v3);
+  ColVector<T, 3> c3;
+  fill(c3);
+  ColVector<T, 4> c4;
+  fill(c4);
+  compare(
+      tester, v3,
+      [&](Vector<T, 3> &y) { SparseMatrixMultiplyVector::compute(a, v4, y); },
+      [&](Vector<T, 3> &y) {
+        SparseMatrixMultiplyVector::List<T, 3, 4, CI, CP, 2>::compute(a, v4, y);
+      },
+      "Sparse times vector");
+  compare(
+      tester, c4,
+      [&](ColVector<T, 4> &y) {
+        ColVectorMultiplySparseMatrix::compute(c3, a, y);
+      },
+      [&](ColVector<T, 4> &y) {
+        ColVectorMultiplySparseMatrix::List<T, 3, 4, CI, CP, 2>::compute(c3, a,
+                                                                         y);
+      },
+      "Column vector times sparse");
+
+  // Vector indexing historically clamps out-of-range indices to the last slot.
+  using ClampCI = CSRIndices<4>;
+  using ClampCP = CSRPointers<0, 0, 1, 1>;
+  CompiledSparseMatrix<T, 3, 4, ClampCI, ClampCP> clamp;
+  fill(clamp);
+  compare(
+      tester, v3,
+      [&](Vector<T, 3> &y) {
+        SparseMatrixMultiplyVector::compute(clamp, v4, y);
+      },
+      [&](Vector<T, 3> &y) {
+        SparseMatrixMultiplyVector::List<T, 3, 4, ClampCI, ClampCP, 2>::compute(
+            clamp, v4, y);
+      },
+      "Sparse vector input index clamp");
+  compare(
+      tester, c4,
+      [&](ColVector<T, 4> &y) {
+        ColVectorMultiplySparseMatrix::compute(c3, clamp, y);
+      },
+      [&](ColVector<T, 4> &y) {
+        ColVectorMultiplySparseMatrix::List<T, 3, 4, ClampCI, ClampCP,
+                                            2>::compute(c3, clamp, y);
+      },
+      "Sparse vector output index clamp");
+  tester.throw_error_if_test_failed();
+}
+
+template <typename T> void check_sparse_products() {
+  Tester::MCAPTester<double> tester;
+  using AI = CSRIndices<3, 1, 3, 0>;
+  using AP = CSRPointers<0, 3, 3, 4>;
+  using BI = CSRIndices<1, 0, 1, 0>;
+  using BP = CSRPointers<0, 1, 1, 3, 4>;
+  using CI = CSRIndices<0, 1, 0>;
+  using CP = CSRPointers<0, 1, 1, 3>;
+  using DI = CSRIndices<3, 1, 0>;
+  using DP = CSRPointers<0, 2, 3>;
+  CompiledSparseMatrix<T, 3, 4, AI, AP> a;
+  fill(a);
+  CompiledSparseMatrix<T, 4, 2, BI, BP> b;
+  fill(b);
+  CompiledSparseMatrix<T, 3, 2, CI, CP> c;
+  fill(c);
+  CompiledSparseMatrix<T, 2, 4, DI, DP> d;
+  fill(d);
+  using YI = CSRIndicesFromSparseAvailable<DenseAvailable<3, 2>>;
+  using YP = CSRPointersFromSparseAvailable<DenseAvailable<3, 2>>;
+  using Y = CompiledSparseMatrix<T, 3, 2, YI, YP>;
+  Y seed;
+  fill(seed);
+  compare(
+      tester, seed, [&](Y &y) { SparseMatrixMultiplySparse::compute(a, b, y); },
+      [&](Y &y) {
+        SparseMatrixMultiplySparse::Row<T, 3, 4, 2, AI, AP, BI, BP, YI,
+                                        YP>::compute(a, b, y);
+      },
+      "Sparse times sparse");
+  compare(
+      tester, seed,
+      [&](Y &y) { SparseMatrixMultiplySparseTranspose::compute(a, d, y); },
+      [&](Y &y) {
+        SparseMatrixMultiplySparseTranspose::Row<T, 3, 4, 2, AI, AP, DI, DP, Y,
+                                                 1>::compute(a, d, y);
+      },
+      "Sparse times sparse transpose");
+  using YT = FullSparse<T, 4, 2>;
+  YT seed_t;
+  fill(seed_t);
+  compare(
+      tester, seed_t,
+      [&](YT &y) { SparseMatrixTransposeMultiplySparse::compute(a, c, y); },
+      [&](YT &y) {
+        SparseMatrixTransposeMultiplySparse::Row<T, 4, 3, 2, AI, AP, CI, CP,
+                                                 YT>::compute(a, c, y);
+      },
+      "Sparse transpose times sparse");
+
+  // Missing destinations still incur the same arithmetic as the recursive
+  // helpers; duplicate destinations retain last-read/all-write semantics.
+  using HI = CSRIndices<1, 1>;
+  using HP = CSRPointers<0, 2, 2, 2>;
+  using Holes = CompiledSparseMatrix<T, 3, 2, HI, HP>;
+  Holes holes;
+  fill(holes);
+  compare(
+      tester, holes,
+      [&](Holes &y) { SparseMatrixMultiplySparse::compute(a, b, y); },
+      [&](Holes &y) {
+        SparseMatrixMultiplySparse::Row<T, 3, 4, 2, AI, AP, BI, BP, HI,
+                                        HP>::compute(a, b, y);
+      },
+      "Sparse product missing and duplicate output positions");
+  compare(
+      tester, holes,
+      [&](Holes &y) { SparseMatrixMultiplySparseTranspose::compute(a, d, y); },
+      [&](Holes &y) {
+        SparseMatrixMultiplySparseTranspose::Row<T, 3, 4, 2, AI, AP, DI, DP,
+                                                 Holes, 1>::compute(a, d, y);
+      },
+      "Sparse transpose-right product missing output positions");
+  using HTP = CSRPointers<0, 2, 2, 2, 2>;
+  using HolesT = CompiledSparseMatrix<T, 4, 2, HI, HTP>;
+  HolesT holes_t;
+  fill(holes_t);
+  compare(
+      tester, holes_t,
+      [&](HolesT &y) { SparseMatrixTransposeMultiplySparse::compute(a, c, y); },
+      [&](HolesT &y) {
+        SparseMatrixTransposeMultiplySparse::Row<T, 4, 3, 2, AI, AP, CI, CP,
+                                                 HolesT>::compute(a, c, y);
+      },
+      "Sparse transpose-left product missing output positions");
+
+  using SI = CSRIndices<0, 1, 0, 1>;
+  using SP = CSRPointers<0, 2, 4>;
+  using Square = CompiledSparseMatrix<T, 2, 2, SI, SP>;
+  Square square_a, square_b;
+  fill(square_a);
+  fill(square_b);
+  compare(
+      tester, square_a,
+      [&](Square &y) { SparseMatrixMultiplySparse::compute(y, square_b, y); },
+      [&](Square &y) {
+        SparseMatrixMultiplySparse::Row<T, 2, 2, 2, SI, SP, SI, SP, SI,
+                                        SP>::compute(y, square_b, y);
+      },
+      "Sparse product output aliases left input");
+  compare(
+      tester, square_b,
+      [&](Square &y) { SparseMatrixMultiplySparse::compute(square_a, y, y); },
+      [&](Square &y) {
+        SparseMatrixMultiplySparse::Row<T, 2, 2, 2, SI, SP, SI, SP, SI,
+                                        SP>::compute(square_a, y, y);
+      },
+      "Sparse product output aliases right input");
+
+  using EI = CSRIndices<0>;
+  using EP = CSRPointers<0, 0, 0, 0>;
+  using Empty = CompiledSparseMatrix<T, 3, 4, EI, EP>;
+  Empty empty;
+  const T scale(3);
+  compare(
+      tester, empty,
+      [&](Empty &y) {
+        SparseMatrixMultiplyScalar::compute(empty, scale, y);
+        tester.expect_near(
+            static_cast<double>(y.values.size()), 0.0, 0.0,
+            "Empty scalar product must not allocate a sentinel value");
+        tester.expect_near(static_cast<double>(events().size()), 0.0, 0.0,
+                           "Empty scalar product must perform no arithmetic");
+      },
+      [&](Empty &y) {
+        // CSRIndices<0> has size 1, but the matrix stores zero coefficients.
+        SparseMatrixMultiplyScalar::Loop<T, 3, 4, EI, EP, 0,
+                                         EP::list[3]>::compute(empty, scale, y);
+      },
+      "Empty sparse scalar product must use the actual stored value count");
+  events().clear();
+  const auto scaled_right = empty * scale;
+  const auto scaled_left = scale * empty;
+  tester.expect_near(static_cast<double>(scaled_right.values.size()), 0.0, 0.0,
+                     "Empty sparse times scalar must preserve empty storage");
+  tester.expect_near(static_cast<double>(scaled_left.values.size()), 0.0, 0.0,
+                     "Scalar times empty sparse must preserve empty storage");
+  tester.expect_near(
+      static_cast<double>(events().size()), 0.0, 0.0,
+      "Both empty scalar-product operators must perform no arithmetic");
+  events().clear();
+
+  DiagMatrix<T, 3> diagonal;
+  fill(diagonal);
+  using Transposed = FullSparse<T, 4, 3>;
+  Transposed transposed;
+  fill(transposed);
+  compare(
+      tester, transposed,
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::compute(diagonal, empty, y);
+        tester.expect_near(
+            static_cast<double>(events().size()), 0.0, 0.0,
+            "Empty transpose-diagonal product must perform no arithmetic");
+      },
+      [&](Transposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::List<T, 3, 4, EI, EP, Transposed,
+                                                  2>::compute(diagonal, empty,
+                                                              y);
+      },
+      "Empty transpose-diagonal product must preserve existing output values");
+  using ETP = CSRPointers<0, 0, 0, 0, 0>;
+  using EmptyTransposed = CompiledSparseMatrix<T, 4, 3, EI, ETP>;
+  EmptyTransposed empty_transposed;
+  compare(
+      tester, empty_transposed,
+      [&](EmptyTransposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::compute(diagonal, empty, y);
+      },
+      [&](EmptyTransposed &y) {
+        TransposeOfDiagMatrixMultiplySparse::List<
+            T, 3, 4, EI, EP, EmptyTransposed, 2>::compute(diagonal, empty, y);
+      },
+      "Empty transpose-diagonal product with zero-size output storage");
+  compare(
+      tester, empty, [&](Empty &y) { SparseMatrixMinus::compute(empty, y); },
+      [&](Empty &y) {
+        SparseMatrixMinus::Column<T, 3, 4, EI, EP, 2>::compute(empty, y);
+      },
+      "Empty sparse unary minus");
+  compare(
+      tester, seed,
+      [&](Y &y) { SparseMatrixMultiplySparse::compute(empty, b, y); },
+      [&](Y &y) {
+        SparseMatrixMultiplySparse::Row<T, 3, 4, 2, EI, EP, BI, BP, YI,
+                                        YP>::compute(empty, b, y);
+      },
+      "Empty sparse product must leave accumulated output untouched");
+  compare(
+      tester, seed,
+      [&](Y &y) { SparseMatrixMultiplySparseTranspose::compute(empty, d, y); },
+      [&](Y &y) {
+        SparseMatrixMultiplySparseTranspose::Row<T, 3, 4, 2, EI, EP, DI, DP, Y,
+                                                 1>::compute(empty, d, y);
+      },
+      "Empty sparse transpose-right product");
+  compare(
+      tester, seed_t,
+      [&](YT &y) { SparseMatrixTransposeMultiplySparse::compute(empty, c, y); },
+      [&](YT &y) {
+        SparseMatrixTransposeMultiplySparse::Row<T, 4, 3, 2, EI, EP, CI, CP,
+                                                 YT>::compute(empty, c, y);
+      },
+      "Empty sparse transpose-left product");
+  Matrix<T, 3, 4> dense;
+  fill(dense);
+  compare(
+      tester, dense,
+      [&](Matrix<T, 3, 4> &y) {
+        SparseMatrixAddDenseMatrix::compute(empty, y);
+      },
+      [&](Matrix<T, 3, 4> &y) {
+        SparseMatrixAddDenseMatrix::Column<T, 3, 4, EI, EP, 2>::compute(empty,
+                                                                        y);
+      },
+      "Empty sparse addition must not add zeros");
+
+  Matrix<T, 2, 3> dense23;
+  fill(dense23);
+  Matrix<T, 2, 4> dense24;
+  fill(dense24);
+  Matrix<T, 3, 2> dense32;
+  fill(dense32);
+  Matrix<T, 4, 2> dense42;
+  fill(dense42);
+  compare(
+      tester, dense24,
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixMultiplySparseMatrix::compute(dense23, empty, y);
+      },
+      [&](Matrix<T, 2, 4> &y) {
+        DenseMatrixMultiplySparseMatrix::Row<T, 2, 3, 4, EI, EP, 2>::compute(
+            dense23, empty, y);
+      },
+      "Empty sparse scatter must preserve dense output");
+  compare(
+      tester, dense32,
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseTranspose::compute(empty, dense24, y);
+      },
+      [&](Matrix<T, 3, 2> &y) {
+        SparseMatrixMultiplyDenseTranspose::Row<T, 3, 4, 2, EI, EP, 1>::compute(
+            empty, dense24, y);
+      },
+      "Empty sparse gather must write zero dense output");
+  compare(
+      tester, dense42,
+      [&](Matrix<T, 4, 2> &y) {
+        SparseTransposeMatrixMultiplyDenseMatrix::compute(empty, dense32, y);
+      },
+      [&](Matrix<T, 4, 2> &y) {
+        SparseTransposeMatrixMultiplyDenseMatrix::Row<T, 3, 4, 2, EI, EP,
+                                                      1>::compute(empty,
+                                                                  dense32, y);
+      },
+      "Empty transpose scatter must preserve dense output");
+  Vector<T, 4> vector4;
+  fill(vector4);
+  Vector<T, 3> vector3;
+  fill(vector3);
+  compare(
+      tester, vector3,
+      [&](Vector<T, 3> &y) {
+        SparseMatrixMultiplyVector::compute(empty, vector4, y);
+      },
+      [&](Vector<T, 3> &y) {
+        SparseMatrixMultiplyVector::List<T, 3, 4, EI, EP, 2>::compute(
+            empty, vector4, y);
+      },
+      "Empty sparse vector gather must write zeros");
+  tester.throw_error_if_test_failed();
+}
+
+inline void check_bool_elementwise() {
+  Tester::MCAPTester<double> tester;
+  using CI = CSRIndices<0, 1>;
+  using CP = CSRPointers<0, 1, 1, 2>;
+  using Sparse = CompiledSparseMatrix<bool, 3, 2, CI, CP>;
+  Sparse a;
+  a.values[0] = true;
+  a.values[1] = false;
+  compare(
+      tester, a, [&](Sparse &y) { SparseMatrixMinus::compute(a, y); },
+      [&](Sparse &y) {
+        SparseMatrixMinus::Column<bool, 3, 2, CI, CP, 2>::compute(a, y);
+      },
+      "Bool sparse unary minus, including vector<bool> storage");
+  using EI = CSRIndices<0>;
+  using EP = CSRPointers<0, 0, 0, 0>;
+  CompiledSparseMatrix<bool, 3, 2, EI, EP> empty;
+  // Nonempty bool sparse addition is not supported by the recursive API:
+  // integer promotion conflicts with set_sparse_matrix_value's T deduction.
+  compare(
+      tester, a,
+      [&](Sparse &y) { SparseMatrixAddSparseMatrix::compute(empty, y); },
+      [&](Sparse &y) {
+        SparseMatrixAddSparseMatrix::Column<bool, 3, 2, EI, EP, CI, CP,
+                                            2>::compute(empty, y);
+      },
+      "Empty bool sparse addition, including vector<bool> storage");
+  tester.throw_error_if_test_failed();
+}
+
+} // namespace ExtendedKernelTests
+
 inline void run_all() {
   check_access<double>();
   check_access<float>();
@@ -552,6 +1265,18 @@ inline void run_all() {
   check_multiply<Complex<double>>();
   check_multiply<Complex<float>>();
   check_multiply_contracts();
+  ExtendedKernelTests::check_elementwise_and_mixed<double>();
+  ExtendedKernelTests::check_elementwise_and_mixed<float>();
+  ExtendedKernelTests::check_elementwise_and_mixed<Complex<double>>();
+  ExtendedKernelTests::check_elementwise_and_mixed<Complex<float>>();
+  ExtendedKernelTests::check_elementwise_and_mixed<
+      ExtendedKernelTests::Number>();
+  ExtendedKernelTests::check_sparse_products<double>();
+  ExtendedKernelTests::check_sparse_products<float>();
+  ExtendedKernelTests::check_sparse_products<Complex<double>>();
+  ExtendedKernelTests::check_sparse_products<Complex<float>>();
+  ExtendedKernelTests::check_sparse_products<ExtendedKernelTests::Number>();
+  ExtendedKernelTests::check_bool_elementwise();
 }
 
 } // namespace StaticSparseTests
