@@ -19,15 +19,6 @@
 namespace Base {
 namespace Matrix {
 
-namespace SparseMatrixMultiplyDenseMatrix {
-
-// Defined in base_matrix_compiled_sparse_operation.hpp.
-template <typename T, std::size_t M, std::size_t N, std::size_t K,
-          typename CSRIndices_A, typename CSRPointers_A, std::size_t I>
-struct Row;
-
-} // namespace SparseMatrixMultiplyDenseMatrix
-
 namespace RowUnroll {
 
 using TemplatesOperation::SparseDetail::IndexPack;
@@ -137,19 +128,8 @@ template <typename T> struct RunDispatch {
   }
 };
 
-// vector<bool> uses proxy elements and has no usable data(). Specialization
-// prevents the pointer path from being instantiated for either bool backend.
-template <> struct RunDispatch<bool> {
-  template <std::size_t M, std::size_t N, std::size_t K, typename Indices,
-            typename Pointers, std::size_t... Columns>
-  static void run(const CompiledSparseMatrix<bool, M, N, Indices, Pointers> &A,
-                  const Matrix<bool, N, K> &B, Matrix<bool, M, K> &Y,
-                  IndexPack<Columns...>) {
-    SparseMatrixMultiplyDenseMatrix::Row<bool, M, N, K, Indices, Pointers,
-                                         K - 1>::compute(A, B, Y);
-  }
-};
-
+// vector<bool> has no usable data(), so bool must not use RunDispatch. The
+// caller selects the recursive helpers for bool.
 } // namespace RowUnroll
 
 } // namespace Matrix

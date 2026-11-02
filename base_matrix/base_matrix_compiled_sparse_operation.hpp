@@ -493,6 +493,28 @@ struct Row<T, M, N, K, CSRIndices_A, CSRPointers_A, 0> {
   }
 };
 
+template <bool IsBool> struct Select {
+  template <typename T, std::size_t M, std::size_t N, std::size_t K,
+            typename CSRIndices_A, typename CSRPointers_A>
+  static void
+  run(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+      const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    RowUnroll::RunDispatch<T>::run(
+        A, B, Y,
+        typename TemplatesOperation::SparseDetail::MakeIndexPack<K>::type{});
+  }
+};
+
+template <> struct Select<true> {
+  template <typename T, std::size_t M, std::size_t N, std::size_t K,
+            typename CSRIndices_A, typename CSRPointers_A>
+  static void
+  run(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+      const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+  }
+};
+
 /**
  * @brief
  * Computes the product of a sparse matrix with a dense matrix.
@@ -520,9 +542,8 @@ compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
 #ifdef BASE_MATRIX_REDUCE_TEMPLATE_PATTERN_
 
-  RowUnroll::RunDispatch<T>::run(
-      A, B, Y,
-      typename TemplatesOperation::SparseDetail::MakeIndexPack<K>::type{});
+  // vector<bool> has no usable data(), so bool keeps the recursive path.
+  Select<std::is_same<T, bool>::value>::run(A, B, Y);
 
 #else
 
