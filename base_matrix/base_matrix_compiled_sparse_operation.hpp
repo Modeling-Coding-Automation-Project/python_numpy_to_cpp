@@ -268,7 +268,9 @@ struct Loop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, T &sum) {
-    sum += A.values[Start] * B.template get<CSRIndices_A::list[Start], I>();
+    // Avoid compound assignment so that T = bool does not trigger C4804.
+    sum = static_cast<T>(
+        sum + A.values[Start] * B.template get<CSRIndices_A::list[Start], I>());
     Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, Start + 1,
          End>::compute(A, B, sum);
   }
