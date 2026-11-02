@@ -32,6 +32,7 @@ but in this project, we use the mathematical custom.
 #include "base_matrix_macros.hpp"
 
 #include "base_matrix_compiled_sparse.hpp"
+#include "base_matrix_compiled_sparse_reduced_template.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_templates.hpp"
@@ -46,6 +47,12 @@ namespace Matrix {
 
 /* Sparse Matrix minus */
 namespace SparseMatrixMinus {
+
+template <typename T> inline T negate_sparse_value(const T &value) {
+  return -value;
+}
+
+inline bool negate_sparse_value(bool value) { return value; }
 
 // Core loop for addition
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
@@ -73,7 +80,7 @@ struct Loop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
           CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
-    Y.values[Start] = -A.values[Start];
+    Y.values[Start] = negate_sparse_value(A.values[Start]);
     Loop<T, M, N, CSRIndices, CSRPointers, J, K, Start + 1, End>::compute(A, Y);
   }
 };
@@ -190,7 +197,17 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &A,
         CompiledSparseMatrix<T, M, N, CSRIndices, CSRPointers> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Column<T, M, N, CSRIndices, CSRPointers, M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices, CSRPointers, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::Negate, Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMinus
@@ -267,7 +284,8 @@ struct Loop {
   static void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
           const Matrix<T, N, K> &B, T &sum) {
-    sum += A.values[Start] * B.template get<CSRIndices_A::list[Start], I>();
+    RowUnroll::Accumulate<std::is_same<T, bool>::value>::run(
+        sum, A.values[Start] * B.template get<CSRIndices_A::list[Start], I>());
     Loop<T, M, N, K, CSRIndices_A, CSRPointers_A, J, I, Start + 1,
          End>::compute(A, B, sum);
   }
@@ -492,6 +510,28 @@ struct Row<T, M, N, K, CSRIndices_A, CSRPointers_A, 0> {
   }
 };
 
+template <bool IsBool> struct Select {
+  template <typename T, std::size_t M, std::size_t N, std::size_t K,
+            typename CSRIndices_A, typename CSRPointers_A>
+  static void
+  run(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+      const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    RowUnroll::RunDispatch<T>::run(
+        A, B, Y,
+        typename TemplatesOperation::SparseDetail::MakeIndexPack<K>::type{});
+  }
+};
+
+template <> struct Select<true> {
+  template <typename T, std::size_t M, std::size_t N, std::size_t K,
+            typename CSRIndices_A, typename CSRPointers_A>
+  static void
+  run(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
+      const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+    Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+  }
+};
+
 /**
  * @brief
  * Computes the product of a sparse matrix with a dense matrix.
@@ -517,7 +557,16 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
 
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  // vector<bool> has no usable data(), so bool keeps the recursive path.
+  Select<std::is_same<T, bool>::value>::run(A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplyDenseMatrix
@@ -860,7 +909,19 @@ inline void
 compute(const Matrix<T, M, N> &A,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, K> &Y) {
+
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+  using Kernel = SparseReduced::DenseProduct::DenseSparse<false>;
+  using Legacy = Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DenseMatrixMultiplySparseMatrix
@@ -976,7 +1037,17 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, M, N> &B) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, B);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::CopyDense, Legacy>(A, B);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DenseMatrixSubstituteSparseMatrix
@@ -1153,7 +1224,18 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         Matrix<T, M, N> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::DenseUpdate<SparseReduced::Elementwise::Add>,
+      Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixAddDenseMatrix
@@ -1435,9 +1517,20 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
          M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y,
+                        CSRPointers_Y, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::SparseUpdate<SparseReduced::Elementwise::Add>,
+      Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixAddSparseMatrix
@@ -1527,7 +1620,17 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_Y,
 inline void
 compute(CompiledSparseMatrix<T, M, M, CSRIndices_Y, CSRPointers_Y> &Y,
         const DiagMatrix<T, M> &B) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Core<T, M, N, CSRIndices_Y, CSRPointers_Y, M - 1>::apply(Y, B);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Core<T, M, N, CSRIndices_Y, CSRPointers_Y, M - 1>;
+  SparseReduced::SelectApply<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::SetDiagonal, Legacy>(Y, B);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SetDiagMatrixToValuesSparseMatrix
@@ -2008,7 +2111,19 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         Matrix<T, M, N> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::DenseUpdate<
+          SparseReduced::Elementwise::Subtract>,
+      Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DenseMatrixSubSparseMatrix
@@ -2320,9 +2435,21 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
          M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y,
+                        CSRPointers_Y, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::SparseUpdate<
+          SparseReduced::Elementwise::Subtract>,
+      Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DiagMatrixSubSparseMatrix
@@ -2587,9 +2714,21 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         CompiledSparseMatrix<T, M, N, CSRIndices_Y, CSRPointers_Y> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y, CSRPointers_Y,
          M - 1>::compute(A, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, CSRIndices_Y,
+                        CSRPointers_Y, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::SparseUpdate<
+          SparseReduced::Elementwise::Subtract>,
+      Legacy>(A, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixSubSparseMatrix
@@ -2765,9 +2904,19 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const T &scalar,
         CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
-  Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, CSRIndices_A::size>::compute(
-      A, scalar, Y);
+  Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0,
+       CSRPointers_A::list[M]>::compute(A, scalar, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy =
+      Loop<T, M, N, CSRIndices_A, CSRPointers_A, 0, CSRPointers_A::list[M]>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::Scale, Legacy>(A, scalar, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplyScalar
@@ -2799,7 +2948,7 @@ operator*(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
+  for (std::size_t i = 0; i < CSRPointers_A::list[M]; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
@@ -2842,7 +2991,7 @@ operator*(const T &scalar,
 
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  for (std::size_t i = 0; i < CSRIndices_A::size; i++) {
+  for (std::size_t i = 0; i < CSRPointers_A::list[M]; i++) {
     Y.values[i] = scalar * A.values[i];
   }
 
@@ -3048,7 +3197,19 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Vector<T, N> &b, Vector<T, M> &y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   List<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, b, y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::SparseVector;
+  using Legacy = List<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, b, y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplyVector
@@ -3268,8 +3429,19 @@ inline void
 compute(const ColVector<T, N> &a,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         ColVector<T, K> &y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   List<T, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(a, B, y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::ColVectorSparse;
+  using Legacy = List<T, N, K, CSRIndices_B, CSRPointers_B, N - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      a, B, y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace ColVectorMultiplySparseMatrix
@@ -3569,8 +3741,19 @@ template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, K, N> &B, Matrix<T, M, K> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::SparseDenseTranspose;
+  using Legacy = Row<T, M, N, K, CSRIndices_A, CSRPointers_A, K - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplyDenseTranspose
@@ -4034,8 +4217,22 @@ compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         CompiledSparseMatrix<T, M, K, CSRIndices_Y, CSRPointers_Y> &Y) {
 
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
       CSRIndices_Y, CSRPointers_Y>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::ProductDetail::Dispatch<
+      SparseReduced::ProductDetail::Ordinary>;
+  using Legacy = Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                     CSRPointers_B, CSRIndices_Y, CSRPointers_Y>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixMultiplySparse
@@ -4502,8 +4699,22 @@ inline void
 compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
       Y_Type>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::ProductDetail::Dispatch<
+      SparseReduced::ProductDetail::TransposeLeft>;
+  using Legacy = Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                     CSRPointers_B, Y_Type>;
+  SparseReduced::Select<std::is_same<T, bool>::value ||
+                        !SparseReduced::SupportsOutput<Y_Type, T, M, K>::
+                            value>::template run<Kernel, Legacy>(A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseMatrixTransposeMultiplySparse
@@ -5067,8 +5278,22 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const CompiledSparseMatrix<T, K, N, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B, CSRPointers_B,
       Y_Type, K - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::ProductDetail::Dispatch<
+      SparseReduced::ProductDetail::TransposeRight>;
+  using Legacy = Row<T, M, N, K, CSRIndices_A, CSRPointers_A, CSRIndices_B,
+                     CSRPointers_B, Y_Type, K - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value ||
+                        !SparseReduced::SupportsOutput<Y_Type, T, M, K>::
+                            value>::template run<Kernel, Legacy>(A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 } // namespace SparseMatrixMultiplySparseTranspose
 
@@ -5306,7 +5531,17 @@ inline void
 compute(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A,
         const DiagMatrix<T, N> &B,
         CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
   Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_A, CSRPointers_A, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::RightDiagonal, Legacy>(A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 } // namespace SparseMatrixMultiplyDiagMatrix
 
@@ -5499,8 +5734,17 @@ inline void
 compute(const DiagMatrix<T, M> &A,
         const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
         CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Column<T, M, N, CSRIndices_B, CSRPointers_B, M - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = Column<T, M, N, CSRIndices_B, CSRPointers_B, M - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<
+      SparseReduced::Elementwise::LeftDiagonal, Legacy>(A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DiagMatrixMultiplySparseMatrix
@@ -5708,9 +5952,12 @@ struct Core {
           const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
           Y_Type &Y) {
 
-    InnerLoop<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, I,
-              CSRPointers_B::list[J],
-              CSRPointers_B::list[J + 1] - 1>::compute(A, B, Y);
+    using Body =
+        InnerLoop<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, J, I,
+                  CSRPointers_B::list[J], CSRPointers_B::list[J + 1] - 1>;
+    SparseReduced::NonEmptyRow<(
+        CSRPointers_B::list[J] <
+        CSRPointers_B::list[J + 1])>::template run<Body>(A, B, Y);
   }
 };
 
@@ -5792,8 +6039,20 @@ inline void
 compute(const DiagMatrix<T, M> &A,
         const CompiledSparseMatrix<T, M, K, CSRIndices_B, CSRPointers_B> &B,
         Y_Type &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   List<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, M - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Legacy = List<T, M, K, CSRIndices_B, CSRPointers_B, Y_Type, M - 1>;
+  SparseReduced::Select<
+      std::is_same<T, bool>::value ||
+      !SparseReduced::SupportsOutput<Y_Type, T, K, M>::value>::
+      template run<SparseReduced::Elementwise::TransposeDiagonal, Legacy>(A, B,
+                                                                          Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace TransposeOfDiagMatrixMultiplySparse
@@ -6114,8 +6373,19 @@ inline void
 compute(const Matrix<T, M, K> &A,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, N> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::DenseSparseTranspose;
+  using Legacy = Row<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DenseMatrixMultiplySparseTranspose
@@ -6396,9 +6666,21 @@ inline void
 compute(const Matrix<T, N, M> &A,
         const CompiledSparseMatrix<T, N, K, CSRIndices_B, CSRPointers_B> &B,
         Matrix<T, M, K> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   OuterLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1, K - 1>::compute(
       A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::DenseSparse<true>;
+  using Legacy =
+      OuterLoop<T, M, N, K, CSRIndices_B, CSRPointers_B, N - 1, K - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace DenseMatrixTransposeMultiplySparse
@@ -6688,8 +6970,19 @@ template <typename T, std::size_t N, std::size_t M, typename CSRIndices_A,
 inline void
 compute(const CompiledSparseMatrix<T, N, M, CSRIndices_A, CSRPointers_A> &A,
         const Matrix<T, N, K> &B, Matrix<T, M, K> &Y) {
+#ifdef BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 
   Row<T, N, M, K, CSRIndices_A, CSRPointers_A, K - 1>::compute(A, B, Y);
+
+#else // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
+
+  using Kernel = SparseReduced::DenseProduct::SparseTransposeDense;
+  using Legacy = Row<T, N, M, K, CSRIndices_A, CSRPointers_A, K - 1>;
+  SparseReduced::Select<std::is_same<T, bool>::value>::template run<Kernel,
+                                                                    Legacy>(
+      A, B, Y);
+
+#endif // BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_
 }
 
 } // namespace SparseTransposeMatrixMultiplyDenseMatrix

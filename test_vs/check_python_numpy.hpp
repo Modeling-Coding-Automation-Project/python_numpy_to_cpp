@@ -2257,813 +2257,825 @@ void CheckPythonNumpy<T>::check_python_numpy_concatenate(void) {
 
 
     /* 結合 */
-    Matrix<DefDense, T, 1, 1> a({ {1} });
-    Matrix<DefDense, T, 1, 1> b({ {2} });
-    Matrix<DefDense, T, 2, 1> aa({ {1}, {2} });
-    Matrix<DefDense, T, 2, 1> bb({ {3}, {4} });
+    auto test_vertical_concatenation = [&]() {
+        Matrix<DefDense, T, 1, 1> a({ {1} });
+        Matrix<DefDense, T, 1, 1> b({ {2} });
+        Matrix<DefDense, T, 2, 1> aa({ {1}, {2} });
+        Matrix<DefDense, T, 2, 1> bb({ {3}, {4} });
 
-    auto a_v_b = concatenate_vertically(a, b);
+        auto a_v_b = concatenate_vertically(a, b);
 
-    Matrix<DefDense, T, 2, 1> a_v_b_answer({
-        {1},
-        {2}
-        });
+        Matrix<DefDense, T, 2, 1> a_v_b_answer({
+            {1},
+            {2}
+            });
 
-    tester.expect_near(a_v_b.matrix.data, a_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Dense small, 1 1.");
+        tester.expect_near(a_v_b.matrix.data, a_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Dense small, 1 1.");
 
-    auto aa_v_b = concatenate_vertically(aa, b);
+        auto aa_v_b = concatenate_vertically(aa, b);
 
-    Matrix<DefDense, T, 3, 1> aa_v_b_answer({
-        {1},
-        {2},
-        {2}
-        });
+        Matrix<DefDense, T, 3, 1> aa_v_b_answer({
+            {1},
+            {2},
+            {2}
+            });
 
-    tester.expect_near(aa_v_b.matrix.data, aa_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Dense small, 2 1.");
+        tester.expect_near(aa_v_b.matrix.data, aa_v_b_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Dense small, 2 1.");
 
-    auto a_v_bb = concatenate_vertically(a, bb);
+        auto a_v_bb = concatenate_vertically(a, bb);
 
-    Matrix<DefDense, T, 3, 1> a_v_bb_answer({
-        {1},
-        {3},
-        {4}
-        });
+        Matrix<DefDense, T, 3, 1> a_v_bb_answer({
+            {1},
+            {3},
+            {4}
+            });
 
-    tester.expect_near(a_v_bb.matrix.data, a_v_bb_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Dense small, 1 2.");
-
-
-    auto A_v_A = concatenate_vertically(A, A);
-    ConcatenateVertically_Type<decltype(A), decltype(A)> A_v_A_t;
-    A_v_A_t = A_v_A;
-
-    Matrix<DefDense, T, 6, 3> A_v_A_answer({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 }
-        });
-
-    tester.expect_near(A_v_A_t.matrix.data, A_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Dense.");
-
-    update_vertically_concatenated_matrix(A_v_A, static_cast<T>(2) * A, A);
-
-    Matrix<DefDense, T, 6, 3> A_v_A_answer_2({
-        { 2, 4, 6 },
-        { 10, 8, 12 },
-        { 18, 16, 14 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 }
-        });
-
-    tester.expect_near(A_v_A.matrix.data, A_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Dense and Dense.");
-
-    auto A_v_B = concatenate_vertically(A, B);
-    ConcatenateVertically_Type<decltype(A), decltype(B)> A_v_B_t;
-    A_v_B_t = A_v_B;
-    auto A_v_B_t_dense = A_v_B_t.create_dense();
-
-    Matrix<DefDense, T, 6, 3> A_v_B_answer({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 }
-        });
-
-    tester.expect_near(A_v_B_t_dense.matrix.data, A_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Diag.");
-
-    update_vertically_concatenated_matrix(A_v_B, A, static_cast<T>(2) * B);
-    auto A_v_B_dense = A_v_B.create_dense();
-
-    Matrix<DefDense, T, 6, 3> A_v_B_answer_2({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
-        { 2, 0, 0 },
-        { 0, 4, 0 },
-        { 0, 0, 6 }
-        });
-
-    tester.expect_near(A_v_B_dense.matrix.data, A_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Dense and Diag.");
+        tester.expect_near(a_v_bb.matrix.data, a_v_bb_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Dense small, 1 2.");
 
 
-    auto A_v_C = concatenate_vertically(A, C);
-    ConcatenateVertically_Type<decltype(A), decltype(C)> A_v_C_t;
-    A_v_C_t = A_v_C;
-    auto A_v_C_t_dense = A_v_C_t.create_dense();
+        auto A_v_A = concatenate_vertically(A, A);
+        ConcatenateVertically_Type<decltype(A), decltype(A)> A_v_A_t;
+        A_v_A_t = A_v_A;
 
-    Matrix<DefDense, T, 6, 3> A_v_C_answer({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
+        Matrix<DefDense, T, 6, 3> A_v_A_answer({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 }
+            });
+
+        tester.expect_near(A_v_A_t.matrix.data, A_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Dense.");
+
+        update_vertically_concatenated_matrix(A_v_A, static_cast<T>(2) * A, A);
+
+        Matrix<DefDense, T, 6, 3> A_v_A_answer_2({
+            { 2, 4, 6 },
+            { 10, 8, 12 },
+            { 18, 16, 14 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 }
+            });
+
+        tester.expect_near(A_v_A.matrix.data, A_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Dense and Dense.");
+
+        auto A_v_B = concatenate_vertically(A, B);
+        ConcatenateVertically_Type<decltype(A), decltype(B)> A_v_B_t;
+        A_v_B_t = A_v_B;
+        auto A_v_B_t_dense = A_v_B_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_B_answer({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 }
+            });
+
+        tester.expect_near(A_v_B_t_dense.matrix.data, A_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Diag.");
+
+        update_vertically_concatenated_matrix(A_v_B, A, static_cast<T>(2) * B);
+        auto A_v_B_dense = A_v_B.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_B_answer_2({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 2, 0, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 6 }
+            });
+
+        tester.expect_near(A_v_B_dense.matrix.data, A_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Dense and Diag.");
+
+
+        auto A_v_C = concatenate_vertically(A, C);
+        ConcatenateVertically_Type<decltype(A), decltype(C)> A_v_C_t;
+        A_v_C_t = A_v_C;
+        auto A_v_C_t_dense = A_v_C_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_C_answer({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 }
+            });
+
+        tester.expect_near(A_v_C_t_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Sparse.");
+
+        update_vertically_concatenated_matrix(A_v_C, A, static_cast<T>(2) * C);
+        auto A_v_C_dense = A_v_C.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_C_answer_2({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 2, 0, 0 },
+            { 6, 0, 16 },
+            { 0, 4, 8 }
+            });
+
+        tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Dense and Sparse.");
+
+        auto A_v_E = concatenate_vertically(A, Empty);
+        ConcatenateVertically_Type<decltype(A), decltype(Empty)> A_v_E_t;
+        A_v_E_t = A_v_E;
+        auto A_v_E_t_dense = A_v_E_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_E_answer({
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 }
+            });
+
+        tester.expect_near(A_v_E_t_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Dense and Empty.");
+
+        update_vertically_concatenated_matrix(A_v_E, static_cast<T>(2) * A, Empty);
+        auto A_v_E_dense = A_v_E.create_dense();
+
+        Matrix<DefDense, T, 6, 3> A_v_E_answer_2({
+            { 2, 4, 6 },
+            { 10, 8, 12 },
+            { 18, 16, 14 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 }
+            });
+
+        tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Dense and Empty.");
+
+        auto B_v_A = concatenate_vertically(B, A);
+        ConcatenateVertically_Type<decltype(B), decltype(A)> B_v_A_t;
+        B_v_A_t = B_v_A;
+        auto B_v_A_t_dense = B_v_A_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_A_answer({
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 }
+            });
+
+        tester.expect_near(B_v_A_t_dense.matrix.data, B_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Diag and Dense.");
+
+        update_vertically_concatenated_matrix(B_v_A, static_cast<T>(2) * B, A);
+        auto B_v_A_dense = B_v_A.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_A_answer_2({
+            { 2, 0, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 6 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 }
+            });
+
+        tester.expect_near(B_v_A_dense.matrix.data, B_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Diag and Dense.");
+
+        auto B_v_B = concatenate_vertically(B, B * static_cast<T>(2));
+        ConcatenateVertically_Type<decltype(B), decltype(B)> B_v_B_t;
+        B_v_B_t = B_v_B;
+        auto B_v_B_t_dense = B_v_B_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_B_answer({
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 },
+            { 2, 0, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 6 }
+            });
+
+        tester.expect_near(B_v_B_t_dense.matrix.data, B_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Diag and Diag.");
+
+        update_vertically_concatenated_matrix(B_v_B, static_cast<T>(2) * B, B);
+        auto B_v_B_dense = B_v_B.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_B_answer_2({
+            { 2, 0, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 6 },
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 }
+            });
+
+        tester.expect_near(B_v_B_dense.matrix.data, B_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Diag and Diag.");
+
+        auto B_v_C = concatenate_vertically(B, C);
+        ConcatenateVertically_Type<decltype(B), decltype(C)> B_v_C_t;
+        B_v_C_t = B_v_C;
+        auto B_v_C_t_dense = B_v_C_t.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_C_answer({
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 },
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 }
+            });
+
+        tester.expect_near(B_v_C_t_dense.matrix.data, B_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Diag and Sparse.");
+
+        update_vertically_concatenated_matrix(B_v_C, B, static_cast<T>(2) * C);
+        auto B_v_C_dense = B_v_C.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_C_answer_2({
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 },
+            { 2, 0, 0 },
+            { 6, 0, 16 },
+            { 0, 4, 8 }
+            });
+
+        tester.expect_near(B_v_C_dense.matrix.data, B_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Diag and Sparse.");
+
+        auto B_v_E = concatenate_vertically(B, Empty);
+        auto B_v_E_dense = B_v_E.create_dense();
+
+        Matrix<DefDense, T, 6, 3> B_v_E_answer({
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 }
+            });
+
+        tester.expect_near(B_v_E_dense.matrix.data, B_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Diag and Empty.");
+
+        auto C_v_A = concatenate_vertically(C, A);
+        ConcatenateVertically_Type<decltype(C), decltype(A)> C_v_A_t;
+        C_v_A_t = C_v_A;
+        auto C_v_A_t_dense = C_v_A.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_A_answer({
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 },
+            });
+
+        tester.expect_near(C_v_A_t_dense.matrix.data, C_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Sparse and Dense.");
+
+        update_vertically_concatenated_matrix(C_v_A, C, static_cast<T>(2) * A);
+        auto C_v_A_dense = C_v_A.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_A_answer_2({
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 },
+            { 2, 4, 6 },
+            { 10, 8, 12 },
+            { 18, 16, 14 }
+            });
+
+        tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Sparse and Dense.");
+
+        auto E_v_A = concatenate_vertically(Empty, A);
+        auto E_v_A_dense = E_v_A.create_dense();
+
+        Matrix<DefDense, T, 6, 3> E_v_A_answer({
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 1, 2, 3 },
+            { 5, 4, 6 },
+            { 9, 8, 7 }
+            });
+
+        tester.expect_near(E_v_A_dense.matrix.data, E_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Empty and Dense.");
+
+        auto C_v_B = concatenate_vertically(C, B);
+        ConcatenateVertically_Type<decltype(C), decltype(B)> C_v_B_t;
+        C_v_B_t = C_v_B;
+        auto C_v_B_t_dense = C_v_B.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_B_answer({
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 },
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 }
+            });
+
+        tester.expect_near(C_v_B_t_dense.matrix.data, C_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Sparse and Diag.");
+
+        update_vertically_concatenated_matrix(C_v_B, C, static_cast<T>(2) * B);
+        auto C_v_B_dense = C_v_B.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_B_answer_2({
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 },
+            { 2, 0, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 6 }
+            });
+
+        tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Sparse and Diag.");
+
+        auto E_v_B = concatenate_vertically(Empty, B);
+        auto E_v_B_dense = E_v_B.create_dense();
+
+        Matrix<DefDense, T, 6, 3> E_v_B_answer({
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 1, 0, 0 },
+            { 0, 2, 0 },
+            { 0, 0, 3 }
+            });
+
+        tester.expect_near(E_v_B_dense.matrix.data, E_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Empty and Diag.");
+
+        auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
+        ConcatenateVertically_Type<decltype(C), decltype(C)> C_v_C_t;
+        C_v_C_t = C_v_C;
+        auto C_v_C_t_dense = C_v_C.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_C_answer({
         { 1, 0, 0 },
         { 3, 0, 8 },
-        { 0, 2, 4 }
-        });
-
-    tester.expect_near(A_v_C_t_dense.matrix.data, A_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Sparse.");
-
-    update_vertically_concatenated_matrix(A_v_C, A, static_cast<T>(2) * C);
-    auto A_v_C_dense = A_v_C.create_dense();
-
-    Matrix<DefDense, T, 6, 3> A_v_C_answer_2({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
+        { 0, 2, 4 },
         { 2, 0, 0 },
         { 6, 0, 16 },
         { 0, 4, 8 }
-        });
-
-    tester.expect_near(A_v_C_dense.matrix.data, A_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Dense and Sparse.");
-
-    auto A_v_E = concatenate_vertically(A, Empty);
-    ConcatenateVertically_Type<decltype(A), decltype(Empty)> A_v_E_t;
-    A_v_E_t = A_v_E;
-    auto A_v_E_t_dense = A_v_E_t.create_dense();
-
-    Matrix<DefDense, T, 6, 3> A_v_E_answer({
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 }
-        });
-
-    tester.expect_near(A_v_E_t_dense.matrix.data, A_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Dense and Empty.");
-
-    update_vertically_concatenated_matrix(A_v_E, static_cast<T>(2) * A, Empty);
-    auto A_v_E_dense = A_v_E.create_dense();
-
-    Matrix<DefDense, T, 6, 3> A_v_E_answer_2({
-        { 2, 4, 6 },
-        { 10, 8, 12 },
-        { 18, 16, 14 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 }
-        });
-
-    tester.expect_near(A_v_E_dense.matrix.data, A_v_E_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Dense and Empty.");
-
-    auto B_v_A = concatenate_vertically(B, A);
-    ConcatenateVertically_Type<decltype(B), decltype(A)> B_v_A_t;
-    B_v_A_t = B_v_A;
-    auto B_v_A_t_dense = B_v_A_t.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_A_answer({
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 }
-        });
-
-    tester.expect_near(B_v_A_t_dense.matrix.data, B_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Diag and Dense.");
-
-    update_vertically_concatenated_matrix(B_v_A, static_cast<T>(2) * B, A);
-    auto B_v_A_dense = B_v_A.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_A_answer_2({
-        { 2, 0, 0 },
-        { 0, 4, 0 },
-        { 0, 0, 6 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 }
-        });
-
-    tester.expect_near(B_v_A_dense.matrix.data, B_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Diag and Dense.");
-
-    auto B_v_B = concatenate_vertically(B, B * static_cast<T>(2));
-    ConcatenateVertically_Type<decltype(B), decltype(B)> B_v_B_t;
-    B_v_B_t = B_v_B;
-    auto B_v_B_t_dense = B_v_B_t.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_B_answer({
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 },
-        { 2, 0, 0 },
-        { 0, 4, 0 },
-        { 0, 0, 6 }
-        });
-
-    tester.expect_near(B_v_B_t_dense.matrix.data, B_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Diag and Diag.");
-
-    update_vertically_concatenated_matrix(B_v_B, static_cast<T>(2) * B, B);
-    auto B_v_B_dense = B_v_B.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_B_answer_2({
-        { 2, 0, 0 },
-        { 0, 4, 0 },
-        { 0, 0, 6 },
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 }
-        });
-
-    tester.expect_near(B_v_B_dense.matrix.data, B_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Diag and Diag.");
-
-    auto B_v_C = concatenate_vertically(B, C);
-    ConcatenateVertically_Type<decltype(B), decltype(C)> B_v_C_t;
-    B_v_C_t = B_v_C;
-    auto B_v_C_t_dense = B_v_C_t.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_C_answer({
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 },
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 }
-        });
-
-    tester.expect_near(B_v_C_t_dense.matrix.data, B_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Diag and Sparse.");
-
-    update_vertically_concatenated_matrix(B_v_C, B, static_cast<T>(2) * C);
-    auto B_v_C_dense = B_v_C.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_C_answer_2({
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 },
-        { 2, 0, 0 },
-        { 6, 0, 16 },
-        { 0, 4, 8 }
-        });
-
-    tester.expect_near(B_v_C_dense.matrix.data, B_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Diag and Sparse.");
-
-    auto B_v_E = concatenate_vertically(B, Empty);
-    auto B_v_E_dense = B_v_E.create_dense();
-
-    Matrix<DefDense, T, 6, 3> B_v_E_answer({
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 }
-        });
-
-    tester.expect_near(B_v_E_dense.matrix.data, B_v_E_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Diag and Empty.");
-
-    auto C_v_A = concatenate_vertically(C, A);
-    ConcatenateVertically_Type<decltype(C), decltype(A)> C_v_A_t;
-    C_v_A_t = C_v_A;
-    auto C_v_A_t_dense = C_v_A.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_A_answer({
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 },
-        });
-
-    tester.expect_near(C_v_A_t_dense.matrix.data, C_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Sparse and Dense.");
-
-    update_vertically_concatenated_matrix(C_v_A, C, static_cast<T>(2) * A);
-    auto C_v_A_dense = C_v_A.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_A_answer_2({
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 },
-        { 2, 4, 6 },
-        { 10, 8, 12 },
-        { 18, 16, 14 }
-        });
-
-    tester.expect_near(C_v_A_dense.matrix.data, C_v_A_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Sparse and Dense.");
-
-    auto E_v_A = concatenate_vertically(Empty, A);
-    auto E_v_A_dense = E_v_A.create_dense();
-
-    Matrix<DefDense, T, 6, 3> E_v_A_answer({
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 2, 3 },
-        { 5, 4, 6 },
-        { 9, 8, 7 }
-        });
-
-    tester.expect_near(E_v_A_dense.matrix.data, E_v_A_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Empty and Dense.");
-
-    auto C_v_B = concatenate_vertically(C, B);
-    ConcatenateVertically_Type<decltype(C), decltype(B)> C_v_B_t;
-    C_v_B_t = C_v_B;
-    auto C_v_B_t_dense = C_v_B.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_B_answer({
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 },
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 }
-        });
-
-    tester.expect_near(C_v_B_t_dense.matrix.data, C_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Sparse and Diag.");
-
-    update_vertically_concatenated_matrix(C_v_B, C, static_cast<T>(2) * B);
-    auto C_v_B_dense = C_v_B.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_B_answer_2({
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 },
-        { 2, 0, 0 },
-        { 0, 4, 0 },
-        { 0, 0, 6 }
-        });
-
-    tester.expect_near(C_v_B_dense.matrix.data, C_v_B_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Sparse and Diag.");
-
-    auto E_v_B = concatenate_vertically(Empty, B);
-    auto E_v_B_dense = E_v_B.create_dense();
-
-    Matrix<DefDense, T, 6, 3> E_v_B_answer({
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 0, 0 },
-        { 0, 2, 0 },
-        { 0, 0, 3 }
-        });
-
-    tester.expect_near(E_v_B_dense.matrix.data, E_v_B_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Empty and Diag.");
-
-    auto C_v_C = concatenate_vertically(C, C * static_cast<T>(2));
-    ConcatenateVertically_Type<decltype(C), decltype(C)> C_v_C_t;
-    C_v_C_t = C_v_C;
-    auto C_v_C_t_dense = C_v_C.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_C_answer({
-    { 1, 0, 0 },
-    { 3, 0, 8 },
-    { 0, 2, 4 },
-    { 2, 0, 0 },
-    { 6, 0, 16 },
-    { 0, 4, 8 }
-        });
-
-    tester.expect_near(C_v_C_t_dense.matrix.data, C_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Sparse and Sparse.");
-
-    update_vertically_concatenated_matrix(C_v_C, static_cast<T>(2) * C, C);
-    auto C_v_C_dense = C_v_C.create_dense();
-
-    Matrix<DefDense, T, 6, 3> C_v_C_answer_2({
-        { 2, 0, 0 },
-        { 6, 0, 16 },
-        { 0, 4, 8 },
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 }
-        });
-
-    tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update vertically concatenated matrix Sparse and Sparse.");
-
-    auto E_v_C = concatenate_vertically(Empty, C);
-    auto E_v_C_dense = E_v_C.create_dense();
-
-    Matrix<DefDense, T, 6, 3> E_v_C_answer({
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 0, 0, 0 },
-        { 1, 0, 0 },
-        { 3, 0, 8 },
-        { 0, 2, 4 }
-        });
-
-    tester.expect_near(E_v_C_dense.matrix.data, E_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate vertically Empty and Sparse.");
-
-    auto AL_h_AL = concatenate_horizontally(AL, AL);
-    ConcatenateHorizontally_Type<decltype(AL), decltype(AL)> AL_h_AL_t;
-    AL_h_AL_t = AL_h_AL;
-
-    Matrix<DefDense, T, 4, 6> AL_h_AL_answer({
-        {1, 2, 3, 1, 2, 3},
-        {5, 4, 6, 5, 4, 6},
-        {9, 8, 7, 9, 8, 7},
-        {2, 2, 3, 2, 2, 3}
-        });
-
-    tester.expect_near(AL_h_AL_t.matrix.data, AL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Dense and Dense.");
-
-    update_horizontally_concatenated_matrix(AL_h_AL, static_cast<T>(2) * AL, AL);
-
-    Matrix<DefDense, T, 4, 6> AL_h_AL_answer_2({
-        {2, 4, 6, 1, 2, 3},
-        {10, 8, 12, 5, 4, 6},
-        {18, 16, 14, 9, 8, 7},
-        {4, 4, 6, 2, 2, 3}
-        });
-
-    tester.expect_near(AL_h_AL.matrix.data, AL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Dense and Dense.");
-
-    auto AL_h_BL = concatenate_horizontally(AL, BL);
-    ConcatenateHorizontally_Type<decltype(AL), decltype(BL)> AL_h_BL_t;
-    AL_h_BL_t = AL_h_BL;
-    auto AL_h_BL_t_dense = AL_h_BL_t.create_dense();
-
-    Matrix<DefDense, T, 4, 7> AL_h_BL_answer({
-        {1, 2, 3, 1, 0, 0, 0},
-        {5, 4, 6, 0, 2, 0, 0},
-        {9, 8, 7, 0, 0, 3, 0},
-        {2, 2, 3, 0, 0, 0, 4}
-        });
-
-    tester.expect_near(AL_h_BL_t_dense.matrix.data, AL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Dense and Diag.");
-
-    update_horizontally_concatenated_matrix(AL_h_BL, AL, static_cast<T>(2) * BL);
-    auto AL_h_BL_dense = AL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> AL_h_BL_answer_2({
-        {1, 2, 3, 2, 0, 0, 0},
-        {5, 4, 6, 0, 4, 0, 0},
-        {9, 8, 7, 0, 0, 6, 0},
-        {2, 2, 3, 0, 0, 0, 8}
-        });
-
-    tester.expect_near(AL_h_BL_dense.matrix.data, AL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Dense and Diag.");
-
-    auto AL_h_CL = concatenate_horizontally(AL, CL);
-    ConcatenateHorizontally_Type<decltype(AL), decltype(CL)> AL_h_CL_t;
-    AL_h_CL_t = AL_h_CL;
-    auto AL_h_CL_t_dense = AL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> AL_h_CL_answer({
-        {1, 2, 3, 1, 3, 0},
-        {5, 4, 6, 0, 0, 2},
-        {9, 8, 7, 0, 8, 4},
-        {2, 2, 3, 0, 1, 0}
-        });
-
-    tester.expect_near(AL_h_CL_t_dense.matrix.data, AL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Dense and Sparse.");
-
-    update_horizontally_concatenated_matrix(AL_h_CL, AL, static_cast<T>(2) * CL);
-    auto AL_h_CL_dense = AL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> AL_h_CL_answer_2({
-        {1, 2, 3, 2, 6, 0},
-        {5, 4, 6, 0, 0, 4},
-        {9, 8, 7, 0, 16, 8},
-        {2, 2, 3, 0, 2, 0}
-        });
-
-    tester.expect_near(AL_h_CL_dense.matrix.data, AL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Dense and Sparse.");
-
-    auto AL_h_EL = concatenate_horizontally(AL, EmptyL);
-    auto AL_h_EL_dense = AL_h_EL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> AL_h_EL_answer({
-        {1, 2, 3, 0, 0, 0},
-        {5, 4, 6, 0, 0, 0},
-        {9, 8, 7, 0, 0, 0},
-        {2, 2, 3, 0, 0, 0}
-        });
-
-    tester.expect_near(AL_h_EL_dense.matrix.data, AL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Dense and Empty.");
-
-    auto BL_h_AL = concatenate_horizontally(BL, AL);
-    ConcatenateHorizontally_Type<decltype(BL), decltype(AL)> BL_h_AL_t;
-    BL_h_AL_t = BL_h_AL;
-    auto BL_h_AL_t_dense = BL_h_AL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> BL_h_AL_answer({
-        {1, 0, 0, 0, 1, 2, 3},
-        {0, 2, 0, 0, 5, 4, 6},
-        {0, 0, 3, 0, 9, 8, 7},
-        {0, 0, 0, 4, 2, 2, 3}
-        });
-
-    tester.expect_near(BL_h_AL_t_dense.matrix.data, BL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Diag and Dense.");
-
-    update_horizontally_concatenated_matrix(BL_h_AL, static_cast<T>(2) * BL, AL);
-    auto BL_h_AL_dense = BL_h_AL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> BL_h_AL_answer_2({
-        {2, 0, 0, 0, 1, 2, 3},
-        {0, 4, 0, 0, 5, 4, 6},
-        {0, 0, 6, 0, 9, 8, 7},
-        {0, 0, 0, 8, 2, 2, 3}
-        });
-
-    tester.expect_near(BL_h_AL_dense.matrix.data, BL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Diag and Dense.");
-
-    auto BL_h_BL = concatenate_horizontally(BL, BL * static_cast<T>(2));
-    ConcatenateHorizontally_Type<decltype(BL), decltype(BL)> BL_h_BL_t;
-    BL_h_BL_t = BL_h_BL;
-    auto BL_h_BL_t_dense = BL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 8> BL_h_BL_answer({
-        {1, 0, 0, 0, 2, 0, 0, 0},
-        {0, 2, 0, 0, 0, 4, 0, 0},
-        {0, 0, 3, 0, 0, 0, 6, 0},
-        {0, 0, 0, 4, 0, 0, 0, 8}
-        });
-
-    tester.expect_near(BL_h_BL_t_dense.matrix.data, BL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Diag and Diag.");
-
-    update_horizontally_concatenated_matrix(BL_h_BL, static_cast<T>(2) * BL, BL);
-    auto BL_h_BL_dense = BL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 8> BL_h_BL_answer_2({
-        {2, 0, 0, 0, 1, 0, 0, 0},
-        {0, 4, 0, 0, 0, 2, 0, 0},
-        {0, 0, 6, 0, 0, 0, 3, 0},
-        {0, 0, 0, 8, 0, 0, 0, 4}
-        });
-
-    tester.expect_near(BL_h_BL_dense.matrix.data, BL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Diag and Diag.");
-
-    auto BL_h_CL = concatenate_horizontally(BL, CL);
-    ConcatenateHorizontally_Type<decltype(BL), decltype(CL)> BL_h_CL_t;
-    BL_h_CL_t = BL_h_CL;
-    auto BL_h_CL_t_dense = BL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> BL_h_CL_answer({
-        {1, 0, 0, 0, 1, 3, 0},
-        {0, 2, 0, 0, 0, 0, 2},
-        {0, 0, 3, 0, 0, 8, 4},
-        {0, 0, 0, 4, 0, 1, 0}
-        });
-
-    tester.expect_near(BL_h_CL_t_dense.matrix.data, BL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Diag and Sparse.");
-
-    update_horizontally_concatenated_matrix(BL_h_CL, static_cast<T>(2) * BL, CL);
-    auto BL_h_CL_dense = BL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> BL_h_CL_answer_2({
-        {2, 0, 0, 0, 1, 3, 0},
-        {0, 4, 0, 0, 0, 0, 2},
-        {0, 0, 6, 0, 0, 8, 4},
-        {0, 0, 0, 8, 0, 1, 0}
-        });
-
-    tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Diag and Sparse.");
-
-    auto BL_h_EL = concatenate_horizontally(BL, EmptyL);
-    auto BL_h_EL_dense = BL_h_EL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> BL_h_EL_answer({
-        {1, 0, 0, 0, 0, 0, 0},
-        {0, 2, 0, 0, 0, 0, 0},
-        {0, 0, 3, 0, 0, 0, 0},
-        {0, 0, 0, 4, 0, 0, 0}
-        });
-
-    tester.expect_near(BL_h_EL_dense.matrix.data, BL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Diag and Empty.");
-
-    auto CL_h_AL = concatenate_horizontally(CL, AL);
-    ConcatenateHorizontally_Type<decltype(CL), decltype(AL)> CL_h_AL_t;
-    CL_h_AL_t = CL_h_AL;
-    auto CL_h_AL_t_dense = CL_h_AL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> CL_h_AL_answer({
-        {1, 3, 0, 1, 2, 3},
-        {0, 0, 2, 5, 4, 6},
-        {0, 8, 4, 9, 8, 7},
-        {0, 1, 0, 2, 2, 3}
-        });
-
-    tester.expect_near(CL_h_AL_t_dense.matrix.data, CL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Sparse and Dense.");
-
-    update_horizontally_concatenated_matrix(CL_h_AL, CL, static_cast<T>(2) * AL);
-    auto CL_h_AL_dense = CL_h_AL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> CL_h_AL_answer_2({
-        {1, 3, 0, 2, 4, 6},
-        {0, 0, 2, 10, 8, 12},
-        {0, 8, 4, 18, 16, 14},
-        {0, 1, 0, 4, 4, 6}
-        });
-
-    tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Sparse and Dense.");
-
-    auto EL_h_AL = concatenate_horizontally(EmptyL, AL);
-    auto EL_h_AL_dense = EL_h_AL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> EL_h_AL_answer({
-        {0, 0, 0, 1, 2, 3},
-        {0, 0, 0, 5, 4, 6},
-        {0, 0, 0, 9, 8, 7},
-        {0, 0, 0, 2, 2, 3}
-        });
-
-    tester.expect_near(EL_h_AL_dense.matrix.data, EL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Empty and Dense.");
-
-    auto CL_h_BL = concatenate_horizontally(CL, BL);
-    ConcatenateHorizontally_Type<decltype(CL), decltype(BL)> CL_h_BL_t;
-    CL_h_BL_t = CL_h_BL;
-    auto CL_h_BL_t_dense = CL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> CL_h_BL_answer({
-        {1, 3, 0, 1, 0, 0, 0},
-        {0, 0, 2, 0, 2, 0, 0},
-        {0, 8, 4, 0, 0, 3, 0},
-        {0, 1, 0, 0, 0, 0, 4}
-        });
-
-    tester.expect_near(CL_h_BL_t_dense.matrix.data, CL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Sparse and Diag.");
-
-    update_horizontally_concatenated_matrix(CL_h_BL, CL, static_cast<T>(2) * BL);
-    auto CL_h_BL_dense = CL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> CL_h_BL_answer_2({
-        {1, 3, 0, 2, 0, 0, 0},
-        {0, 0, 2, 0, 4, 0, 0},
-        {0, 8, 4, 0, 0, 6, 0},
-        {0, 1, 0, 0, 0, 0, 8}
-        });
-
-    tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Sparse and Diag.");
-
-    auto EL_h_BL = concatenate_horizontally(EmptyL, BL);
-    auto EL_h_BL_dense = EL_h_BL.create_dense();
-
-    Matrix<DefDense, T, 4, 7> EL_h_BL_answer({
-        {0, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 2, 0, 0},
-        {0, 0, 0, 0, 0, 3, 0},
-        {0, 0, 0, 0, 0, 0, 4}
-        });
-
-    tester.expect_near(EL_h_BL_dense.matrix.data, EL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Empty and Diag.");
-
-    auto CL_h_CL = concatenate_horizontally(CL, CL);
-    ConcatenateHorizontally_Type<decltype(CL), decltype(CL)> CL_h_CL_t;
-    CL_h_CL_t = CL_h_CL;
-    auto CL_h_CL_t_dense = CL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> CL_h_CL_answer({
-        {1, 3, 0, 1, 3, 0},
-        {0, 0, 2, 0, 0, 2},
-        {0, 8, 4, 0, 8, 4},
-        {0, 1, 0, 0, 1, 0}
-        });
-
-    tester.expect_near(CL_h_CL_t_dense.matrix.data, CL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Sparse and Sparse.");
-
-    update_horizontally_concatenated_matrix(CL_h_CL, static_cast<T>(2) * CL, CL);
-    auto CL_h_CL_dense = CL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> CL_h_CL_answer_2({
-        {2, 6, 0, 1, 3, 0},
-        {0, 0, 4, 0, 0, 2},
-        {0, 16, 8, 0, 8, 4},
-        {0, 2, 0, 0, 1, 0}
-        });
-
-    tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update horizontally concatenated matrix Sparse and Sparse.");
-
-    auto EL_h_CL = concatenate_horizontally(EmptyL, CL);
-    auto EL_h_CL_dense = EL_h_CL.create_dense();
-
-    Matrix<DefDense, T, 4, 6> EL_h_CL_answer({
-        {0, 0, 0, 1, 3, 0},
-        {0, 0, 0, 0, 0, 2},
-        {0, 0, 0, 0, 8, 4},
-        {0, 0, 0, 0, 1, 0}
-        });
-
-    tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate horizontally Empty and Sparse.");
-
-    /* Block結合 */
-    auto ABCE_block = concatenate_block_2x2(A, B, C, Empty);
-    ConcatenateBlock2X2_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
-    ABCE_block_t = ABCE_block;
-    auto ABCE_block_t_dense = ABCE_block_t.create_dense();
-
-    Matrix<DefDense, T, 6, 6> ABCE_block_answer({
-        {1, 2, 3, 1, 0, 0},
-        {5, 4, 6, 0, 2, 0},
-        {9, 8, 7, 0, 0, 3},
-        {1, 0, 0, 0, 0, 0},
-        {3, 0, 8, 0, 0, 0},
-        {0, 2, 4, 0, 0, 0}
-        });
-
-    tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate block Dense, Diag, Sparse and Empty, 2 x 2.");
-
-    update_block_2x2_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
-    auto ABCE_block_dense = ABCE_block.create_dense();
-
-    Matrix<DefDense, T, 6, 6> ABCE_block_answer_2({
-        {1, 2, 3, 2, 0, 0},
-        {5, 4, 6, 0, 4, 0},
-        {9, 8, 7, 0, 0, 6},
-        {1, 0, 0, 0, 0, 0},
-        {3, 0, 8, 0, 0, 0},
-        {0, 2, 4, 0, 0, 0}
-        });
-
-    tester.expect_near(ABCE_block_dense.matrix.data, ABCE_block_answer_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
-
-
-    auto ABCE_block_2 = concatenate_block<2, 2>(A, B, C, Empty);
-    ConcatenateBlock_Type<2, 2, decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t_2;
-    ABCE_block_t_2 = ABCE_block_2;
-    auto ABCE_block_t_dense_2 = ABCE_block_t_2.create_dense();
-
-    tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check concatenate block Dense, Diag, Sparse and Empty.");
-
-    update_block_concatenated_matrix<2, 2>(ABCE_block_2, A, static_cast<T>(2) * B, C, Empty);
-
-    auto ABCE_block_dense_2 = ABCE_block_2.create_dense();
-
-    Matrix<DefDense, T, 6, 6> ABCE_block_answer_2_2({
-        {1, 2, 3, 2, 0, 0},
-        {5, 4, 6, 0, 4, 0},
-        {9, 8, 7, 0, 0, 6},
-        {1, 0, 0, 0, 0, 0},
-        {3, 0, 8, 0, 0, 0},
-        {0, 2, 4, 0, 0, 0}
-        });
-
-    tester.expect_near(ABCE_block_dense_2.matrix.data, ABCE_block_answer_2_2.matrix.data, NEAR_LIMIT_STRICT,
-        "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
-
-
-    /* tile */
-    Tile_Type<2, 3, decltype(C)> R = concatenate_tile<2, 3>(C);
-    auto R_dense = R.create_dense();
-
-    Matrix<DefDense, T, 6, 9> R_answer({
-        {1, 0, 0, 1, 0, 0, 1, 0, 0},
-        {3, 0, 8, 3, 0, 8, 3, 0, 8},
-        {0, 2, 4, 0, 2, 4, 0, 2, 4},
-        {1, 0, 0, 1, 0, 0, 1, 0, 0},
-        {3, 0, 8, 3, 0, 8, 3, 0, 8},
-        {0, 2, 4, 0, 2, 4, 0, 2, 4}
-        });
-
-    tester.expect_near(R_dense.matrix.data, R_answer.matrix.data, NEAR_LIMIT_STRICT,
-        "check repmat Sparse.");
-
+            });
+
+        tester.expect_near(C_v_C_t_dense.matrix.data, C_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Sparse and Sparse.");
+
+        update_vertically_concatenated_matrix(C_v_C, static_cast<T>(2) * C, C);
+        auto C_v_C_dense = C_v_C.create_dense();
+
+        Matrix<DefDense, T, 6, 3> C_v_C_answer_2({
+            { 2, 0, 0 },
+            { 6, 0, 16 },
+            { 0, 4, 8 },
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 }
+            });
+
+        tester.expect_near(C_v_C_dense.matrix.data, C_v_C_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update vertically concatenated matrix Sparse and Sparse.");
+
+        auto E_v_C = concatenate_vertically(Empty, C);
+        auto E_v_C_dense = E_v_C.create_dense();
+
+        Matrix<DefDense, T, 6, 3> E_v_C_answer({
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 1, 0, 0 },
+            { 3, 0, 8 },
+            { 0, 2, 4 }
+            });
+
+        tester.expect_near(E_v_C_dense.matrix.data, E_v_C_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate vertically Empty and Sparse.");
+
+    };
+    test_vertical_concatenation();
+
+    auto test_horizontal_concatenation = [&]() {
+        auto AL_h_AL = concatenate_horizontally(AL, AL);
+        ConcatenateHorizontally_Type<decltype(AL), decltype(AL)> AL_h_AL_t;
+        AL_h_AL_t = AL_h_AL;
+
+        Matrix<DefDense, T, 4, 6> AL_h_AL_answer({
+            {1, 2, 3, 1, 2, 3},
+            {5, 4, 6, 5, 4, 6},
+            {9, 8, 7, 9, 8, 7},
+            {2, 2, 3, 2, 2, 3}
+            });
+
+        tester.expect_near(AL_h_AL_t.matrix.data, AL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Dense and Dense.");
+
+        update_horizontally_concatenated_matrix(AL_h_AL, static_cast<T>(2) * AL, AL);
+
+        Matrix<DefDense, T, 4, 6> AL_h_AL_answer_2({
+            {2, 4, 6, 1, 2, 3},
+            {10, 8, 12, 5, 4, 6},
+            {18, 16, 14, 9, 8, 7},
+            {4, 4, 6, 2, 2, 3}
+            });
+
+        tester.expect_near(AL_h_AL.matrix.data, AL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Dense and Dense.");
+
+        auto AL_h_BL = concatenate_horizontally(AL, BL);
+        ConcatenateHorizontally_Type<decltype(AL), decltype(BL)> AL_h_BL_t;
+        AL_h_BL_t = AL_h_BL;
+        auto AL_h_BL_t_dense = AL_h_BL_t.create_dense();
+
+        Matrix<DefDense, T, 4, 7> AL_h_BL_answer({
+            {1, 2, 3, 1, 0, 0, 0},
+            {5, 4, 6, 0, 2, 0, 0},
+            {9, 8, 7, 0, 0, 3, 0},
+            {2, 2, 3, 0, 0, 0, 4}
+            });
+
+        tester.expect_near(AL_h_BL_t_dense.matrix.data, AL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Dense and Diag.");
+
+        update_horizontally_concatenated_matrix(AL_h_BL, AL, static_cast<T>(2) * BL);
+        auto AL_h_BL_dense = AL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> AL_h_BL_answer_2({
+            {1, 2, 3, 2, 0, 0, 0},
+            {5, 4, 6, 0, 4, 0, 0},
+            {9, 8, 7, 0, 0, 6, 0},
+            {2, 2, 3, 0, 0, 0, 8}
+            });
+
+        tester.expect_near(AL_h_BL_dense.matrix.data, AL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Dense and Diag.");
+
+        auto AL_h_CL = concatenate_horizontally(AL, CL);
+        ConcatenateHorizontally_Type<decltype(AL), decltype(CL)> AL_h_CL_t;
+        AL_h_CL_t = AL_h_CL;
+        auto AL_h_CL_t_dense = AL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> AL_h_CL_answer({
+            {1, 2, 3, 1, 3, 0},
+            {5, 4, 6, 0, 0, 2},
+            {9, 8, 7, 0, 8, 4},
+            {2, 2, 3, 0, 1, 0}
+            });
+
+        tester.expect_near(AL_h_CL_t_dense.matrix.data, AL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Dense and Sparse.");
+
+        update_horizontally_concatenated_matrix(AL_h_CL, AL, static_cast<T>(2) * CL);
+        auto AL_h_CL_dense = AL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> AL_h_CL_answer_2({
+            {1, 2, 3, 2, 6, 0},
+            {5, 4, 6, 0, 0, 4},
+            {9, 8, 7, 0, 16, 8},
+            {2, 2, 3, 0, 2, 0}
+            });
+
+        tester.expect_near(AL_h_CL_dense.matrix.data, AL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Dense and Sparse.");
+
+        auto AL_h_EL = concatenate_horizontally(AL, EmptyL);
+        auto AL_h_EL_dense = AL_h_EL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> AL_h_EL_answer({
+            {1, 2, 3, 0, 0, 0},
+            {5, 4, 6, 0, 0, 0},
+            {9, 8, 7, 0, 0, 0},
+            {2, 2, 3, 0, 0, 0}
+            });
+
+        tester.expect_near(AL_h_EL_dense.matrix.data, AL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Dense and Empty.");
+
+        auto BL_h_AL = concatenate_horizontally(BL, AL);
+        ConcatenateHorizontally_Type<decltype(BL), decltype(AL)> BL_h_AL_t;
+        BL_h_AL_t = BL_h_AL;
+        auto BL_h_AL_t_dense = BL_h_AL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> BL_h_AL_answer({
+            {1, 0, 0, 0, 1, 2, 3},
+            {0, 2, 0, 0, 5, 4, 6},
+            {0, 0, 3, 0, 9, 8, 7},
+            {0, 0, 0, 4, 2, 2, 3}
+            });
+
+        tester.expect_near(BL_h_AL_t_dense.matrix.data, BL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Diag and Dense.");
+
+        update_horizontally_concatenated_matrix(BL_h_AL, static_cast<T>(2) * BL, AL);
+        auto BL_h_AL_dense = BL_h_AL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> BL_h_AL_answer_2({
+            {2, 0, 0, 0, 1, 2, 3},
+            {0, 4, 0, 0, 5, 4, 6},
+            {0, 0, 6, 0, 9, 8, 7},
+            {0, 0, 0, 8, 2, 2, 3}
+            });
+
+        tester.expect_near(BL_h_AL_dense.matrix.data, BL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Diag and Dense.");
+
+        auto BL_h_BL = concatenate_horizontally(BL, BL * static_cast<T>(2));
+        ConcatenateHorizontally_Type<decltype(BL), decltype(BL)> BL_h_BL_t;
+        BL_h_BL_t = BL_h_BL;
+        auto BL_h_BL_t_dense = BL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 8> BL_h_BL_answer({
+            {1, 0, 0, 0, 2, 0, 0, 0},
+            {0, 2, 0, 0, 0, 4, 0, 0},
+            {0, 0, 3, 0, 0, 0, 6, 0},
+            {0, 0, 0, 4, 0, 0, 0, 8}
+            });
+
+        tester.expect_near(BL_h_BL_t_dense.matrix.data, BL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Diag and Diag.");
+
+        update_horizontally_concatenated_matrix(BL_h_BL, static_cast<T>(2) * BL, BL);
+        auto BL_h_BL_dense = BL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 8> BL_h_BL_answer_2({
+            {2, 0, 0, 0, 1, 0, 0, 0},
+            {0, 4, 0, 0, 0, 2, 0, 0},
+            {0, 0, 6, 0, 0, 0, 3, 0},
+            {0, 0, 0, 8, 0, 0, 0, 4}
+            });
+
+        tester.expect_near(BL_h_BL_dense.matrix.data, BL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Diag and Diag.");
+
+        auto BL_h_CL = concatenate_horizontally(BL, CL);
+        ConcatenateHorizontally_Type<decltype(BL), decltype(CL)> BL_h_CL_t;
+        BL_h_CL_t = BL_h_CL;
+        auto BL_h_CL_t_dense = BL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> BL_h_CL_answer({
+            {1, 0, 0, 0, 1, 3, 0},
+            {0, 2, 0, 0, 0, 0, 2},
+            {0, 0, 3, 0, 0, 8, 4},
+            {0, 0, 0, 4, 0, 1, 0}
+            });
+
+        tester.expect_near(BL_h_CL_t_dense.matrix.data, BL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Diag and Sparse.");
+
+        update_horizontally_concatenated_matrix(BL_h_CL, static_cast<T>(2) * BL, CL);
+        auto BL_h_CL_dense = BL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> BL_h_CL_answer_2({
+            {2, 0, 0, 0, 1, 3, 0},
+            {0, 4, 0, 0, 0, 0, 2},
+            {0, 0, 6, 0, 0, 8, 4},
+            {0, 0, 0, 8, 0, 1, 0}
+            });
+
+        tester.expect_near(BL_h_CL_dense.matrix.data, BL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Diag and Sparse.");
+
+        auto BL_h_EL = concatenate_horizontally(BL, EmptyL);
+        auto BL_h_EL_dense = BL_h_EL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> BL_h_EL_answer({
+            {1, 0, 0, 0, 0, 0, 0},
+            {0, 2, 0, 0, 0, 0, 0},
+            {0, 0, 3, 0, 0, 0, 0},
+            {0, 0, 0, 4, 0, 0, 0}
+            });
+
+        tester.expect_near(BL_h_EL_dense.matrix.data, BL_h_EL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Diag and Empty.");
+
+        auto CL_h_AL = concatenate_horizontally(CL, AL);
+        ConcatenateHorizontally_Type<decltype(CL), decltype(AL)> CL_h_AL_t;
+        CL_h_AL_t = CL_h_AL;
+        auto CL_h_AL_t_dense = CL_h_AL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> CL_h_AL_answer({
+            {1, 3, 0, 1, 2, 3},
+            {0, 0, 2, 5, 4, 6},
+            {0, 8, 4, 9, 8, 7},
+            {0, 1, 0, 2, 2, 3}
+            });
+
+        tester.expect_near(CL_h_AL_t_dense.matrix.data, CL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Sparse and Dense.");
+
+        update_horizontally_concatenated_matrix(CL_h_AL, CL, static_cast<T>(2) * AL);
+        auto CL_h_AL_dense = CL_h_AL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> CL_h_AL_answer_2({
+            {1, 3, 0, 2, 4, 6},
+            {0, 0, 2, 10, 8, 12},
+            {0, 8, 4, 18, 16, 14},
+            {0, 1, 0, 4, 4, 6}
+            });
+
+        tester.expect_near(CL_h_AL_dense.matrix.data, CL_h_AL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Sparse and Dense.");
+
+        auto EL_h_AL = concatenate_horizontally(EmptyL, AL);
+        auto EL_h_AL_dense = EL_h_AL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> EL_h_AL_answer({
+            {0, 0, 0, 1, 2, 3},
+            {0, 0, 0, 5, 4, 6},
+            {0, 0, 0, 9, 8, 7},
+            {0, 0, 0, 2, 2, 3}
+            });
+
+        tester.expect_near(EL_h_AL_dense.matrix.data, EL_h_AL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Empty and Dense.");
+
+        auto CL_h_BL = concatenate_horizontally(CL, BL);
+        ConcatenateHorizontally_Type<decltype(CL), decltype(BL)> CL_h_BL_t;
+        CL_h_BL_t = CL_h_BL;
+        auto CL_h_BL_t_dense = CL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> CL_h_BL_answer({
+            {1, 3, 0, 1, 0, 0, 0},
+            {0, 0, 2, 0, 2, 0, 0},
+            {0, 8, 4, 0, 0, 3, 0},
+            {0, 1, 0, 0, 0, 0, 4}
+            });
+
+        tester.expect_near(CL_h_BL_t_dense.matrix.data, CL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Sparse and Diag.");
+
+        update_horizontally_concatenated_matrix(CL_h_BL, CL, static_cast<T>(2) * BL);
+        auto CL_h_BL_dense = CL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> CL_h_BL_answer_2({
+            {1, 3, 0, 2, 0, 0, 0},
+            {0, 0, 2, 0, 4, 0, 0},
+            {0, 8, 4, 0, 0, 6, 0},
+            {0, 1, 0, 0, 0, 0, 8}
+            });
+
+        tester.expect_near(CL_h_BL_dense.matrix.data, CL_h_BL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Sparse and Diag.");
+
+        auto EL_h_BL = concatenate_horizontally(EmptyL, BL);
+        auto EL_h_BL_dense = EL_h_BL.create_dense();
+
+        Matrix<DefDense, T, 4, 7> EL_h_BL_answer({
+            {0, 0, 0, 1, 0, 0, 0},
+            {0, 0, 0, 0, 2, 0, 0},
+            {0, 0, 0, 0, 0, 3, 0},
+            {0, 0, 0, 0, 0, 0, 4}
+            });
+
+        tester.expect_near(EL_h_BL_dense.matrix.data, EL_h_BL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Empty and Diag.");
+
+        auto CL_h_CL = concatenate_horizontally(CL, CL);
+        ConcatenateHorizontally_Type<decltype(CL), decltype(CL)> CL_h_CL_t;
+        CL_h_CL_t = CL_h_CL;
+        auto CL_h_CL_t_dense = CL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> CL_h_CL_answer({
+            {1, 3, 0, 1, 3, 0},
+            {0, 0, 2, 0, 0, 2},
+            {0, 8, 4, 0, 8, 4},
+            {0, 1, 0, 0, 1, 0}
+            });
+
+        tester.expect_near(CL_h_CL_t_dense.matrix.data, CL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Sparse and Sparse.");
+
+        update_horizontally_concatenated_matrix(CL_h_CL, static_cast<T>(2) * CL, CL);
+        auto CL_h_CL_dense = CL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> CL_h_CL_answer_2({
+            {2, 6, 0, 1, 3, 0},
+            {0, 0, 4, 0, 0, 2},
+            {0, 16, 8, 0, 8, 4},
+            {0, 2, 0, 0, 1, 0}
+            });
+
+        tester.expect_near(CL_h_CL_dense.matrix.data, CL_h_CL_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update horizontally concatenated matrix Sparse and Sparse.");
+
+        auto EL_h_CL = concatenate_horizontally(EmptyL, CL);
+        auto EL_h_CL_dense = EL_h_CL.create_dense();
+
+        Matrix<DefDense, T, 4, 6> EL_h_CL_answer({
+            {0, 0, 0, 1, 3, 0},
+            {0, 0, 0, 0, 0, 2},
+            {0, 0, 0, 0, 8, 4},
+            {0, 0, 0, 0, 1, 0}
+            });
+
+        tester.expect_near(EL_h_CL_dense.matrix.data, EL_h_CL_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate horizontally Empty and Sparse.");
+
+    };
+    test_horizontal_concatenation();
+
+    auto test_block_and_tile_concatenation = [&]() {
+        /* Block結合 */
+        auto ABCE_block = concatenate_block_2x2(A, B, C, Empty);
+        ConcatenateBlock2X2_Type<decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t;
+        ABCE_block_t = ABCE_block;
+        auto ABCE_block_t_dense = ABCE_block_t.create_dense();
+
+        Matrix<DefDense, T, 6, 6> ABCE_block_answer({
+            {1, 2, 3, 1, 0, 0},
+            {5, 4, 6, 0, 2, 0},
+            {9, 8, 7, 0, 0, 3},
+            {1, 0, 0, 0, 0, 0},
+            {3, 0, 8, 0, 0, 0},
+            {0, 2, 4, 0, 0, 0}
+            });
+
+        tester.expect_near(ABCE_block_t_dense.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate block Dense, Diag, Sparse and Empty, 2 x 2.");
+
+        update_block_2x2_concatenated_matrix(ABCE_block, A, static_cast<T>(2) * B, C, Empty);
+        auto ABCE_block_dense = ABCE_block.create_dense();
+
+        Matrix<DefDense, T, 6, 6> ABCE_block_answer_2({
+            {1, 2, 3, 2, 0, 0},
+            {5, 4, 6, 0, 4, 0},
+            {9, 8, 7, 0, 0, 6},
+            {1, 0, 0, 0, 0, 0},
+            {3, 0, 8, 0, 0, 0},
+            {0, 2, 4, 0, 0, 0}
+            });
+
+        tester.expect_near(ABCE_block_dense.matrix.data, ABCE_block_answer_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
+
+
+        auto ABCE_block_2 = concatenate_block<2, 2>(A, B, C, Empty);
+        ConcatenateBlock_Type<2, 2, decltype(A), decltype(B), decltype(C), decltype(Empty)> ABCE_block_t_2;
+        ABCE_block_t_2 = ABCE_block_2;
+        auto ABCE_block_t_dense_2 = ABCE_block_t_2.create_dense();
+
+        tester.expect_near(ABCE_block_t_dense_2.matrix.data, ABCE_block_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check concatenate block Dense, Diag, Sparse and Empty.");
+
+        update_block_concatenated_matrix<2, 2>(ABCE_block_2, A, static_cast<T>(2) * B, C, Empty);
+
+        auto ABCE_block_dense_2 = ABCE_block_2.create_dense();
+
+        Matrix<DefDense, T, 6, 6> ABCE_block_answer_2_2({
+            {1, 2, 3, 2, 0, 0},
+            {5, 4, 6, 0, 4, 0},
+            {9, 8, 7, 0, 0, 6},
+            {1, 0, 0, 0, 0, 0},
+            {3, 0, 8, 0, 0, 0},
+            {0, 2, 4, 0, 0, 0}
+            });
+
+        tester.expect_near(ABCE_block_dense_2.matrix.data, ABCE_block_answer_2_2.matrix.data, NEAR_LIMIT_STRICT,
+            "check update block concatenated matrix Dense, Diag, Sparse and Empty.");
+
+
+        /* tile */
+        Tile_Type<2, 3, decltype(C)> R = concatenate_tile<2, 3>(C);
+        auto R_dense = R.create_dense();
+
+        Matrix<DefDense, T, 6, 9> R_answer({
+            {1, 0, 0, 1, 0, 0, 1, 0, 0},
+            {3, 0, 8, 3, 0, 8, 3, 0, 8},
+            {0, 2, 4, 0, 2, 4, 0, 2, 4},
+            {1, 0, 0, 1, 0, 0, 1, 0, 0},
+            {3, 0, 8, 3, 0, 8, 3, 0, 8},
+            {0, 2, 4, 0, 2, 4, 0, 2, 4}
+            });
+
+        tester.expect_near(R_dense.matrix.data, R_answer.matrix.data, NEAR_LIMIT_STRICT,
+            "check repmat Sparse.");
+
+
+    };
+    test_block_and_tile_concatenation();
 
     tester.throw_error_if_test_failed();
 }

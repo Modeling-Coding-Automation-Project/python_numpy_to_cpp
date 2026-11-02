@@ -204,6 +204,39 @@ inline void element_wise_multiply(Out_Type &Out, const In_A_Type &A,
 
 namespace InnerProductOperation {
 
+template <typename T, bool IsBool> struct InnerProductAccumulator {
+  /**
+   * @brief Accumulates the product of corresponding elements from input
+   * matrices A and B at position (I, J_idx) into the result.
+   *
+   * @tparam T The scalar type for accumulation.
+   * @tparam IsBool Indicates if the scalar type is boolean.
+   */
+  template <typename In_A_Type, typename In_B_Type, std::size_t I,
+            std::size_t J_idx>
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+    result += A.template get<I, J_idx>() * B.template get<I, J_idx>();
+  }
+};
+
+template <typename T> struct InnerProductAccumulator<T, true> {
+  /**
+   * @brief Specialization of InnerProductAccumulator for boolean scalar types.
+   *
+   * This specialization accumulates the logical OR of the element-wise AND
+   * of corresponding elements from input matrices A and B at position (I,
+   * J_idx) into the result.
+   *
+   * @tparam T The scalar type for accumulation (boolean).
+   */
+  template <typename In_A_Type, typename In_B_Type, std::size_t I,
+            std::size_t J_idx>
+  static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
+    result = result || (static_cast<bool>(A.template get<I, J_idx>()) &&
+                        static_cast<bool>(B.template get<I, J_idx>()));
+  }
+};
+
 template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
           std::size_t N, std::size_t I, std::size_t J_idx>
 struct Row {
@@ -226,7 +259,10 @@ struct Row {
    */
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
 
-    result += A.template get<I, J_idx>() * B.template get<I, J_idx>();
+    InnerProductAccumulator<
+        typename std::remove_cv<T>::type,
+        std::is_same<typename std::remove_cv<T>::type, bool>::value>::
+        template compute<In_A_Type, In_B_Type, I, J_idx>(result, A, B);
 
     Row<T, In_A_Type, In_B_Type, M, N, I, (J_idx - 1)>::compute(result, A, B);
   }
@@ -252,7 +288,10 @@ template <typename T, typename In_A_Type, typename In_B_Type, std::size_t M,
 struct Row<T, In_A_Type, In_B_Type, M, N, I, 0> {
   static void compute(T &result, const In_A_Type &A, const In_B_Type &B) {
 
-    result += A.template get<I, 0>() * B.template get<I, 0>();
+    InnerProductAccumulator<
+        typename std::remove_cv<T>::type,
+        std::is_same<typename std::remove_cv<T>::type, bool>::value>::
+        template compute<In_A_Type, In_B_Type, I, 0>(result, A, B);
   }
 };
 

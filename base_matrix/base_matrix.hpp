@@ -6,6 +6,7 @@
 #include "base_matrix_cholesky_decomposition.hpp"
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
+#include "base_matrix_compiled_sparse_reduced_template.hpp"
 #include "base_matrix_complex.hpp"
 #include "base_matrix_concatenate.hpp"
 #include "base_matrix_convolve.hpp"

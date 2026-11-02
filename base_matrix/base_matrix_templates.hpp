@@ -26,6 +26,7 @@
 #include "base_matrix_macros.hpp"
 
 #include <tuple>
+#include <type_traits>
 
 namespace Base {
 namespace Matrix {
@@ -204,6 +205,80 @@ using ColumnAvailable = TemplatesOperation::CompiledSparseMatrixElementList<
 
 namespace TemplatesOperation {
 
+namespace SparseDetail {
+
+/**
+ * @brief An internal index pack that also supports an empty sequence in C++11.
+ *
+ * Unlike IndexSequence, this helper has no backing array. Empty rows therefore
+ * do not require a zero-length array when their metadata is instantiated.
+ */
+template <std::size_t... Indices> struct IndexPack {};
+
+template <typename First, typename Second> struct ConcatenateIndexPacks;
+
+template <std::size_t... First, std::size_t... Second>
+struct ConcatenateIndexPacks<IndexPack<First...>, IndexPack<Second...>> {
+  using type = IndexPack<First..., Second...>;
+};
+
+template <typename First, typename Second> struct JoinOffsetIndexPacks;
+
+template <std::size_t... First, std::size_t... Second>
+struct JoinOffsetIndexPacks<IndexPack<First...>, IndexPack<Second...>> {
+  using type = IndexPack<First..., (sizeof...(First) + Second)...>;
+};
+
+/** @brief Builds [0, Size) with logarithmic template recursion depth. */
+template <std::size_t Size> struct MakeIndexPack {
+  using type = typename JoinOffsetIndexPacks<
+      typename MakeIndexPack<Size / 2>::type,
+      typename MakeIndexPack<Size - Size / 2>::type>::type;
+};
+
+template <> struct MakeIndexPack<0> {
+  using type = IndexPack<>;
+};
+template <> struct MakeIndexPack<1> {
+  using type = IndexPack<0>;
+};
+
+template <bool... Values> struct BoolPack {};
+
+template <bool... Values>
+using All = std::is_same<BoolPack<true, Values...>, BoolPack<Values..., true>>;
+
+template <bool... Values>
+struct Any
+    : std::integral_constant<bool,
+                             !std::is_same<BoolPack<false, Values...>,
+                                           BoolPack<Values..., false>>::value> {
+};
+
+template <typename First, typename... Rest> struct FirstColumnSize {
+  static constexpr std::size_t value = First::size;
+};
+
+template <std::size_t Index, typename T> struct IndexedType {
+  using type = T;
+};
+
+template <typename Indices, typename... Types> struct IndexedTypeList;
+
+template <std::size_t... Indices, typename... Types>
+struct IndexedTypeList<IndexPack<Indices...>, Types...>
+    : IndexedType<Indices, Types>... {};
+
+// Used only in decltype; no runtime definition or lookup is needed.
+template <std::size_t Index, typename T>
+IndexedType<Index, T> select_type(IndexedType<Index, T> *);
+
+template <std::size_t Index, typename List>
+using TypeAt =
+    typename decltype(select_type<Index>(static_cast<List *>(nullptr)))::type;
+
+} // namespace SparseDetail
+
 /**
  * @brief Template struct to represent a collection of available rows in a
  * sparse matrix.
@@ -240,16 +315,14 @@ template <typename... Columns> struct SparseAvailableColumns {
   /**
    * @brief Array of pointers to constant boolean lists, one for each column.
    *
-   * This static constexpr array holds pointers to boolean lists extracted for
-   * each column using the ExtractList template. The size of the array is
-   * determined by the number of rows. Each entry in the array corresponds to
-   * the value provided by ExtractList<Columns>::value.
+   * Expanding the row pointers directly avoids instantiating an ExtractList
+   * helper, whose enclosing type contains the entire pattern, for each row.
+   * ExtractList remains available for existing users of that nested type.
    *
    * @tparam Columns Template parameter pack representing the rows.
    * @tparam number_of_rows The total number of rows.
    */
-  static constexpr const bool *lists[number_of_rows] = {
-      ExtractList<Columns>::value...};
+  static constexpr const bool *lists[number_of_rows] = {Columns::list...};
 
   /**
    * @brief Represents an unsigned integral type used for sizes and counts.
@@ -259,7 +332,7 @@ template <typename... Columns> struct SparseAvailableColumns {
    * to be able to represent the size of any object in bytes.
    */
   static constexpr std::size_t row_size =
-      std::tuple_element<0, std::tuple<Columns...>>::type::size;
+      SparseDetail::FirstColumnSize<Columns...>::value;
 };
 
 } // namespace TemplatesOperation
@@ -362,8 +435,8 @@ template <typename SparseAvailable> struct CheckSparseAvailableEmpty;
  * @brief Specialization of CheckSparseAvailableEmpty for ColumnAvailable.
  *
  * This template struct checks if any of the boolean template parameters in
- * ColumnAvailable are true. It uses TemplatesOperation::LogicalOrMultiple to
- * compute the logical OR of all Values.
+ * ColumnAvailable are true. A pack comparison avoids recursively creating
+ * every suffix of the boolean sequence.
  *
  * @tparam Values Variadic boolean template parameters representing column
  * availability.
@@ -373,8 +446,7 @@ template <typename SparseAvailable> struct CheckSparseAvailableEmpty;
  */
 template <bool... Values>
 struct CheckSparseAvailableEmpty<ColumnAvailable<Values...>> {
-  static constexpr bool value =
-      TemplatesOperation::LogicalOrMultiple<Values...>::value;
+  static constexpr bool value = SparseDetail::Any<Values...>::value;
 };
 
 /**
@@ -382,9 +454,8 @@ struct CheckSparseAvailableEmpty<ColumnAvailable<Values...>> {
  * available and empty".
  *
  * This specialization of CheckSparseAvailableEmpty for SparseAvailable types
- * recursively checks each column type in the parameter pack. It uses
- * TemplatesOperation::LogicalOrMultiple to compute the logical OR of the
- * CheckSparseAvailableEmpty value for each column.
+ * checks each column type in the parameter pack and combines the results
+ * without generating recursive boolean suffix types.
  *
  * @tparam Columns Variadic template parameter pack representing column types.
  *
@@ -393,8 +464,8 @@ struct CheckSparseAvailableEmpty<ColumnAvailable<Values...>> {
  */
 template <typename... Columns>
 struct CheckSparseAvailableEmpty<SparseAvailable<Columns...>> {
-  static constexpr bool value = TemplatesOperation::LogicalOrMultiple<
-      CheckSparseAvailableEmpty<Columns>::value...>::value;
+  static constexpr bool value =
+      SparseDetail::Any<CheckSparseAvailableEmpty<Columns>::value...>::value;
 };
 
 /* Create Dense Available */
@@ -1876,26 +1947,162 @@ struct CSRIndicesSequenceFromSparseAvailable<SparseAvailable, false> {
   using type = IndexSequence<0>;
 };
 
+namespace SparseDetail {
+
+/**
+ * @brief Counts a row's nonzero entries without creating a type per cell.
+ *
+ * Positions are constexpr function arguments. Balanced recursion keeps the
+ * evaluation depth logarithmic, including for long all-zero rows.
+ */
+template <typename Column>
+constexpr std::size_t count_nonzero(std::size_t begin, std::size_t end) {
+  return begin == end ? 0
+         : begin + 1 == end
+             ? (Column::list[begin] ? 1 : 0)
+             : count_nonzero<Column>(begin, begin + (end - begin) / 2) +
+                   count_nonzero<Column>(begin + (end - begin) / 2, end);
+}
+
+template <typename Column>
+constexpr std::size_t nonzero_position(std::size_t ordinal, std::size_t begin,
+                                       std::size_t end);
+
+template <typename Column>
+constexpr std::size_t nonzero_position_half(std::size_t ordinal,
+                                            std::size_t begin, std::size_t end,
+                                            std::size_t left_count) {
+  return ordinal < left_count
+             ? nonzero_position<Column>(ordinal, begin,
+                                        begin + (end - begin) / 2)
+             : nonzero_position<Column>(ordinal - left_count,
+                                        begin + (end - begin) / 2, end);
+}
+
+/** @brief Selects an existing nonzero entry in ascending column order. */
+template <typename Column>
+constexpr std::size_t nonzero_position(std::size_t ordinal, std::size_t begin,
+                                       std::size_t end) {
+  return begin + 1 == end
+             ? begin
+             : nonzero_position_half<Column>(
+                   ordinal, begin, end,
+                   count_nonzero<Column>(begin, begin + (end - begin) / 2));
+}
+
+template <typename Column, typename Ordinals> struct ExpandRowIndices;
+
+template <typename Column, std::size_t... Ordinals>
+struct ExpandRowIndices<Column, IndexPack<Ordinals...>> {
+  using type =
+      IndexPack<nonzero_position<Column>(Ordinals, 0, Column::size)...>;
+};
+
+/** @brief Shares the computed index pack between rows with the same type. */
+template <typename Column> struct RowIndices {
+  static constexpr std::size_t size = count_nonzero<Column>(0, Column::size);
+  using type =
+      typename ExpandRowIndices<Column,
+                                typename MakeIndexPack<size>::type>::type;
+};
+
+/** @brief Concatenates row index packs with balanced template recursion. */
+template <typename List, std::size_t Begin, std::size_t End,
+          bool SingleRow = (Begin + 1 == End)>
+struct MergeRowIndices {
+  using type = typename ConcatenateIndexPacks<
+      typename MergeRowIndices<List, Begin, Begin + (End - Begin) / 2>::type,
+      typename MergeRowIndices<List, Begin + (End - Begin) / 2,
+                               End>::type>::type;
+};
+
+template <typename List, std::size_t Begin, std::size_t End>
+struct MergeRowIndices<List, Begin, End, true> {
+  using type = TypeAt<Begin, List>;
+};
+
+template <typename List, std::size_t Position>
+struct MergeRowIndices<List, Position, Position, false> {
+  using type = IndexPack<>;
+};
+
+template <typename Indices> struct ToCanonicalCSRIndices;
+
+template <std::size_t... Indices>
+struct ToCanonicalCSRIndices<IndexPack<Indices...>> {
+  using type = CSRIndices<Indices...>;
+};
+
+template <> struct ToCanonicalCSRIndices<IndexPack<>> {
+  // Preserve the existing storage convention for an entirely empty matrix.
+  using type = CSRIndices<0>;
+};
+
+/**
+ * @brief Retains the legacy customization path for noncanonical descriptors.
+ *
+ * Only the canonical SparseAvailable specialization uses the faster row-based
+ * construction. Existing descriptor-specific traits remain usable.
+ */
+template <typename Pattern> struct SparseIndices {
+  using type =
+      typename ToCSRIndices<typename CSRIndicesSequenceFromSparseAvailable<
+          Pattern, CheckSparseAvailableEmpty<Pattern>::value>::type>::type;
+};
+
+template <typename... Columns>
+struct SparseIndices<SparseAvailable<Columns...>> {
+  using Rows = IndexedTypeList<typename MakeIndexPack<sizeof...(Columns)>::type,
+                               typename RowIndices<Columns>::type...>;
+  using type = typename ToCanonicalCSRIndices<
+      typename MergeRowIndices<Rows, 0, sizeof...(Columns)>::type>::type;
+};
+
+/** @brief Caches row counts without carrying the complete sparsity pattern. */
+template <std::size_t... Counts> struct RowCounts {
+  // The trailing zero also makes the internal empty case valid in C++11.
+  static constexpr std::size_t values[sizeof...(Counts) + 1] = {Counts..., 0};
+};
+
+template <std::size_t... Counts>
+constexpr std::size_t RowCounts<Counts...>::values[sizeof...(Counts) + 1];
+
+template <typename Counts>
+constexpr std::size_t sum_row_counts(std::size_t begin, std::size_t end) {
+  return begin == end ? 0
+         : begin + 1 == end
+             ? Counts::values[begin]
+             : sum_row_counts<Counts>(begin, begin + (end - begin) / 2) +
+                   sum_row_counts<Counts>(begin + (end - begin) / 2, end);
+}
+
+template <typename Counts, typename Rows> struct ExpandRowPointers;
+
+template <typename Counts, std::size_t... Rows>
+struct ExpandRowPointers<Counts, IndexPack<Rows...>> {
+  using type = CSRPointers<sum_row_counts<Counts>(0, Rows)...>;
+};
+
+} // namespace SparseDetail
+
 } // namespace TemplatesOperation
 
 /**
  * @brief Alias template to create a sequence of row indices from a
  * SparseAvailable type.
  *
- * This alias uses the TemplatesOperation::CSRIndicesSequenceFromSparseAvailable
- * to generate a type representing the row indices for the SparseAvailable type,
- * taking into account whether it is empty or not.
+ * Canonical SparseAvailable patterns compute each distinct row's indices once,
+ * then join the final packs. Other descriptors retain the legacy trait path.
  *
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
  *
- * The resulting type is an IndexSequence containing the row indices for the
- * SparseAvailable type.
+ * The resulting type is the same canonical CSRIndices type as the legacy
+ * construction, including CSRIndices<0> for an entirely empty matrix.
  */
 template <typename SparseAvailable>
-using CSRIndicesFromSparseAvailable = typename TemplatesOperation::ToCSRIndices<
-    typename TemplatesOperation::CSRIndicesSequenceFromSparseAvailable<
-        SparseAvailable, TemplatesOperation::CheckSparseAvailableEmpty<
-                             SparseAvailable>::value>::type>::type;
+using CSRIndicesFromSparseAvailable =
+    typename TemplatesOperation::SparseDetail::SparseIndices<
+        SparseAvailable>::type;
 
 /* Create Row Pointers */
 
@@ -2138,14 +2345,34 @@ struct AccumulateSparseMatrixElementNumberStruct {
       CountSparseMatrixColumnLoop, SparseAvailable::number_of_rows>::type;
 };
 
+namespace SparseDetail {
+
+/** @brief Preserves support for descriptors exposing the legacy metadata. */
+template <typename Pattern> struct SparsePointers {
+  using type =
+      typename ToCSRPointers<typename AccumulateSparseMatrixElementNumberStruct<
+          typename CountSparseMatrixColumnLoop<
+              Pattern, Pattern::number_of_rows - 1>::type,
+          Pattern>::type>::type;
+};
+
+template <typename... Columns>
+struct SparsePointers<SparseAvailable<Columns...>> {
+  using Counts = RowCounts<count_nonzero<Columns>(0, Columns::size)...>;
+  using type = typename ExpandRowPointers<
+      Counts, typename MakeIndexPack<sizeof...(Columns) + 1>::type>::type;
+};
+
+} // namespace SparseDetail
+
 } // namespace TemplatesOperation
 
 /**
  * @brief Alias template to create row pointers from a SparseAvailable type.
  *
- * This alias uses the
- * TemplatesOperation::AccumulateSparseMatrixElementNumberStruct to generate a
- * type representing the row pointers for the SparseAvailable type.
+ * Canonical SparseAvailable patterns use constexpr row counts and prefix sums
+ * instead of creating a helper type for every cell. Other descriptors retain
+ * the legacy metadata construction.
  *
  * @tparam SparseAvailable The SparseAvailable type containing multiple rows.
  *
@@ -2154,11 +2381,8 @@ struct AccumulateSparseMatrixElementNumberStruct {
  */
 template <typename SparseAvailable>
 using CSRPointersFromSparseAvailable =
-    typename TemplatesOperation::ToCSRPointers<
-        typename TemplatesOperation::AccumulateSparseMatrixElementNumberStruct<
-            typename TemplatesOperation::CountSparseMatrixColumnLoop<
-                SparseAvailable, (SparseAvailable::number_of_rows - 1)>::type,
-            SparseAvailable>::type>::type;
+    typename TemplatesOperation::SparseDetail::SparsePointers<
+        SparseAvailable>::type;
 
 namespace TemplatesOperation {
 
@@ -3350,24 +3574,49 @@ struct ValidateSparseAvailableLoop<SparseAvailable, NumberOfRowsFirst, 0> {
   using type = SparseAvailable;
 };
 
+namespace SparseDetail {
+
+template <typename Pattern> struct Validate {
+  using type =
+      typename ValidateSparseAvailableLoop<Pattern, Pattern::row_size,
+                                           Pattern::number_of_rows - 1>::type;
+};
+
+/**
+ * @brief Checks all row widths without rebuilding every suffix of the matrix.
+ *
+ * Keep the legacy result type: validation returns a SparseAvailable containing
+ * only the final row, rather than the complete input pattern.
+ */
+template <typename First, typename... Rest>
+struct Validate<SparseAvailable<First, Rest...>> {
+  static_assert(All<(Rest::size == First::size)...>::value,
+                "Each ColumnAvailable size of SparseAvailable is not the same");
+
+  using Rows =
+      IndexedTypeList<typename MakeIndexPack<sizeof...(Rest) + 1>::type, First,
+                      Rest...>;
+  using type = SparseAvailable<TypeAt<sizeof...(Rest), Rows>>;
+};
+
+} // namespace SparseDetail
+
 } // namespace TemplatesOperation
 
 /**
  * @brief A template alias to validate the SparseAvailable type.
  *
- * This alias uses the TemplatesOperation::ValidateSparseAvailableLoop to
- * generate a type representing the validated SparseAvailable type.
+ * Canonical patterns compare all row widths in one pack expansion. Other
+ * descriptors retain the legacy validation path.
  *
  * @tparam SparseAvailable The SparseAvailable type to be validated.
  *
- * The resulting type is the validated SparseAvailable type if it is valid, or
- * it will trigger a static assertion if it is not valid.
+ * For a canonical pattern, the result contains only its last row, preserving
+ * the existing public alias. Mismatched widths trigger a static assertion.
  */
 template <typename SparseAvailable>
 using ValidateSparseAvailable =
-    typename TemplatesOperation::ValidateSparseAvailableLoop<
-        SparseAvailable, SparseAvailable::row_size,
-        (SparseAvailable::number_of_rows - 1)>::type;
+    typename TemplatesOperation::SparseDetail::Validate<SparseAvailable>::type;
 
 /* SparseAvailable get row */
 namespace TemplatesOperation {
