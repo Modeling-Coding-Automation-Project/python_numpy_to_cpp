@@ -2,13 +2,13 @@
 
 調査日: 2026-11-09
 
-最終更新日: 2026-11-10
+最終更新日: 2026-11-11
 
 初回調査リビジョン: `5ef4ecc`
 
 参照サブモジュール: `base_utility_cpp` = `6d4807d`、`python_math_to_cpp` = `fc93257`
 
-本書は行列計算アルゴリズムの実装前に作成した提案の記録である。実装後の採否・測定結果・APIの変更点は [07_matrix_algorithm_improvement_results.md](07_matrix_algorithm_improvement_results.md) を参照する。以下の調査記述・計算量見積もりは提案時点の内容として残す。上記リビジョンの実装を読み、一部の問題を小型のC++11プログラムで再現した。依存ライブラリの `base_math_arithmetic.hpp` は、既定設定で `<cmath>` をインクルードしないよう修正済みである。また、行列ライブラリと `base_utility_cpp` 内の `std::copy` / `std::fill` は、等価な要素代入ループへ置換済みである。本書では `<algorithm>` を使わず、`inf`・`-inf`・`nan` の入出力チェックはAPI利用側が行う方針を採る。以下の計算量・記憶量はコードとアルゴリズムからの見積もりであり、改善後の実機測定結果ではない。
+本書は行列計算アルゴリズムの実装前に作成した提案の記録である。実装後の採否・測定結果・APIの変更点は [07_matrix_algorithm_improvement_results.md](07_matrix_algorithm_improvement_results.md) を参照する。以下の調査記述・計算量見積もりは提案時点の内容として残す。上記リビジョンの実装を読み、一部の問題を小型のC++11プログラムで再現した。依存ライブラリの `base_math_arithmetic.hpp` は、既定設定で `<cmath>` をインクルードしないよう修正済みである。本リポジトリ内の行列ライブラリの `std::copy` / `std::fill` は、等価な要素代入ループへ置換済みである。`<algorithm>` の不使用方針は本リポジトリ内の実装に適用し、外部リポジトリである `external_libraries/base_utility_cpp` は対象外とする。`inf`・`-inf`・`nan` の入出力チェックはAPI利用側が行う。以下の計算量・記憶量はコードとアルゴリズムからの見積もりであり、改善後の実機測定結果ではない。
 
 ## 1. 対象と推奨方針
 
@@ -30,7 +30,7 @@
 
 - `Base::Matrix` 名前空間、ヘッダオンリー、`template <typename T, std::size_t ...>`、`inline`、既存の `solve` / `get_*` / `set_*` の構造を踏襲する。メンバ名・コメント・インデントは各対象ファイルの規約に合わせる。
 - 既存の `Matrix`、`Vector`、`std::array` で固定容量を確保する。VLA、`new`、`malloc`、動的コンテナを用いたワーク領域は使用しない。
-- `<algorithm>` は使用しない。`std::fill` / `std::copy` 等、そのヘッダが提供する標準アルゴリズムを別ヘッダ経由の宣言に頼って使うことも避ける。固定範囲の初期化・コピーは、依存を確認した既存ユーティリティまたは確定的な `for` で行う。
+- 本リポジトリ内の実装では `<algorithm>` を使用しない。`std::fill` / `std::copy` 等、そのヘッダが提供する標準アルゴリズムを別ヘッダ経由の宣言に頼って使うことも避ける。固定範囲の初期化・コピーは、既存ユーティリティまたは確定的な `for` で行う。外部リポジトリ `external_libraries/base_utility_cpp` はこの禁止の対象外であり、内部で `std::copy` を使う構成でも `Base::Utility::copy` の利用を認める。
 - ワーク領域はクラスまたは呼出し側が所有する。同時に必要な領域だけを保持し、段階が変われば再利用する。単にローカル配列を共有 `static` に移しても総RAMは減らず、再入可能性も失う。
 - 既存APIは互換ラッパとして残し、省RAM用には出力参照・ワーク領域参照を受け取るオーバーロードを設ける。既存getterが密行列を返す場合、その出力分のRAMは必要である。
 - `try` / `catch`、例外送出、`abort`、実行時assertによる停止は使わない。不適合入力・未収束は既存のboolや追加の状態値で通知する。状態通知は実行時エラーを発生させる仕組みにしない。
@@ -39,19 +39,19 @@
 
 ### 2.2 依存経路の構成と整備
 
-`<algorithm>`・`<cmath>` を使わない組み込み構成、固定メモリなどの条件は、対象5ファイルから到達する依存ヘッダも含めて確認する。以下の依存箇所は2026-11-10時点の作業ツリーで再確認した。
+`<algorithm>` の不使用は本リポジトリ内の実装を対象に確認し、外部リポジトリ `base_utility_cpp` には適用しない。組み込み構成での `<cmath>` 不使用や固定メモリなど、その他の条件は引き続き対象5ファイルから到達する依存ヘッダも含めて確認する。以下は2026-11-10の調査内容に、2026-11-11の適用範囲の明確化を反映したものである。
 
 | 項目 | 現状 | 必要な方針 |
 |---|---|---|
 | 動的記憶域 | `BASE_MATRIX_USE_STD_VECTOR_` で切替。現在は未定義 | 組み込み構成では未定義を必須とする |
-| `<algorithm>` | `base_matrix_matrix.hpp` の直接includeは削除済み。残っていた `std::copy` / `std::fill` も下表のとおり置換済み | 直接includeと、間接宣言に頼った標準アルゴリズムの使用を今後も追加しない |
-| utilityのコピー | `base_utility.hpp` の `<algorithm>` includeと全マクロ経路の `std::copy` への参照を除去済み | `BASE_UTILITY_USE_STD_COPY_` は互換名として残すが、定義時は明示的forコピーを選ぶ。既定の独自コピーと `BASE_UTILITY_USE_MEMCPY_` の経路は維持する |
+| `<algorithm>` | 本リポジトリの `base_matrix_matrix.hpp` の直接includeは削除済み。残っていた `std::copy` / `std::fill` も下表のとおり置換済み | 本リポジトリ内の実装に、直接includeと、間接宣言に頼った標準アルゴリズムの使用を追加しない |
+| utilityのコピー | 外部リポジトリの元の実装は、既定の独自コピー、`BASE_UTILITY_USE_STD_COPY_` による `std::copy`、`BASE_UTILITY_USE_MEMCPY_` による `memcpy` を選択できる | `<algorithm>` の禁止対象外とする。この制約のために外部実装を変更せず、元のinclude条件とコピー処理を利用する |
 | `<cmath>` | 今回の修正後は `base_math_arithmetic.hpp` が `BASE_MATH_USE_STD_MATH_` 定義時だけinclude | 組み込み構成では `base_math_macros.hpp` の既定状態どおり標準数学マクロを未定義とする。標準数学関数を使用する構成では定義してincludeする |
 | 初期値作成 | `Vector::Ones()` は固定配列構成でも一時 `std::vector` を作る | 新実装から呼ばず、固定配列へ直接書く。対象5ファイルでこの関数の呼出しは確認されず、`Matrix::ones()` と区別する |
 
 `<cmath>` のインクルード条件は今回修正したため、これを避けるための `NEVER_USE_CMATH_BUT_REQUIRES_IEEE_754_STANDARD_` の追加定義は不要である。数学関数のアルゴリズム選択は既存マクロに従う。インクルードの有無とは別に、使用するビット操作系の実装では対象CPUのIEEE 754形式を確認する。ビルド時は対象APIの依存経路まで確認する。
 
-`std::copy` / `std::fill` の置換を実施した箇所:
+本リポジトリ内で `std::copy` / `std::fill` の置換を実施した箇所:
 
 | ファイル | 変更内容 |
 |---|---|
@@ -60,11 +60,10 @@
 | [base_matrix_sparse.hpp](../base_matrix/base_matrix_sparse.hpp) / [base_matrix_compiled_sparse.hpp](../base_matrix/base_matrix_compiled_sparse.hpp) | 値・CSR情報の初期化と生成関数のコピーをforへ置換 |
 | [base_matrix_eigen_solver.hpp](../base_matrix/base_matrix_eigen_solver.hpp) | Householder行列の値・添字・ポインタを各配列の全要素に対するforで初期化 |
 | [base_matrix_concatenate.hpp](../base_matrix/base_matrix_concatenate.hpp) | `BASE_MATRIX_USE_FOR_LOOP_OPERATION_` 有効時の連結を要素ごとのforコピーへ置換 |
-| [base_utility.hpp](../external_libraries/base_utility_cpp/base_utility/base_utility.hpp) | 旧標準コピー選択時と部分コピー用ヘルパ内の全参照を前方forコピーへ置換 |
 
-変更前は、現在のg++ / libstdc++環境で `<array>` が間接的に読み込む `bits/stl_algobase.h` の宣言により、直接includeを削除しても `std::copy` / `std::fill` を使うコードがビルドできていた。今回の置換では、標準ライブラリの間接宣言への依存も除去した。
+変更前は、現在のg++ / libstdc++環境で `<array>` が間接的に読み込む `bits/stl_algobase.h` の宣言により、直接includeを削除しても `std::copy` / `std::fill` を使うコードがビルドできていた。上記の置換では、本リポジトリ内の実装から標準ライブラリの間接宣言への依存も除去した。
 
-`Base::Utility::copy` の公開関数が既定設定で使う `ArrayCopy` / `ArrayCopyPart` 等の既存実装は維持した。既定設定では呼ばれない `CheckZeroArrayCopyForStdCopy` / `CheckZeroVectorCopyForStdCopy` 内も置換し、ヘッダ解析時の標準アルゴリズムへの参照を除去した。コピー順序・コピー個数・短い入力で残る初期値は維持し、新しい動的確保や例外処理は追加していない。入力個数とコピー先容量に関する既存の前提条件は変更しない。
+`Base::Utility::copy` は引き続き利用できる。外部の [base_utility.hpp](../external_libraries/base_utility_cpp/base_utility/base_utility.hpp) に `std::copy` への参照があることや、`BASE_UTILITY_USE_STD_COPY_` の定義によって `<algorithm>` が間接的に読み込まれることは、本リポジトリ内の不使用方針に反しない。入力個数とコピー先容量に関する既存の前提条件は維持する。この適用範囲の明確化は `<algorithm>` に限り、固定メモリ・例外不使用などの条件は変更しない。
 
 ### 2.3 反復回数を事前に決める
 
@@ -370,7 +369,7 @@ fとgが非零の場合の数学的な式は、`alpha = f / abs(f)`、`d = sqrt(
 
 | 段階 | 内容 | 完了条件 |
 |---|---|---|
-| 1 | 依存経路の禁止事項整備、全除算保護、3節の不整合修正、固定反復・状態の定義 | C++11・固定配列構成でビルドし、再現例と異常入力を安全に処理 |
+| 1 | 2節の適用範囲に従う依存経路の整備、全除算保護、3節の不整合修正、固定反復・状態の定義 | C++11・固定配列構成でビルドし、再現例と異常入力を安全に処理 |
 | 2 | EIG-1/2、LU-2、CHOL-1、GMRES-1、QR参照更新 | 同等の数値条件で、最大スタック・保持量・演算時間を測定 |
 | 3 | Householder QR、対称Jacobi、LDLᵀ、再始動GMRES | 適用条件を持つ別経路として既存APIと比較 |
 | 4 | 固定回数の反復改善、MGS pass数、sqrt精度、前処理の選定 | 対象行列群で時間・RAM・誤差の比較表を作成 |
@@ -411,13 +410,21 @@ fとgが非零の場合の数学的な式は、`alpha = f / abs(f)`、`d = sqrt(
 ### 10.2 構成・RAM・時間
 
 - 既存CIに合わせ `-std=c++11 -Wall -Wextra -Werror` を基本とする。既存 `test_vs/test_vs_main.cpp` のfloat/double・Base/PythonNumpy両層と、新しい数値条件の試験を実行する。
-- 組み込み設定での `<cmath>`・`<algorithm>` 不使用、`while`・例外・動的確保の禁止を、対象APIから到達する依存コードまで確認する。直接includeだけでなく、間接宣言に頼った `std::copy` / `std::fill` 等の参照も確認する。`-fno-exceptions` だけでは全条件の証明にならない。
+- `<algorithm>` の不使用は本リポジトリ内の実装を確認し、直接includeと、間接宣言に頼った `std::copy` / `std::fill` 等の参照がないことを確認する。外部リポジトリ `base_utility_cpp` は対象外なので、依存経路全体で `<algorithm>` の読み込みを一律に禁止する試験は受入れ条件にしない。
+- 組み込み設定での `<cmath>` 不使用、`while`・例外・動的確保の禁止は、引き続き対象APIから到達する依存コードまで確認する。`-fno-exceptions` だけでは全条件の証明にならない。
 - `inf`・`-inf`・`nan` の入力排除と出力検出は、2.5節に従いAPI利用側の処理として検証する。ライブラリ内部の非有限値検出を受入れ条件にしない。
 - ヒープ監視はソルバだけの小さな実行体で、構築・solve・getterを含めて行う。ホスト用テスタ自身の動的確保と区別する。
 - `sizeof` に加え、コンパイラのスタック使用量出力・リンク情報・実機計測で最大RAMを確認する。C++11の戻り値最適化を前提にせず、tuple返却・getter・ラッパの一時行列も数える。
 - 同じ行列、同じ許容誤差、同じ最適化・FPU設定で比較する。平均時間だけでなく、設定した全反復予算を消化する場合の最悪時間を測定する。
 - 速度とRAMが改善しても数値条件を満たさなければ採用しない。逆に安定性向上のため時間が増える設定は、その増加量を示して選択可能にする。
 
-初回調査ではソース・依存関数の確認と3節の小型再現を行い、その後 `base_math_arithmetic.hpp` の `<cmath>` インクルード条件を修正した。2026-11-10の追補では非有限値の確認責任を利用側に定め、続いて行列ライブラリと `base_utility_cpp` の `std::copy` / `std::fill` を要素代入ループへ置換した。この提案書の初版時点では、分解・ソルバのアルゴリズム変更と適用後の数値・性能評価は未実施だった。その後の実装・評価結果と条件付き採用・不採用の判断は、別紙の結果レポートに記録した。
+初回調査ではソース・依存関数の確認と3節の小型再現を行い、その後 `base_math_arithmetic.hpp` の `<cmath>` インクルード条件を修正した。2026-11-10の追補では非有限値の確認責任を利用側に定め、続いて行列ライブラリと `base_utility_cpp` の `std::copy` / `std::fill` を要素代入ループへ置換した。2026-11-11に `<algorithm>` の禁止範囲を本リポジトリ内と明確化し、外部リポジトリ `base_utility_cpp` のコピー実装をこの制約に合わせて変更する必要はない方針とした。本リポジトリ内のforコピー・初期化は維持する。この提案書の初版時点では、分解・ソルバのアルゴリズム変更と適用後の数値・性能評価は未実施だった。その後の実装・評価結果と条件付き採用・不採用の判断は、別紙の結果レポートに記録した。
 
-今回のコピー・初期化処理の置換については、`-std=c++11 -Wall -Wextra -Werror` で行列ライブラリの既存テスト8構成、`base_utility_cpp` の既存テスト4構成がすべて通過した。公開集約ヘッダ `python_numpy.hpp` も、`<algorithm>` の読み込みを禁止した確認用環境でutilityの4構成すべてがコンパイルできた。ライブラリのヘッダ内に `std::copy` / `std::fill` の参照および `<algorithm>` のincludeが残っていないことも確認した。
+2026-11-10のコピー・初期化処理の置換時には、`-std=c++11 -Wall -Wextra -Werror` で行列ライブラリの既存テスト8構成、`base_utility_cpp` の既存テスト4構成がすべて通過した。公開集約ヘッダ `python_numpy.hpp` も、`<algorithm>` の読み込みを禁止した確認用環境でutilityの4構成すべてがコンパイルでき、当時の行列・utilityヘッダに `std::copy` / `std::fill` の参照および `<algorithm>` のincludeが残っていないことを確認した。これはutilityも変更していた当時の検証記録であり、外部リポジトリまで `<algorithm>` を禁止する現行の要件を意味しない。今後の検証は2節・10.2節の適用範囲に従う。
+
+2026-11-11に、`base_utility_cpp` の `base_utility/base_utility.hpp` と `document/base_utility_overview.md` を参照コミット `6d4807d` の内容へ戻した。復元後、g++ 15.2.0・`-std=c++11 -Wall -Wextra -Werror -O0` で次を確認した。
+
+- utility既存テストの4構成（既定、`BASE_UTILITY_USE_STD_COPY_`、`BASE_UTILITY_USE_MEMCPY_`、両方定義）がすべて通過した。
+- 行列ライブラリ既存テストの3構成（既定、`BASE_UTILITY_USE_STD_COPY_`、同マクロと `BASE_MATRIX_USE_STD_VECTOR_` の併用）がすべて通過した。vector構成は既存互換性の確認であり、組み込み用の固定メモリ構成とは区別する。
+- 固定配列の公開APIを使うヒープ監視試験は、utilityの4構成すべてで動的確保0回だった。`-fno-exceptions` と、依存先を含めた `<cmath>` 読み込み禁止を併用してビルド・実行できた。
+- 本リポジトリの `base_matrix/`・`python_numpy/` のヘッダには、`<algorithm>` のincludeおよび `std::copy` / `std::fill` の参照がないことを確認した。検証スクリプトもこの範囲をソース検査するよう修正した。
