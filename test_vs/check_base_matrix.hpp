@@ -328,13 +328,15 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
 
     Matrix<T, 3, 3> L = lu.get_L();
 
-    Matrix<T, 3, 3> L_answer({
-        { 1, 0, 0 },
-        { 8, 1, 0 },
-        { 6, 0.818182F, 1 }
-        });
-    tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
-        "check LU Decomposition L.");
+    // Partial pivoting changes the individual factors; PA = LU is invariant.
+    auto permuted_H = lu.get_P() * H;
+    auto reconstructed_H = L * lu.get_U();
+    tester.expect_near(reconstructed_H.data, permuted_H.data, NEAR_LIMIT_STRICT,
+        "check pivoted LU Decomposition PA equals LU.");
+    for (std::size_t i = 0; i < 3; ++i) {
+        tester.expect_near(L(i, i), static_cast<T>(1), NEAR_LIMIT_STRICT,
+            "check LU Decomposition L unit diagonal.");
+    }
 
     Vector<T, 3> xx_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
