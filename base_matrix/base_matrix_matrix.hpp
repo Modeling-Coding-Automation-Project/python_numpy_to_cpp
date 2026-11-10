@@ -27,7 +27,6 @@
 #include "base_matrix_vector.hpp"
 #include "base_utility.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <initializer_list>
