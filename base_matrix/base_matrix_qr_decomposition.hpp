@@ -34,212 +34,335 @@ namespace Matrix {
 
 constexpr double DEFAULT_DIVISION_MIN_QR = 1.0e-10;
 
-/* Given's Rotation */
+/* Givens Rotation */
+
+namespace QROperation {
+
+/** @brief Correct an invalid finite denominator threshold at an API boundary.
+ */
+template <typename T> inline T division_threshold(T value) {
+  return value > static_cast<T>(0) ? value
+                                   : static_cast<T>(DEFAULT_DIVISION_MIN_QR);
+}
 
 /**
- * @brief Performs a Givens rotation on the specified cols of the matrix.
+ * @brief Apply a plane rotation without copying either factor.
  *
- * This function applies a Givens rotation to the cols i and j of the R_matrix
- * and updates the Q_matrix accordingly. The rotation is used to zero out the
- * element at (i, j) in the R_matrix.
- *
- * @tparam T The type of elements in the matrices.
- * @tparam M The number of rows in the Q_matrix.
- * @tparam N The number of columns in the R_matrix.
- * @param i The index of the first column to rotate.
- * @param j The index of the second column to rotate.
- * @param Q_matrix The orthogonal matrix being built.
- * @param R_matrix The matrix being decomposed.
- * @param division_min A small value to avoid division by zero.
- * @return A tuple of (Q_matrix, R_matrix) after the Givens rotation.
+ * The ratio is formed with the larger nonzero component as denominator.
+ * Thus the reciprocal square root receives a value in [1, 2], independent
+ * of the magnitude of the original column. The signs match the legacy API.
  */
+template <typename T, std::size_t M, std::size_t N>
+inline void givens_rotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q,
+                            Matrix<T, M, N> &R) {
+  const T f = R(j, j);
+  const T g = R(i, j);
+  if (g == static_cast<T>(0)) {
+    return;
+  }
+
+  T c;
+  T s;
+  if (Base::Math::abs(g) > Base::Math::abs(f)) {
+    const T ratio = -f / g; // g is nonzero and has the larger magnitude.
+    s = Base::Math::rsqrt_newton_method<T, 2>(static_cast<T>(1) + ratio * ratio,
+                                              static_cast<T>(1));
+    c = s * ratio;
+  } else {
+    const T ratio = -g / f; // |f| >= |g| > 0.
+    c = Base::Math::rsqrt_newton_method<T, 2>(static_cast<T>(1) + ratio * ratio,
+                                              static_cast<T>(1));
+    s = c * ratio;
+  }
+
+  for (std::size_t column = j; column < N; ++column) {
+    const T x = R(j, column);
+    const T y = R(i, column);
+    R(j, column) = c * x - s * y;
+    R(i, column) = s * x + c * y;
+  }
+  R(i, j) = static_cast<T>(0);
+
+  for (std::size_t row = 0; row < M; ++row) {
+    const T x = Q(row, j);
+    const T y = Q(row, i);
+    Q(row, j) = c * x - s * y;
+    Q(row, i) = s * x + c * y;
+  }
+}
+
+} // namespace QROperation
+
+/** @brief Compatibility value-returning wrapper around the in-place core. */
 template <typename T, std::size_t M, std::size_t N>
 static inline std::tuple<Matrix<T, M, M>, Matrix<T, M, N>>
 qr_givensRotation(std::size_t i, std::size_t j, Matrix<T, M, M> Q_matrix,
                   Matrix<T, M, N> R_matrix, T division_min) {
-  T c;
-  T s;
-
-  if (Base::Math::abs(R_matrix(i, j)) > Base::Math::abs(R_matrix(j, j))) {
-    T t = -R_matrix(j, j) /
-          Base::Utility::avoid_zero_divide(R_matrix(i, j), division_min);
-    s = Base::Math::rsqrt<T>(static_cast<T>(1) + t * t, division_min);
-    c = s * t;
-
-    for (std::size_t k = j; k < N; ++k) {
-      T x = R_matrix(j, k);
-      T y = R_matrix(i, k);
-      R_matrix(j, k) = c * x - s * y;
-      R_matrix(i, k) = s * x + c * y;
-    }
-
-    for (std::size_t k = 0; k < M; ++k) {
-      T u = Q_matrix(k, j);
-      T v = Q_matrix(k, i);
-      Q_matrix(k, j) = c * u - s * v;
-      Q_matrix(k, i) = s * u + c * v;
-    }
-  } else {
-    T t = -R_matrix(i, j) /
-          Base::Utility::avoid_zero_divide(R_matrix(j, j), division_min);
-    c = Base::Math::rsqrt<T>(static_cast<T>(1) + t * t, division_min);
-    s = c * t;
-
-    for (std::size_t k = j; k < N; ++k) {
-      T x = R_matrix(j, k);
-      T y = R_matrix(i, k);
-      R_matrix(j, k) = c * x - s * y;
-      R_matrix(i, k) = s * x + c * y;
-    }
-
-    for (std::size_t k = 0; k < M; ++k) {
-      T u = Q_matrix(k, j);
-      T v = Q_matrix(k, i);
-      Q_matrix(k, j) = c * u - s * v;
-      Q_matrix(k, i) = s * u + c * v;
-    }
-  }
-
+  static_cast<void>(division_min);
+  QROperation::givens_rotation(i, j, Q_matrix, R_matrix);
   return std::make_tuple(std::move(Q_matrix), std::move(R_matrix));
 }
 
 /**
- * @brief QR Decomposition using Givens rotations.
+ * @brief QR decomposition by in-place Givens rotations, A = Q R.
  *
- * This class performs QR decomposition on a matrix using Givens rotations.
- * It decomposes the input matrix A into an orthogonal matrix Q and an upper
- * triangular matrix R such that A = Q * R.
- *
- * @tparam T The type of elements in the matrices.
- * @tparam M The number of rows in the matrix.
- * @tparam N The number of columns in the matrix.
+ * Full Q and R are retained for compatibility. Use QRDecompositionHouseholder
+ * when only the factorization or Q-transpose application is needed.
  */
 template <typename T, std::size_t M, std::size_t N> class QRDecomposition {
 public:
-  /* Check Compatibility */
-  static_assert(M >= N, "Incompatible matrix dimensions");
+  static_assert(M >= N && N > 0, "Incompatible matrix dimensions");
 
-public:
-  /* Constructor */
   QRDecomposition()
-      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        Q_matrix_(Matrix<T, M, M>::identity()), R_matrix_() {}
-
-  /* Copy Constructor */
-  QRDecomposition(const QRDecomposition<T, M, N> &other)
-      : division_min(other.division_min), Q_matrix_(other.Q_matrix_),
-        R_matrix_(other.R_matrix_) {}
-
-  QRDecomposition<T, M, N> &operator=(const QRDecomposition<T, M, N> &other) {
-    if (this != &other) {
-      this->division_min = other.division_min;
-      this->Q_matrix_ = other.Q_matrix_;
-      this->R_matrix_ = other.R_matrix_;
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)), Q_matrix_(),
+        R_matrix_(), rank_deficient_(false), threshold_corrected_(false) {
+    for (std::size_t diagonal = 0; diagonal < M; ++diagonal) {
+      this->Q_matrix_(diagonal, diagonal) = static_cast<T>(1);
     }
-
-    return *this;
   }
 
-  /* Move Constructor */
-  QRDecomposition(QRDecomposition<T, M, N> &&other) noexcept
-      : division_min(other.division_min), Q_matrix_(std::move(other.Q_matrix_)),
-        R_matrix_(std::move(other.R_matrix_)) {}
+  QRDecomposition(const QRDecomposition &) = default;
+  QRDecomposition &operator=(const QRDecomposition &) = default;
+  QRDecomposition(QRDecomposition &&) noexcept = default;
+  QRDecomposition &operator=(QRDecomposition &&) noexcept = default;
 
-  QRDecomposition<T, M, N> &
-  operator=(QRDecomposition<T, M, N> &&other) noexcept {
-    if (this != &other) {
-      this->division_min = other.division_min;
-      this->Q_matrix_ = std::move(other.Q_matrix_);
-      this->R_matrix_ = std::move(other.R_matrix_);
-    }
-
-    return *this;
-  }
-
-public:
-  /* Function */
-
-  /**
-   * @brief Solves the QR decomposition for the given matrix A.
-   *
-   * This function sets the internal R matrix to the provided matrix A
-   * and performs QR decomposition by calling the internal _decompose method.
-   *
-   * @param A The input matrix to decompose.
-   */
+  /** @brief Reset both factors and decompose a general dense matrix. */
   inline void solve(const Matrix<T, M, N> &A) {
-    this->R_matrix_ = A;
+    this->_initialize(A);
     this->_decompose();
   }
 
   /**
-   * @brief Returns the orthogonal matrix Q from the QR decomposition.
+   * @brief Decompose an upper Hessenberg matrix using adjacent rotations.
    *
-   * This function returns the orthogonal matrix Q that was computed during
-   * the QR decomposition process.
-   *
-   * @return The orthogonal matrix Q.
+   * The caller must guarantee A(row, column) == 0 for row > column + 1.
+   * Use solve() for matrices without this structure. This specialization
+   * omits the general lower-triangle scan; the factor formats are unchanged.
    */
+  inline void solve_hessenberg(const Matrix<T, M, N> &A) {
+    this->_initialize(A);
+    for (std::size_t column = 0; column < N; ++column) {
+      if (column + 1 < M) {
+        this->_eliminate(column + 1, column);
+      }
+    }
+    this->_check_rank();
+  }
+
   inline Matrix<T, M, M> get_Q() const { return this->Q_matrix_; }
-
-  /**
-   * @brief Returns the upper triangular matrix R from the QR decomposition.
-   *
-   * This function returns the upper triangular matrix R that was computed
-   * during the QR decomposition process.
-   *
-   * @return The upper triangular matrix R.
-   */
   inline Matrix<T, M, N> get_R() const { return this->R_matrix_; }
+  inline void get_Q(Matrix<T, M, M> &Q) const { Q = this->Q_matrix_; }
+  inline void get_R(Matrix<T, M, N> &R) const { R = this->R_matrix_; }
+  inline bool get_rank_deficient() const { return this->rank_deficient_; }
+  inline bool get_threshold_corrected() const {
+    return this->threshold_corrected_;
+  }
 
-public:
-  /* Variable */
   T division_min;
 
 protected:
-  /* Variable */
   Matrix<T, M, M> Q_matrix_;
   Matrix<T, M, N> R_matrix_;
+  bool rank_deficient_;
+  bool threshold_corrected_;
 
-protected:
-  /* Function */
+  inline void _initialize(const Matrix<T, M, N> &A) {
+    this->threshold_corrected_ = !(this->division_min > static_cast<T>(0));
+    this->division_min = QROperation::division_threshold(this->division_min);
+    for (std::size_t column = 0; column < M; ++column) {
+      for (std::size_t row = 0; row < M; ++row) {
+        this->Q_matrix_(row, column) =
+            row == column ? static_cast<T>(1) : static_cast<T>(0);
+      }
+    }
+    this->R_matrix_ = A;
+    this->rank_deficient_ = false;
+  }
 
-  /**
-   * @brief Performs QR decomposition of the matrix using Givens rotations.
-   *
-   * Iterates over the lower triangular part of the matrix and applies Givens
-   * rotations to zero out sub-diagonal elements, transforming the matrix into
-   * an upper triangular form. The method checks if each sub-diagonal element is
-   * not near zero (within a specified threshold) before applying the rotation.
-   */
+  inline void _eliminate(std::size_t row, std::size_t column) {
+    // Tiny entries retain the legacy user-controlled approximation policy.
+    if (Base::Math::abs(this->R_matrix_(row, column)) > this->division_min) {
+      this->_givensRotation(row, column);
+    } else {
+      this->R_matrix_(row, column) = static_cast<T>(0);
+    }
+  }
+
+  inline void _check_rank() {
+    for (std::size_t column = 0; column < N; ++column) {
+      if (Base::Math::abs(this->R_matrix_(column, column)) <=
+          this->division_min) {
+        this->rank_deficient_ = true;
+      }
+    }
+  }
+
   inline void _decompose() {
-    for (std::size_t j = 0; j < N; ++j) {
-      for (std::size_t i = j + 1; i < M; ++i) {
+    for (std::size_t column = 0; column < N; ++column) {
+      for (std::size_t row = column + 1; row < M; ++row) {
+        this->_eliminate(row, column);
+      }
+    }
+    this->_check_rank();
+  }
 
-        if (!Base::Utility::near_zero(this->R_matrix_(i, j),
-                                      this->division_min)) {
-          this->_givensRotation(i, j);
+  inline void _givensRotation(std::size_t i, std::size_t j) {
+    QROperation::givens_rotation(i, j, this->Q_matrix_, this->R_matrix_);
+  }
+};
+
+/**
+ * @brief Compact real Householder QR, with optional explicit Q generation.
+ *
+ * The upper triangle stores R; the lower triangle stores reflector tails,
+ * with an implicit leading one and a separate tau vector. No full Q is kept.
+ * SqrtIterations selects the existing math library's fixed Newton budget.
+ * Inputs must be finite and scaled so the resulting factors are representable.
+ */
+template <typename T, std::size_t M, std::size_t N,
+          std::size_t SqrtIterations = 2>
+class QRDecompositionHouseholder {
+public:
+  static_assert(M >= N && N > 0, "Incompatible matrix dimensions");
+
+  QRDecompositionHouseholder()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)), factors_(),
+        tau_(), rank_deficient_(false), threshold_corrected_(false) {}
+
+  /** @brief Factor A without materializing any reflection matrix or Q. */
+  inline void solve(const Matrix<T, M, N> &A) {
+    this->threshold_corrected_ = !(this->division_min > static_cast<T>(0));
+    this->division_min = QROperation::division_threshold(this->division_min);
+    this->factors_ = A;
+    this->rank_deficient_ = false;
+
+    for (std::size_t column = 0; column < N; ++column) {
+      T scale = static_cast<T>(0);
+      for (std::size_t row = column; row < M; ++row) {
+        const T magnitude = Base::Math::abs(this->factors_(row, column));
+        if (magnitude > scale) {
+          scale = magnitude;
+        }
+      }
+      this->tau_[column] = static_cast<T>(0);
+      if (scale <= this->division_min) {
+        this->rank_deficient_ = true;
+        for (std::size_t row = column + 1; row < M; ++row) {
+          this->factors_(row, column) = static_cast<T>(0);
+        }
+      } else {
+        T sum = static_cast<T>(0);
+        for (std::size_t row = column; row < M; ++row) {
+          const T value = this->factors_(row, column) / scale;
+          sum += value * value;
+        }
+        // 1 <= sum <= M: the float-based initial estimate stays in range.
+        const T norm = Base::Math::sqrt_newton_method<T, SqrtIterations>(
+            sum, static_cast<T>(1));
+        const T alpha = this->factors_(column, column) / scale;
+        const T beta = alpha >= static_cast<T>(0) ? -norm : norm;
+        const T denominator = alpha - beta;
+        // beta != 0, and choosing the opposite sign avoids cancellation.
+        this->tau_[column] = (beta - alpha) / beta;
+        for (std::size_t row = column + 1; row < M; ++row) {
+          this->factors_(row, column) =
+              (this->factors_(row, column) / scale) / denominator;
+        }
+        this->factors_(column, column) = beta * scale;
+
+        for (std::size_t target = column + 1; target < N; ++target) {
+          T dot = this->factors_(column, target);
+          for (std::size_t row = column + 1; row < M; ++row) {
+            dot += this->factors_(row, column) * this->factors_(row, target);
+          }
+          dot *= this->tau_[column];
+          this->factors_(column, target) -= dot;
+          for (std::size_t row = column + 1; row < M; ++row) {
+            this->factors_(row, target) -= this->factors_(row, column) * dot;
+          }
         }
       }
     }
   }
 
-  /**
-   * @brief Applies a Givens rotation to the specified cols of the matrix.
-   *
-   * This function performs a Givens rotation on the cols i and j of the
-   * R_matrix and updates the Q_matrix accordingly. The rotation is used to zero
-   * out the element at (i, j) in the R_matrix.
-   *
-   * @param i The index of the first column to rotate.
-   * @param j The index of the second column to rotate.
-   */
-  inline void _givensRotation(std::size_t i, std::size_t j) {
-    std::tie(this->Q_matrix_, this->R_matrix_) =
-        Base::Matrix::qr_givensRotation(i, j, std::move(this->Q_matrix_),
-                                        std::move(this->R_matrix_),
-                                        this->division_min);
+  /** @brief Expand R, omitting the stored reflector tails. */
+  inline void get_R(Matrix<T, M, N> &R) const {
+    for (std::size_t column = 0; column < N; ++column) {
+      for (std::size_t row = 0; row < M; ++row) {
+        R(row, column) =
+            row <= column ? this->factors_(row, column) : static_cast<T>(0);
+      }
+    }
   }
+
+  inline Matrix<T, M, N> get_R() const {
+    Matrix<T, M, N> R;
+    this->get_R(R);
+    return R;
+  }
+
+  /** @brief Generate Q on demand by applying reflectors in reverse order. */
+  inline void get_Q(Matrix<T, M, M> &Q) const {
+    for (std::size_t column = 0; column < M; ++column) {
+      for (std::size_t row = 0; row < M; ++row) {
+        Q(row, column) = row == column ? static_cast<T>(1) : static_cast<T>(0);
+      }
+    }
+    for (std::size_t step = 0; step < N; ++step) {
+      const std::size_t column = N - 1 - step;
+      for (std::size_t target = column; target < M; ++target) {
+        T dot = Q(column, target);
+        for (std::size_t row = column + 1; row < M; ++row) {
+          dot += this->factors_(row, column) * Q(row, target);
+        }
+        dot *= this->tau_[column];
+        Q(column, target) -= dot;
+        for (std::size_t row = column + 1; row < M; ++row) {
+          Q(row, target) -= this->factors_(row, column) * dot;
+        }
+      }
+    }
+  }
+
+  inline Matrix<T, M, M> get_Q() const {
+    Matrix<T, M, M> Q;
+    this->get_Q(Q);
+    return Q;
+  }
+
+  /** @brief Apply Q transpose in place, using no dense Q or extra vector. */
+  inline void apply_Q_transpose_in_place(Vector<T, M> &b) const {
+    for (std::size_t column = 0; column < N; ++column) {
+      T dot = b[column];
+      for (std::size_t row = column + 1; row < M; ++row) {
+        dot += this->factors_(row, column) * b[row];
+      }
+      dot *= this->tau_[column];
+      b[column] -= dot;
+      for (std::size_t row = column + 1; row < M; ++row) {
+        b[row] -= this->factors_(row, column) * dot;
+      }
+    }
+  }
+
+  inline Vector<T, M> apply_Q_transpose(const Vector<T, M> &b) const {
+    Vector<T, M> result = b;
+    this->apply_Q_transpose_in_place(result);
+    return result;
+  }
+
+  inline bool get_rank_deficient() const { return this->rank_deficient_; }
+  inline bool get_threshold_corrected() const {
+    return this->threshold_corrected_;
+  }
+
+  T division_min;
+
+protected:
+  Matrix<T, M, N> factors_;
+  Vector<T, N> tau_;
+  bool rank_deficient_;
+  bool threshold_corrected_;
 };
 
 /**
@@ -330,151 +453,40 @@ protected:
 };
 
 /**
- * @brief QR Decomposition for Sparse Matrices.
+ * @brief Sparse-input QR with dense factors and fill-in-aware elimination.
  *
- * This class provides a specialized implementation of QR decomposition for
- * sparse matrices. It uses Givens rotations to decompose the input matrix into
- * an orthogonal matrix Q and an upper triangular matrix R.
- *
- * @tparam T The type of elements in the sparse matrix.
- * @tparam M The number of rows in the sparse matrix.
- * @tparam N The number of columns in the sparse matrix.
- * @tparam CSRIndices_A Type representing row indices of the sparse matrix.
- * @tparam CSRPointers_A Type representing row pointers of the sparse matrix.
+ * The original CSR pattern is used only to scatter the input. Every current
+ * subdiagonal entry is considered during factorization, including fill-in.
  */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
-class QRDecompositionSparse {
+class QRDecompositionSparse : public QRDecomposition<T, M, N> {
 public:
-  /* Check Compatibility */
-  static_assert(M >= N, "Incompatible matrix dimensions");
+  QRDecompositionSparse() : QRDecomposition<T, M, N>() {}
 
-public:
-  /* Constructor */
-  QRDecompositionSparse()
-      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)),
-        Q_matrix_(Matrix<T, M, M>::identity()), R_matrix_() {}
-
-  /* Copy Constructor */
-  QRDecompositionSparse(
-      const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &other)
-      : division_min(other.division_min), Q_matrix_(other.Q_matrix_),
-        R_matrix_(other.R_matrix_) {}
-  QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
-  operator=(const QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
-                &other) {
-    if (this != &other) {
-      this->division_min = other.division_min;
-      this->Q_matrix_ = other.Q_matrix_;
-      this->R_matrix_ = other.R_matrix_;
-    }
-    return *this;
-  }
-
-  /* Move Constructor */
-  QRDecompositionSparse(QRDecompositionSparse<T, M, N, CSRIndices_A,
-                                              CSRPointers_A> &&other) noexcept
-      : division_min(other.division_min), Q_matrix_(std::move(other.Q_matrix_)),
-        R_matrix_(std::move(other.R_matrix_)) {}
-  QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A> &
-  operator=(QRDecompositionSparse<T, M, N, CSRIndices_A, CSRPointers_A>
-                &&other) noexcept {
-    if (this != &other) {
-      this->division_min = other.division_min;
-      this->Q_matrix_ = std::move(other.Q_matrix_);
-      this->R_matrix_ = std::move(other.R_matrix_);
-    }
-    return *this;
-  }
-
-public:
-  /* Function */
-
-  /**
-   * @brief Solves the QR decomposition for the given sparse matrix A.
-   *
-   * This function sets the internal R matrix to the provided sparse matrix A
-   * and performs QR decomposition by calling the internal _decompose method.
-   *
-   * @param A The input sparse matrix to decompose.
-   */
   inline void
   solve(const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
-    this->R_matrix_ = Base::Matrix::output_dense_matrix(A);
-    this->_decompose(A);
-  }
-
-  /**
-   * @brief Returns the orthogonal matrix Q from the QR decomposition.
-   *
-   * This function returns the orthogonal matrix Q that was computed during
-   * the QR decomposition process.
-   *
-   * @return The orthogonal matrix Q.
-   */
-  inline Matrix<T, M, M> get_Q() const { return this->Q_matrix_; }
-
-  /**
-   * @brief Returns the upper triangular matrix R from the QR decomposition.
-   *
-   * This function returns the upper triangular matrix R that was computed
-   * during the QR decomposition process.
-   *
-   * @return The upper triangular matrix R.
-   */
-  inline Matrix<T, M, N> get_R() const { return this->R_matrix_; }
-
-public:
-  /* Variable */
-  T division_min;
-
-protected:
-  /* Variable */
-  Matrix<T, M, M> Q_matrix_;
-  Matrix<T, M, N> R_matrix_;
-
-protected:
-  /* Function */
-
-  /**
-   * @brief Performs QR decomposition of the sparse matrix using Givens
-   * rotations.
-   *
-   * Iterates over the non-zero elements of the sparse matrix and applies Givens
-   * rotations to zero out sub-diagonal elements, transforming the matrix into
-   * an upper triangular form. The method checks if each sub-diagonal element is
-   * not near zero (within a specified threshold) before applying the rotation.
-   *
-   * @param A The input sparse matrix to decompose.
-   */
-  inline void _decompose(
-      const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &A) {
-    for (std::size_t i = 0; i < M; i++) {
-      for (std::size_t k = CSRPointers_A::list[i];
-           k < CSRPointers_A::list[i + 1]; k++) {
-        if ((i >= CSRIndices_A::list[k] + 1) &&
-            (!Base::Utility::near_zero(A.values[k], this->division_min))) {
-          this->_givensRotation(i, CSRIndices_A::list[k]);
-        }
+    this->threshold_corrected_ = !(this->division_min > static_cast<T>(0));
+    this->division_min = QROperation::division_threshold(this->division_min);
+    for (std::size_t column = 0; column < M; ++column) {
+      for (std::size_t row = 0; row < M; ++row) {
+        this->Q_matrix_(row, column) =
+            row == column ? static_cast<T>(1) : static_cast<T>(0);
       }
     }
-  }
-
-  /**
-   * @brief Applies a Givens rotation to the specified cols of the matrix.
-   *
-   * This function performs a Givens rotation on the cols i and j of the
-   * R_matrix and updates the Q_matrix accordingly. The rotation is used to zero
-   * out the element at (i, j) in the R_matrix.
-   *
-   * @param i The index of the first column to rotate.
-   * @param j The index of the second column to rotate.
-   */
-  inline void _givensRotation(std::size_t i, std::size_t j) {
-    std::tie(this->Q_matrix_, this->R_matrix_) =
-        Base::Matrix::qr_givensRotation(i, j, std::move(this->Q_matrix_),
-                                        std::move(this->R_matrix_),
-                                        this->division_min);
+    this->rank_deficient_ = false;
+    for (std::size_t column = 0; column < N; ++column) {
+      for (std::size_t row = 0; row < M; ++row) {
+        this->R_matrix_(row, column) = static_cast<T>(0);
+      }
+    }
+    for (std::size_t row = 0; row < M; ++row) {
+      for (std::size_t entry = CSRPointers_A::list[row];
+           entry < CSRPointers_A::list[row + 1]; ++entry) {
+        this->R_matrix_(row, CSRIndices_A::list[entry]) = A.values[entry];
+      }
+    }
+    this->_decompose();
   }
 };
 

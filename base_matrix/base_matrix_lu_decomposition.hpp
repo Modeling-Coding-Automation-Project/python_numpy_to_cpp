@@ -15,10 +15,13 @@
 #include "base_matrix_macros.hpp"
 
 #include "base_math.hpp"
+#include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
 
+#include <array>
 #include <cstddef>
+#include <limits>
 
 namespace Base {
 namespace Matrix {
@@ -26,238 +29,261 @@ namespace Matrix {
 constexpr double DEFAULT_DIVISION_MIN_LU_DECOMPOSITION = 1.0e-10;
 
 /**
- * @brief LU decomposition class for square matrices.
+ * @brief Compact partial-pivoted LU, with the convention P A = L U.
  *
- * This class implements LU decomposition for square matrices of fixed size M.
- * It provides methods to decompose a matrix into lower and upper triangular
- * matrices, solve linear systems, and compute determinants.
- *
- * @tparam T The type of the matrix elements (e.g., float, double).
- * @tparam M The size of the square matrix (M x M).
+ * L has an implicit unit diagonal. A successful solve(A) keeps its factors for
+ * solve_rhs(b). Modifying A does not update those factors. CACHE_INVERSE adds M
+ * reciprocals for applications that solve many right-hand sides.
+ * Inputs and arithmetic results must be finite and representable in T.
  */
-template <typename T, std::size_t M> class LUDecomposition {
+template <typename T, std::size_t M, bool CACHE_INVERSE = false>
+class LUDecomposition {
 public:
   LUDecomposition()
-      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION)) {}
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION)),
+        factor_valid_(false), singular_(false), threshold_adjusted_(false),
+        odd_permutation_(false) {}
 
-  LUDecomposition(const DiagMatrix<T, M> &matrix)
-      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION)) {
-    this->Lower_ = Matrix<T, M, M>::identity();
-    this->Upper_ = Base::Matrix::output_dense_matrix(matrix);
-  }
-
-  /* Copy Constructor */
-  LUDecomposition(const LUDecomposition<T, M> &other)
-      : division_min(other.division_min), Lower_(other.Lower_),
-        Upper_(other.Upper_), _pivot_index_vec(other._pivot_index_vec) {}
-
-  LUDecomposition<T, M> &operator=(const LUDecomposition<T, M> &other) {
-    if (this != &other) {
-      this->division_min = other.division_min;
-      this->Lower_ = other.Lower_;
-      this->Upper_ = other.Upper_;
-      this->_pivot_index_vec = other._pivot_index_vec;
+  LUDecomposition(const DiagMatrix<T, M> &matrix) : LUDecomposition() {
+    this->factor_valid_ = true;
+    for (std::size_t i = 0; i < M; ++i) {
+      this->pivot_index_[i] = i;
+      this->LU_(i, i) = matrix[i];
+      T magnitude = Base::Math::abs(matrix[i]);
+      if (magnitude < this->division_min) {
+        this->factor_valid_ = false;
+        this->singular_ = true;
+      }
+      if (CACHE_INVERSE) {
+        bool reciprocal_is_safe = magnitude >= this->division_min &&
+                                  magnitude >= std::numeric_limits<T>::min();
+        this->inverse_diagonal_[i] = reciprocal_is_safe
+                                         ? static_cast<T>(1) / matrix[i]
+                                         : static_cast<T>(0);
+      }
     }
-    return *this;
   }
 
-  /* Move Constructor */
-  LUDecomposition(LUDecomposition<T, M> &&other) noexcept
-      : division_min(std::move(other.division_min)),
-        Lower_(std::move(other.Lower_)), Upper_(std::move(other.Upper_)),
-        _pivot_index_vec(std::move(other._pivot_index_vec)) {}
+  /* Copy and move preserve the compact factors and their validity. */
+  LUDecomposition(const LUDecomposition &) = default;
+  LUDecomposition &operator=(const LUDecomposition &) = default;
+  LUDecomposition(LUDecomposition &&) noexcept = default;
+  LUDecomposition &operator=(LUDecomposition &&) noexcept = default;
 
-  LUDecomposition<T, M> &operator=(LUDecomposition<T, M> &&other) noexcept {
-    if (this != &other) {
-      this->division_min = std::move(other.division_min);
-      this->Lower_ = std::move(other.Lower_);
-      this->Upper_ = std::move(other.Upper_);
-      this->_pivot_index_vec = std::move(other._pivot_index_vec);
+  /* Get */
+  inline Matrix<T, M, M> get_L() const {
+    Matrix<T, M, M> result = Matrix<T, M, M>::identity();
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = j + 1; i < M; ++i) {
+        result(i, j) = this->LU_(i, j);
+      }
     }
-    return *this;
+    return result;
   }
 
-public:
-  /* Function */
-
-  /**
-   * @brief Returns the lower triangular matrix (L) from the LU decomposition.
-   *
-   * @return Matrix<T, M, M> The lower triangular matrix of the decomposition.
-   */
-  inline Matrix<T, M, M> get_L() const { return Lower_; }
-
-  /**
-   * @brief Returns the upper triangular matrix (U) from the LU decomposition.
-   *
-   * @return Matrix<T, M, M> The upper triangular matrix of the decomposition.
-   */
-  inline Matrix<T, M, M> get_U() const { return Upper_; }
-
-  /**
-   * @brief Solves the linear system Ax = b using LU decomposition.
-   *
-   * This function performs LU decomposition of the input matrix A, applies the
-   * pivoting to the right-hand side vector b, and then solves the resulting
-   * lower and upper triangular systems using forward and backward substitution.
-   *
-   * @tparam T The type of the matrix and vector elements.
-   * @tparam M The dimension of the square matrix and vectors.
-   * @param A The coefficient matrix (assumed to be square of size MxM).
-   * @param b The right-hand side vector.
-   * @return Vector<T, M> The solution vector x such that Ax = b.
-   */
-  inline Vector<T, M> solve(const Matrix<T, M, M> &A, const Vector<T, M> &b) {
-    this->_decompose(A);
-
-    Vector<T, M> b_p;
-    for (std::size_t i = 0; i < M; i++) {
-      b_p[i] = b[this->_pivot_index_vec[i]];
+  inline Matrix<T, M, M> get_U() const {
+    Matrix<T, M, M> result;
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i <= j; ++i) {
+        result(i, j) = this->LU_(i, j);
+      }
     }
-
-    Vector<T, M> y = this->_forward_substitution(b_p);
-    return this->_backward_substitution(y);
+    return result;
   }
 
-  /**
-   * @brief Solves the linear system Ax = b using LU decomposition.
-   *
-   * This function performs LU decomposition of the input matrix A and solves
-   * the linear system Ax = b using the decomposed matrices.
-   *
-   * @param A The coefficient matrix (assumed to be square of size MxM).
-   * @return Vector<T, M> The solution vector x such that Ax = b.
-   */
-  inline void solve(const Matrix<T, M, M> &A) { this->_decompose(A); }
+  inline Vector<std::size_t, M> get_pivot_indices() const {
+    return this->pivot_index_;
+  }
 
-  /**
-   * @brief Computes the determinant of the matrix from the LU decomposition.
-   *
-   * This function calculates the determinant of the matrix by multiplying the
-   * diagonal elements of the lower and upper triangular matrices obtained from
-   * LU decomposition.
-   *
-   * @return T The determinant of the matrix.
-   */
+  inline Matrix<T, M, M> get_P() const {
+    Matrix<T, M, M> result;
+    for (std::size_t i = 0; i < M; ++i) {
+      result(i, this->pivot_index_[i]) = static_cast<T>(1);
+    }
+    return result;
+  }
+
+  inline bool is_valid() const { return this->factor_valid_; }
+  inline bool is_singular() const { return this->singular_; }
+  inline bool threshold_was_adjusted() const {
+    return this->threshold_adjusted_;
+  }
+
   inline T get_determinant() const {
-    T det = static_cast<T>(1);
-
-    for (std::size_t i = 0; i < M; i++) {
-      det *= this->Lower_(i, i) * this->Upper_(i, i);
+    T result = this->odd_permutation_ ? static_cast<T>(-1) : static_cast<T>(1);
+    for (std::size_t i = 0; i < M; ++i) {
+      result *= this->LU_(i, i);
     }
+    return this->factor_valid_ ? result : static_cast<T>(0);
+  }
 
-    return det;
+  /* Solve */
+  inline void solve(const Matrix<T, M, M> &A) { this->_decompose<false>(A); }
+
+  // Row scales affect pivot comparison only; neither A nor b is rescaled.
+  inline void solve_scaled(const Matrix<T, M, M> &A) {
+    this->_decompose<true>(A);
+  }
+
+  inline Vector<T, M> solve(const Matrix<T, M, M> &A, const Vector<T, M> &b) {
+    this->solve(A);
+    return this->solve_rhs(b);
+  }
+
+  inline Vector<T, M> solve_rhs(const Vector<T, M> &b) const {
+    Vector<T, M> result;
+    if (this->factor_valid_) {
+      for (std::size_t i = 0; i < M; ++i) {
+        T value = b[this->pivot_index_[i]];
+        for (std::size_t j = 0; j < i; ++j) {
+          value -= this->LU_(i, j) * result[j];
+        }
+        result[i] = value;
+      }
+      for (std::size_t offset = 0; offset < M; ++offset) {
+        std::size_t i = M - 1 - offset;
+        T value = result[i];
+        for (std::size_t j = i + 1; j < M; ++j) {
+          value -= this->LU_(i, j) * result[j];
+        }
+        // Successful factorization guarantees a nonzero diagonal. Reapplying
+        // a user-modified threshold here would change the stored factorization.
+        if (CACHE_INVERSE && this->inverse_diagonal_[i] != static_cast<T>(0)) {
+          result[i] = value * this->inverse_diagonal_[i];
+        } else {
+          result[i] = value / this->LU_(i, i);
+        }
+      }
+    }
+    return result;
+  }
+
+  /** Fixed correction budget; original A is borrowed, never copied. */
+  template <typename ResidualT = T>
+  inline Vector<T, M> refine(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                             Vector<T, M> x, std::size_t corrections) const {
+    for (std::size_t pass = 0; pass < corrections; ++pass) {
+      if (this->factor_valid_) {
+        Vector<T, M> residual;
+        for (std::size_t i = 0; i < M; ++i) {
+          ResidualT value = static_cast<ResidualT>(b[i]);
+          for (std::size_t j = 0; j < M; ++j) {
+            value -=
+                static_cast<ResidualT>(A(i, j)) * static_cast<ResidualT>(x[j]);
+          }
+          residual[i] = static_cast<T>(value);
+        }
+        Vector<T, M> correction = this->solve_rhs(residual);
+        for (std::size_t i = 0; i < M; ++i) {
+          x[i] += correction[i];
+        }
+      }
+    }
+    return x;
+  }
+
+  template <typename ResidualT = T>
+  inline Vector<T, M> solve_refined(const Matrix<T, M, M> &A,
+                                    const Vector<T, M> &b,
+                                    std::size_t corrections) {
+    Vector<T, M> x = this->solve(A, b);
+    return this->template refine<ResidualT>(A, b, x, corrections);
   }
 
 public:
-  /* Variable */
   T division_min;
 
 protected:
-  /* Variable */
-  Matrix<T, M, M> Lower_;
-  Matrix<T, M, M> Upper_;
-  Vector<std::size_t, M> _pivot_index_vec;
+  Matrix<T, M, M> LU_;
+  Vector<std::size_t, M> pivot_index_;
+  std::array<T, CACHE_INVERSE ? M : 0> inverse_diagonal_{};
+  bool factor_valid_;
+  bool singular_;
+  bool threshold_adjusted_;
+  bool odd_permutation_;
 
-protected:
-  /* Function */
-
-  /**
-   * @brief Decomposes the input matrix into lower and upper triangular
-   * matrices.
-   *
-   * This function performs LU decomposition of the input square matrix, storing
-   * the results in the Lower_ and Upper_ member variables. It also handles
-   * pivoting to ensure numerical stability.
-   *
-   * @param matrix The input square matrix to be decomposed.
-   */
-  inline void _decompose(const Matrix<T, M, M> &matrix) {
-    this->Lower_ = Matrix<T, M, M>();
-    this->Upper_ = matrix;
-
-    for (std::size_t i = 0; i < M; ++i) {
-      this->_pivot_index_vec[i] = i;
+  template <bool SCALED> inline void _decompose(const Matrix<T, M, M> &A) {
+    this->LU_ = A;
+    this->threshold_adjusted_ = !(this->division_min > static_cast<T>(0));
+    if (this->threshold_adjusted_) {
+      this->division_min =
+          static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION);
     }
-
+    this->factor_valid_ = true;
+    this->singular_ = false;
+    this->odd_permutation_ = false;
+    std::array<T, SCALED ? M : 0> row_scale{};
     for (std::size_t i = 0; i < M; ++i) {
-      this->Lower_(i, i) = 1;
-
-      // Pivoting
-      if (Base::Utility::near_zero(this->Upper_(i, i), this->division_min)) {
-        std::size_t maxCol = i;
-        T maxVal = Base::Math::abs(this->Upper_(i, i));
-        for (std::size_t k = i + 1; k < M; ++k) {
-          T absVal = Base::Math::abs(this->Upper_(k, i));
-          if (absVal > maxVal) {
-            maxVal = absVal;
-            maxCol = k;
+      this->pivot_index_[i] = i;
+      if (SCALED) {
+        for (std::size_t j = 0; j < M; ++j) {
+          T value = Base::Math::abs(A(i, j));
+          if (value > row_scale[i]) {
+            row_scale[i] = value;
           }
         }
-        if (maxCol != i) {
-          Base::Utility::swap_value(this->_pivot_index_vec[i],
-                                    this->_pivot_index_vec[maxCol]);
-          Base::Matrix::matrix_row_swap(i, maxCol, this->Upper_);
-          Base::Matrix::matrix_row_swap(i, maxCol, this->Lower_);
+      }
+    }
+
+    for (std::size_t k = 0; k < M; ++k) {
+      if (this->factor_valid_) {
+        std::size_t pivot = k;
+        T best = static_cast<T>(-1);
+        for (std::size_t i = k; i < M; ++i) {
+          T candidate = Base::Math::abs(this->LU_(i, k));
+          if (SCALED) {
+            // A zero row has comparison score zero, without division.
+            candidate = row_scale[i] > static_cast<T>(0)
+                            ? candidate / row_scale[i]
+                            : static_cast<T>(0);
+          }
+          if (candidate > best) {
+            best = candidate;
+            pivot = i;
+          }
+        }
+        if (Base::Math::abs(this->LU_(pivot, k)) < this->division_min) {
+          this->factor_valid_ = false;
+          this->singular_ = true;
+        } else {
+          if (pivot != k) {
+            // Swapping the entire compact row also moves established L entries.
+            for (std::size_t j = 0; j < M; ++j) {
+              Base::Utility::swap_value(this->LU_(k, j), this->LU_(pivot, j));
+            }
+            Base::Utility::swap_value(this->pivot_index_[k],
+                                      this->pivot_index_[pivot]);
+            if (SCALED) {
+              Base::Utility::swap_value(row_scale[k], row_scale[pivot]);
+            }
+            this->odd_permutation_ = !this->odd_permutation_;
+          }
+          // Subnormal pivots can have finite ratios although their reciprocal
+          // would overflow. In that range retain direct division instead.
+          bool use_reciprocal =
+              Base::Math::abs(this->LU_(k, k)) >= std::numeric_limits<T>::min();
+          T inverse_pivot = use_reciprocal ? static_cast<T>(1) / this->LU_(k, k)
+                                           : static_cast<T>(0);
+          if (CACHE_INVERSE) {
+            this->inverse_diagonal_[k] = inverse_pivot;
+          }
+          for (std::size_t i = k + 1; i < M; ++i) {
+            if (use_reciprocal) {
+              this->LU_(i, k) *= inverse_pivot;
+            } else {
+              this->LU_(i, k) /= this->LU_(k, k);
+            }
+          }
+          // Column-major trailing update: the inner index is contiguous.
+          for (std::size_t j = k + 1; j < M; ++j) {
+            T upper = this->LU_(k, j);
+            for (std::size_t i = k + 1; i < M; ++i) {
+              this->LU_(i, j) -= this->LU_(i, k) * upper;
+            }
+          }
         }
       }
-
-      for (std::size_t j = i + 1; j < M; ++j) {
-        T factor = this->Upper_(j, i) /
-                   Base::Utility::avoid_zero_divide(this->Upper_(i, i),
-                                                    this->division_min);
-        this->Lower_(j, i) = factor;
-        for (std::size_t k = i; k < M; ++k) {
-          this->Upper_(j, k) -= factor * this->Upper_(i, k);
-        }
-      }
     }
-  }
-
-  /**
-   * @brief Performs forward substitution to solve the lower triangular system.
-   *
-   * This function computes the intermediate vector y by solving the lower
-   * triangular system Ly = b, where L is the lower triangular matrix from LU
-   * decomposition and b is the right-hand side vector.
-   *
-   * @param b The right-hand side vector.
-   * @return Vector<T, M> The intermediate vector y.
-   */
-  inline Vector<T, M> _forward_substitution(const Vector<T, M> &b) const {
-    Vector<T, M> y;
-    for (std::size_t i = 0; i < M; ++i) {
-      T sum = b[i];
-      for (std::size_t j = 0; j < i; ++j) {
-        sum -= this->Lower_(i, j) * y[j];
-      }
-      y[i] = sum;
-    }
-    return y;
-  }
-
-  /**
-   * @brief Performs backward substitution to solve the upper triangular system.
-   *
-   * This function computes the solution vector x by solving the upper
-   * triangular system Ux = y, where U is the upper triangular matrix from LU
-   * decomposition and y is the intermediate vector obtained from forward
-   * substitution.
-   *
-   * @param y The intermediate vector obtained from forward substitution.
-   * @return Vector<T, M> The solution vector x.
-   */
-  inline Vector<T, M> _backward_substitution(const Vector<T, M> &y) const {
-    Vector<T, M> x;
-    for (std::size_t i = M; i-- > 0;) {
-      T sum = y[i];
-      for (std::size_t j = i + 1; j < M; ++j) {
-        sum -= this->Upper_(i, j) * x[j];
-      }
-      x[i] = sum / Base::Utility::avoid_zero_divide(this->Upper_(i, i),
-                                                    this->division_min);
-    }
-    return x;
   }
 };
 

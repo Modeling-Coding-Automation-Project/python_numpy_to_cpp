@@ -10,6 +10,13 @@
  * inversion. The implementation is generic and works with fixed-size matrices
  * and vectors, supporting both real and complex types.
  *
+ * The GMRES wrappers use GmresSolver with K equal to the system dimension and
+ * one cycle. decay_rate is a relative tolerance against the right-hand-side
+ * norm. rho is the true residual norm for both real and complex arithmetic;
+ * rectangular solves report the normal-equation residual norm. Earlier
+ * versions used an initial-residual reference and inconsistent complex squared
+ * norms. Use GmresSolver directly for restart, orthogonalization and status.
+ *
  * @note
  * tparam M is the number of rows in the matrix.
  * tparam N is the number of columns in the matrix.
@@ -25,6 +32,7 @@
 #include "base_matrix_compiled_sparse.hpp"
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_complex.hpp"
+#include "base_matrix_gmres.hpp"
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_vector.hpp"
 
@@ -62,119 +70,12 @@ inline typename std::enable_if<(M > 1),
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
              const T &division_min, const std::size_t &matrix_size) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-
-  Matrix<T, M, M> r;
-  Vector<T, M + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<T, M, M + 1> q;
-  Matrix<T, M + 1, M> h;
-  Vector<T, M> c;
-  Vector<T, M> s;
-  Vector<T, M> y;
-  Vector<T, M> x_dif;
-  T ZERO = static_cast<T>(0);
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<T, M> b_ax;
-  for (std::size_t i = 0; i < matrix_size; ++i) {
-    T sum = static_cast<T>(0);
-    for (std::size_t j = 0; j < matrix_size; ++j) {
-      sum += A(i, j) * x_1[j];
-    }
-    b_ax[i] = b[i] - sum;
-  }
-
-  // Normalize b_Ax
-  T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < matrix_size; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= matrix_size; n++) {
-    // Generate orthogonal basis
-    Vector<T, M> v;
-    for (std::size_t i = 0; i < matrix_size; ++i) {
-      for (std::size_t j = 0; j < matrix_size; ++j) {
-        v[i] += A(i, j) * q(j, n - 1);
-      }
-    }
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        h(j, n - 1) += q(i, j) * v[i];
-      }
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < matrix_size) {
-      h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        q(i, n) =
-            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        T gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) = -s[j - 1] * r(j - 1, n - 1) + c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                           h(n, n - 1) * h(n, n - 1),
-                                       division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -s[n - 1] * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Math::abs(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    T temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = (b_hat[j] - temp) /
-           Base::Utility::avoid_zero_divide(r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < matrix_size; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<T, M> x;
-  for (std::size_t i = 0; i < matrix_size; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, M> solution = solver.solve(A, b, x_1, matrix_size);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -201,19 +102,12 @@ inline typename std::enable_if<(M <= 1),
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
              const T &division_min, const std::size_t &matrix_size) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(x_1);
-  static_cast<void>(matrix_size);
-
-  Vector<T, M> x;
-
-  x[0] = b[0] /
-         Base::Utility::avoid_zero_divide(A.template get<0, 0>(), division_min);
-
-  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, M> solution = solver.solve(A, b, x_1, matrix_size);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 } // namespace InverseOperation
@@ -430,7 +324,8 @@ gmres_k_partition_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
 
-  for (std::size_t i = 0; i < matrix_size; i++) {
+  const std::size_t active_columns = matrix_size < M ? matrix_size : M;
+  for (std::size_t i = 0; i < active_columns; i++) {
     auto result = Base::Matrix::gmres_k_partition(
         A, B.get_row(i), X.get_row(i), decay_rate, division_min, matrix_size);
     X.set_row(i, std::get<0>(result));
@@ -461,128 +356,44 @@ gmres_k_partition_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
+// Optional low-memory operator path; no explicit Gram matrix.
+template <typename T, std::size_t M, std::size_t N>
+inline std::tuple<Vector<T, N>, T, std::size_t>
+gmres_k_rect_matrix_free(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
+                         const Vector<T, N> &x_1, const T &decay_rate,
+                         const T &division_min) {
+  static_assert(M > N,
+                "GMRES rectangular solve requires more rows than columns.");
+  GmresOperation::NormalOperator<Matrix<T, M, N>, T, M, N> operation = {In_A};
+  Vector<T, N> right_hand_side;
+  operation.transpose_multiply(b, right_hand_side);
+  GmresSolver<T, N> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, N> solution =
+      solver.solve_operator(operation, right_hand_side, x_1);
+  return std::make_tuple(solution,
+                         GmresOperation::normal_residual(In_A, b, solution),
+                         solver.get_iterations());
+}
+
 template <typename T, std::size_t M, std::size_t N>
 inline std::tuple<Vector<T, N>, T, std::size_t>
 gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
              const Vector<T, N> &x_1, const T &decay_rate,
              const T &division_min) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-  static_assert(M > N, "Column number must be larger than row number.");
-
-  Matrix<T, N, N> r;
-  Vector<T, N + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<T, N, N + 1> q;
-  Matrix<T, N + 1, N> h;
-  Vector<T, N> c;
-  Vector<T, N> s;
-  Vector<T, N> y;
-  Vector<T, N> x_dif;
-  T ZERO = static_cast<T>(0);
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<T, M> b_ax_temp;
-  for (std::size_t i = 0; i < M; ++i) {
-    T sum = static_cast<T>(0);
-    for (std::size_t j = 0; j < N; ++j) {
-      sum += In_A(i, j) * x_1[j];
-    }
-    b_ax_temp[i] = b[i] - sum;
-  }
-
-  Matrix<T, N, N> A = Base::Matrix::matrix_multiply_AT_mul_B(In_A, In_A);
-  Vector<T, N> b_ax = Base::Matrix::matrix_multiply_AT_mul_b(In_A, b_ax_temp);
-
-  // Normalize b_Ax
-  T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= N; n++) {
-    // Generate orthogonal basis
-    Vector<T, N> v;
-    for (std::size_t i = 0; i < N; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        v[i] += A(i, j) * q(j, n - 1);
-      }
-    }
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < N; ++i) {
-        h(j, n - 1) += q(i, j) * v[i];
-      }
-      for (std::size_t i = 0; i < N; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < N) {
-      h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < N; ++i) {
-        q(i, n) =
-            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        T gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) = -s[j - 1] * r(j - 1, n - 1) + c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                           h(n, n - 1) * h(n, n - 1),
-                                       division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -s[n - 1] * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Math::abs(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    T temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = (b_hat[j] - temp) /
-           Base::Utility::avoid_zero_divide(r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < N; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<T, N> x;
-  for (std::size_t i = 0; i < N; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  static_assert(M > N,
+                "GMRES rectangular solve requires more rows than columns.");
+  Matrix<T, N, N> gram;
+  Vector<T, N> normal_rhs;
+  GmresOperation::normal_equations(In_A, b, gram, normal_rhs);
+  GmresSolver<T, N> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, N> solution = solver.solve(gram, normal_rhs, x_1);
+  return std::make_tuple(solution,
+                         GmresOperation::normal_residual(In_A, b, solution),
+                         solver.get_iterations());
 }
 
 /**
@@ -668,21 +479,21 @@ gmres_k_rect_matrix(const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B,
  */
 template <typename T, std::size_t M>
 inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
-gmres_k_matrix_inv(const Matrix<T, M, M> In_A, const T &decay_rate,
-                   const T &division_min, const Matrix<T, M, M> X_1) {
-  Matrix<T, M, M> B = Matrix<T, M, M>::identity();
+gmres_k_matrix_inv(const Matrix<T, M, M> &In_A, const T &decay_rate,
+                   const T &division_min, const Matrix<T, M, M> &X_1) {
   Matrix<T, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
-
-  for (std::size_t i = 0; i < M; i++) {
-    auto result = Base::Matrix::gmres_k(In_A, B.get_row(i), X_1.get_row(i),
-                                        decay_rate, division_min);
-    X.set_row(i, std::get<0>(result));
-    rho[i] = std::get<1>(result);
-    rep_num[i] = std::get<2>(result);
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  for (std::size_t i = 0; i < M; ++i) {
+    Vector<T, M> unit;
+    unit[i] = static_cast<T>(1);
+    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+    rho[i] = solver.get_residual_norm();
+    rep_num[i] = solver.get_iterations();
   }
-
   return std::make_tuple(X, rho, rep_num);
 }
 
@@ -717,132 +528,12 @@ sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-
-  Matrix<T, M, M> r;
-  Vector<T, M + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<T, M, M + 1> q;
-  Matrix<T, M + 1, M> h;
-  Vector<T, M> c;
-  Vector<T, M> s;
-  Vector<T, M> y;
-  Vector<T, M> x_dif;
-  T ZERO = static_cast<T>(0);
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<T, M> b_ax;
-  for (std::size_t j = 0; j < matrix_size; j++) {
-    T sum = static_cast<T>(0);
-    for (std::size_t k = CSRPointers_A::list[j]; k < CSRPointers_A::list[j + 1];
-         k++) {
-
-      if (CSRIndices_A::list[k] < matrix_size) {
-
-        sum += SA.values[k] * x_1[CSRIndices_A::list[k]];
-      }
-    }
-    b_ax[j] = b[j] - sum;
-  }
-
-  // Normalize b_Ax
-  T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < matrix_size; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= matrix_size; n++) {
-    // Generate orthogonal basis
-    Vector<T, M> v;
-    Vector<T, M> q_row_vector = q.create_row_vector(n - 1);
-    for (std::size_t j = 0; j < matrix_size; j++) {
-      T sum = static_cast<T>(0);
-      for (std::size_t k = CSRPointers_A::list[j];
-           k < CSRPointers_A::list[j + 1]; k++) {
-
-        if (CSRIndices_A::list[k] < matrix_size) {
-
-          sum += SA.values[k] * q_row_vector[CSRIndices_A::list[k]];
-        }
-      }
-      v[j] = sum;
-    }
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        h(j, n - 1) += q(i, j) * v[i];
-      }
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < matrix_size) {
-      h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < matrix_size; ++i) {
-        q(i, n) =
-            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        T gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) = -s[j - 1] * r(j - 1, n - 1) + c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                           h(n, n - 1) * h(n, n - 1),
-                                       division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -s[n - 1] * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Math::abs(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    T temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = (b_hat[j] - temp) /
-           Base::Utility::avoid_zero_divide(r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < matrix_size; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<T, M> x;
-  for (std::size_t i = 0; i < matrix_size; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, M> solution = solver.solve(SA, b, x_1, matrix_size);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -870,19 +561,12 @@ sparse_gmres_k_core(
     const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &SA,
     const Vector<T, M> &b, const Vector<T, M> &x_1, const T &decay_rate,
     const T &division_min, const std::size_t &matrix_size) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(x_1);
-  static_cast<void>(matrix_size);
-
-  Vector<T, M> x;
-
-  x[0] = b[0] / Base::Utility::avoid_zero_divide(
-                    get_sparse_matrix_value<0, 0>(SA), division_min);
-
-  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, M> solution = solver.solve(SA, b, x_1, matrix_size);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 } // namespace InverseOperation
@@ -1057,127 +741,48 @@ sparse_gmres_k_partition_matrix(
  * @return A tuple of (solution vector x, residual norm rho, number of
  * iterations rep_num).
  */
+// Optional low-memory operator path; no explicit Gram matrix.
+template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
+          typename CSRPointers_A>
+inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect_matrix_free(
+    const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &In_SA,
+    const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
+    const T &division_min) {
+  static_assert(M > N,
+                "GMRES rectangular solve requires more rows than columns.");
+  GmresOperation::NormalOperator<
+      CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A>, T, M, N>
+      operation = {In_SA};
+  Vector<T, N> right_hand_side;
+  operation.transpose_multiply(b, right_hand_side);
+  GmresSolver<T, N> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, N> solution =
+      solver.solve_operator(operation, right_hand_side, x_1);
+  return std::make_tuple(solution,
+                         GmresOperation::normal_residual(In_SA, b, solution),
+                         solver.get_iterations());
+}
+
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
 inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(
     const CompiledSparseMatrix<T, M, N, CSRIndices_A, CSRPointers_A> &In_SA,
     const Vector<T, M> &b, const Vector<T, N> &x_1, const T &decay_rate,
     const T &division_min) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-  static_assert(M > N, "Column number must be larger than row number.");
-
-  Matrix<T, N, N> r;
-  Vector<T, N + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<T, N, N + 1> q;
-  Matrix<T, N + 1, N> h;
-  Vector<T, N> c;
-  Vector<T, N> s;
-  Vector<T, N> y;
-  Vector<T, N> x_dif;
-  T ZERO = static_cast<T>(0);
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<T, M> b_ax_temp = b - (In_SA * x_1);
-
-  Matrix<T, N, N> A = Base::Matrix::matrix_multiply_ATranspose_mul_SparseB(
-      Base::Matrix::output_dense_matrix(In_SA), In_SA);
-
-  ColVector<T, M> b_ax_temp_row(b_ax_temp);
-  ColVector<T, N> b_SA =
-      Base::Matrix::colVector_a_mul_SparseB(b_ax_temp_row, In_SA);
-  Vector<T, N> b_ax = b_SA.transpose();
-
-  // Normalize b_Ax
-  T b_norm = b_ax.norm(division_min);
-  for (std::size_t i = 0; i < N; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= N; n++) {
-    // Generate orthogonal basis
-    Vector<T, N> v;
-    for (std::size_t i = 0; i < N; ++i) {
-      for (std::size_t j = 0; j < N; ++j) {
-        v[i] += A(i, j) * q(j, n - 1);
-      }
-    }
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < N; ++i) {
-        h(j, n - 1) += q(i, j) * v[i];
-      }
-      for (std::size_t i = 0; i < N; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < N) {
-      h(n, n - 1) = v.norm(division_min);
-      for (std::size_t i = 0; i < N; ++i) {
-        q(i, n) =
-            v[i] / Base::Utility::avoid_zero_divide(h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        T gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) = -s[j - 1] * r(j - 1, n - 1) + c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv = Base::Math::rsqrt<T>(r(n - 1, n - 1) * r(n - 1, n - 1) +
-                                           h(n, n - 1) * h(n, n - 1),
-                                       division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -s[n - 1] * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Math::abs(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    T temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = (b_hat[j] - temp) /
-           Base::Utility::avoid_zero_divide(r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < N; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<T, N> x;
-  for (std::size_t i = 0; i < N; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  static_assert(M > N,
+                "GMRES rectangular solve requires more rows than columns.");
+  Matrix<T, N, N> gram;
+  Vector<T, N> normal_rhs;
+  GmresOperation::normal_equations(In_SA, b, gram, normal_rhs);
+  GmresSolver<T, N> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<T, N> solution = solver.solve(gram, normal_rhs, x_1);
+  return std::make_tuple(solution,
+                         GmresOperation::normal_residual(In_SA, b, solution),
+                         solver.get_iterations());
 }
 
 /**
@@ -1296,20 +901,20 @@ template <typename T, std::size_t M, typename CSRIndices_A,
 inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
 sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<T, M, M, CSRIndices_A, CSRPointers_A> &In_A,
-    const T &decay_rate, const T &division_min, const Matrix<T, M, M> X_1) {
-  Matrix<T, M, M> B = Matrix<T, M, M>::identity();
+    const T &decay_rate, const T &division_min, const Matrix<T, M, M> &X_1) {
   Matrix<T, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
-
-  for (std::size_t i = 0; i < M; i++) {
-    auto result = Base::Matrix::sparse_gmres_k(
-        In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
-    X.set_row(i, std::get<0>(result));
-    rho[i] = std::get<1>(result);
-    rep_num[i] = std::get<2>(result);
+  GmresSolver<T, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  for (std::size_t i = 0; i < M; ++i) {
+    Vector<T, M> unit;
+    unit[i] = static_cast<T>(1);
+    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+    rho[i] = solver.get_residual_norm();
+    rep_num[i] = solver.get_iterations();
   }
-
   return std::make_tuple(X, rho, rep_num);
 }
 
@@ -1339,120 +944,12 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, const T &decay_rate,
                 const T &division_min) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-
-  Matrix<Complex<T>, M, M> r;
-  Vector<Complex<T>, M + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<Complex<T>, M, M + 1> q;
-  Matrix<Complex<T>, M + 1, M> h;
-  Vector<Complex<T>, M> c;
-  Vector<Complex<T>, M> s;
-  Vector<Complex<T>, M> y;
-  Vector<Complex<T>, M> x_dif;
-  Complex<T> ZERO = static_cast<T>(0);
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<Complex<T>, M> b_ax;
-  for (std::size_t i = 0; i < M; ++i) {
-    Complex<T> sum(static_cast<T>(0));
-    for (std::size_t j = 0; j < M; ++j) {
-      sum += A(i, j) * x_1[j];
-    }
-    b_ax[i] = b[i] - sum;
-  }
-
-  // Normalize b_Ax
-  T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
-  for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= M; n++) {
-    // Generate orthogonal basis
-    Vector<Complex<T>, M> v;
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = 0; j < M; ++j) {
-        v[i] += A(i, j) * q(j, n - 1);
-      }
-    }
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
-        h(j, n - 1) += Base::Matrix::complex_conjugate(q(i, j)) * v[i];
-      }
-      for (std::size_t i = 0; i < M; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < M) {
-      h(n, n - 1) = Base::Matrix::complex_vector_norm(v, division_min);
-      for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = Base::Matrix::complex_divide(v[i], h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        Complex<T> gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) =
-            -Base::Matrix::complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
-            c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv =
-        Base::Math::rsqrt<T>(Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
-                                 Base::Matrix::complex_abs_sq(h(n, n - 1)),
-                             division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -Base::Matrix::complex_conjugate(s[n - 1]) * b_hat[n - 1];
-    b_hat[n - 1] = b_hat[n - 1] * c[n - 1];
-    rho = Base::Matrix::complex_abs_sq(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm * b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    Complex<T> temp(ZERO);
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = Base::Matrix::complex_divide(b_hat[j] - temp, r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<Complex<T>, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<Complex<T>, M> solution = solver.solve(A, b, x_1, M);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -1478,18 +975,12 @@ complex_gmres_k(const Matrix<Complex<T>, M, M> &A,
                 const Vector<Complex<T>, M> &b,
                 const Vector<Complex<T>, M> &x_1, const T &decay_rate,
                 const T &division_min) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(x_1);
-
-  Vector<Complex<T>, M> x;
-
-  x[0] =
-      Base::Matrix::complex_divide(b[0], A.template get<0, 0>(), division_min);
-
-  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<Complex<T>, M> solution = solver.solve(A, b, x_1, M);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -1602,108 +1093,12 @@ complex_sparse_gmres_k(
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     const T &decay_rate, const T &division_min) {
-  static_assert(M > 1, "Matrix size must be equal or larger than 2x2.");
-
-  Matrix<Complex<T>, M, M> r;
-  Vector<Complex<T>, M + 1> b_hat;
-  b_hat[0] = static_cast<T>(1);
-  Matrix<Complex<T>, M, M + 1> q;
-  Matrix<Complex<T>, M + 1, M> h;
-  Vector<Complex<T>, M> c;
-  Vector<Complex<T>, M> s;
-  Vector<Complex<T>, M> y;
-  Vector<Complex<T>, M> x_dif;
-  Complex<T> ZERO;
-  T rho = static_cast<T>(0);
-  std::size_t rep_num = 0;
-
-  // b - Ax
-  Vector<Complex<T>, M> b_ax = b - (SA * x_1);
-
-  // Normalize b_Ax
-  T b_norm = Base::Matrix::complex_vector_norm(b_ax, division_min);
-  for (std::size_t i = 0; i < M; ++i) {
-    q(i, 0) = b_ax[i] / Base::Utility::avoid_zero_divide(b_norm, division_min);
-  }
-  b_hat[0] = b_norm;
-
-  for (std::size_t n = 1; n <= M; n++) {
-    // Generate orthogonal basis
-    Vector<Complex<T>, M> v = SA * q.create_row_vector(n - 1);
-
-    for (std::size_t j = 0; j < n; ++j) {
-      h(j, n - 1) = 0;
-      for (std::size_t i = 0; i < M; ++i) {
-        h(j, n - 1) += Base::Matrix::complex_conjugate(q(i, j)) * v[i];
-      }
-      for (std::size_t i = 0; i < M; ++i) {
-        v[i] -= h(j, n - 1) * q(i, j);
-      }
-    }
-
-    if (n < M) {
-      h(n, n - 1) = Base::Matrix::complex_vector_norm(v, division_min);
-      for (std::size_t i = 0; i < M; ++i) {
-        q(i, n) = Base::Matrix::complex_divide(v[i], h(n, n - 1), division_min);
-      }
-    }
-
-    // Givens rotation for QR decomposition
-    r(0, n - 1) = h(0, n - 1);
-    if (n >= 2) {
-      for (std::size_t j = 1; j < n; ++j) {
-        Complex<T> gamma = c[j - 1] * r(j - 1, n - 1) + s[j - 1] * h(j, n - 1);
-        r(j, n - 1) =
-            -Base::Matrix::complex_conjugate(s[j - 1]) * r(j - 1, n - 1) +
-            c[j - 1] * h(j, n - 1);
-        r(j - 1, n - 1) = gamma;
-      }
-    }
-
-    T delta_inv =
-        Base::Math::rsqrt<T>(Base::Matrix::complex_abs_sq(r(n - 1, n - 1)) +
-                                 Base::Matrix::complex_abs_sq(h(n, n - 1)),
-                             division_min);
-
-    c[n - 1] = r(n - 1, n - 1) * delta_inv;
-    s[n - 1] = h(n, n - 1) * delta_inv;
-
-    // Update b_hat
-    r(n - 1, n - 1) = c[n - 1] * r(n - 1, n - 1) + s[n - 1] * h(n, n - 1);
-    b_hat[n] = -Base::Matrix::complex_conjugate(s[n - 1]) * b_hat[n - 1];
-    b_hat[n - 1] *= c[n - 1];
-    rho = Base::Matrix::complex_abs_sq(b_hat[n]);
-
-    rep_num = n;
-
-    // Check for convergence
-    if (rho / Base::Utility::avoid_zero_divide(b_norm, division_min) <
-        decay_rate) {
-      break;
-    }
-  }
-
-  // Back substitution to solve
-  for (std::size_t j = rep_num; j-- > 0;) {
-    Complex<T> temp = ZERO;
-    for (std::size_t m = j + 1; m < rep_num; ++m) {
-      temp += r(j, m) * y[m];
-    }
-    y[j] = Base::Matrix::complex_divide(b_hat[j] - temp, r(j, j), division_min);
-  }
-
-  for (std::size_t i = 0; i < rep_num; ++i) {
-    for (std::size_t j = 0; j < M; ++j) {
-      x_dif[j] += y[i] * q(j, i);
-    }
-  }
-
-  Vector<Complex<T>, M> x;
-  for (std::size_t i = 0; i < M; ++i) {
-    x[i] = x_1[i] + x_dif[i];
-  }
-
-  return std::make_tuple(x, rho, rep_num);
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<Complex<T>, M> solution = solver.solve(SA, b, x_1, M);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -1732,18 +1127,12 @@ complex_sparse_gmres_k(
         &SA,
     const Vector<Complex<T>, M> &b, const Vector<Complex<T>, M> &x_1,
     const T &decay_rate, const T &division_min) {
-  static_assert(M == 1,
-                "Matrix size must be exactly 1x1 for this specialization.");
-  static_cast<void>(decay_rate);
-  static_cast<void>(division_min);
-  static_cast<void>(x_1);
-
-  Vector<Complex<T>, M> x;
-
-  x[0] =
-      Base::Matrix::complex_divide(b[0], SA.template get<0, 0>(), division_min);
-
-  return std::make_tuple(x, static_cast<T>(0), static_cast<std::size_t>(0));
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  Vector<Complex<T>, M> solution = solver.solve(SA, b, x_1, M);
+  return std::make_tuple(solution, solver.get_residual_norm(),
+                         solver.get_iterations());
 }
 
 /**
@@ -1775,19 +1164,19 @@ complex_sparse_gmres_k_matrix(
         &In_A,
     const T &decay_rate, const T &division_min,
     const Matrix<Complex<T>, M, M> &X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
   Matrix<Complex<T>, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
-
-  for (std::size_t i = 0; i < M; i++) {
-    auto result = Base::Matrix::complex_sparse_gmres_k(
-        In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
-    X.set_row(i, std::get<0>(result));
-    rho[i] = std::get<1>(result);
-    rep_num[i] = std::get<2>(result);
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  for (std::size_t i = 0; i < M; ++i) {
+    Vector<Complex<T>, M> unit;
+    unit[i] = static_cast<T>(1);
+    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+    rho[i] = solver.get_residual_norm();
+    rep_num[i] = solver.get_iterations();
   }
-
   return std::make_tuple(X, rho, rep_num);
 }
 
@@ -1810,22 +1199,22 @@ complex_sparse_gmres_k_matrix(
 template <typename T, std::size_t M>
 inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
                   std::array<std::size_t, M>>
-complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> In_A,
+complex_gmres_k_matrix_inv(const Matrix<Complex<T>, M, M> &In_A,
                            const T &decay_rate, const T &division_min,
-                           const Matrix<Complex<T>, M, M> X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+                           const Matrix<Complex<T>, M, M> &X_1) {
   Matrix<Complex<T>, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
-
-  for (std::size_t i = 0; i < M; i++) {
-    auto result = Base::Matrix::complex_gmres_k(
-        In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
-    X.set_row(i, std::get<0>(result));
-    rho[i] = std::get<1>(result);
-    rep_num[i] = std::get<2>(result);
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  for (std::size_t i = 0; i < M; ++i) {
+    Vector<Complex<T>, M> unit;
+    unit[i] = static_cast<T>(1);
+    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+    rho[i] = solver.get_residual_norm();
+    rep_num[i] = solver.get_iterations();
   }
-
   return std::make_tuple(X, rho, rep_num);
 }
 
@@ -1851,22 +1240,22 @@ inline std::tuple<Matrix<Complex<T>, M, M>, std::array<T, M>,
                   std::array<std::size_t, M>>
 complex_sparse_gmres_k_matrix_inv(
     const CompiledSparseMatrix<Complex<T>, M, M, CSRIndices_A, CSRPointers_A>
-        In_A,
+        &In_A,
     const T &decay_rate, const T &division_min,
-    const Matrix<Complex<T>, M, M> X_1) {
-  Matrix<Complex<T>, M, M> B = Matrix<Complex<T>, M, M>::identity();
+    const Matrix<Complex<T>, M, M> &X_1) {
   Matrix<Complex<T>, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};
-
-  for (std::size_t i = 0; i < M; i++) {
-    auto result = Base::Matrix::complex_sparse_gmres_k(
-        In_A, B.get_row(i), X_1.get_row(i), decay_rate, division_min);
-    X.set_row(i, std::get<0>(result));
-    rho[i] = std::get<1>(result);
-    rep_num[i] = std::get<2>(result);
+  GmresSolver<Complex<T>, M> solver;
+  solver.division_min = division_min;
+  solver.relative_tolerance = decay_rate;
+  for (std::size_t i = 0; i < M; ++i) {
+    Vector<Complex<T>, M> unit;
+    unit[i] = static_cast<T>(1);
+    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+    rho[i] = solver.get_residual_norm();
+    rep_num[i] = solver.get_iterations();
   }
-
   return std::make_tuple(X, rho, rep_num);
 }
 

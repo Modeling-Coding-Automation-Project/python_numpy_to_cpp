@@ -3175,11 +3175,8 @@ void CheckPythonNumpy<T>::check_python_numpy_lu(void) {
     auto A_LU = A_LU_solver.get_L() * A_LU_solver.get_U();
     auto A_LU_dense = A_LU.create_dense();
 
-    Matrix<DefDense, T, 3, 3> A_LU_answer({
-        {1, 2, 3},
-        {5, 4, 6},
-        {9, 8, 7}
-        });
+    // The public permutation follows PA = LU.
+    auto A_LU_answer = A_LU_solver.get_P() * A;
 
     tester.expect_near(A_LU_dense.matrix.data, A_LU_answer.matrix.data, NEAR_LIMIT_STRICT,
         "check LinalgSolverLU L multiply U Dense.");
@@ -3816,7 +3813,8 @@ void CheckPythonNumpy<T>::check_python_numpy_eig(void) {
     auto eigen_values_sparse = eig_solver_sparse.get_eigen_values();
 
     decltype(eigen_values_sparse) eigen_values_sparse_sorted = eigen_values_sparse;
-    Base::Utility::sort(eigen_values_sparse_sorted.matrix.data);
+    // Eigenvalues occupy the single column of this column-major matrix.
+    Base::Utility::sort(eigen_values_sparse_sorted.matrix.data[0]);
 
     decltype(eigen_values_sparse) eigen_values_sparse_answer({
         {static_cast<T>(-2.47213595)},

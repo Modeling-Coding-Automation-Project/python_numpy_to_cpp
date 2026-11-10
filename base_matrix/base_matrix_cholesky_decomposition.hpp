@@ -23,209 +23,447 @@
 #include "base_matrix_matrix.hpp"
 #include "base_matrix_sparse.hpp"
 
+#include <array>
 #include <cstddef>
+#include <limits>
 #include <tuple>
 
 namespace Base {
 namespace Matrix {
 
+constexpr double DEFAULT_DIVISION_MIN_CHOLESKY = 1.0e-10;
+
+namespace CholeskyOperation {
+
+/** Upper triangle, in contiguous column order. */
+template <typename T, std::size_t M> class PackedUpper {
+public:
+  inline T &operator()(std::size_t row, std::size_t column) {
+    return this->data_[column * (column + 1) / 2 + row];
+  }
+  inline const T &operator()(std::size_t row, std::size_t column) const {
+    return this->data_[column * (column + 1) / 2 + row];
+  }
+
+protected:
+  std::array<T, M *(M + 1) / 2> data_{};
+};
+
 /**
- * @brief Computes the Cholesky decomposition of a symmetric, positive-definite
- * matrix.
- *
- * This function performs the Cholesky decomposition on the input matrix U,
- * producing an upper-triangular matrix Y such that U = Y^T * Y. If the
- * decomposition fails due to non-positive-definite input or near-zero division,
- * the function sets the zero_div_flag to true and returns the fallback matrix
- * Y_b.
- *
- * @tparam T Numeric type of the matrix elements (e.g., float, double).
- * @tparam M The dimension of the square matrix.
- * @param U The input symmetric, positive-definite matrix to decompose (size M x
- * M).
- * @param Y_b The fallback matrix to return if decomposition fails.
- * @param division_min Minimum value to avoid division by zero or very small
- * numbers.
- * @return std::tuple<Matrix<T, M, M>, bool> A tuple of the upper-triangular
- * matrix resulting from the Cholesky decomposition (or Y_b on failure) and a
- * boolean flag that is true if a zero or negative value is encountered during
- * decomposition.
+ * Right-looking factorization of an already initialized upper triangle.
+ * The caller guarantees symmetry; only the input lower triangle is loaded.
+ * A failed pivot masks the remaining fixed pivot slots.
+ * ROOT_LOOPS selects the existing fixed-iteration reciprocal-square-root.
+ * Its float-based initial approximation requires pivots representable in the
+ * positive normal float range, even when T is double. No nonfinite checks run.
+ */
+template <typename T, std::size_t M, std::size_t ROOT_LOOPS, bool MULTIPLY_ROOT,
+          typename Work>
+inline bool factor(Work &Y, T division_min, T relative_pivot_min) {
+  T scale = static_cast<T>(0);
+  for (std::size_t i = 0; i < M; ++i) {
+    T diagonal = Base::Math::abs(Y(i, i));
+    if (diagonal > scale) {
+      scale = diagonal;
+    }
+  }
+  T pivot_floor = division_min + relative_pivot_min * scale;
+  bool failed = false;
+  for (std::size_t k = 0; k < M; ++k) {
+    if (!failed) {
+      T pivot = Y(k, k);
+      if (pivot < pivot_floor || pivot <= static_cast<T>(0)) {
+        failed = true;
+      } else {
+        T inverse_root =
+            Base::Math::rsqrt_newton_method<T, ROOT_LOOPS>(pivot, division_min);
+        // inverse_root is positive and nonzero in the documented input range.
+        // Do not clamp it by the input-domain floor (its units are different).
+        Y(k, k) = MULTIPLY_ROOT ? pivot * inverse_root
+                                : static_cast<T>(1) / inverse_root;
+        for (std::size_t j = k + 1; j < M; ++j) {
+          Y(k, j) *= inverse_root;
+        }
+        for (std::size_t j = k + 1; j < M; ++j) {
+          T row_value = Y(k, j);
+          for (std::size_t i = k + 1; i <= j; ++i) {
+            Y(i, j) -= Y(k, i) * row_value;
+          }
+        }
+      }
+    }
+  }
+  return failed;
+}
+
+/**
+ * In-place inner-product variant. The unprocessed upper triangle still stores
+ * A; processed rows store the factor. This avoids the dense input copy while
+ * retaining the faster small-matrix traversal found in host measurements.
+ */
+template <typename T, std::size_t M, std::size_t ROOT_LOOPS, typename Work>
+inline bool factor_inner(Work &Y, T division_min) {
+  bool failed = false;
+  for (std::size_t k = 0; k < M; ++k) {
+    if (!failed) {
+      T pivot = Y(k, k);
+      for (std::size_t i = 0; i < k; ++i) {
+        pivot -= Y(i, k) * Y(i, k);
+      }
+      if (pivot < division_min || pivot <= static_cast<T>(0)) {
+        failed = true;
+      } else {
+        T inverse_root =
+            Base::Math::rsqrt_newton_method<T, ROOT_LOOPS>(pivot, division_min);
+        Y(k, k) = static_cast<T>(1) / inverse_root;
+        for (std::size_t j = k + 1; j < M; ++j) {
+          T value = Y(k, j);
+          for (std::size_t i = 0; i < k; ++i) {
+            value -= Y(i, k) * Y(i, j);
+          }
+          Y(k, j) = value * inverse_root;
+        }
+      }
+    }
+  }
+  return failed;
+}
+
+template <typename T> inline T positive_threshold(T value) {
+  return value > static_cast<T>(0)
+             ? value
+             : static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY);
+}
+
+} // namespace CholeskyOperation
+
+/**
+ * Output-reference API: the caller owns the only dense factor workspace.
+ * Returns true on failure; output is then a partial factor, not a fallback.
+ * Dense input and output may alias because all lower inputs are read before
+ * clearing the lower output. Positive pivots must fit normal float range for
+ * the configured reciprocal-square-root implementation.
+ */
+template <typename T, std::size_t M>
+inline bool cholesky_decomposition_to(const Matrix<T, M, M> &U,
+                                      Matrix<T, M, M> &Y, T division_min) {
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t i = 0; i <= j; ++i) {
+      Y(i, j) = U(j, i);
+    }
+  }
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t i = j + 1; i < M; ++i) {
+      Y(i, j) = static_cast<T>(0);
+    }
+  }
+  T floor = CholeskyOperation::positive_threshold(division_min);
+  bool failed =
+      CholeskyOperation::factor_inner<T, M, Base::Math::SQRT_REPEAT_NUMBER>(
+          Y, floor);
+  return failed || !(division_min > static_cast<T>(0));
+}
+
+template <typename T, std::size_t M, typename Indices, typename Pointers>
+inline bool cholesky_decomposition_sparse_to(
+    const CompiledSparseMatrix<T, M, M, Indices, Pointers> &U,
+    Matrix<T, M, M> &Y, T division_min) {
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t i = 0; i < M; ++i) {
+      Y(i, j) = static_cast<T>(0);
+    }
+  }
+  for (std::size_t row = 0; row < M; ++row) {
+    for (std::size_t entry = Pointers::list[row];
+         entry < Pointers::list[row + 1]; ++entry) {
+      std::size_t column = Indices::list[entry];
+      if (column <= row) {
+        Y(column, row) = U.values[entry];
+      }
+    }
+  }
+  T floor = CholeskyOperation::positive_threshold(division_min);
+  bool failed =
+      CholeskyOperation::factor_inner<T, M, Base::Math::SQRT_REPEAT_NUMBER>(
+          Y, floor);
+  return failed || !(division_min > static_cast<T>(0));
+}
+
+/**
+ * Dense compatibility API. A = Y^T Y, with Y_b returned on any invalid pivot.
+ * Symmetry is a caller precondition. Positive pivots below division_min fail.
+ * Invalid division_min is corrected to the default and reported as failure.
  */
 template <typename T, std::size_t M>
 inline std::tuple<Matrix<T, M, M>, bool>
 cholesky_decomposition(const Matrix<T, M, M> &U, const Matrix<T, M, M> &Y_b,
                        const T &division_min) {
-  Matrix<T, M, M> Y;
-
-  for (std::size_t i = 0; i < M; ++i) {
-    if (i == 0) {
-      T temp = U(i, i);
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
-      }
-
-      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
-      Y(i, i) = static_cast<T>(1) / temp_inv;
-
-      for (std::size_t j = 1; j < M; ++j) {
-        Y(0, j) = U(j, 0) * temp_inv;
-      }
-    } else if (i < M - 1) {
-      T temp = static_cast<T>(0);
-      for (std::size_t j = 0; j < i; ++j) {
-        temp += Y(j, i) * Y(j, i);
-      }
-      temp = U(i, i) - temp;
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
-      }
-
-      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
-      Y(i, i) = static_cast<T>(1) / temp_inv;
-
-      for (std::size_t j = i + 1; j < M; ++j) {
-        T sum = static_cast<T>(0);
-        for (std::size_t k = 0; k < i; ++k) {
-          sum += Y(k, j) * Y(k, i);
-        }
-        Y(i, j) = (U(j, i) - sum) * temp_inv;
-      }
-    } else {
-      T temp = static_cast<T>(0);
-      for (std::size_t j = 0; j < i; ++j) {
-        temp += Y(j, i) * Y(j, i);
-      }
-      temp = U(i, i) - temp;
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
-      }
-      Y(i, i) = Base::Math::sqrt<T>(temp);
-    }
+  std::tuple<Matrix<T, M, M>, bool> result;
+  bool failed = cholesky_decomposition_to(U, std::get<0>(result), division_min);
+  std::get<1>(result) = failed;
+  if (failed) {
+    std::get<0>(result) = Y_b;
   }
-
-  return std::make_tuple(Y, false);
+  return result;
 }
 
-/**
- * @brief Computes the Cholesky decomposition for a diagonal matrix.
- *
- * This function calculates the Cholesky decomposition of a diagonal matrix `U`.
- * The result is a diagonal matrix `Y` such that `Y * Y^T = U`, where each
- * diagonal element of `Y` is the square root of the corresponding element in
- * `U`.
- *
- * If any diagonal element of `U` is negative, the function sets the
- * `zero_div_flag` to true, assigns the fallback matrix `Y_b` to `Y`, and
- * terminates the computation.
- *
- * @tparam T The numeric type of the matrix elements.
- * @tparam M The size of the diagonal matrix.
- * @param U The input diagonal matrix to decompose.
- * @param Y_b The fallback diagonal matrix to use if a negative value is
- * encountered.
- * @return std::tuple<DiagMatrix<T, M>, bool> A tuple of the resulting diagonal
- * matrix from the Cholesky decomposition (or `Y_b` if a negative value is
- * encountered) and a boolean flag that is true if a negative diagonal element
- * is found in `U`.
- */
+/** Diagonal input retains its historical positive-semidefinite allowance. */
 template <typename T, std::size_t M>
 inline std::tuple<DiagMatrix<T, M>, bool>
 cholesky_decomposition_diag(const DiagMatrix<T, M> &U,
                             const DiagMatrix<T, M> &Y_b) {
   DiagMatrix<T, M> Y;
-
+  bool failed = false;
   for (std::size_t i = 0; i < M; ++i) {
-    if (U[i] >= static_cast<T>(0)) {
-      Y[i] = Base::Math::sqrt<T>(U[i]);
-    } else {
-      return std::make_tuple(Y_b, true);
+    if (!failed) {
+      if (U[i] < static_cast<T>(0)) {
+        failed = true;
+      } else {
+        Y[i] = U[i] == static_cast<T>(0) ? static_cast<T>(0)
+                                         : Base::Math::sqrt<T>(U[i], U[i]);
+      }
     }
   }
-
-  return std::make_tuple(Y, false);
+  return std::make_tuple(failed ? Y_b : Y, failed);
 }
 
-/**
- * @brief Computes the Cholesky decomposition of a sparse symmetric
- * positive-definite matrix.
- *
- * This function takes a sparse matrix in compiled format and computes its
- * Cholesky decomposition, returning the upper-triangular matrix Y such that U =
- * Y^T * Y. The function handles numerical stability by checking for
- * non-positive pivots and sets a flag if a zero or negative division is
- * detected.
- *
- * @tparam T             The numeric type of the matrix elements (e.g., float,
- * double).
- * @tparam M             The dimension of the square matrix.
- * @tparam CSRIndices_U  The type used for row indices in the sparse matrix
- * representation.
- * @tparam CSRPointers_U The type used for row pointers in the sparse matrix
- * representation.
- * @param U              The input sparse matrix in compiled format.
- * @param Y_b            The fallback matrix to return if decomposition fails.
- * @param division_min   The minimum value used to avoid division by zero in
- * reciprocal square root.
- * @return std::tuple<Matrix<T, M, M>, bool> A tuple of the upper-triangular
- * matrix resulting from the Cholesky decomposition (or Y_b if failed) and a
- * boolean flag that is true if a zero or negative pivot is encountered.
- */
+/** Scatter lower CSR input directly into the only dense factor workspace. */
 template <typename T, std::size_t M, typename CSRIndices_U,
           typename CSRPointers_U>
 inline std::tuple<Matrix<T, M, M>, bool> cholesky_decomposition_sparse(
     const CompiledSparseMatrix<T, M, M, CSRIndices_U, CSRPointers_U> &U,
     const Matrix<T, M, M> &Y_b, const T &division_min) {
-  Matrix<T, M, M> U_dense = Base::Matrix::output_dense_matrix(U);
-  Matrix<T, M, M> Y;
+  std::tuple<Matrix<T, M, M>, bool> result;
+  bool failed =
+      cholesky_decomposition_sparse_to(U, std::get<0>(result), division_min);
+  std::get<1>(result) = failed;
+  if (failed) {
+    std::get<0>(result) = Y_b;
+  }
+  return result;
+}
 
-  for (std::size_t i = 0; i < M; ++i) {
-    if (i == 0) {
-      T temp = U_dense(i, i);
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
+/**
+ * Compact SPD factor; dense get_U() is optional and its output costs M*M T.
+ * ROOT_LOOPS is an explicit accuracy/time setting, using the existing math
+ * library. The default preserves its configured iteration count.
+ */
+template <typename T, std::size_t M,
+          std::size_t ROOT_LOOPS = Base::Math::SQRT_REPEAT_NUMBER,
+          bool MULTIPLY_ROOT = false>
+class PackedCholesky {
+public:
+  PackedCholesky()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
+        relative_pivot_min(static_cast<T>(0)), valid_(false),
+        threshold_adjusted_(false) {}
+
+  inline void solve(const Matrix<T, M, M> &A) {
+    this->_check_thresholds();
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i <= j; ++i) {
+        this->factor_(i, j) = A(j, i);
       }
+    }
+    this->_factor();
+  }
 
-      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
-      Y(i, i) = static_cast<T>(1) / temp_inv;
-
-      for (std::size_t j = 1; j < M; ++j) {
-        Y(0, j) = U_dense(j, 0) * temp_inv;
+  template <typename Indices, typename Pointers>
+  inline void solve(const CompiledSparseMatrix<T, M, M, Indices, Pointers> &A) {
+    this->_check_thresholds();
+    // A different sparse pattern on the next call must not retain old values.
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i <= j; ++i) {
+        this->factor_(i, j) = static_cast<T>(0);
       }
-    } else if (i < M - 1) {
-      T temp = static_cast<T>(0);
-      for (std::size_t j = 0; j < i; ++j) {
-        temp += Y(j, i) * Y(j, i);
-      }
-      temp = U_dense(i, i) - temp;
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
-      }
-
-      T temp_inv = Base::Math::rsqrt<T>(temp, division_min);
-      Y(i, i) = static_cast<T>(1) / temp_inv;
-
-      for (std::size_t j = i + 1; j < M; ++j) {
-        T sum = static_cast<T>(0);
-        for (std::size_t k = 0; k < i; ++k) {
-          sum += Y(k, j) * Y(k, i);
+    }
+    for (std::size_t row = 0; row < M; ++row) {
+      for (std::size_t entry = Pointers::list[row];
+           entry < Pointers::list[row + 1]; ++entry) {
+        std::size_t column = Indices::list[entry];
+        if (column <= row) {
+          this->factor_(column, row) = A.values[entry];
         }
-        Y(i, j) = (U_dense(j, i) - sum) * temp_inv;
       }
-    } else {
-      T temp = static_cast<T>(0);
-      for (std::size_t j = 0; j < i; ++j) {
-        temp += Y(j, i) * Y(j, i);
+    }
+    this->_factor();
+  }
+
+  inline Matrix<T, M, M> get_U() const {
+    Matrix<T, M, M> result;
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i <= j; ++i) {
+        result(i, j) = this->factor_(i, j);
       }
-      temp = U_dense(i, i) - temp;
-      if (temp <= static_cast<T>(0)) {
-        return std::make_tuple(Y_b, true);
+    }
+    return result;
+  }
+
+  inline Vector<T, M> solve_rhs(const Vector<T, M> &b) const {
+    Vector<T, M> result;
+    if (this->valid_) {
+      for (std::size_t i = 0; i < M; ++i) {
+        T value = b[i];
+        for (std::size_t j = 0; j < i; ++j) {
+          value -= this->factor_(j, i) * result[j];
+        }
+        result[i] = value / this->factor_(i, i);
       }
-      Y(i, i) = Base::Math::sqrt<T>(temp);
+      for (std::size_t offset = 0; offset < M; ++offset) {
+        std::size_t i = M - 1 - offset;
+        T value = result[i];
+        for (std::size_t j = i + 1; j < M; ++j) {
+          value -= this->factor_(i, j) * result[j];
+        }
+        result[i] = value / this->factor_(i, i);
+      }
+    }
+    return result;
+  }
+
+  inline bool is_valid() const { return this->valid_; }
+  inline bool threshold_was_adjusted() const {
+    return this->threshold_adjusted_;
+  }
+
+public:
+  T division_min;
+  T relative_pivot_min;
+
+protected:
+  CholeskyOperation::PackedUpper<T, M> factor_;
+  bool valid_;
+  bool threshold_adjusted_;
+
+  inline void _check_thresholds() {
+    this->threshold_adjusted_ = !(this->division_min > static_cast<T>(0)) ||
+                                this->relative_pivot_min < static_cast<T>(0);
+    this->division_min =
+        CholeskyOperation::positive_threshold(this->division_min);
+    if (this->relative_pivot_min < static_cast<T>(0)) {
+      this->relative_pivot_min = static_cast<T>(0);
     }
   }
 
-  return std::make_tuple(Y, false);
-}
+  inline void _factor() {
+    this->valid_ = !CholeskyOperation::factor<T, M, ROOT_LOOPS, MULTIPLY_ROOT>(
+        this->factor_, this->division_min, this->relative_pivot_min);
+  }
+};
+
+/**
+ * Square-root-free SPD factorization A = L D L^T. The packed diagonal is D;
+ * off-diagonal entries store L transposed. This is not an indefinite solver.
+ */
+template <typename T, std::size_t M> class SPDLDLT {
+public:
+  SPDLDLT()
+      : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
+        relative_pivot_min(static_cast<T>(0)), valid_(false),
+        threshold_adjusted_(false) {}
+
+  inline void solve(const Matrix<T, M, M> &A) {
+    this->threshold_adjusted_ = !(this->division_min > static_cast<T>(0)) ||
+                                this->relative_pivot_min < static_cast<T>(0);
+    this->division_min =
+        CholeskyOperation::positive_threshold(this->division_min);
+    if (this->relative_pivot_min < static_cast<T>(0)) {
+      this->relative_pivot_min = static_cast<T>(0);
+    }
+    T scale = static_cast<T>(0);
+    for (std::size_t j = 0; j < M; ++j) {
+      T diagonal = Base::Math::abs(A(j, j));
+      if (diagonal > scale) {
+        scale = diagonal;
+      }
+      for (std::size_t i = 0; i <= j; ++i) {
+        this->factor_(i, j) = A(j, i);
+      }
+    }
+    T floor = this->division_min + this->relative_pivot_min * scale;
+    this->valid_ = true;
+    for (std::size_t k = 0; k < M; ++k) {
+      if (this->valid_) {
+        T diagonal = this->factor_(k, k);
+        if (diagonal < floor || diagonal <= static_cast<T>(0)) {
+          this->valid_ = false;
+        } else {
+          bool use_reciprocal = diagonal >= std::numeric_limits<T>::min();
+          T inverse_diagonal =
+              use_reciprocal ? static_cast<T>(1) / diagonal : static_cast<T>(0);
+          for (std::size_t j = k + 1; j < M; ++j) {
+            if (use_reciprocal) {
+              this->factor_(k, j) *= inverse_diagonal;
+            } else {
+              this->factor_(k, j) /= diagonal;
+            }
+          }
+          for (std::size_t j = k + 1; j < M; ++j) {
+            T weighted = diagonal * this->factor_(k, j);
+            for (std::size_t i = k + 1; i <= j; ++i) {
+              this->factor_(i, j) -= this->factor_(k, i) * weighted;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  inline Matrix<T, M, M> get_L() const {
+    Matrix<T, M, M> result = Matrix<T, M, M>::identity();
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = j + 1; i < M; ++i) {
+        result(i, j) = this->factor_(j, i);
+      }
+    }
+    return result;
+  }
+
+  inline DiagMatrix<T, M> get_D() const {
+    DiagMatrix<T, M> result;
+    for (std::size_t i = 0; i < M; ++i) {
+      result[i] = this->factor_(i, i);
+    }
+    return result;
+  }
+
+  inline Vector<T, M> solve_rhs(const Vector<T, M> &b) const {
+    Vector<T, M> result;
+    if (this->valid_) {
+      for (std::size_t i = 0; i < M; ++i) {
+        T value = b[i];
+        for (std::size_t j = 0; j < i; ++j) {
+          value -= this->factor_(j, i) * result[j];
+        }
+        result[i] = value;
+      }
+      for (std::size_t i = 0; i < M; ++i) {
+        result[i] /= this->factor_(i, i);
+      }
+      for (std::size_t offset = 0; offset < M; ++offset) {
+        std::size_t i = M - 1 - offset;
+        for (std::size_t j = i + 1; j < M; ++j) {
+          result[i] -= this->factor_(i, j) * result[j];
+        }
+      }
+    }
+    return result;
+  }
+
+  inline bool is_valid() const { return this->valid_; }
+  inline bool threshold_was_adjusted() const {
+    return this->threshold_adjusted_;
+  }
+
+public:
+  T division_min;
+  T relative_pivot_min;
+
+protected:
+  CholeskyOperation::PackedUpper<T, M> factor_;
+  bool valid_;
+  bool threshold_adjusted_;
+};
 
 } // namespace Matrix
 } // namespace Base
