@@ -116,7 +116,9 @@ public:
 
     // This may cause runtime error if the size of values is larger than
     // CSRIndices::size.
-    std::copy(values.begin(), values.end(), this->values.begin());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+      this->values[i] = values.begin()[i];
+    }
   }
 
   CompiledSparseMatrix(const std::array<T, CSRIndices::size> &values)
@@ -126,7 +128,9 @@ public:
 
     // This may cause runtime error if the size of values is larger than
     // CSRIndices::size.
-    std::copy(values.begin(), values.end(), this->values.begin());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+      this->values[i] = values[i];
+    }
   }
 
 #endif // BASE_MATRIX_USE_STD_VECTOR_
@@ -808,12 +812,12 @@ inline auto create_compiled_sparse(std::initializer_list<T> values)
                        CSRPointersFromSparseAvailable<SparseAvailable>>
       Y;
 
-  // This may cause runtime error if the size of values is larger than
-  // CSRIndices::size.
-  std::copy(values.begin(),
-            values.begin() +
-                CSRIndicesFromSparseAvailable<SparseAvailable>::size,
-            Y.values.begin());
+  // The input must contain at least
+  // CSRIndicesFromSparseAvailable<SparseAvailable>::size values.
+  for (std::size_t i = 0;
+       i < CSRIndicesFromSparseAvailable<SparseAvailable>::size; ++i) {
+    Y.values[i] = values.begin()[i];
+  }
 
   return Y;
 }

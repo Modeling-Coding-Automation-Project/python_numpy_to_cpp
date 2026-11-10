@@ -1035,12 +1035,16 @@ inline void update_horizontally_concatenated_matrix(Matrix<T, M, N + P> &Y,
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t row = 0; row < N; row++) {
-    std::copy(A(row).begin(), A(row).end(), Y(row).begin());
+    for (std::size_t i = 0; i < A(row).size(); ++i) {
+      Y(row)[i] = A(row)[i];
+    }
   }
 
   std::size_t B_row = 0;
   for (std::size_t row = N; row < N + P; row++) {
-    std::copy(B(B_row).begin(), B(B_row).end(), Y(row).begin());
+    for (std::size_t i = 0; i < B(B_row).size(); ++i) {
+      Y(row)[i] = B(B_row)[i];
+    }
     B_row++;
   }
 

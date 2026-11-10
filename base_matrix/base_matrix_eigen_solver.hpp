@@ -334,12 +334,15 @@ protected:
         u_abs += u[i] * u[i];
       }
 
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
+      for (std::size_t i = 0; i < this->House_.values.size(); ++i) {
+        this->House_.values[i] = static_cast<T>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_indices.size(); ++i) {
+        this->House_.csr_indices[i] = static_cast<std::size_t>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_pointers.size(); ++i) {
+        this->House_.csr_pointers[i] = static_cast<std::size_t>(0);
+      }
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -401,12 +404,15 @@ protected:
       u[k + 1] = R(k + 1, k);
       T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
 
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
+      for (std::size_t i = 0; i < this->House_.values.size(); ++i) {
+        this->House_.values[i] = static_cast<T>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_indices.size(); ++i) {
+        this->House_.csr_indices[i] = static_cast<std::size_t>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_pointers.size(); ++i) {
+        this->House_.csr_pointers[i] = static_cast<std::size_t>(0);
+      }
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {
@@ -906,12 +912,15 @@ protected:
         u_abs += u[i] * u[i];
       }
 
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
+      for (std::size_t i = 0; i < this->House_.values.size(); ++i) {
+        this->House_.values[i] = static_cast<T>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_indices.size(); ++i) {
+        this->House_.csr_indices[i] = static_cast<std::size_t>(0);
+      }
+      for (std::size_t i = 0; i < this->House_.csr_pointers.size(); ++i) {
+        this->House_.csr_pointers[i] = static_cast<std::size_t>(0);
+      }
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k + 1; i++) {
@@ -973,14 +982,15 @@ protected:
       T u_abs = Base::Matrix::complex_abs_sq(u[k]) +
                 Base::Matrix::complex_abs_sq(u[k + 1]);
 
-      std::fill(this->House_comp_.values.begin(),
-                this->House_comp_.values.end(), Complex<T>());
-      std::fill(this->House_comp_.csr_indices.begin(),
-                this->House_comp_.csr_indices.end(),
-                static_cast<std::size_t>(0));
-      std::fill(this->House_comp_.csr_pointers.begin(),
-                this->House_comp_.csr_pointers.end(),
-                static_cast<std::size_t>(0));
+      for (std::size_t i = 0; i < this->House_comp_.values.size(); ++i) {
+        this->House_comp_.values[i] = Complex<T>();
+      }
+      for (std::size_t i = 0; i < this->House_comp_.csr_indices.size(); ++i) {
+        this->House_comp_.csr_indices[i] = static_cast<std::size_t>(0);
+      }
+      for (std::size_t i = 0; i < this->House_comp_.csr_pointers.size(); ++i) {
+        this->House_comp_.csr_pointers[i] = static_cast<std::size_t>(0);
+      }
 
       std::size_t H_value_count = 0;
       for (std::size_t i = 0; i < k; i++) {

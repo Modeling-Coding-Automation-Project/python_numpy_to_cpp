@@ -76,7 +76,9 @@ public:
   DiagMatrix(const std::initializer_list<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input.begin()[i];
+    }
   }
 
   DiagMatrix(const std::array<T, M> &input) : data(input) {}
@@ -84,7 +86,9 @@ public:
   DiagMatrix(const std::vector<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input[i];
+    }
   }
 
   DiagMatrix(T input[M]) : data{} {

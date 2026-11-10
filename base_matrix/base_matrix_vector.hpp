@@ -64,7 +64,9 @@ public:
   Vector(const std::initializer_list<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than N.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input.begin()[i];
+    }
   }
 
   Vector(const std::array<T, N> &input) : data(input) {}
@@ -72,7 +74,9 @@ public:
   Vector(const std::vector<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than N.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input[i];
+    }
   }
 
 #endif // BASE_MATRIX_USE_STD_VECTOR_
