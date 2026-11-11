@@ -123,6 +123,8 @@ Choleskyから呼ぶ `Base::Math::rsqrt` の既定Newton実装は初期値にflo
 
 `GmresSolver<T,N,K>` でKを固定容量として選び、`cycles`、`orthogonalization_passes`、絶対/相対許容値、`division_min`を設定できる。既存関数はK=N、C=1の互換入口である。初期残差零なら解を保持する。特異な小三角系では巨大な補正を生成せず、既知の解を保持してbreakdownを通知する。
 
+既存APIと新クラスの既定設定は、右辺1本につき最大N更新のままである。再始動を明示した構成との違い、`decay_rate` の停止基準の変更、前回の最大32回構成の測定については、[GMRESの改善前後と反復回数の上限](08_gmres_algorithm_changes.md)を参照。
+
 複素回転は実数cと複素sを用いるユニタリ回転へ修正した。文書の再現例 `A=[[i,0],[1,1]], b=[1,0]` は、旧版が `[0,i]` とrho=0を返していたのに対し、新版は正解 `[-i,i]`、実残差0を返す。
 
 矩形版は両方式を試し、既存APIでは明示Gramを維持した。任意の `gmres_k_rect_matrix_free` / `sparse_gmres_k_rect_matrix_free` はGram保存を省くが、長さMの一時ベクトルと毎回の2つの積が必要になる。MがN²より大きい場合はRAMまで増えるため一律採用しない。正規方程式の条件数二乗の問題は両方式に残る。返すrhoは元のA/b/xから直接計算した `norm(Aᵀ(b−Ax))` であり、不整合系の `norm(b−Ax)` が0になることは要求しない。

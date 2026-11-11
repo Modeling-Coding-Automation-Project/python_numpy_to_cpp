@@ -26,3 +26,11 @@
 | `external_libraries/base_utility_cpp` | ゼロ割回避、近傍ゼロ判定、配列コピーなどの基礎ユーティリティ |
 | `external_libraries/python_math_to_cpp` | `sin`/`cos`/`exp` など数学関数を C++ で NumPy 風に扱うための基盤 |
 
+## 設計・検証の別資料
+
+以下は、上記の利用方法を説明する資料とは別に、内部アルゴリズムを扱う。
+
+- [06: 行列アルゴリズムの改善案](06_matrix_algorithm_improvement_proposals.md)
+- [07: 改善の実装・評価結果](07_matrix_algorithm_improvement_results.md)
+- [08: GMRESの改善前後と反復回数の上限](08_gmres_algorithm_changes.md)
+
