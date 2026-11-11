@@ -373,10 +373,18 @@ private:
             for (std::size_t pass = 0; pass < passes; ++pass) {
               for (std::size_t j = 0; j <= column; ++j) {
                 T projection = T();
+                Real basis_square = zero;
                 for (std::size_t i = 0; i < N; ++i) {
-                  projection +=
-                      Scalar::conjugate(this->basis_[j * N + i]) * product[i];
+                  const T basis_value = this->basis_[j * N + i];
+                  projection += Scalar::conjugate(basis_value) * product[i];
+                  basis_square += Scalar::squared_abs(basis_value);
                 }
+                // A dependency-provided norm may be approximate. Project onto
+                // the actual nonzero basis vector instead of assuming unit
+                // length, which could create a spurious Arnoldi direction.
+                // Stored vectors come from nonzero residuals, so their
+                // squared lengths are positive and this divisor is nonzero.
+                projection = projection / basis_square;
                 this->column_[j] += projection;
                 for (std::size_t i = 0; i < N; ++i) {
                   product[i] -= this->basis_[j * N + i] * projection;

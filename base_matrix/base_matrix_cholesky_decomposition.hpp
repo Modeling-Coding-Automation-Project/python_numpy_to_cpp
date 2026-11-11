@@ -53,12 +53,11 @@ protected:
  * Right-looking factorization of an already initialized upper triangle.
  * The caller guarantees symmetry; only the input lower triangle is loaded.
  * A failed pivot masks the remaining fixed pivot slots.
- * ROOT_LOOPS selects the existing fixed-iteration reciprocal-square-root.
- * Its float-based initial approximation requires pivots representable in the
- * positive normal float range, even when T is double. No nonfinite checks run.
+ * Reciprocal square roots follow the configured Base::Math implementation.
+ * Its default float-based seed requires positive normal float pivots, even
+ * when T is double. No nonfinite checks run.
  */
-template <typename T, std::size_t M, std::size_t ROOT_LOOPS, bool MULTIPLY_ROOT,
-          typename Work>
+template <typename T, std::size_t M, typename Work>
 inline bool factor(Work &Y, T division_min, T relative_pivot_min) {
   T scale = static_cast<T>(0);
   for (std::size_t i = 0; i < M; ++i) {
@@ -75,12 +74,10 @@ inline bool factor(Work &Y, T division_min, T relative_pivot_min) {
       if (pivot < pivot_floor || pivot <= static_cast<T>(0)) {
         failed = true;
       } else {
-        T inverse_root =
-            Base::Math::rsqrt_newton_method<T, ROOT_LOOPS>(pivot, division_min);
+        T inverse_root = Base::Math::rsqrt<T>(pivot, division_min);
         // inverse_root is positive and nonzero in the documented input range.
         // Do not clamp it by the input-domain floor (its units are different).
-        Y(k, k) = MULTIPLY_ROOT ? pivot * inverse_root
-                                : static_cast<T>(1) / inverse_root;
+        Y(k, k) = static_cast<T>(1) / inverse_root;
         for (std::size_t j = k + 1; j < M; ++j) {
           Y(k, j) *= inverse_root;
         }
@@ -101,7 +98,7 @@ inline bool factor(Work &Y, T division_min, T relative_pivot_min) {
  * A; processed rows store the factor. This avoids the dense input copy while
  * retaining the faster small-matrix traversal found in host measurements.
  */
-template <typename T, std::size_t M, std::size_t ROOT_LOOPS, typename Work>
+template <typename T, std::size_t M, typename Work>
 inline bool factor_inner(Work &Y, T division_min) {
   bool failed = false;
   for (std::size_t k = 0; k < M; ++k) {
@@ -113,8 +110,7 @@ inline bool factor_inner(Work &Y, T division_min) {
       if (pivot < division_min || pivot <= static_cast<T>(0)) {
         failed = true;
       } else {
-        T inverse_root =
-            Base::Math::rsqrt_newton_method<T, ROOT_LOOPS>(pivot, division_min);
+        T inverse_root = Base::Math::rsqrt<T>(pivot, division_min);
         Y(k, k) = static_cast<T>(1) / inverse_root;
         for (std::size_t j = k + 1; j < M; ++j) {
           T value = Y(k, j);
@@ -158,9 +154,7 @@ inline bool cholesky_decomposition_to(const Matrix<T, M, M> &U,
     }
   }
   T floor = CholeskyOperation::positive_threshold(division_min);
-  bool failed =
-      CholeskyOperation::factor_inner<T, M, Base::Math::SQRT_REPEAT_NUMBER>(
-          Y, floor);
+  bool failed = CholeskyOperation::factor_inner<T, M>(Y, floor);
   return failed || !(division_min > static_cast<T>(0));
 }
 
@@ -183,9 +177,7 @@ inline bool cholesky_decomposition_sparse_to(
     }
   }
   T floor = CholeskyOperation::positive_threshold(division_min);
-  bool failed =
-      CholeskyOperation::factor_inner<T, M, Base::Math::SQRT_REPEAT_NUMBER>(
-          Y, floor);
+  bool failed = CholeskyOperation::factor_inner<T, M>(Y, floor);
   return failed || !(division_min > static_cast<T>(0));
 }
 
@@ -245,13 +237,9 @@ inline std::tuple<Matrix<T, M, M>, bool> cholesky_decomposition_sparse(
 
 /**
  * Compact SPD factor; dense get_U() is optional and its output costs M*M T.
- * ROOT_LOOPS is an explicit accuracy/time setting, using the existing math
- * library. The default preserves its configured iteration count.
+ * Reciprocal square roots use Base::Math without class-specific settings.
  */
-template <typename T, std::size_t M,
-          std::size_t ROOT_LOOPS = Base::Math::SQRT_REPEAT_NUMBER,
-          bool MULTIPLY_ROOT = false>
-class PackedCholesky {
+template <typename T, std::size_t M> class PackedCholesky {
 public:
   PackedCholesky()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
@@ -346,7 +334,7 @@ protected:
   }
 
   inline void _factor() {
-    this->valid_ = !CholeskyOperation::factor<T, M, ROOT_LOOPS, MULTIPLY_ROOT>(
+    this->valid_ = !CholeskyOperation::factor<T, M>(
         this->factor_, this->division_min, this->relative_pivot_min);
   }
 };

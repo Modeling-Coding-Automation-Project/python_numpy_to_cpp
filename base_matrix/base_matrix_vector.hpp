@@ -1278,8 +1278,7 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return Base::Math::sqrt<T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-      sum);
+  return Base::Math::sqrt<T>(sum);
 }
 
 /**

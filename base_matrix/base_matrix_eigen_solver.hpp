@@ -55,8 +55,7 @@ template <typename T> inline T square_root(T value) {
       }
     }
   }
-  return root_scale *
-         Base::Math::sqrt_newton_method<T, 3>(value, static_cast<T>(1e-30));
+  return root_scale * Base::Math::sqrt<T>(value, static_cast<T>(1e-30));
 }
 
 template <typename S> struct Shift {

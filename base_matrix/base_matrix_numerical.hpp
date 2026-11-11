@@ -23,9 +23,9 @@ template <typename T> inline T positive_threshold(T value) {
 
 // Only normalized, nonnegative sums are passed here (normally [1, 2*N]).
 template <typename T> inline T normalized_sqrt(T value) {
-  return value == static_cast<T>(0) ? static_cast<T>(0)
-                                    : Base::Math::sqrt_newton_method<T, 3>(
-                                          value, static_cast<T>(1.0e-20));
+  return value == static_cast<T>(0)
+             ? static_cast<T>(0)
+             : Base::Math::sqrt<T>(value, static_cast<T>(1.0e-20));
 }
 
 template <typename T> struct Scalar {

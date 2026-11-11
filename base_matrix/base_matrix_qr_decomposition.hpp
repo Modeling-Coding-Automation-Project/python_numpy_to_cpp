@@ -65,13 +65,13 @@ inline void givens_rotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q,
   T s;
   if (Base::Math::abs(g) > Base::Math::abs(f)) {
     const T ratio = -f / g; // g is nonzero and has the larger magnitude.
-    s = Base::Math::rsqrt_newton_method<T, 2>(static_cast<T>(1) + ratio * ratio,
-                                              static_cast<T>(1));
+    s = Base::Math::rsqrt<T>(static_cast<T>(1) + ratio * ratio,
+                             static_cast<T>(1));
     c = s * ratio;
   } else {
     const T ratio = -g / f; // |f| >= |g| > 0.
-    c = Base::Math::rsqrt_newton_method<T, 2>(static_cast<T>(1) + ratio * ratio,
-                                              static_cast<T>(1));
+    c = Base::Math::rsqrt<T>(static_cast<T>(1) + ratio * ratio,
+                             static_cast<T>(1));
     s = c * ratio;
   }
 
@@ -216,11 +216,10 @@ protected:
  *
  * The upper triangle stores R; the lower triangle stores reflector tails,
  * with an implicit leading one and a separate tau vector. No full Q is kept.
- * SqrtIterations selects the existing math library's fixed Newton budget.
+ * Square-root calculation follows the configured Base::Math implementation.
  * Inputs must be finite and scaled so the resulting factors are representable.
  */
-template <typename T, std::size_t M, std::size_t N,
-          std::size_t SqrtIterations = 2>
+template <typename T, std::size_t M, std::size_t N>
 class QRDecompositionHouseholder {
 public:
   static_assert(M >= N && N > 0, "Incompatible matrix dimensions");
@@ -257,8 +256,7 @@ public:
           sum += value * value;
         }
         // 1 <= sum <= M: the float-based initial estimate stays in range.
-        const T norm = Base::Math::sqrt_newton_method<T, SqrtIterations>(
-            sum, static_cast<T>(1));
+        const T norm = Base::Math::sqrt<T>(sum, static_cast<T>(1));
         const T alpha = this->factors_(column, column) / scale;
         const T beta = alpha >= static_cast<T>(0) ? -norm : norm;
         const T denominator = alpha - beta;
