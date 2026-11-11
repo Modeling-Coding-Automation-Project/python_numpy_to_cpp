@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 
 # Windows app
 *.exe
+
+test_vs/algorithm_improvements/
