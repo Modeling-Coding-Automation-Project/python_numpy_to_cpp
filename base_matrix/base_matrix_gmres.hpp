@@ -61,8 +61,9 @@ template <typename MatrixType, typename T, std::size_t N>
 struct MatrixOperator {
   const MatrixType &matrix;
   std::size_t active_size;
-  void operator()(const Vector<T, N> &input, Vector<T, N> &output) const {
-    multiply(matrix, input, output, active_size);
+  inline void operator()(const Vector<T, N> &input,
+                         Vector<T, N> &output) const {
+    multiply(this->matrix, input, output, this->active_size);
   }
 };
 
@@ -89,7 +90,7 @@ inline void apply_operator(const Operator &operation, const Vector<T, N> &input,
 }
 
 template <typename T> struct IdentityPreconditioner {
-  T operator[](std::size_t) const { return static_cast<T>(1); }
+  inline T operator[](std::size_t) const { return static_cast<T>(1); }
 };
 
 /** Explicit normal equations are useful for tall inputs or repeated RHS. */
@@ -176,48 +177,50 @@ struct NormalOperator;
 template <typename T, std::size_t M, std::size_t N>
 struct NormalOperator<Matrix<T, M, N>, T, M, N> {
   const Matrix<T, M, N> &matrix;
-  void transpose_multiply(const Vector<T, M> &input,
-                          Vector<T, N> &output) const {
+  inline void transpose_multiply(const Vector<T, M> &input,
+                                 Vector<T, N> &output) const {
     for (std::size_t j = 0; j < N; ++j) {
       output[j] = T();
       for (std::size_t i = 0; i < M; ++i) {
-        output[j] += matrix(i, j) * input[i];
+        output[j] += this->matrix(i, j) * input[i];
       }
     }
   }
-  void operator()(const Vector<T, N> &input, Vector<T, N> &output) const {
+  inline void operator()(const Vector<T, N> &input,
+                         Vector<T, N> &output) const {
     Vector<T, M> intermediate;
     for (std::size_t i = 0; i < M; ++i) {
       for (std::size_t j = 0; j < N; ++j) {
-        intermediate[i] += matrix(i, j) * input[j];
+        intermediate[i] += this->matrix(i, j) * input[j];
       }
     }
-    transpose_multiply(intermediate, output);
+    this->transpose_multiply(intermediate, output);
   }
 };
 
 template <typename T, std::size_t M, std::size_t N, typename I, typename P>
 struct NormalOperator<CompiledSparseMatrix<T, M, N, I, P>, T, M, N> {
   const CompiledSparseMatrix<T, M, N, I, P> &matrix;
-  void transpose_multiply(const Vector<T, M> &input,
-                          Vector<T, N> &output) const {
+  inline void transpose_multiply(const Vector<T, M> &input,
+                                 Vector<T, N> &output) const {
     for (std::size_t j = 0; j < N; ++j) {
       output[j] = T();
     }
     for (std::size_t i = 0; i < M; ++i) {
       for (std::size_t j = P::list[i]; j < P::list[i + 1]; ++j) {
-        output[I::list[j]] += matrix.values[j] * input[i];
+        output[I::list[j]] += this->matrix.values[j] * input[i];
       }
     }
   }
-  void operator()(const Vector<T, N> &input, Vector<T, N> &output) const {
+  inline void operator()(const Vector<T, N> &input,
+                         Vector<T, N> &output) const {
     Vector<T, M> intermediate;
     for (std::size_t i = 0; i < M; ++i) {
       for (std::size_t j = P::list[i]; j < P::list[i + 1]; ++j) {
-        intermediate[i] += matrix.values[j] * input[I::list[j]];
+        intermediate[i] += this->matrix.values[j] * input[I::list[j]];
       }
     }
-    transpose_multiply(intermediate, output);
+    this->transpose_multiply(intermediate, output);
   }
 };
 
@@ -247,38 +250,41 @@ public:
   Real absolute_tolerance = static_cast<Real>(0);
 
   template <typename MatrixType>
-  Vector<T, N> solve(const MatrixType &matrix,
-                     const Vector<T, N> &right_hand_side,
-                     const Vector<T, N> &initial, std::size_t active_size = N) {
+  inline Vector<T, N>
+  solve(const MatrixType &matrix, const Vector<T, N> &right_hand_side,
+        const Vector<T, N> &initial, std::size_t active_size = N) {
     active_size = active_size > N ? N : active_size;
     GmresOperation::MatrixOperator<MatrixType, T, N> operation = {matrix,
                                                                   active_size};
-    return solve_operator(operation, right_hand_side, initial, active_size);
+    return this->solve_operator(operation, right_hand_side, initial,
+                                active_size);
   }
 
   template <typename MatrixType>
-  Vector<T, N> solve_preconditioned(const MatrixType &matrix,
-                                    const Vector<T, N> &right_hand_side,
-                                    const Vector<T, N> &initial,
-                                    const Vector<T, N> &inverse_diagonal) {
+  inline Vector<T, N> solve_preconditioned(
+      const MatrixType &matrix, const Vector<T, N> &right_hand_side,
+      const Vector<T, N> &initial, const Vector<T, N> &inverse_diagonal) {
     GmresOperation::MatrixOperator<MatrixType, T, N> operation = {matrix, N};
-    return _solve(operation, right_hand_side, initial, inverse_diagonal, N);
+    return this->_solve(operation, right_hand_side, initial, inverse_diagonal,
+                        N);
   }
 
   template <typename Operator>
-  Vector<T, N>
+  inline Vector<T, N>
   solve_operator(const Operator &operation, const Vector<T, N> &right_hand_side,
                  const Vector<T, N> &initial, std::size_t active_size = N) {
     GmresOperation::IdentityPreconditioner<T> identity;
-    return _solve(operation, right_hand_side, initial, identity,
-                  active_size > N ? N : active_size);
+    return this->_solve(operation, right_hand_side, initial, identity,
+                        active_size > N ? N : active_size);
   }
 
-  Real get_residual_norm() const { return this->residual_norm_; }
-  std::size_t get_iterations() const { return this->iterations_; }
-  bool is_converged() const { return this->converged_; }
-  bool has_breakdown() const { return this->breakdown_; }
-  bool threshold_was_adjusted() const { return this->threshold_adjusted_; }
+  inline Real get_residual_norm() const { return this->residual_norm_; }
+  inline std::size_t get_iterations() const { return this->iterations_; }
+  inline bool is_converged() const { return this->converged_; }
+  inline bool has_breakdown() const { return this->breakdown_; }
+  inline bool threshold_was_adjusted() const {
+    return this->threshold_adjusted_;
+  }
 
 private:
   std::array<T, N * K> basis_ = {};
@@ -294,12 +300,12 @@ private:
   bool breakdown_ = false;
   bool threshold_adjusted_ = false;
 
-  T &_r(std::size_t row, std::size_t column) {
+  inline T &_r(std::size_t row, std::size_t column) {
     return this->triangular_[column * (column + 1) / 2 + row];
   }
 
   template <typename Operator, typename Preconditioner>
-  Vector<T, N>
+  inline Vector<T, N>
   _solve(const Operator &operation, const Vector<T, N> &right_hand_side,
          const Vector<T, N> &initial, const Preconditioner &inverse_diagonal,
          std::size_t active_size) {
