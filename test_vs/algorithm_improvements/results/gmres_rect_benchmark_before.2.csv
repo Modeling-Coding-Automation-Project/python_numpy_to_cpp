@@ -1,0 +1,10 @@
+mode,type,m,n,ns,rms_target_error
+rect_api,float,32,8,1032.482,0.000240647568
+explicit,float,32,8,1192.812,0.000240647568
+rect_api,double,32,8,1201.366,0.00102634006
+explicit,double,32,8,1310.613,0.00102634006
+rect_api,float,24,16,4620.957,4.33928364e-07
+explicit,float,24,16,4194.803,4.33928364e-07
+rect_api,double,24,16,5348.062,0.00178349713
+explicit,double,24,16,4744.778,0.00178349713
+rect_api,double,128,4,1689.987,9.52875674e-08

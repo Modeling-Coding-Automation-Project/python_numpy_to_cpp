@@ -1,0 +1,22 @@
+# 行列アルゴリズムの回帰試験と比較
+
+実装・採否は [結果レポート](../../document/07_matrix_algorithm_improvement_results.md)、保存した最終証跡は [results](results/README.md) を参照。
+
+```sh
+python3 test_vs/algorithm_improvements/run_validation.py \
+  --output /tmp/matrix_algorithm_results --legacy-configs --sanitize --repeats 3
+```
+
+基準commitとそのsubmoduleを一時ディレクトリへarchiveし、作業ツリーをcheckoutし直さず比較する。`--baseline` に既存の固定基準ツリーも指定できる。g++、Git、Python 3.12以降を想定する。NumPyを利用する固有値の独立oracleは別コマンド:
+
+```sh
+python3 test_vs/algorithm_improvements/eigen_numpy_oracle.py
+```
+
+試験ソースの標準数学関数、chrono、メモリ監視、高精度参照はホスト専用。ターゲット実装の依存ではない。`*_benchmark.cpp` は同じソースを改善前後でビルドし、新しいAPIの行だけ `ALGORITHM_IMPROVEMENTS` で切り替える。不採用の試作も比較用コードとして残す。固定配列構成の禁止ヘッダ・ヒープ監視もrunnerが行う。
+
+`<algorithm>` の禁止は本リポジトリのライブラリ実装（`base_matrix/`、`python_numpy/`）をソース検査する。外部リポジトリ `base_utility_cpp` 内での `<algorithm>`、`std::copy` の使用は許容するため、依存先を含む一律のヘッダ禁止にはしない。`<cmath>` は引き続きデフォルト構成の依存先を含め、禁止ヘッダによるビルド検査を行う。`results/` は2026-11-10の実装・条件に対する記録であり、2026-11-11の外部リポジトリ復元後の再計測値ではない。
+
+平方根・逆平方根は数学ライブラリの公開APIに委譲する。現行benchmarkは `QRDecompositionHouseholder<T,M,N>` / `PackedCholesky<T,N>` を使い、クラス側で平方根の反復数や計算方式を選ばない。成分別レポートと `results/` の旧測定値には廃止した精度設定も含まれるため、現行コードを再実行した結果と区別する。
+
+runnerは既定の数学ライブラリ構成に加え、ホスト確認用の `BASE_MATH_USE_STD_MATH_` 構成でも数値回帰試験を実行する。後者は `<cmath>` を使う比較用であり、組み込み構成の代わりにはしない。既定構成の精度assertは依存先の平方根精度を考慮し、標準数学構成では従来の厳密なassertを維持する。構造・零入力・失敗状態の検証は両構成で行う。

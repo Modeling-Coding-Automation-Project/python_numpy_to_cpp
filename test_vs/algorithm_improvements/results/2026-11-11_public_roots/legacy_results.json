@@ -1,0 +1,61 @@
+[
+  {
+    "configuration": 0,
+    "defines": [],
+    "result": "passed"
+  },
+  {
+    "configuration": 1,
+    "defines": [
+      "BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 2,
+    "defines": [
+      "BASE_MATRIX_USE_STD_VECTOR_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 3,
+    "defines": [
+      "BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_",
+      "BASE_MATRIX_USE_STD_VECTOR_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 4,
+    "defines": [
+      "BASE_MATRIX_USE_FOR_LOOP_OPERATION_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 5,
+    "defines": [
+      "BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_",
+      "BASE_MATRIX_USE_FOR_LOOP_OPERATION_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 6,
+    "defines": [
+      "BASE_MATRIX_USE_STD_VECTOR_",
+      "BASE_MATRIX_USE_FOR_LOOP_OPERATION_"
+    ],
+    "result": "passed"
+  },
+  {
+    "configuration": 7,
+    "defines": [
+      "BASE_MATRIX_USE_CONVENTIONAL_TEMPLATE_PATTERN_",
+      "BASE_MATRIX_USE_STD_VECTOR_",
+      "BASE_MATRIX_USE_FOR_LOOP_OPERATION_"
+    ],
+    "result": "passed"
+  }
+]

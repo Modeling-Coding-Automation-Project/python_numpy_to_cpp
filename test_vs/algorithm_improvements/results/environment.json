@@ -1,0 +1,27 @@
+{
+  "baseline_commit": "b7faabf3bbac107d1be1462d139f4be0fa25a6b7",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "host": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "machine": "x86_64",
+  "flags": "-std=c++11 -Wall -Wextra -Werror -O2 -fstack-usage",
+  "repeats": 3,
+  "working_diff": " base_matrix/base_matrix_cholesky_decomposition.hpp |  536 +++++--\n base_matrix/base_matrix_eigen_solver.hpp           | 1670 +++++++-------------\n base_matrix/base_matrix_inverse.hpp                |  969 +++---------\n base_matrix/base_matrix_lu_decomposition.hpp       |  416 ++---\n base_matrix/base_matrix_qr_decomposition.hpp       |  593 +++----\n external_libraries/base_utility_cpp                |    0\n python_numpy/python_numpy_linalg_lu.hpp            |   17 +\n test_vs/check_base_matrix.hpp                      |   16 +-\n test_vs/check_python_numpy.hpp                     |   10 +-\n 9 files changed, 1734 insertions(+), 2493 deletions(-)\n",
+  "timing_cpu": 0,
+  "timing_order": "three interleaved before/after processes per benchmark, final source binaries",
+  "legacy_flags": "-std=c++11 -Wall -Wextra -Werror -O0",
+  "cpu_model": "12th Gen Intel(R) Core(TM) i5-1235U",
+  "date": "2026-11-10",
+  "submodules": {
+    "base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30",
+    "python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+    "MCAP_tester": "7633f8ce184082a3647484f98b226a21c32ccde1"
+  },
+  "validation": {
+    "legacy_ci_configs": 8,
+    "regression_programs": 5,
+    "sanitized_programs": 5,
+    "utility_configs": 4,
+    "fixed_storage_allocations": 0,
+    "exit_code": 0
+  }
+}

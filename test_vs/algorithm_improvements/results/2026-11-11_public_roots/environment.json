@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-11",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "parent_head": "f50060e726c2fb03fa2a1bc44bc91c538966de96",
+  "math_head": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+  "utility_head": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30",
+  "cxx_flags": "-std=c++11 -Wall -Wextra -Werror",
+  "legacy_optimization": "-O0",
+  "regression_optimization": "-O2",
+  "sanitizers": "-O1 -g -fsanitize=address,undefined,float-divide-by-zero -fno-omit-frame-pointer",
+  "root_policy": "Base::Math public sqrt/rsqrt APIs; no matrix-local precision setting",
+  "all_recorded_tests_exit_code": 0
+}

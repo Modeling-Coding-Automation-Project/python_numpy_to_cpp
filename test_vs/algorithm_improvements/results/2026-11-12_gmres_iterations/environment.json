@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-12",
+  "revision": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "flags": "-std=c++11 -O2 -Wall -Wextra -Werror",
+  "source_hashes": {
+    "base_matrix/base_matrix_gmres.hpp": "fffe28131fa4610781b1a1bcd187da8643f72f1e79cc1efc93d56b7dac4836df",
+    "base_matrix/base_matrix_inverse.hpp": "03dc17725f2851bb403eb6b591cfe2e4ff78a65fcedeb1002cb311010401892a",
+    "base_matrix/base_matrix_numerical.hpp": "afcc5f8c879d640ae334554827c98f2c35badd8edbf36837404c8540718656a2",
+    "test_vs/algorithm_improvements/gmres_benchmark.cpp": "eaedcf5e155b40949753bbc575dcd6387912d3db5e68f5c4c7ff267f17852b58",
+    "external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp": "4c9af482cb1896d58871f7883bedcc32d41526406b765adcbd6e516fee051716"
+  }
+}

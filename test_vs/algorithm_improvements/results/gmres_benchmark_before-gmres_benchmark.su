@@ -1,0 +1,9 @@
+/tmp/matrix_algorithm_baseline/external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp:954:10:T Base::Math::rsqrt_newton_method(const T&, const T&) [with T = float; long unsigned int LOOP_NUMBER = 1]	8	static
+/tmp/matrix_algorithm_baseline/external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp:954:10:T Base::Math::rsqrt_newton_method(const T&, const T&) [with T = double; long unsigned int LOOP_NUMBER = 1]	8	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = float; long unsigned int N = 4]	640	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = double; long unsigned int N = 4]	1120	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = float; long unsigned int N = 8]	1648	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = double; long unsigned int N = 8]	3136	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = float; long unsigned int N = 16]	5152	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:44:43:void legacy_row(int) [with T = double; long unsigned int N = 16]	10208	static
+/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/gmres_benchmark.cpp:121:5:int main()	16	static

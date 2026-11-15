@@ -1,0 +1,6 @@
+external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp:954:10:T Base::Math::rsqrt_newton_method(const T&, const T&) [with T = float; long unsigned int LOOP_NUMBER = 2]	8	static
+test_vs/algorithm_improvements/qr_stack.cpp:16:43:void qr_householder_q_16(const Base::Matrix::QRDecompositionHouseholder<float, 16, 16>&, Base::Matrix::Matrix<float, 16, 16>&)	56	static
+base_matrix/base_matrix_qr_decomposition.hpp:234:15:void Base::Matrix::QRDecompositionHouseholder<T, M, N, SqrtIterations>::solve(const Base::Matrix::Matrix<T, M, N>&) [with T = float; long unsigned int M = 16; long unsigned int N = 16; long unsigned int SqrtIterations = 2]	80	static
+test_vs/algorithm_improvements/qr_stack.cpp:11:43:void qr_householder_factor_16(Base::Matrix::QRDecompositionHouseholder<float, 16, 16>&, const Base::Matrix::Matrix<float, 16, 16>&)	8	static
+base_matrix/base_matrix_qr_decomposition.hpp:56:13:void Base::Matrix::QROperation::givens_rotation(std::size_t, std::size_t, Base::Matrix::Matrix<T, M, M>&, Base::Matrix::Matrix<T, M, N>&) [with T = float; long unsigned int M = 16; long unsigned int N = 16]	8	static
+test_vs/algorithm_improvements/qr_stack.cpp:5:43:void qr_givens_factor_16(Base::Matrix::QRDecomposition<float, 16, 16>&, const Base::Matrix::Matrix<float, 16, 16>&)	80	static
