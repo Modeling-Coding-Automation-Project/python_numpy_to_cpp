@@ -1,0 +1,25 @@
+{
+  "selected_before_holdout": true,
+  "selection_time_utc": "2026-11-16T21:35:21.708174+00:00",
+  "revision": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+  "candidate": {
+    "name": "candidate_common",
+    "relative": 1e-06,
+    "vector": 4.8e-06,
+    "inner": 0.001
+  },
+  "fixed": {
+    "breakdown": 8e-12,
+    "shift": 0.0003,
+    "division_min": 1e-20,
+    "qr_n3": 128,
+    "qr_other": 64,
+    "inverse": 30,
+    "inner_cycles": 1,
+    "inner_passes": 1
+  },
+  "basis": "92 search cases; quality and reported success in all cases; least QR sweeps among all-success tested profiles, looser inner tolerance among tied quality results.",
+  "timing_used_for_selection": false,
+  "holdout_used_for_selection": false,
+  "source_sha256": "f2d580217b7cb63af99ffc5cc2171c40437816653c15a164f0aa7962b7ea18e5"
+}

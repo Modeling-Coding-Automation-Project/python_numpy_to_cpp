@@ -34,10 +34,10 @@ constexpr double DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER = 0.0;
 constexpr double DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER = 0.0;
 
 // Independent relative thresholds shared by float and double.
-constexpr double DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER = 8.0e-9;
-constexpr double DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE = 3.2e-6;
+constexpr double DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER = 1.0e-6;
+constexpr double DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE = 4.0e-6;
 constexpr double DEFAULT_EIGENVECTOR_RELATIVE_SHIFT = 3.0e-4;
-constexpr double DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE = 5.0e-3;
+constexpr double DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE = 1.0e-3;
 // Preserve the existing name for the default inverse-iteration shift.
 const double EIGEN_SMALL_VALUE = DEFAULT_EIGENVECTOR_RELATIVE_SHIFT;
 // Number of QR sweeps between deterministic exceptional shifts.

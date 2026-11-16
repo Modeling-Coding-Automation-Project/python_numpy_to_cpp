@@ -21,8 +21,10 @@ namespace Matrix {
 constexpr std::size_t DEFAULT_CYCLES_GMRES = 1;
 constexpr std::size_t DEFAULT_ORTHOGONALIZATION_PASSES_GMRES = 1;
 constexpr double DEFAULT_DIVISION_MIN_GMRES = 1.0e-10;
+// Conservative shared default; callers can request a different residual target.
 // With both tolerances zero, only an exact zero residual meets convergence.
-constexpr double DEFAULT_RELATIVE_TOLERANCE_GMRES = 0.0;
+// Legacy APIs explicitly replace this value with their decay_rate argument.
+constexpr double DEFAULT_RELATIVE_TOLERANCE_GMRES = 1.0e-12;
 constexpr double DEFAULT_ABSOLUTE_TOLERANCE_GMRES = 0.0;
 // Arnoldi breakdown limit: relative tolerance * ||A*D^-1*q||.
 // Keep this independent of the requested residual tolerance.

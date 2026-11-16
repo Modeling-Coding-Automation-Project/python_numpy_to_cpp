@@ -1,0 +1,28 @@
+{
+  "production_diff_empty": true,
+  "gmres_quality_rows": 2442,
+  "gmres_timing_rows": 4536,
+  "eigen_quality_rows": {
+    "rtol": 1196,
+    "joint": 920,
+    "holdout": 96
+  },
+  "eigen_timing_rows": 1960,
+  "eigen_fixed_candidate_quality": {
+    "joint": {
+      "cases": 92,
+      "quality": 92,
+      "usable": 92
+    },
+    "holdout": {
+      "cases": 48,
+      "quality": 30,
+      "usable": 30
+    }
+  },
+  "probe_hashes_match": true,
+  "new_python_syntax_ok": true,
+  "scope": "Integrity and aggregate checks; source modifications are host-only probes/runners and documentation. No peak-stack remeasurement.",
+  "markdown_relative_links_checked": 43,
+  "markdown_relative_links_valid": true
+}

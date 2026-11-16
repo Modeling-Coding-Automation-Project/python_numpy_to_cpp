@@ -1,0 +1,10 @@
+{
+  "cases": 2442,
+  "exact_input_systems": 41,
+  "finite_outputs": true,
+  "reference_precision": 80,
+  "verification_precision": 120,
+  "fixed_storage_unchanged": true,
+  "all_iterations_within_k_times_cycles": true,
+  "note": "Convergence status uses working precision; the independent Decimal residual is evaluated separately."
+}

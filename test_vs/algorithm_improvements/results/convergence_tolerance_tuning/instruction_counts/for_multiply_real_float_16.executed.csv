@@ -1,0 +1,35 @@
+symbol,mnemonic,operands,image,address,single_step_visits
+instruction_count_begin,endbr64,,/tmp/matrix_instruction_counts/instructions_for,0x28a0,1
+instruction_count_begin,ret,,/tmp/matrix_instruction_counts/instructions_for,0x28a4,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,endbr64,,/tmp/matrix_instruction_counts/instructions_for,0x2c40,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,mov,"r9,QWORD PTR [rdi+0x480]",/tmp/matrix_instruction_counts/instructions_for,0x2c44,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2c4b,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movups,"XMMWORD PTR [rdi+0x440],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2c4f,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movups,"XMMWORD PTR [rdi+0x450],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2c56,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movups,"XMMWORD PTR [rdi+0x460],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2c5d,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movups,"XMMWORD PTR [rdi+0x470],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2c64,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,cmp,"r9,0x10",/tmp/matrix_instruction_counts/instructions_for,0x2c6b,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,je,2d07 <_ZN12MultiplyCaseIfLm16EE5applyEPv+0xc7>,/tmp/matrix_instruction_counts/instructions_for,0x2c6f,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,lea,"rcx,[rdi+0x400]",/tmp/matrix_instruction_counts/instructions_for,0x2d07,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,xor,"edx,edx",/tmp/matrix_instruction_counts/instructions_for,0x2d0e,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,lea,"rsi,[rdi+0x480]",/tmp/matrix_instruction_counts/instructions_for,0x2d10,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,nop,WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x2d17,1
+_ZN12MultiplyCaseIfLm16EE5applyEPv,lea,"rax,[rdi+0x440]",/tmp/matrix_instruction_counts/instructions_for,0x2d20,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,nop,DWORD PTR [rax],/tmp/matrix_instruction_counts/instructions_for,0x2d27,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x2d2a,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x2d35,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movss,"xmm0,DWORD PTR [rax+rdx*1-0x440]",/tmp/matrix_instruction_counts/instructions_for,0x2d40,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,mulss,"xmm0,DWORD PTR [rcx]",/tmp/matrix_instruction_counts/instructions_for,0x2d49,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,add,"rax,0x4",/tmp/matrix_instruction_counts/instructions_for,0x2d4d,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,addss,"xmm0,DWORD PTR [rax-0x4]",/tmp/matrix_instruction_counts/instructions_for,0x2d51,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,movss,"DWORD PTR [rax-0x4],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x2d56,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,cmp,"rsi,rax",/tmp/matrix_instruction_counts/instructions_for,0x2d5b,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,jne,2d40 <_ZN12MultiplyCaseIfLm16EE5applyEPv+0x100>,/tmp/matrix_instruction_counts/instructions_for,0x2d5e,256
+_ZN12MultiplyCaseIfLm16EE5applyEPv,add,"rdx,0x40",/tmp/matrix_instruction_counts/instructions_for,0x2d60,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,add,"rcx,0x4",/tmp/matrix_instruction_counts/instructions_for,0x2d64,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,cmp,"rdx,0x400",/tmp/matrix_instruction_counts/instructions_for,0x2d68,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,jne,2d20 <_ZN12MultiplyCaseIfLm16EE5applyEPv+0xe0>,/tmp/matrix_instruction_counts/instructions_for,0x2d6f,16
+_ZN12MultiplyCaseIfLm16EE5applyEPv,ret,,/tmp/matrix_instruction_counts/instructions_for,0x2d71,1
+_Z3runI12MultiplyCaseIfLm16EEEvv,mov,"rdi,rbx",/tmp/matrix_instruction_counts/instructions_for,0x2eee,1
+_Z3runI12MultiplyCaseIfLm16EEEvv,call,2c40 <_ZN12MultiplyCaseIfLm16EE5applyEPv>,/tmp/matrix_instruction_counts/instructions_for,0x2ef1,1
+_Z3runI12MultiplyCaseIfLm16EEEvv,call,28b0 <instruction_count_end>,/tmp/matrix_instruction_counts/instructions_for,0x2ef6,1

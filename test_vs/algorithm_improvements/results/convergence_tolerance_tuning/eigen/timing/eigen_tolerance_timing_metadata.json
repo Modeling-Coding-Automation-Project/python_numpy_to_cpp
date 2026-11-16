@@ -1,0 +1,111 @@
+{
+  "revision": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+  "snapshot_digest": "b3cd96aaf8800490c47475fbcfdf24915629c2da7dd541e38a201278465f111a",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "build_command": [
+    "g++",
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fstack-usage",
+    "-I/tmp/eigen_tolerance_tuning_6b1d627/base_matrix",
+    "-I/tmp/eigen_tolerance_tuning_6b1d627/external_libraries/python_math_to_cpp/base_math",
+    "-I/tmp/eigen_tolerance_tuning_6b1d627/external_libraries/python_math_to_cpp/python_math",
+    "-I/tmp/eigen_tolerance_tuning_6b1d627/external_libraries/base_utility_cpp/base_utility",
+    "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/eigen_tolerance_benchmark.cpp",
+    "-o",
+    "/tmp/eigen_tolerance_tuning_6b1d627/eigen_tolerance_benchmark"
+  ],
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fstack-usage"
+  ],
+  "cpu": 0,
+  "same_binary_for_profiles": true,
+  "process_repeats": 7,
+  "process_order": [
+    {
+      "repeat": 0,
+      "profile": "current_a",
+      "process_seconds": 0.5721008229957079
+    },
+    {
+      "repeat": 0,
+      "profile": "candidate_common",
+      "process_seconds": 0.5373926309985109
+    },
+    {
+      "repeat": 1,
+      "profile": "candidate_common",
+      "process_seconds": 0.5347430979963974
+    },
+    {
+      "repeat": 1,
+      "profile": "current_a",
+      "process_seconds": 0.5489583969974774
+    },
+    {
+      "repeat": 2,
+      "profile": "current_a",
+      "process_seconds": 0.563717777004058
+    },
+    {
+      "repeat": 2,
+      "profile": "candidate_common",
+      "process_seconds": 0.5200048660044558
+    },
+    {
+      "repeat": 3,
+      "profile": "candidate_common",
+      "process_seconds": 0.5165968879955471
+    },
+    {
+      "repeat": 3,
+      "profile": "current_a",
+      "process_seconds": 0.5560120980007923
+    },
+    {
+      "repeat": 4,
+      "profile": "current_a",
+      "process_seconds": 0.5613353999942774
+    },
+    {
+      "repeat": 4,
+      "profile": "candidate_common",
+      "process_seconds": 0.5261919040058274
+    },
+    {
+      "repeat": 5,
+      "profile": "candidate_common",
+      "process_seconds": 0.521353955999075
+    },
+    {
+      "repeat": 5,
+      "profile": "current_a",
+      "process_seconds": 0.5578855749990907
+    },
+    {
+      "repeat": 6,
+      "profile": "current_a",
+      "process_seconds": 0.5617053159949137
+    },
+    {
+      "repeat": 6,
+      "profile": "candidate_common",
+      "process_seconds": 0.5184650580049492
+    }
+  ],
+  "source_sha256": "37e0718469aecf64ca63efbf8935f88e0295d1d599510399a44e304caf541de2",
+  "quality_source_sha256": "f2d580217b7cb63af99ffc5cc2171c40437816653c15a164f0aa7962b7ea18e5",
+  "binary_sha256": "38c8f5e2be46586f670478501b3a78544e404073db255a3789e862b692f892e2",
+  "frame_file_sha256": "a5988813ca088d2a7ae6d51d15dd9e88289467f5a3c6d7da81181a61307ed0ff",
+  "runner_sha256": "dfe8bd4f129b8957bb1e2ad68f0ef669f95c7f7ea783aaa340913e45c3674759",
+  "note": "Constructor-inclusive full solves; same compiled frames and sizeof for both runtime profiles; this does not measure dynamic peak stack.",
+  "scope": "Search 92 + frozen-candidate holdout 48 per profile; independent quality gates joined from separately measured raw solutions."
+}

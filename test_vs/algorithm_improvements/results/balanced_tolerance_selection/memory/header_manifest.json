@@ -1,0 +1,111 @@
+{
+  "baseline": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+  "snapshots": {
+    "6b1d627edf2de6e3e56deca59b83b37e942a97aa": {
+      "revision": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "all_header_sha256": {
+        "base_matrix/base_matrix.hpp": "f1f22d68dfd8d460bcfb8dd621302d8859572bd6f5794c35c8abdfd8a05a02d8",
+        "base_matrix/base_matrix_cholesky_decomposition.hpp": "0bf41c69cefb38c9170c936cf065e25aa24ba7f74ed3a0c1390d4840be89040f",
+        "base_matrix/base_matrix_compiled_sparse.hpp": "c8589e727f5573fab51e2af852cf52abeb45b0b007e1d94d640c8985153fe1cd",
+        "base_matrix/base_matrix_compiled_sparse_operation.hpp": "01ef2fcd07da71b34adf3bf9c8bc0e68556dfb7de3868bcf834d9a1cec269ad1",
+        "base_matrix/base_matrix_compiled_sparse_reduced_template.hpp": "7174b6512f57b723e958d55e28c8e91896192de00b221cbe5d01aa90b1b4a898",
+        "base_matrix/base_matrix_complex.hpp": "38336e6d7429999c7865bd050b17cd89d3b8ef9ac30287e4c3418c798d45f0fe",
+        "base_matrix/base_matrix_concatenate.hpp": "ec06872d0d0382ce8759ece1c665b246ba379c5d0484a782b751ba33e4e7d53e",
+        "base_matrix/base_matrix_convolve.hpp": "e2f0cad42be771ad52534dc07b1369cc23bc532353c4f2833c42cbd1469afdbc",
+        "base_matrix/base_matrix_diagonal.hpp": "1c1d067555ca45aa65f399cb7ea824052faaf23c94cae1fc2621c387e69b7c45",
+        "base_matrix/base_matrix_eigen_solver.hpp": "187cff6851d66e4b660ab733cee5c422450eebc54a9d353028a2386da13ec4d6",
+        "base_matrix/base_matrix_gmres.hpp": "b4686c32ffa99780dc6868860d91d6191dee33b67d23d06b505ff1e16392c9b2",
+        "base_matrix/base_matrix_inverse.hpp": "03dc17725f2851bb403eb6b591cfe2e4ff78a65fcedeb1002cb311010401892a",
+        "base_matrix/base_matrix_lu_decomposition.hpp": "428b02c41157fc227db0fc3f96570127c972de4207782b35be8bb14bca923b77",
+        "base_matrix/base_matrix_macros.hpp": "f42e761065b8380ba6003479a4ca020c5a36906306d77f3fb8d6f81ac7023cda",
+        "base_matrix/base_matrix_math.hpp": "255d9f442a9491dc949cba7055e55c1274d540fb83e4fd3f1547de3d7d8d1c9d",
+        "base_matrix/base_matrix_matrix.hpp": "5b4bb39d3a60054a3e4b40684e36d7b69c58057217a4b7233ba5b00e093dca15",
+        "base_matrix/base_matrix_numerical.hpp": "13c7f90001ba5a121aa1f232ce9155d2b00e51be5cf7e362f2af71e5f2615826",
+        "base_matrix/base_matrix_qr_decomposition.hpp": "618c1827d59ea7edf90af5842726d5dd3c2cd75263a0b078d724624265af47ab",
+        "base_matrix/base_matrix_sparse.hpp": "eb906d3f863828dcff0a327ef7e08f49fad8c63dd0e52e6425733657b91b64b7",
+        "base_matrix/base_matrix_templates.hpp": "890cec9dce335277cdd477b0fe584e0b864ee1a41d8e4a6b3d82c9a86b7ebbe0",
+        "base_matrix/base_matrix_triangular_sparse.hpp": "cd8a2f06cbe4e7a3c2e5916e52dc7d158ffabb6b8e31e9c1f0407d1e4ef860e0",
+        "base_matrix/base_matrix_variable_sparse.hpp": "c4529ecd0297a371a2f3987d071e0b02c6d840c6f7e9fa8f96d691a0a9b1ddb0",
+        "base_matrix/base_matrix_vector.hpp": "4e7820f802173711b7047cf954a081a588b9ad6225ed10b2b0d5e712564077f6",
+        "external_libraries/base_utility_cpp/base_utility/base_utility.hpp": "9fa0d26e74ca4fb93ad3a39936551ae8987e5fa7e57ef46c4bb89d93bd363347",
+        "external_libraries/base_utility_cpp/base_utility/base_utility_macros.hpp": "91ba8d237c6d5b0d642adf508ec44a8913aaa4630025b0e2c15e500a055684ef",
+        "external_libraries/python_math_to_cpp/base_math/base_math.hpp": "b26829272845fa00b9dbf85f0c2c055501b6640faf256407f4cc1d454c7c1ae7",
+        "external_libraries/python_math_to_cpp/base_math/base_math_arithmetic.hpp": "3936bc5a1ccc890b6cf259dfef47a95bba861e40e3f5a928fde4769c479561ec",
+        "external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp": "4c9af482cb1896d58871f7883bedcc32d41526406b765adcbd6e516fee051716",
+        "external_libraries/python_math_to_cpp/base_math/base_math_macros.hpp": "6d8011bf68a65344db96739628966eae826b894c709fbf8438118e355287ad40",
+        "external_libraries/python_math_to_cpp/base_math/base_math_mathematical_constants.hpp": "7d8fd1fe9203fbad4afc17defabb2ce00fed25970aed268d910fe9686d289fca",
+        "external_libraries/python_math_to_cpp/base_math/base_math_templates.hpp": "0b5cd843b96220825de1594ac5783e57ba4679679a64108e49ba7b32c13670b5",
+        "external_libraries/python_math_to_cpp/base_math/base_math_trigonometric.hpp": "99828a1cda77ede0d41de65f9814dbcedfcc4247029a2f4368895955d592bc34",
+        "external_libraries/python_math_to_cpp/python_math/python_math.hpp": "a94fdcb9e6ba2bf330d5ca8c0db6b96baf3dca8a71244cad38c242f81d42a8b6",
+        "external_libraries/python_math_to_cpp/python_math/python_math_arithmetic.hpp": "bda585cf892453163cb31406d2f5aebb6764e1b4a06ac162f518efa3a3a1007e",
+        "external_libraries/python_math_to_cpp/python_math/python_math_exponential_logarithmic.hpp": "5b49047826936239adfce3b38ea2c9609544e96bcac6cc4f7e369f57b730474d",
+        "external_libraries/python_math_to_cpp/python_math/python_math_mathematical_constants.hpp": "b5420236eb9341df20d1ef7a77d639f664b2e6b7518a4b9af196a8f448260851",
+        "external_libraries/python_math_to_cpp/python_math/python_math_trigonometric.hpp": "3867b7100aa5af557209834b7796efc293e75161809ff0fedfba383618962670"
+      }
+    },
+    "working": {
+      "revision": "working-tree@6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "all_header_sha256": {
+        "base_matrix/base_matrix.hpp": "f1f22d68dfd8d460bcfb8dd621302d8859572bd6f5794c35c8abdfd8a05a02d8",
+        "base_matrix/base_matrix_cholesky_decomposition.hpp": "0bf41c69cefb38c9170c936cf065e25aa24ba7f74ed3a0c1390d4840be89040f",
+        "base_matrix/base_matrix_compiled_sparse.hpp": "c8589e727f5573fab51e2af852cf52abeb45b0b007e1d94d640c8985153fe1cd",
+        "base_matrix/base_matrix_compiled_sparse_operation.hpp": "01ef2fcd07da71b34adf3bf9c8bc0e68556dfb7de3868bcf834d9a1cec269ad1",
+        "base_matrix/base_matrix_compiled_sparse_reduced_template.hpp": "7174b6512f57b723e958d55e28c8e91896192de00b221cbe5d01aa90b1b4a898",
+        "base_matrix/base_matrix_complex.hpp": "38336e6d7429999c7865bd050b17cd89d3b8ef9ac30287e4c3418c798d45f0fe",
+        "base_matrix/base_matrix_concatenate.hpp": "ec06872d0d0382ce8759ece1c665b246ba379c5d0484a782b751ba33e4e7d53e",
+        "base_matrix/base_matrix_convolve.hpp": "e2f0cad42be771ad52534dc07b1369cc23bc532353c4f2833c42cbd1469afdbc",
+        "base_matrix/base_matrix_diagonal.hpp": "1c1d067555ca45aa65f399cb7ea824052faaf23c94cae1fc2621c387e69b7c45",
+        "base_matrix/base_matrix_eigen_solver.hpp": "1c155ca8cf52924234bbe0a61a06cbfccccb760bf1816a2646f32bd4cc7cb5e8",
+        "base_matrix/base_matrix_gmres.hpp": "a34b819c4cd80ecf5c7e7264602f34d2312d854a10feb34543de7b04eb4e07a9",
+        "base_matrix/base_matrix_inverse.hpp": "03dc17725f2851bb403eb6b591cfe2e4ff78a65fcedeb1002cb311010401892a",
+        "base_matrix/base_matrix_lu_decomposition.hpp": "428b02c41157fc227db0fc3f96570127c972de4207782b35be8bb14bca923b77",
+        "base_matrix/base_matrix_macros.hpp": "f42e761065b8380ba6003479a4ca020c5a36906306d77f3fb8d6f81ac7023cda",
+        "base_matrix/base_matrix_math.hpp": "255d9f442a9491dc949cba7055e55c1274d540fb83e4fd3f1547de3d7d8d1c9d",
+        "base_matrix/base_matrix_matrix.hpp": "5b4bb39d3a60054a3e4b40684e36d7b69c58057217a4b7233ba5b00e093dca15",
+        "base_matrix/base_matrix_numerical.hpp": "13c7f90001ba5a121aa1f232ce9155d2b00e51be5cf7e362f2af71e5f2615826",
+        "base_matrix/base_matrix_qr_decomposition.hpp": "618c1827d59ea7edf90af5842726d5dd3c2cd75263a0b078d724624265af47ab",
+        "base_matrix/base_matrix_sparse.hpp": "eb906d3f863828dcff0a327ef7e08f49fad8c63dd0e52e6425733657b91b64b7",
+        "base_matrix/base_matrix_templates.hpp": "890cec9dce335277cdd477b0fe584e0b864ee1a41d8e4a6b3d82c9a86b7ebbe0",
+        "base_matrix/base_matrix_triangular_sparse.hpp": "cd8a2f06cbe4e7a3c2e5916e52dc7d158ffabb6b8e31e9c1f0407d1e4ef860e0",
+        "base_matrix/base_matrix_variable_sparse.hpp": "c4529ecd0297a371a2f3987d071e0b02c6d840c6f7e9fa8f96d691a0a9b1ddb0",
+        "base_matrix/base_matrix_vector.hpp": "4e7820f802173711b7047cf954a081a588b9ad6225ed10b2b0d5e712564077f6",
+        "external_libraries/base_utility_cpp/base_utility/base_utility.hpp": "9fa0d26e74ca4fb93ad3a39936551ae8987e5fa7e57ef46c4bb89d93bd363347",
+        "external_libraries/base_utility_cpp/base_utility/base_utility_macros.hpp": "91ba8d237c6d5b0d642adf508ec44a8913aaa4630025b0e2c15e500a055684ef",
+        "external_libraries/python_math_to_cpp/base_math/base_math.hpp": "b26829272845fa00b9dbf85f0c2c055501b6640faf256407f4cc1d454c7c1ae7",
+        "external_libraries/python_math_to_cpp/base_math/base_math_arithmetic.hpp": "3936bc5a1ccc890b6cf259dfef47a95bba861e40e3f5a928fde4769c479561ec",
+        "external_libraries/python_math_to_cpp/base_math/base_math_exponential_logarithmic.hpp": "4c9af482cb1896d58871f7883bedcc32d41526406b765adcbd6e516fee051716",
+        "external_libraries/python_math_to_cpp/base_math/base_math_macros.hpp": "6d8011bf68a65344db96739628966eae826b894c709fbf8438118e355287ad40",
+        "external_libraries/python_math_to_cpp/base_math/base_math_mathematical_constants.hpp": "7d8fd1fe9203fbad4afc17defabb2ce00fed25970aed268d910fe9686d289fca",
+        "external_libraries/python_math_to_cpp/base_math/base_math_templates.hpp": "0b5cd843b96220825de1594ac5783e57ba4679679a64108e49ba7b32c13670b5",
+        "external_libraries/python_math_to_cpp/base_math/base_math_trigonometric.hpp": "99828a1cda77ede0d41de65f9814dbcedfcc4247029a2f4368895955d592bc34",
+        "external_libraries/python_math_to_cpp/python_math/python_math.hpp": "a94fdcb9e6ba2bf330d5ca8c0db6b96baf3dca8a71244cad38c242f81d42a8b6",
+        "external_libraries/python_math_to_cpp/python_math/python_math_arithmetic.hpp": "bda585cf892453163cb31406d2f5aebb6764e1b4a06ac162f518efa3a3a1007e",
+        "external_libraries/python_math_to_cpp/python_math/python_math_exponential_logarithmic.hpp": "5b49047826936239adfce3b38ea2c9609544e96bcac6cc4f7e369f57b730474d",
+        "external_libraries/python_math_to_cpp/python_math/python_math_mathematical_constants.hpp": "b5420236eb9341df20d1ef7a77d639f664b2e6b7518a4b9af196a8f448260851",
+        "external_libraries/python_math_to_cpp/python_math/python_math_trigonometric.hpp": "3867b7100aa5af557209834b7796efc293e75161809ff0fedfba383618962670"
+      }
+    }
+  },
+  "changed_headers": {
+    "base_matrix/base_matrix_eigen_solver.hpp": {
+      "before": "187cff6851d66e4b660ab733cee5c422450eebc54a9d353028a2386da13ec4d6",
+      "after": "1c155ca8cf52924234bbe0a61a06cbfccccb760bf1816a2646f32bd4cc7cb5e8"
+    },
+    "base_matrix/base_matrix_gmres.hpp": {
+      "before": "b4686c32ffa99780dc6868860d91d6191dee33b67d23d06b505ff1e16392c9b2",
+      "after": "a34b819c4cd80ecf5c7e7264602f34d2312d854a10feb34543de7b04eb4e07a9"
+    }
+  },
+  "method": "Both revisions rebuilt from identical probe/worker sources and flags. Selected revision uses an isolated base_matrix working-tree copy; both use dependencies pinned by the baseline.",
+  "working_headers_unchanged_during_build": true,
+  "probe_sha256": "82d6e85aa1fb3e9587f683824648fabefaaef60fcc2a9485d0a25343ba6700dd",
+  "worker_sha256": "9b607a258d3faf89c1a4781062d07fc69270fdc9d1a7d8b58c4a588357e522e0"
+}

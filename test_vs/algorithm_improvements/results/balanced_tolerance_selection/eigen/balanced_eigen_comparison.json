@@ -1,0 +1,14 @@
+{
+  "grid": {
+    "both_usable": 108,
+    "gained_usable": 18,
+    "lost_usable": 4,
+    "neither_usable": 10
+  },
+  "validation": {
+    "both_usable": 34,
+    "gained_usable": 6,
+    "lost_usable": 8,
+    "neither_usable": 0
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "cases": 20,
+  "traced_calls": 40,
+  "source_sha256": "c2d15d4ad5f88c5dc317555c6dae5fcf8b86c617c67df2bf66f3f9566c8c2bb0",
+  "runner_sha256": "7f804ee8e551ee3ca1748a62dbb70d64531eeb7290394fdb084a6f74d399a004",
+  "comparisons": [
+    {
+      "case": "multiply_real_float_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_real_float_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_real_double_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_real_double_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_complex_float_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_complex_float_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_complex_double_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "multiply_complex_double_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_real_float_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_real_float_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_real_double_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_real_double_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_complex_float_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_complex_float_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_complex_double_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "norm_complex_double_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "gmres_real_float_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "gmres_real_float_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "gmres_real_double_8",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    },
+    {
+      "case": "gmres_real_double_16",
+      "exact_inputs_equal": true,
+      "bitwise_outputs_equal": true,
+      "status_equal": true
+    }
+  ],
+  "all_native_outputs_match_trace": true,
+  "method": "PTRACE_SINGLESTEP, each stopped RIP decoded before execution, including callee instructions until end marker."
+}

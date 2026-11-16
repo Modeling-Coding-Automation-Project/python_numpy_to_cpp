@@ -1,0 +1,352 @@
+symbol,mnemonic,operands,image,address,single_step_visits
+instruction_count_begin,endbr64,,/tmp/matrix_instruction_counts/instructions_template,0x1cb00,1
+instruction_count_begin,ret,,/tmp/matrix_instruction_counts/instructions_template,0x1cb04,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,endbr64,,/tmp/matrix_instruction_counts/instructions_template,0x2eea0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movaps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2eea4,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2eea7,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,ucomiss,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2eeab,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,jp,2eeb8 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x18>,/tmp/matrix_instruction_counts/instructions_template,0x2eeae,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,jne,2eeb8 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x18>,/tmp/matrix_instruction_counts/instructions_template,0x2eeb0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm0,DWORD PTR [rip+0x3150]        # 32010 <_IO_stdin_used+0x10>",/tmp/matrix_instruction_counts/instructions_template,0x2eeb8,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movaps,"xmm2,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2eec0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,maxss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2eec3,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movd,"eax,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2eec7,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"esi,eax",/tmp/matrix_instruction_counts/instructions_template,0x2eecb,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,shr,"esi,0x17",/tmp/matrix_instruction_counts/instructions_template,0x2eecd,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movzx,"ecx,sil",/tmp/matrix_instruction_counts/instructions_template,0x2eed0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,cmp,"ecx,0xff",/tmp/matrix_instruction_counts/instructions_template,0x2eed4,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2f058 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x1b8>,/tmp/matrix_instruction_counts/instructions_template,0x2eeda,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,test,"ecx,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2eee0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2efe0 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x140>,/tmp/matrix_instruction_counts/instructions_template,0x2eee2,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,and,"eax,0x807fffff",/tmp/matrix_instruction_counts/instructions_template,0x2eee8,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"edx,0x7e",/tmp/matrix_instruction_counts/instructions_template,0x2eeed,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,and,"esi,0x1",/tmp/matrix_instruction_counts/instructions_template,0x2eef2,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,or,"eax,0x3f000000",/tmp/matrix_instruction_counts/instructions_template,0x2eef5,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,sub,"edx,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2eefa,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movd,"xmm1,eax",/tmp/matrix_instruction_counts/instructions_template,0x2eefc,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,lea,"rax,[rip+0x3339]        # 32240 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE>",/tmp/matrix_instruction_counts/instructions_template,0x2ef00,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,sar,"edx,1",/tmp/matrix_instruction_counts/instructions_template,0x2ef07,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm3,DWORD PTR [rax+rsi*4]",/tmp/matrix_instruction_counts/instructions_template,0x2ef09,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm1,DWORD PTR [rip+0x30f2]        # 32008 <_IO_stdin_used+0x8>",/tmp/matrix_instruction_counts/instructions_template,0x2ef0e,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm0,DWORD PTR [rip+0x30ee]        # 3200c <_IO_stdin_used+0xc>",/tmp/matrix_instruction_counts/instructions_template,0x2ef16,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,subss,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2ef1e,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2ef22,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movd,"ecx,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2ef26,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"eax,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2ef2a,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,shr,"eax,0x17",/tmp/matrix_instruction_counts/instructions_template,0x2ef2c,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movzx,"eax,al",/tmp/matrix_instruction_counts/instructions_template,0x2ef2f,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,cmp,"eax,0xff",/tmp/matrix_instruction_counts/instructions_template,0x2ef32,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2ef79 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0xd9>,/tmp/matrix_instruction_counts/instructions_template,0x2ef37,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"esi,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2ef39,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"edi,eax",/tmp/matrix_instruction_counts/instructions_template,0x2ef3b,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,and,"esi,0x7fffff",/tmp/matrix_instruction_counts/instructions_template,0x2ef3d,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,or,"edi,esi",/tmp/matrix_instruction_counts/instructions_template,0x2ef43,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2ef79 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0xd9>,/tmp/matrix_instruction_counts/instructions_template,0x2ef45,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mov,"edi,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2ef47,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,and,"edi,0x80000000",/tmp/matrix_instruction_counts/instructions_template,0x2ef49,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,test,"eax,eax",/tmp/matrix_instruction_counts/instructions_template,0x2ef4f,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2f080 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x1e0>,/tmp/matrix_instruction_counts/instructions_template,0x2ef51,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,add,"eax,edx",/tmp/matrix_instruction_counts/instructions_template,0x2ef57,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,je,2f130 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x290>,/tmp/matrix_instruction_counts/instructions_template,0x2ef59,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,cmp,"eax,0xfe",/tmp/matrix_instruction_counts/instructions_template,0x2ef5f,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,jg,2f130 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_+0x290>,/tmp/matrix_instruction_counts/instructions_template,0x2ef64,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,shl,"eax,0x17",/tmp/matrix_instruction_counts/instructions_template,0x2ef6a,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,and,"ecx,0x807fffff",/tmp/matrix_instruction_counts/instructions_template,0x2ef6d,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,or,"eax,ecx",/tmp/matrix_instruction_counts/instructions_template,0x2ef73,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movd,"xmm0,eax",/tmp/matrix_instruction_counts/instructions_template,0x2ef75,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movaps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2ef79,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm4,DWORD PTR [rip+0x3090]        # 32014 <_IO_stdin_used+0x14>",/tmp/matrix_instruction_counts/instructions_template,0x2ef7c,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm3,DWORD PTR [rip+0x308c]        # 32018 <_IO_stdin_used+0x18>",/tmp/matrix_instruction_counts/instructions_template,0x2ef84,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm1,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2ef8c,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2ef90,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm4,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2ef94,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,subss,"xmm3,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2ef98,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2ef9c,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm1,DWORD PTR [rip+0x32a4]        # 3224c <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xc>",/tmp/matrix_instruction_counts/instructions_template,0x2efa0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,subss,"xmm1,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2efa8,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm3,DWORD PTR [rip+0x3068]        # 3201c <_IO_stdin_used+0x1c>",/tmp/matrix_instruction_counts/instructions_template,0x2efac,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm3,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2efb4,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2efb8,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,movss,"xmm0,DWORD PTR [rip+0x32c8]        # 3228c <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0x4c>",/tmp/matrix_instruction_counts/instructions_template,0x2efbc,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2efc4,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2efc8,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,subss,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2efcc,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2efd0,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,mulss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2efd4,1
+_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_,ret,,/tmp/matrix_instruction_counts/instructions_template,0x2efd8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,endbr64,,/tmp/matrix_instruction_counts/instructions_template,0x2f1a0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"rax,QWORD PTR [rdi+0x48]",/tmp/matrix_instruction_counts/instructions_template,0x2f1a4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f1a8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,test,"rax,rax",/tmp/matrix_instruction_counts/instructions_template,0x2f1ac,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jne,2f1c0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x20>,/tmp/matrix_instruction_counts/instructions_template,0x2f1af,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi]",/tmp/matrix_instruction_counts/instructions_template,0x2f1c0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm4,DWORD PTR [rdi+0x4]",/tmp/matrix_instruction_counts/instructions_template,0x2f1c4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,comiss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f1c9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ja,2f440 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x2a0>,/tmp/matrix_instruction_counts/instructions_template,0x2f1cc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,comiss,"xmm0,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2f1d2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f1d5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ja,2f4b8 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x318>,/tmp/matrix_instruction_counts/instructions_template,0x2f1d8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm3,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f1e1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f1e5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f1e9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f1ec,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f1ef,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm1,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f1f4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x1",/tmp/matrix_instruction_counts/instructions_template,0x2f1f7,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f4d0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x330>,/tmp/matrix_instruction_counts/instructions_template,0x2f1fb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x8]",/tmp/matrix_instruction_counts/instructions_template,0x2f201,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm6,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f206,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f20a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f20e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm5,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f211,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm5,XMMWORD PTR [rip+0x30c5]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f214,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f21b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm5,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f220,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f223,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f226,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm5,DWORD PTR [rdi+0xc]",/tmp/matrix_instruction_counts/instructions_template,0x2f229,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm6,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f22e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f231,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x30a5]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f234,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f23b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f241,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f244,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f247,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f24a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f24d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f251,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f255,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x2",/tmp/matrix_instruction_counts/instructions_template,0x2f258,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f4a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x300>,/tmp/matrix_instruction_counts/instructions_template,0x2f25c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x10]",/tmp/matrix_instruction_counts/instructions_template,0x2f262,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f267,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f26b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f26f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm0,XMMWORD PTR [rip+0x3067]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f272,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f279,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f27e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f281,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f285,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f289,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x14]",/tmp/matrix_instruction_counts/instructions_template,0x2f28c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f291,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f295,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x3041]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f298,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f29f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f2a5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f2a8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f2ac,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f2af,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f2b3,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f2b6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f2ba,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f2be,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x3",/tmp/matrix_instruction_counts/instructions_template,0x2f2c1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jne,2f4e0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x340>,/tmp/matrix_instruction_counts/instructions_template,0x2f2c5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x10]",/tmp/matrix_instruction_counts/instructions_template,0x2f31b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x14]",/tmp/matrix_instruction_counts/instructions_template,0x2f320,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f325,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f329,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f32d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f331,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f335,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f339,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x3",/tmp/matrix_instruction_counts/instructions_template,0x2f33d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f40d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x26d>,/tmp/matrix_instruction_counts/instructions_template,0x2f341,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x18]",/tmp/matrix_instruction_counts/instructions_template,0x2f347,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x1c]",/tmp/matrix_instruction_counts/instructions_template,0x2f34c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f351,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f355,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f359,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f35d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f361,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f365,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x4",/tmp/matrix_instruction_counts/instructions_template,0x2f369,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f40d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x26d>,/tmp/matrix_instruction_counts/instructions_template,0x2f36d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x20]",/tmp/matrix_instruction_counts/instructions_template,0x2f373,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x24]",/tmp/matrix_instruction_counts/instructions_template,0x2f378,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f37d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f381,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f385,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f389,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f38d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f391,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x5",/tmp/matrix_instruction_counts/instructions_template,0x2f395,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f40d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x26d>,/tmp/matrix_instruction_counts/instructions_template,0x2f399,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x28]",/tmp/matrix_instruction_counts/instructions_template,0x2f39b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x2c]",/tmp/matrix_instruction_counts/instructions_template,0x2f3a0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3a5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3a9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f3ad,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f3b1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f3b5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f3b9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x6",/tmp/matrix_instruction_counts/instructions_template,0x2f3bd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f40d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x26d>,/tmp/matrix_instruction_counts/instructions_template,0x2f3c1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x30]",/tmp/matrix_instruction_counts/instructions_template,0x2f3c3,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x34]",/tmp/matrix_instruction_counts/instructions_template,0x2f3c8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3cd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3d1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f3d5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f3d9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f3dd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f3e1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x7",/tmp/matrix_instruction_counts/instructions_template,0x2f3e5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f40d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x26d>,/tmp/matrix_instruction_counts/instructions_template,0x2f3e9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rdi+0x38]",/tmp/matrix_instruction_counts/instructions_template,0x2f3eb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm3,DWORD PTR [rdi+0x3c]",/tmp/matrix_instruction_counts/instructions_template,0x2f3f0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3f5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f3f9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f3fd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f401,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f405,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f409,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,sub,"rsp,0x18",/tmp/matrix_instruction_counts/instructions_template,0x2f40d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"QWORD PTR [rsp+0x8],rdi",/tmp/matrix_instruction_counts/instructions_template,0x2f411,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"DWORD PTR [rsp+0x4],xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f416,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,call,2eea0 <_ZN4Base6Matrix9Numerical15normalized_sqrtIfEET_S3_>,/tmp/matrix_instruction_counts/instructions_template,0x2f41c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm0,DWORD PTR [rsp+0x4]",/tmp/matrix_instruction_counts/instructions_template,0x2f421,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"rdi,QWORD PTR [rsp+0x8]",/tmp/matrix_instruction_counts/instructions_template,0x2f427,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"DWORD PTR [rdi+0x40],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f42c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,add,"rsp,0x18",/tmp/matrix_instruction_counts/instructions_template,0x2f431,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ret,,/tmp/matrix_instruction_counts/instructions_template,0x2f435,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2f4b8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm0,XMMWORD PTR [rip+0x2e1e]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f4bb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jmp,2f1e1 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x41>,/tmp/matrix_instruction_counts/instructions_template,0x2f4c2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x18]",/tmp/matrix_instruction_counts/instructions_template,0x2f4e0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm6,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f4e5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f4e9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f4ec,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm1,XMMWORD PTR [rip+0x2dea]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f4ef,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f4f6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x1c]",/tmp/matrix_instruction_counts/instructions_template,0x2f4fb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f500,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f504,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f507,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f50a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f50e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f511,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm1,XMMWORD PTR [rip+0x2dc5]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f514,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f51b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm1,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f520,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f523,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f527,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f52a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm1,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f52d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm1,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f531,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x4",/tmp/matrix_instruction_counts/instructions_template,0x2f536,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f720 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x580>,/tmp/matrix_instruction_counts/instructions_template,0x2f53a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x20]",/tmp/matrix_instruction_counts/instructions_template,0x2f540,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f545,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f549,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f54d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm6,XMMWORD PTR [rip+0x2d89]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f550,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f557,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f55c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f55f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f563,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f567,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x24]",/tmp/matrix_instruction_counts/instructions_template,0x2f56a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f56f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f573,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x2d63]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f576,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f57d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f583,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f586,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f58a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f58d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f590,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f594,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f598,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x5",/tmp/matrix_instruction_counts/instructions_template,0x2f59b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f4a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x300>,/tmp/matrix_instruction_counts/instructions_template,0x2f59f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x28]",/tmp/matrix_instruction_counts/instructions_template,0x2f5a5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f5aa,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f5ae,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f5b2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm6,XMMWORD PTR [rip+0x2d24]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f5b5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f5bc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f5c1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f5c4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f5c8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f5cc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x2c]",/tmp/matrix_instruction_counts/instructions_template,0x2f5cf,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f5d4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f5d8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x2cfe]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f5db,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f5e2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f5e8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f5eb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f5ef,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f5f2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f5f5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f5f9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f5fd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x6",/tmp/matrix_instruction_counts/instructions_template,0x2f600,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f4a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x300>,/tmp/matrix_instruction_counts/instructions_template,0x2f604,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x30]",/tmp/matrix_instruction_counts/instructions_template,0x2f60a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f60f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f613,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f617,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm6,XMMWORD PTR [rip+0x2cbf]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f61a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f621,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f626,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f629,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f62d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f631,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x34]",/tmp/matrix_instruction_counts/instructions_template,0x2f634,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f639,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f63d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x2c99]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f640,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f647,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f64d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f650,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f654,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f657,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f65a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f65e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f662,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x7",/tmp/matrix_instruction_counts/instructions_template,0x2f665,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,2f4a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x300>,/tmp/matrix_instruction_counts/instructions_template,0x2f669,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+0x38]",/tmp/matrix_instruction_counts/instructions_template,0x2f66f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm7,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f674,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f678,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f67c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm6,XMMWORD PTR [rip+0x2c5a]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f67f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f686,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm6,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f68b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f68e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm8,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f692,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f696,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rdi+0x3c]",/tmp/matrix_instruction_counts/instructions_template,0x2f699,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm9,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f69e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f6a2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm7,XMMWORD PTR [rip+0x2c34]        # 322e0 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0xa0>",/tmp/matrix_instruction_counts/instructions_template,0x2f6a5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm6,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2f6ac,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f6b2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm6,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2f6b5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm6,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6b9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm7,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2f6bc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm7,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2f6bf,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,comiss,"xmm7,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f6c3,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jbe,2f4a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x300>,/tmp/matrix_instruction_counts/instructions_template,0x2f6c6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm2,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6cc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm1,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f6d0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm4,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6d4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f6d8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm3,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6dc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm4,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2f6e0,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2f6e4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2f6e8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2f6eb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm1,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6ef,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm5,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2f6f2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm3,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f6f6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm5,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f6fa,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm5,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2f6fe,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2f702,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jmp,2f31b <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x17b>,/tmp/matrix_instruction_counts/instructions_template,0x2f706,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,mov,"rdi,rbp",/tmp/matrix_instruction_counts/instructions_template,0x2f80e,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,add,"rbp,0x40",/tmp/matrix_instruction_counts/instructions_template,0x2f811,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,call,2f1a0 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv>,/tmp/matrix_instruction_counts/instructions_template,0x2f815,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,call,1cb10 <instruction_count_end>,/tmp/matrix_instruction_counts/instructions_template,0x2f81a,1

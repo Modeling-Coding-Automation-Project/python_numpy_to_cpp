@@ -1,0 +1,805 @@
+symbol,mnemonic,operands,image,address,single_step_visits
+instruction_count_begin,endbr64,,/tmp/matrix_instruction_counts/instructions_template,0x1cb00,1
+instruction_count_begin,ret,,/tmp/matrix_instruction_counts/instructions_template,0x1cb04,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,endbr64,,/tmp/matrix_instruction_counts/instructions_template,0x22b50,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mov,"rax,QWORD PTR [rdi+0x500]",/tmp/matrix_instruction_counts/instructions_template,0x22b54,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b5b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x480],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b5f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x490],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b66,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4a0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b6d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4b0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b74,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4c0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b7b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4d0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b82,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4e0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b89,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movups,"XMMWORD PTR [rdi+0x4f0],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x22b90,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,cmp,"rax,0x8",/tmp/matrix_instruction_counts/instructions_template,0x22b97,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,je,24280 <_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv+0x1730>,/tmp/matrix_instruction_counts/instructions_template,0x22b9b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm11,QWORD PTR [rdi+0x400]",/tmp/matrix_instruction_counts/instructions_template,0x24280,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm0,QWORD PTR [rdi+0x408]",/tmp/matrix_instruction_counts/instructions_template,0x24289,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi]",/tmp/matrix_instruction_counts/instructions_template,0x24291,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm12,QWORD PTR [rdi+0x8]",/tmp/matrix_instruction_counts/instructions_template,0x24296,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm5,QWORD PTR [rdi+0x418]",/tmp/matrix_instruction_counts/instructions_template,0x2429c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm10,QWORD PTR [rdi+0x410]",/tmp/matrix_instruction_counts/instructions_template,0x242a4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm12,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x242ad,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x80]",/tmp/matrix_instruction_counts/instructions_template,0x242b2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x88]",/tmp/matrix_instruction_counts/instructions_template,0x242bb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x242c4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm9,QWORD PTR [rdi+0x440]",/tmp/matrix_instruction_counts/instructions_template,0x242c9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm4,QWORD PTR [rdi+0x448]",/tmp/matrix_instruction_counts/instructions_template,0x242d2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x242da,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm3,QWORD PTR [rdi+0x458]",/tmp/matrix_instruction_counts/instructions_template,0x242df,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm8,QWORD PTR [rdi+0x450]",/tmp/matrix_instruction_counts/instructions_template,0x242e7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x242f0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm7,QWORD PTR [rdi+0x460]",/tmp/matrix_instruction_counts/instructions_template,0x242f5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm2,QWORD PTR [rdi+0x468]",/tmp/matrix_instruction_counts/instructions_template,0x242fd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm6,QWORD PTR [rdi+0x470]",/tmp/matrix_instruction_counts/instructions_template,0x24305,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm1,QWORD PTR [rdi+0x478]",/tmp/matrix_instruction_counts/instructions_template,0x2430d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24315,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,pxor,"xmm12,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x2431a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2431f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x108]",/tmp/matrix_instruction_counts/instructions_template,0x24324,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x2432d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24336,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2433b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x100]",/tmp/matrix_instruction_counts/instructions_template,0x24340,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24349,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24352,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x188]",/tmp/matrix_instruction_counts/instructions_template,0x24357,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24360,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24369,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x180]",/tmp/matrix_instruction_counts/instructions_template,0x2436e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24377,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24380,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x208]",/tmp/matrix_instruction_counts/instructions_template,0x24385,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2438e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24393,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x200]",/tmp/matrix_instruction_counts/instructions_template,0x24398,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x243a1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x243a6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x288]",/tmp/matrix_instruction_counts/instructions_template,0x243ab,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x243b4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x243b9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x280]",/tmp/matrix_instruction_counts/instructions_template,0x243be,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x243c7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x243cc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x308]",/tmp/matrix_instruction_counts/instructions_template,0x243d1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x243da,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x243df,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x300]",/tmp/matrix_instruction_counts/instructions_template,0x243e4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x243ed,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x243f2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x388]",/tmp/matrix_instruction_counts/instructions_template,0x243f7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24400,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24405,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x380]",/tmp/matrix_instruction_counts/instructions_template,0x2440a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24413,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24418,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2441d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x480],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24422,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi]",/tmp/matrix_instruction_counts/instructions_template,0x2442b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x8]",/tmp/matrix_instruction_counts/instructions_template,0x24430,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x88]",/tmp/matrix_instruction_counts/instructions_template,0x24436,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x2443f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24444,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24449,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2444e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x80]",/tmp/matrix_instruction_counts/instructions_template,0x24453,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2445c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24461,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24466,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x2446b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x108]",/tmp/matrix_instruction_counts/instructions_template,0x24474,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2447d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x100]",/tmp/matrix_instruction_counts/instructions_template,0x24482,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x2448b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24494,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24499,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x188]",/tmp/matrix_instruction_counts/instructions_template,0x244a2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x244ab,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x180]",/tmp/matrix_instruction_counts/instructions_template,0x244b0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x244b9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x244c2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x208]",/tmp/matrix_instruction_counts/instructions_template,0x244c7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x244d0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x244d5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x200]",/tmp/matrix_instruction_counts/instructions_template,0x244da,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x244e3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x244e8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x288]",/tmp/matrix_instruction_counts/instructions_template,0x244ed,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x244f6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x244fb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x280]",/tmp/matrix_instruction_counts/instructions_template,0x24500,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24509,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2450e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x308]",/tmp/matrix_instruction_counts/instructions_template,0x24513,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2451c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24521,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x300]",/tmp/matrix_instruction_counts/instructions_template,0x24526,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2452f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24534,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x388]",/tmp/matrix_instruction_counts/instructions_template,0x24539,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24542,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24547,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x380]",/tmp/matrix_instruction_counts/instructions_template,0x2454c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24555,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2455a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x98]",/tmp/matrix_instruction_counts/instructions_template,0x2455f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24568,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2456d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x18]",/tmp/matrix_instruction_counts/instructions_template,0x24572,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24578,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x488],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2457d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x10]",/tmp/matrix_instruction_counts/instructions_template,0x24586,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x2458c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24591,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x90]",/tmp/matrix_instruction_counts/instructions_template,0x24596,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x2459f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x245a4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x245a9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x245ae,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x118]",/tmp/matrix_instruction_counts/instructions_template,0x245b7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x245c0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x245c5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x110]",/tmp/matrix_instruction_counts/instructions_template,0x245ce,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x245d7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x245dc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x245e5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x245ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x190]",/tmp/matrix_instruction_counts/instructions_template,0x245f3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x198]",/tmp/matrix_instruction_counts/instructions_template,0x245fc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24605,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x218]",/tmp/matrix_instruction_counts/instructions_template,0x2460a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24613,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24618,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x210]",/tmp/matrix_instruction_counts/instructions_template,0x2461d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24626,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2462b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x298]",/tmp/matrix_instruction_counts/instructions_template,0x24630,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24639,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2463e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x290]",/tmp/matrix_instruction_counts/instructions_template,0x24643,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2464c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24651,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x318]",/tmp/matrix_instruction_counts/instructions_template,0x24656,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x2465f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24664,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x310]",/tmp/matrix_instruction_counts/instructions_template,0x24669,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24672,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24677,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x398]",/tmp/matrix_instruction_counts/instructions_template,0x2467c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24685,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2468a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x390]",/tmp/matrix_instruction_counts/instructions_template,0x2468f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24698,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2469d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x98]",/tmp/matrix_instruction_counts/instructions_template,0x246a2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x246ab,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x246b0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x18]",/tmp/matrix_instruction_counts/instructions_template,0x246b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x246bb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x490],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x246c0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x10]",/tmp/matrix_instruction_counts/instructions_template,0x246c9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x246cf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x246d4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x90]",/tmp/matrix_instruction_counts/instructions_template,0x246d9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x246e2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x246e7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x246ec,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x246f1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x118]",/tmp/matrix_instruction_counts/instructions_template,0x246fa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24703,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24708,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x110]",/tmp/matrix_instruction_counts/instructions_template,0x24711,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2471a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x2471f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x198]",/tmp/matrix_instruction_counts/instructions_template,0x24728,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24731,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24736,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x190]",/tmp/matrix_instruction_counts/instructions_template,0x2473f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24748,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x218]",/tmp/matrix_instruction_counts/instructions_template,0x2474d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24756,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2475b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x210]",/tmp/matrix_instruction_counts/instructions_template,0x24760,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24769,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2476e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x298]",/tmp/matrix_instruction_counts/instructions_template,0x24773,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2477c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24781,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x290]",/tmp/matrix_instruction_counts/instructions_template,0x24786,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2478f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24794,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x318]",/tmp/matrix_instruction_counts/instructions_template,0x24799,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x247a2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x247a7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x310]",/tmp/matrix_instruction_counts/instructions_template,0x247ac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x247b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x247ba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x398]",/tmp/matrix_instruction_counts/instructions_template,0x247bf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x247c8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x247cd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x390]",/tmp/matrix_instruction_counts/instructions_template,0x247d2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x247db,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x247e0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x247e5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x498],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x247ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x20]",/tmp/matrix_instruction_counts/instructions_template,0x247f3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x28]",/tmp/matrix_instruction_counts/instructions_template,0x247f9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xa8]",/tmp/matrix_instruction_counts/instructions_template,0x247ff,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24808,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x2480d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24812,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24817,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xa0]",/tmp/matrix_instruction_counts/instructions_template,0x2481c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24825,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x2482a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2482f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24834,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x128]",/tmp/matrix_instruction_counts/instructions_template,0x2483d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24846,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x2484b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x120]",/tmp/matrix_instruction_counts/instructions_template,0x24854,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2485d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24862,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1a8]",/tmp/matrix_instruction_counts/instructions_template,0x2486b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24874,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24879,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1a0]",/tmp/matrix_instruction_counts/instructions_template,0x24882,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2488b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x228]",/tmp/matrix_instruction_counts/instructions_template,0x24890,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24899,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2489e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x220]",/tmp/matrix_instruction_counts/instructions_template,0x248a3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x248ac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x248b1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2a8]",/tmp/matrix_instruction_counts/instructions_template,0x248b6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x248bf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x248c4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2a0]",/tmp/matrix_instruction_counts/instructions_template,0x248c9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x248d2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x248d7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x328]",/tmp/matrix_instruction_counts/instructions_template,0x248dc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x248e5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x248ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x320]",/tmp/matrix_instruction_counts/instructions_template,0x248ef,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x248f8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x248fd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3a8]",/tmp/matrix_instruction_counts/instructions_template,0x24902,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2490b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24910,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3a0]",/tmp/matrix_instruction_counts/instructions_template,0x24915,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2491e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24923,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xa8]",/tmp/matrix_instruction_counts/instructions_template,0x24928,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24931,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24936,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x28]",/tmp/matrix_instruction_counts/instructions_template,0x2493b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24941,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4a0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24946,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x20]",/tmp/matrix_instruction_counts/instructions_template,0x2494f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24955,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2495a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xa0]",/tmp/matrix_instruction_counts/instructions_template,0x2495f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24968,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x2496d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24972,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24977,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x128]",/tmp/matrix_instruction_counts/instructions_template,0x24980,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24989,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x2498e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x120]",/tmp/matrix_instruction_counts/instructions_template,0x24997,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x249a0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x249a5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1a8]",/tmp/matrix_instruction_counts/instructions_template,0x249ae,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x249b7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x249bc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1a0]",/tmp/matrix_instruction_counts/instructions_template,0x249c5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x249ce,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x249d3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x220]",/tmp/matrix_instruction_counts/instructions_template,0x249d8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x228]",/tmp/matrix_instruction_counts/instructions_template,0x249e1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x249ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x249ef,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x249f4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2a8]",/tmp/matrix_instruction_counts/instructions_template,0x249f9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x24a02,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24a07,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2a0]",/tmp/matrix_instruction_counts/instructions_template,0x24a0c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24a15,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24a1a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x328]",/tmp/matrix_instruction_counts/instructions_template,0x24a1f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24a28,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24a2d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x320]",/tmp/matrix_instruction_counts/instructions_template,0x24a32,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x24a3b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24a40,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3a8]",/tmp/matrix_instruction_counts/instructions_template,0x24a45,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24a4e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24a53,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3a0]",/tmp/matrix_instruction_counts/instructions_template,0x24a58,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24a61,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24a66,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xb8]",/tmp/matrix_instruction_counts/instructions_template,0x24a6b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24a74,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24a79,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x38]",/tmp/matrix_instruction_counts/instructions_template,0x24a7e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24a84,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4a8],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24a89,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x30]",/tmp/matrix_instruction_counts/instructions_template,0x24a92,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24a98,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24a9d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xb0]",/tmp/matrix_instruction_counts/instructions_template,0x24aa2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24aab,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24ab0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24ab5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24aba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x138]",/tmp/matrix_instruction_counts/instructions_template,0x24ac3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24acc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24ad1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x130]",/tmp/matrix_instruction_counts/instructions_template,0x24ada,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24ae3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24ae8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1b8]",/tmp/matrix_instruction_counts/instructions_template,0x24af1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24afa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24aff,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1b0]",/tmp/matrix_instruction_counts/instructions_template,0x24b08,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24b11,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x238]",/tmp/matrix_instruction_counts/instructions_template,0x24b16,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24b1f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24b24,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x230]",/tmp/matrix_instruction_counts/instructions_template,0x24b29,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24b32,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24b37,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2b8]",/tmp/matrix_instruction_counts/instructions_template,0x24b3c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24b45,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24b4a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2b0]",/tmp/matrix_instruction_counts/instructions_template,0x24b4f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x24b58,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24b5d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x338]",/tmp/matrix_instruction_counts/instructions_template,0x24b62,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x24b6b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24b70,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x330]",/tmp/matrix_instruction_counts/instructions_template,0x24b75,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24b7e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24b83,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3b8]",/tmp/matrix_instruction_counts/instructions_template,0x24b88,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24b91,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24b96,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3b0]",/tmp/matrix_instruction_counts/instructions_template,0x24b9b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24ba4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24ba9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24bae,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x38]",/tmp/matrix_instruction_counts/instructions_template,0x24bb3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24bb9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4b0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24bbe,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x30]",/tmp/matrix_instruction_counts/instructions_template,0x24bc7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24bcd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24bd2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xb0]",/tmp/matrix_instruction_counts/instructions_template,0x24bd7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xb8]",/tmp/matrix_instruction_counts/instructions_template,0x24be0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24be9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24bee,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24bf3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24bf8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24bfd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x138]",/tmp/matrix_instruction_counts/instructions_template,0x24c06,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24c0f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24c14,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x130]",/tmp/matrix_instruction_counts/instructions_template,0x24c1d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24c26,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24c2b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1b8]",/tmp/matrix_instruction_counts/instructions_template,0x24c34,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24c3d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24c42,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1b0]",/tmp/matrix_instruction_counts/instructions_template,0x24c4b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24c54,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x238]",/tmp/matrix_instruction_counts/instructions_template,0x24c59,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24c62,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24c67,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x230]",/tmp/matrix_instruction_counts/instructions_template,0x24c6c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24c75,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24c7a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2b8]",/tmp/matrix_instruction_counts/instructions_template,0x24c7f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x24c88,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24c8d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2b0]",/tmp/matrix_instruction_counts/instructions_template,0x24c92,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24c9b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24ca0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x338]",/tmp/matrix_instruction_counts/instructions_template,0x24ca5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24cae,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24cb3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x330]",/tmp/matrix_instruction_counts/instructions_template,0x24cb8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x24cc1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24cc6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3b8]",/tmp/matrix_instruction_counts/instructions_template,0x24ccb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24cd4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24cd9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3b0]",/tmp/matrix_instruction_counts/instructions_template,0x24cde,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24ce7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24cec,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xc8]",/tmp/matrix_instruction_counts/instructions_template,0x24cf1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24cfa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24cff,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x48]",/tmp/matrix_instruction_counts/instructions_template,0x24d04,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24d0a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4b8],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24d0f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x40]",/tmp/matrix_instruction_counts/instructions_template,0x24d18,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24d1e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24d23,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xc0]",/tmp/matrix_instruction_counts/instructions_template,0x24d28,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24d31,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24d36,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24d3b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24d40,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x148]",/tmp/matrix_instruction_counts/instructions_template,0x24d49,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24d52,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24d57,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x140]",/tmp/matrix_instruction_counts/instructions_template,0x24d60,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24d69,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24d6e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1c8]",/tmp/matrix_instruction_counts/instructions_template,0x24d77,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24d80,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24d85,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1c0]",/tmp/matrix_instruction_counts/instructions_template,0x24d8e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24d97,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24d9c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x240]",/tmp/matrix_instruction_counts/instructions_template,0x24da1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x248]",/tmp/matrix_instruction_counts/instructions_template,0x24daa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24db3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24db8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24dbd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2c8]",/tmp/matrix_instruction_counts/instructions_template,0x24dc2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24dcb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24dd0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2c0]",/tmp/matrix_instruction_counts/instructions_template,0x24dd5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x24dde,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24de3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x348]",/tmp/matrix_instruction_counts/instructions_template,0x24de8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x24df1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24df6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x340]",/tmp/matrix_instruction_counts/instructions_template,0x24dfb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24e04,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24e09,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3c8]",/tmp/matrix_instruction_counts/instructions_template,0x24e0e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24e17,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24e1c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3c0]",/tmp/matrix_instruction_counts/instructions_template,0x24e21,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24e2a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24e2f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xc8]",/tmp/matrix_instruction_counts/instructions_template,0x24e34,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24e3d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24e42,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x48]",/tmp/matrix_instruction_counts/instructions_template,0x24e47,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24e4d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4c0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24e52,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x40]",/tmp/matrix_instruction_counts/instructions_template,0x24e5b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24e61,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24e66,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xc0]",/tmp/matrix_instruction_counts/instructions_template,0x24e6b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24e74,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24e79,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24e7e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24e83,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x148]",/tmp/matrix_instruction_counts/instructions_template,0x24e8c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24e95,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24e9a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x140]",/tmp/matrix_instruction_counts/instructions_template,0x24ea3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24eac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x24eb1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1c8]",/tmp/matrix_instruction_counts/instructions_template,0x24eba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24ec3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24ec8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1c0]",/tmp/matrix_instruction_counts/instructions_template,0x24ed1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24eda,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x248]",/tmp/matrix_instruction_counts/instructions_template,0x24edf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x24ee8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24eed,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x240]",/tmp/matrix_instruction_counts/instructions_template,0x24ef2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x24efb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24f00,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2c8]",/tmp/matrix_instruction_counts/instructions_template,0x24f05,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x24f0e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24f13,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2c0]",/tmp/matrix_instruction_counts/instructions_template,0x24f18,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x24f21,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24f26,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x348]",/tmp/matrix_instruction_counts/instructions_template,0x24f2b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x24f34,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24f39,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x340]",/tmp/matrix_instruction_counts/instructions_template,0x24f3e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x24f47,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24f4c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3c8]",/tmp/matrix_instruction_counts/instructions_template,0x24f51,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x24f5a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24f5f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3c0]",/tmp/matrix_instruction_counts/instructions_template,0x24f64,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x24f6d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24f72,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24f77,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x58]",/tmp/matrix_instruction_counts/instructions_template,0x24f7c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x24f82,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4c8],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24f87,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x50]",/tmp/matrix_instruction_counts/instructions_template,0x24f90,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x24f96,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x24f9b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xd0]",/tmp/matrix_instruction_counts/instructions_template,0x24fa0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xd8]",/tmp/matrix_instruction_counts/instructions_template,0x24fa9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x24fb2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x24fb7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x24fbc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24fc1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x24fc6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x158]",/tmp/matrix_instruction_counts/instructions_template,0x24fcf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x24fd8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x24fdd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x150]",/tmp/matrix_instruction_counts/instructions_template,0x24fe6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x24fef,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x24ff4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1d8]",/tmp/matrix_instruction_counts/instructions_template,0x24ffd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25006,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x2500b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1d0]",/tmp/matrix_instruction_counts/instructions_template,0x25014,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2501d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x258]",/tmp/matrix_instruction_counts/instructions_template,0x25022,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2502b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x25030,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x250]",/tmp/matrix_instruction_counts/instructions_template,0x25035,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2503e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25043,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2d8]",/tmp/matrix_instruction_counts/instructions_template,0x25048,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x25051,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25056,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2d0]",/tmp/matrix_instruction_counts/instructions_template,0x2505b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x25064,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25069,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x358]",/tmp/matrix_instruction_counts/instructions_template,0x2506e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x25077,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2507c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x350]",/tmp/matrix_instruction_counts/instructions_template,0x25081,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x2508a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2508f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3d8]",/tmp/matrix_instruction_counts/instructions_template,0x25094,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x2509d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x250a2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3d0]",/tmp/matrix_instruction_counts/instructions_template,0x250a7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x250b0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x250b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xd8]",/tmp/matrix_instruction_counts/instructions_template,0x250ba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x250c3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x250c8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x58]",/tmp/matrix_instruction_counts/instructions_template,0x250cd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x250d3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4d0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x250d8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x50]",/tmp/matrix_instruction_counts/instructions_template,0x250e1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x250e7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x250ec,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xd0]",/tmp/matrix_instruction_counts/instructions_template,0x250f1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x250fa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x250ff,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25104,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x25109,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x158]",/tmp/matrix_instruction_counts/instructions_template,0x25112,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2511b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x25120,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x150]",/tmp/matrix_instruction_counts/instructions_template,0x25129,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25132,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x25137,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1d8]",/tmp/matrix_instruction_counts/instructions_template,0x25140,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25149,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x2514e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1d0]",/tmp/matrix_instruction_counts/instructions_template,0x25157,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25160,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x258]",/tmp/matrix_instruction_counts/instructions_template,0x25165,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2516e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x25173,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x250]",/tmp/matrix_instruction_counts/instructions_template,0x25178,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x25181,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25186,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2518b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2d0]",/tmp/matrix_instruction_counts/instructions_template,0x25190,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2d8]",/tmp/matrix_instruction_counts/instructions_template,0x25199,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x251a2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x251a7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x251ac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x358]",/tmp/matrix_instruction_counts/instructions_template,0x251b1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x251ba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x251bf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x350]",/tmp/matrix_instruction_counts/instructions_template,0x251c4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x251cd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x251d2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3d8]",/tmp/matrix_instruction_counts/instructions_template,0x251d7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x251e0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x251e5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3d0]",/tmp/matrix_instruction_counts/instructions_template,0x251ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x251f3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x251f8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xe8]",/tmp/matrix_instruction_counts/instructions_template,0x251fd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x25206,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2520b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x68]",/tmp/matrix_instruction_counts/instructions_template,0x25210,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x25216,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4d8],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2521b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x60]",/tmp/matrix_instruction_counts/instructions_template,0x25224,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x2522a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2522f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xe0]",/tmp/matrix_instruction_counts/instructions_template,0x25234,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x2523d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x25242,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25247,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x2524c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x168]",/tmp/matrix_instruction_counts/instructions_template,0x25255,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2525e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x25263,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x160]",/tmp/matrix_instruction_counts/instructions_template,0x2526c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25275,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x2527a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1e8]",/tmp/matrix_instruction_counts/instructions_template,0x25283,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2528c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x25291,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1e0]",/tmp/matrix_instruction_counts/instructions_template,0x2529a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x252a3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x268]",/tmp/matrix_instruction_counts/instructions_template,0x252a8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x252b1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x252b6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x260]",/tmp/matrix_instruction_counts/instructions_template,0x252bb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x252c4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x252c9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2e8]",/tmp/matrix_instruction_counts/instructions_template,0x252ce,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x252d7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x252dc,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2e0]",/tmp/matrix_instruction_counts/instructions_template,0x252e1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x252ea,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x252ef,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x368]",/tmp/matrix_instruction_counts/instructions_template,0x252f4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x252fd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x25302,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x360]",/tmp/matrix_instruction_counts/instructions_template,0x25307,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x25310,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25315,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3e8]",/tmp/matrix_instruction_counts/instructions_template,0x2531a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x25323,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25328,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3e0]",/tmp/matrix_instruction_counts/instructions_template,0x2532d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x25336,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2533b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xe8]",/tmp/matrix_instruction_counts/instructions_template,0x25340,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x25349,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2534e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x68]",/tmp/matrix_instruction_counts/instructions_template,0x25353,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x25359,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4e0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2535e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x60]",/tmp/matrix_instruction_counts/instructions_template,0x25367,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2536d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25372,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xe0]",/tmp/matrix_instruction_counts/instructions_template,0x25377,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x25380,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x25385,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2538a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2538f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x25394,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x2539d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x160]",/tmp/matrix_instruction_counts/instructions_template,0x253a6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x168]",/tmp/matrix_instruction_counts/instructions_template,0x253af,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x253b8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x253bd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1e8]",/tmp/matrix_instruction_counts/instructions_template,0x253c6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x253cf,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x253d4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1e0]",/tmp/matrix_instruction_counts/instructions_template,0x253dd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x253e6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x268]",/tmp/matrix_instruction_counts/instructions_template,0x253eb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x253f4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x253f9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x260]",/tmp/matrix_instruction_counts/instructions_template,0x253fe,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x25407,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2540c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2e8]",/tmp/matrix_instruction_counts/instructions_template,0x25411,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2541a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2541f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2e0]",/tmp/matrix_instruction_counts/instructions_template,0x25424,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x2542d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25432,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x368]",/tmp/matrix_instruction_counts/instructions_template,0x25437,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x25440,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x25445,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x360]",/tmp/matrix_instruction_counts/instructions_template,0x2544a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x25453,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25458,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3e8]",/tmp/matrix_instruction_counts/instructions_template,0x2545d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x25466,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2546b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3e0]",/tmp/matrix_instruction_counts/instructions_template,0x25470,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x25479,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2547e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0xf8]",/tmp/matrix_instruction_counts/instructions_template,0x25483,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2548c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25491,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x78]",/tmp/matrix_instruction_counts/instructions_template,0x25496,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm0",/tmp/matrix_instruction_counts/instructions_template,0x2549c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4e8],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x254a1,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x70]",/tmp/matrix_instruction_counts/instructions_template,0x254aa,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x254b0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x254b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0xf0]",/tmp/matrix_instruction_counts/instructions_template,0x254ba,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x254c3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x254c8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x254cd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x254d2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x178]",/tmp/matrix_instruction_counts/instructions_template,0x254db,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x254e4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x254e9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,QWORD PTR [rdi+0x170]",/tmp/matrix_instruction_counts/instructions_template,0x254f2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x254fb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x25500,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,QWORD PTR [rdi+0x1f8]",/tmp/matrix_instruction_counts/instructions_template,0x25509,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25512,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x25517,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,QWORD PTR [rdi+0x1f0]",/tmp/matrix_instruction_counts/instructions_template,0x25520,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25529,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x278]",/tmp/matrix_instruction_counts/instructions_template,0x2552e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x25537,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x2553c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x270]",/tmp/matrix_instruction_counts/instructions_template,0x25541,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x2554a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2554f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x25554,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x2f0]",/tmp/matrix_instruction_counts/instructions_template,0x25559,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x2f8]",/tmp/matrix_instruction_counts/instructions_template,0x25562,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm0,QWORD PTR [rdi+0x70]",/tmp/matrix_instruction_counts/instructions_template,0x2556b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm11,QWORD PTR [rdi+0x78]",/tmp/matrix_instruction_counts/instructions_template,0x25570,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm10,QWORD PTR [rdi+0xf8]",/tmp/matrix_instruction_counts/instructions_template,0x25576,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm5,QWORD PTR [rdi+0xf0]",/tmp/matrix_instruction_counts/instructions_template,0x2557f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x25587,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2558c,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm11",/tmp/matrix_instruction_counts/instructions_template,0x25591,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm4,QWORD PTR [rdi+0x270]",/tmp/matrix_instruction_counts/instructions_template,0x25596,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm9,QWORD PTR [rdi+0x278]",/tmp/matrix_instruction_counts/instructions_template,0x2559e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm5,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x255a7,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm10,QWORD PTR [rdi+0x420]",/tmp/matrix_instruction_counts/instructions_template,0x255ac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm10,QWORD PTR [rdi+0x178]",/tmp/matrix_instruction_counts/instructions_template,0x255b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm12",/tmp/matrix_instruction_counts/instructions_template,0x255be,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm3,QWORD PTR [rdi+0x2f0]",/tmp/matrix_instruction_counts/instructions_template,0x255c3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm8,QWORD PTR [rdi+0x2f8]",/tmp/matrix_instruction_counts/instructions_template,0x255cb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x255d4,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x378]",/tmp/matrix_instruction_counts/instructions_template,0x255d9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x255e2,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x255e6,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm4,xmm9",/tmp/matrix_instruction_counts/instructions_template,0x255eb,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm5,QWORD PTR [rdi+0x428]",/tmp/matrix_instruction_counts/instructions_template,0x255f0,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm5,QWORD PTR [rdi+0x170]",/tmp/matrix_instruction_counts/instructions_template,0x255f8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm14,xmm13",/tmp/matrix_instruction_counts/instructions_template,0x25600,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm13,QWORD PTR [rdi+0x370]",/tmp/matrix_instruction_counts/instructions_template,0x25605,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm2,QWORD PTR [rdi+0x370]",/tmp/matrix_instruction_counts/instructions_template,0x2560e,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm13,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x25616,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm3,xmm8",/tmp/matrix_instruction_counts/instructions_template,0x2561b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm7,QWORD PTR [rdi+0x378]",/tmp/matrix_instruction_counts/instructions_template,0x25620,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm5,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x25628,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm10,QWORD PTR [rdi+0x430]",/tmp/matrix_instruction_counts/instructions_template,0x2562d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm10,QWORD PTR [rdi+0x1f8]",/tmp/matrix_instruction_counts/instructions_template,0x25636,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm13,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x2563f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm15,QWORD PTR [rdi+0x3f8]",/tmp/matrix_instruction_counts/instructions_template,0x25644,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x2564d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm5,QWORD PTR [rdi+0x438]",/tmp/matrix_instruction_counts/instructions_template,0x25651,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm2,xmm7",/tmp/matrix_instruction_counts/instructions_template,0x25659,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm5,QWORD PTR [rdi+0x1f0]",/tmp/matrix_instruction_counts/instructions_template,0x2565d,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm15,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x25665,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x2566a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm1,QWORD PTR [rdi+0x3f0]",/tmp/matrix_instruction_counts/instructions_template,0x2566f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"xmm14,QWORD PTR [rdi+0x3f0]",/tmp/matrix_instruction_counts/instructions_template,0x25677,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm14,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x25680,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm5,xmm10",/tmp/matrix_instruction_counts/instructions_template,0x25685,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,mulsd,"xmm6,QWORD PTR [rdi+0x3f8]",/tmp/matrix_instruction_counts/instructions_template,0x2568a,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_template,0x25692,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,subsd,"xmm14,xmm15",/tmp/matrix_instruction_counts/instructions_template,0x25696,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm1,xmm6",/tmp/matrix_instruction_counts/instructions_template,0x2569b,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm4",/tmp/matrix_instruction_counts/instructions_template,0x2569f,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm13,xmm14",/tmp/matrix_instruction_counts/instructions_template,0x256a3,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_template,0x256a8,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4f0],xmm13",/tmp/matrix_instruction_counts/instructions_template,0x256ac,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_template,0x256b5,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,addsd,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_template,0x256b9,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,movsd,"QWORD PTR [rdi+0x4f8],xmm0",/tmp/matrix_instruction_counts/instructions_template,0x256bd,1
+_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv,ret,,/tmp/matrix_instruction_counts/instructions_template,0x256c5,1
+_Z3runI12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EEEvv,mov,"rdi,r15",/tmp/matrix_instruction_counts/instructions_template,0x2593b,1
+_Z3runI12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EEEvv,call,22b50 <_ZN12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EE5applyEPv>,/tmp/matrix_instruction_counts/instructions_template,0x2593e,1
+_Z3runI12MultiplyCaseIN4Base6Matrix7ComplexIdEELm8EEEvv,call,1cb10 <instruction_count_end>,/tmp/matrix_instruction_counts/instructions_template,0x25943,1

@@ -1,0 +1,80 @@
+{
+  "audited_commit": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+  "inverse_sha256": "03dc17725f2851bb403eb6b591cfe2e4ff78a65fcedeb1002cb311010401892a",
+  "adapters": [
+    {
+      "line": 73,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 105,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 370,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 390,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 487,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 531,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 564,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 758,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 779,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 908,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 947,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 978,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 1096,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 1130,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 1170,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 1208,
+      "explicitly_assigns_decay_rate": true
+    },
+    {
+      "line": 1249,
+      "explicitly_assigns_decay_rate": true
+    }
+  ],
+  "input_sha256": {
+    "quality_cases.csv": "8dc8cb1cd2f292da33b6049cb67bc6aed200fa7ba5b148d3d17faa746340ba03",
+    "timing/summary.csv": "798419645d8979b72b3b205fc4af84cb776cb32fe7118ce347da707bc100f8c9"
+  },
+  "decision": "Set the standalone GMRES default relative tolerance to 1e-12; keep beta, absolute tolerance, and budgets unchanged.",
+  "analysis": "No new compilation or timing; summaries use immutable existing sweep records."
+}

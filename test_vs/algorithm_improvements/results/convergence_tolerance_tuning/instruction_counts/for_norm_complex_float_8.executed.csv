@@ -1,0 +1,140 @@
+symbol,mnemonic,operands,image,address,single_step_visits
+instruction_count_begin,endbr64,,/tmp/matrix_instruction_counts/instructions_for,0x28a0,1
+instruction_count_begin,ret,,/tmp/matrix_instruction_counts/instructions_for,0x28a4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,endbr64,,/tmp/matrix_instruction_counts/instructions_for,0x4c40,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm4,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4c44,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"rdx,QWORD PTR [rdi+0x48]",/tmp/matrix_instruction_counts/instructions_for,0x4c48,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xor,"eax,eax",/tmp/matrix_instruction_counts/instructions_for,0x4c4c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm2,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4c4e,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,nop,DWORD PTR [rax+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4c51,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4c55,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,rdx",/tmp/matrix_instruction_counts/instructions_for,0x4c60,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jae,4cb4 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x74>,/tmp/matrix_instruction_counts/instructions_for,0x4c63,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm1,DWORD PTR [rdi+rax*8]",/tmp/matrix_instruction_counts/instructions_for,0x4c65,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4c6a,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4c6d,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm0,XMMWORD PTR [rip+0x75d9]        # c250 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0x10>",/tmp/matrix_instruction_counts/instructions_for,0x4c70,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm1,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4c77,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4c7c,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm1,xmm3",/tmp/matrix_instruction_counts/instructions_for,0x4c7f,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4c82,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+rax*8+0x4]",/tmp/matrix_instruction_counts/instructions_for,0x4c85,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm5,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4c8b,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4c8e,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xorps,"xmm3,XMMWORD PTR [rip+0x75b8]        # c250 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0x10>",/tmp/matrix_instruction_counts/instructions_for,0x4c91,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmpltss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4c98,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andps,"xmm3,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4c9d,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,andnps,"xmm0,xmm5",/tmp/matrix_instruction_counts/instructions_for,0x4ca0,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,orps,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_for,0x4ca3,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4ca6,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm3,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4ca9,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm3,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4cad,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm4,xmm3",/tmp/matrix_instruction_counts/instructions_for,0x4cb1,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,add,"rax,0x1",/tmp/matrix_instruction_counts/instructions_for,0x4cb4,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x8",/tmp/matrix_instruction_counts/instructions_for,0x4cb8,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jne,4c60 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x20>,/tmp/matrix_instruction_counts/instructions_for,0x4cbc,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4cbe,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ucomiss,"xmm4,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4cc2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jp,4cc9 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x89>,/tmp/matrix_instruction_counts/instructions_for,0x4cc5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4d41 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x101>,/tmp/matrix_instruction_counts/instructions_for,0x4cc7,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm2,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4cc9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,xor,"eax,eax",/tmp/matrix_instruction_counts/instructions_for,0x4ccd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,nop,DWORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4ccf,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4cd4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4cdf,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4cea,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,data16,cs nop WORD PTR [rax+rax*1+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4cf5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,rdx",/tmp/matrix_instruction_counts/instructions_for,0x4d00,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jae,4d28 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0xe8>,/tmp/matrix_instruction_counts/instructions_for,0x4d03,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rdi+rax*8]",/tmp/matrix_instruction_counts/instructions_for,0x4d05,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm1,DWORD PTR [rdi+rax*8+0x4]",/tmp/matrix_instruction_counts/instructions_for,0x4d0a,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm0,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4d10,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,divss,"xmm1,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4d14,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4d18,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm1,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4d1c,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4d20,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,addss,"xmm2,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4d24,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,add,"rax,0x1",/tmp/matrix_instruction_counts/instructions_for,0x4d28,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"rax,0x8",/tmp/matrix_instruction_counts/instructions_for,0x4d2c,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jne,4d00 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0xc0>,/tmp/matrix_instruction_counts/instructions_for,0x4d30,8
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,pxor,"xmm0,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4d32,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ucomiss,"xmm2,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4d36,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jp,4d50 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x110>,/tmp/matrix_instruction_counts/instructions_for,0x4d39,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jne,4d50 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x110>,/tmp/matrix_instruction_counts/instructions_for,0x4d3b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm0,xmm4",/tmp/matrix_instruction_counts/instructions_for,0x4d3d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"DWORD PTR [rdi+0x40],xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4d41,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,ret,,/tmp/matrix_instruction_counts/instructions_for,0x4d46,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm1,DWORD PTR [rip+0x72b0]        # c008 <_IO_stdin_used+0x8>",/tmp/matrix_instruction_counts/instructions_for,0x4d50,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm3,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4d58,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm3,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4d5b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,maxss,"xmm1,xmm3",/tmp/matrix_instruction_counts/instructions_for,0x4d5f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movd,"eax,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4d63,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4d67,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"esi,eax",/tmp/matrix_instruction_counts/instructions_for,0x4d6a,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,shr,"esi,0x17",/tmp/matrix_instruction_counts/instructions_for,0x4d6c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movzx,"ecx,sil",/tmp/matrix_instruction_counts/instructions_for,0x4d6f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"ecx,0xff",/tmp/matrix_instruction_counts/instructions_for,0x4d73,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4f08 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x2c8>,/tmp/matrix_instruction_counts/instructions_for,0x4d79,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,test,"ecx,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4d7f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4e88 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x248>,/tmp/matrix_instruction_counts/instructions_for,0x4d81,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,and,"eax,0x807fffff",/tmp/matrix_instruction_counts/instructions_for,0x4d87,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"edx,0x7e",/tmp/matrix_instruction_counts/instructions_for,0x4d8c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,and,"esi,0x1",/tmp/matrix_instruction_counts/instructions_for,0x4d91,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,or,"eax,0x3f000000",/tmp/matrix_instruction_counts/instructions_for,0x4d94,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,sub,"edx,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4d99,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movd,"xmm2,eax",/tmp/matrix_instruction_counts/instructions_for,0x4d9b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,lea,"rax,[rip+0x749a]        # c240 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE>",/tmp/matrix_instruction_counts/instructions_for,0x4d9f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,sar,"edx,1",/tmp/matrix_instruction_counts/instructions_for,0x4da6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm5,DWORD PTR [rax+rsi*4]",/tmp/matrix_instruction_counts/instructions_for,0x4da8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,DWORD PTR [rip+0x7257]        # c00c <_IO_stdin_used+0xc>",/tmp/matrix_instruction_counts/instructions_for,0x4dad,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm1,DWORD PTR [rip+0x7253]        # c010 <_IO_stdin_used+0x10>",/tmp/matrix_instruction_counts/instructions_for,0x4db5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,subss,"xmm1,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4dbd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm1,xmm5",/tmp/matrix_instruction_counts/instructions_for,0x4dc1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movd,"ecx,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4dc5,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"eax,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4dc9,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,shr,"eax,0x17",/tmp/matrix_instruction_counts/instructions_for,0x4dcb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movzx,"eax,al",/tmp/matrix_instruction_counts/instructions_for,0x4dce,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"eax,0xff",/tmp/matrix_instruction_counts/instructions_for,0x4dd1,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4e20 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x1e0>,/tmp/matrix_instruction_counts/instructions_for,0x4dd6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"esi,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4dd8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"r9d,eax",/tmp/matrix_instruction_counts/instructions_for,0x4dda,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,and,"esi,0x7fffff",/tmp/matrix_instruction_counts/instructions_for,0x4ddd,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,or,"r9d,esi",/tmp/matrix_instruction_counts/instructions_for,0x4de3,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4e20 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x1e0>,/tmp/matrix_instruction_counts/instructions_for,0x4de6,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mov,"r8d,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4de8,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,and,"r8d,0x80000000",/tmp/matrix_instruction_counts/instructions_for,0x4deb,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,test,"eax,eax",/tmp/matrix_instruction_counts/instructions_for,0x4df2,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4f1a <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x2da>,/tmp/matrix_instruction_counts/instructions_for,0x4df4,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,add,"eax,edx",/tmp/matrix_instruction_counts/instructions_for,0x4dfa,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,je,4fca <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x38a>,/tmp/matrix_instruction_counts/instructions_for,0x4dfc,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,cmp,"eax,0xfe",/tmp/matrix_instruction_counts/instructions_for,0x4e02,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jg,4fca <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0x38a>,/tmp/matrix_instruction_counts/instructions_for,0x4e07,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,shl,"eax,0x17",/tmp/matrix_instruction_counts/instructions_for,0x4e0d,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,and,"ecx,0x807fffff",/tmp/matrix_instruction_counts/instructions_for,0x4e10,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,or,"eax,ecx",/tmp/matrix_instruction_counts/instructions_for,0x4e16,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movd,"xmm1,eax",/tmp/matrix_instruction_counts/instructions_for,0x4e18,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,nop,DWORD PTR [rax+0x0],/tmp/matrix_instruction_counts/instructions_for,0x4e1c,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movaps,"xmm2,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4e20,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm6,DWORD PTR [rip+0x71e9]        # c014 <_IO_stdin_used+0x14>",/tmp/matrix_instruction_counts/instructions_for,0x4e23,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm5,DWORD PTR [rip+0x71e5]        # c018 <_IO_stdin_used+0x18>",/tmp/matrix_instruction_counts/instructions_for,0x4e2b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4e33,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4e37,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm6,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4e3b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,subss,"xmm5,xmm6",/tmp/matrix_instruction_counts/instructions_for,0x4e3f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm5,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4e43,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm2,DWORD PTR [rip+0x7445]        # c294 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0x54>",/tmp/matrix_instruction_counts/instructions_for,0x4e47,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,subss,"xmm2,xmm5",/tmp/matrix_instruction_counts/instructions_for,0x4e4f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm2,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4e53,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm1,DWORD PTR [rip+0x71bd]        # c01c <_IO_stdin_used+0x1c>",/tmp/matrix_instruction_counts/instructions_for,0x4e57,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm1,xmm0",/tmp/matrix_instruction_counts/instructions_for,0x4e5f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,movss,"xmm0,DWORD PTR [rip+0x7469]        # c2d4 <_ZN4Base4MathL17ONE_AND_SQRT2_VECE+0x94>",/tmp/matrix_instruction_counts/instructions_for,0x4e63,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm1,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4e6b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm1,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4e6f,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,subss,"xmm0,xmm1",/tmp/matrix_instruction_counts/instructions_for,0x4e73,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm0,xmm2",/tmp/matrix_instruction_counts/instructions_for,0x4e77,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,mulss,"xmm0,xmm3",/tmp/matrix_instruction_counts/instructions_for,0x4e7b,1
+_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv,jmp,4d3d <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv+0xfd>,/tmp/matrix_instruction_counts/instructions_for,0x4e7f,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,mov,"rdi,rbp",/tmp/matrix_instruction_counts/instructions_for,0x510e,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,add,"rbp,0x40",/tmp/matrix_instruction_counts/instructions_for,0x5111,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,call,4c40 <_ZN8NormCaseIN4Base6Matrix7ComplexIfEELm8EE5applyEPv>,/tmp/matrix_instruction_counts/instructions_for,0x5115,1
+_Z3runI8NormCaseIN4Base6Matrix7ComplexIfEELm8EEEvv,call,28b0 <instruction_count_end>,/tmp/matrix_instruction_counts/instructions_for,0x511a,1

@@ -35,3 +35,5 @@ python3 test_vs/algorithm_improvements/run_fixed_parameter_validation.py \
 2026-11-17の[採用後の検証結果](results/fixed_parameter_defaults/README.md)に、全32実行の結果と対象ソースのhashを保存した。
 
 前回性能測定時からの実行時間・RAMの変化は、[再評価レポート](../../document/11_execution_time_and_peak_ram_recheck.md)と[全測定データ・再実行手順](results/performance_recheck_2026_11_17/README.md)を参照。既定値変更による時間・精度の悪化例と、テンプレート構成でのスタック増加を確認している。
+
+収束許容誤差の調整と採用値は、[調整結果レポート](../../document/12_convergence_tolerance_tuning.md)と[定数選定・採用後検証](results/balanced_tolerance_selection/README.md)を参照。機械イプシロン由来の値との比較、TMP/forの実命令追跡、精度・時間の改善と悪化、採用後のRAM・24実行の回帰結果を記録した。[初回探索データ](results/convergence_tolerance_tuning/README.md)も保存している。

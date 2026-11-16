@@ -1,0 +1,64 @@
+
+/tmp/balanced_tolerance_memory/peak_stack_worker.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <_ZL17paint_and_measurePv>:
+   0:	f3 0f 1e fa          	endbr64
+   4:	48 83 ec 28          	sub    $0x28,%rsp
+   8:	48 89 fa             	mov    %rdi,%rdx
+   b:	48 89 e6             	mov    %rsp,%rsi
+   e:	4c 8b 47 10          	mov    0x10(%rdi),%r8
+  12:	31 c0                	xor    %eax,%eax
+  14:	49 39 f0             	cmp    %rsi,%r8
+  17:	0f 83 8f 00 00 00    	jae    ac <_ZL17paint_and_measurePv+0xac>
+  1d:	48 3b 77 18          	cmp    0x18(%rdi),%rsi
+  21:	0f 83 85 00 00 00    	jae    ac <_ZL17paint_and_measurePv+0xac>
+  27:	49 89 f1             	mov    %rsi,%r9
+  2a:	4c 89 c0             	mov    %r8,%rax
+  2d:	4d 29 c1             	sub    %r8,%r9
+  30:	0f b6 4a 20          	movzbl 0x20(%rdx),%ecx
+  34:	48 83 c0 01          	add    $0x1,%rax
+  38:	88 48 ff             	mov    %cl,-0x1(%rax)
+  3b:	48 39 c6             	cmp    %rax,%rsi
+  3e:	75 f0                	jne    30 <_ZL17paint_and_measurePv+0x30>
+  40:	48 89 74 24 18       	mov    %rsi,0x18(%rsp)
+  45:	4c 89 4c 24 10       	mov    %r9,0x10(%rsp)
+  4a:	4c 89 44 24 08       	mov    %r8,0x8(%rsp)
+  4f:	48 89 14 24          	mov    %rdx,(%rsp)
+  53:	48 8b 7a 08          	mov    0x8(%rdx),%rdi
+  57:	ff 12                	call   *(%rdx)
+  59:	48 8b 14 24          	mov    (%rsp),%rdx
+  5d:	48 8b 74 24 18       	mov    0x18(%rsp),%rsi
+  62:	31 c0                	xor    %eax,%eax
+  64:	4c 8b 4c 24 10       	mov    0x10(%rsp),%r9
+  69:	4c 8b 44 24 08       	mov    0x8(%rsp),%r8
+  6e:	0f b6 7a 20          	movzbl 0x20(%rdx),%edi
+  72:	0f 1f 00             	nopl   (%rax)
+  75:	66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+  7c:	00 00 00 00 
+  80:	49 8d 0c 00          	lea    (%r8,%rax,1),%rcx
+  84:	0f b6 09             	movzbl (%rcx),%ecx
+  87:	40 38 f9             	cmp    %dil,%cl
+  8a:	75 34                	jne    c0 <_ZL17paint_and_measurePv+0xc0>
+  8c:	48 83 c0 01          	add    $0x1,%rax
+  90:	49 39 c1             	cmp    %rax,%r9
+  93:	75 eb                	jne    80 <_ZL17paint_and_measurePv+0x80>
+  95:	b9 01 00 00 00       	mov    $0x1,%ecx
+  9a:	45 31 c9             	xor    %r9d,%r9d
+  9d:	48 89 e0             	mov    %rsp,%rax
+  a0:	48 39 c6             	cmp    %rax,%rsi
+  a3:	4c 89 4a 28          	mov    %r9,0x28(%rdx)
+  a7:	0f 94 c0             	sete   %al
+  aa:	21 c8                	and    %ecx,%eax
+  ac:	88 42 30             	mov    %al,0x30(%rdx)
+  af:	31 c0                	xor    %eax,%eax
+  b1:	48 83 c4 28          	add    $0x28,%rsp
+  b5:	c3                   	ret
+  b6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+  bd:	00 00 00 
+  c0:	49 29 c1             	sub    %rax,%r9
+  c3:	48 85 c0             	test   %rax,%rax
+  c6:	0f 95 c1             	setne  %cl
+  c9:	eb d2                	jmp    9d <_ZL17paint_and_measurePv+0x9d>

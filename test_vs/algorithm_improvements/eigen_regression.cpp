@@ -363,7 +363,51 @@ inline void check_default_general_solver(const Matrix<T, 3, 3> &matrix, T scale)
   }
 }
 
+template <typename T, typename Solver>
+inline void check_default_tridiagonal_solver(const Matrix<T, 8, 8> &matrix) {
+  // This input exposed a large eigenvector residual with the previous defaults.
+  // Use the actual constructor defaults, including both iteration budgets.
+  Solver solver;
+  solver.solve_eigen_values_and_vectors(matrix);
+  require(solver.eigen_values_converged() && solver.eigen_vectors_converged() &&
+              !solver.inner_solve_failed(),
+          "default 8x8 tridiagonal eigenpairs converge");
+  auto values = solver.get_eigen_values();
+  require(independent_residual(matrix, values, solver.get_eigen_vectors()) <
+              DEFAULT_SOLUTION_QUALITY_LIMIT,
+          "default 8x8 tridiagonal eigenvectors meet independent residual target");
+
+  const double pi = std::acos(-1.0);
+  const double matrix_norm = std::sqrt(46.0);
+  bool used[8] = {};
+  for (std::size_t mode = 0; mode < 8; ++mode) {
+    double reference = 2.0 - 2.0 * std::cos(double(mode + 1) * pi / 9.0);
+    double best = std::numeric_limits<double>::max();
+    std::size_t index = 0;
+    for (std::size_t slot = 0; slot < 8; ++slot) {
+      double error = std::abs(host_value(values[slot]) - reference);
+      if (!used[slot] && error < best) {
+        best = error;
+        index = slot;
+      }
+    }
+    used[index] = true;
+    require(best / matrix_norm < DEFAULT_SOLUTION_QUALITY_LIMIT,
+            "default tridiagonal eigenvalues retain the analytic spectrum");
+  }
+}
+
 template <typename T> inline void run_default_parameters() {
+  Matrix<T, 8, 8> tridiagonal;
+  for (std::size_t i = 0; i < 8; ++i) {
+    tridiagonal(i, i) = T(2);
+    if (i + 1 < 8) {
+      tridiagonal(i, i + 1) = T(-1);
+      tridiagonal(i + 1, i) = T(-1);
+    }
+  }
+  check_default_tridiagonal_solver<T, EigenSolverReal<T, 8>>(tridiagonal);
+  check_default_tridiagonal_solver<T, EigenSolverComplex<T, 8>>(tridiagonal);
   for (std::size_t kind = 0; kind < 3; ++kind) {
     T scale = kind == 1 ? T(1e-12) : (kind == 2 ? T(1e12) : T(1));
     Matrix<T, 3, 3> general = rotated_diagonal<T, 3>(true);

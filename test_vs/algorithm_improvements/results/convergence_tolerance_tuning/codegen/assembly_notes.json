@@ -1,0 +1,674 @@
+{
+  "audit_date": "2026-11-17",
+  "method": "Read-only disassembly of existing RAM-measurement executables; no rebuild, benchmark execution, or MCU measurement.",
+  "head": "6b1d627edf2de6e3e56deca59b83b37e942a97aa",
+  "head_base_matrix_tree": "222b5ca3e4fae27ddff7d11f93646643cb0ac918",
+  "measured_current_base_matrix_tree": "222b5ca3e4fae27ddff7d11f93646643cb0ac918",
+  "same_base_matrix_tree": true,
+  "current_probe_sha256": "82d6e85aa1fb3e9587f683824648fabefaaef60fcc2a9485d0a25343ba6700dd",
+  "measurement_probe_sha256": "82d6e85aa1fb3e9587f683824648fabefaaef60fcc2a9485d0a25343ba6700dd",
+  "same_probe": true,
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "source_metadata": "../../performance_recheck_2026_11_17/memory/metadata.json",
+  "source_measurements": "../../performance_recheck_2026_11_17/memory/peak_stack_cases.csv",
+  "variants": [
+    {
+      "label": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "mode": "template",
+      "executable": "/tmp/matrix_peak_stack_audit/last_879/last_879_template",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/last_879/last_879_template.o"
+      ],
+      "executable_sha256": "f933e985d1e2976830686735e1f2bbe3c63989e83c401c1344b3b87896822e4a",
+      "saved_stack_usage_sha256": "67ce71aefd13afa0d745622e99d732c857762c98429f8ed0006f7b229b09e785",
+      "saved_call_graph_sha256": "9ecb6bf672218423fbe824f7df56e1b7d67bd979aedbbabb1908e4bf9c8ac12b"
+    },
+    {
+      "label": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "mode": "for",
+      "executable": "/tmp/matrix_peak_stack_audit/last_879/last_879_for",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/last_879/last_879_for.o"
+      ],
+      "executable_sha256": "f933e985d1e2976830686735e1f2bbe3c63989e83c401c1344b3b87896822e4a",
+      "saved_stack_usage_sha256": "67ce71aefd13afa0d745622e99d732c857762c98429f8ed0006f7b229b09e785",
+      "saved_call_graph_sha256": "9ecb6bf672218423fbe824f7df56e1b7d67bd979aedbbabb1908e4bf9c8ac12b"
+    },
+    {
+      "label": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "mode": "template",
+      "executable": "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_template",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_template.o"
+      ],
+      "executable_sha256": "d21d3a556eacba41fa2e44934f72193acdbb0e7f6abef077ef9997da7b7def7a",
+      "saved_stack_usage_sha256": "c602874642faa1378423cf5d2a0c1c52cb81a44d9c9a2350e32ef866a453d456",
+      "saved_call_graph_sha256": "3da49d8786e39a2670e01500277b504ebce79d5efe3cca2fc4c75444c46e6dfb"
+    },
+    {
+      "label": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "mode": "for",
+      "executable": "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_for",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_for.o"
+      ],
+      "executable_sha256": "f933e985d1e2976830686735e1f2bbe3c63989e83c401c1344b3b87896822e4a",
+      "saved_stack_usage_sha256": "335f75e077a21a9171e4f5d3ac09f257986ff6536277fce36fff89fd779cc563",
+      "saved_call_graph_sha256": "5ad45d8769ee8b1b0018d003ac057b3a8a8b7c5f6a6db9828e7d8e1d0cd978b7"
+    },
+    {
+      "label": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "mode": "template",
+      "executable": "/tmp/matrix_peak_stack_audit/current_b599/current_b599_template",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/current_b599/current_b599_template.o"
+      ],
+      "executable_sha256": "0b203a1c69c7f74d539719684d66dcaf6af2766c281d72c7cdf293bf329ae50c",
+      "saved_stack_usage_sha256": "3c77312693eada8a4b26e4ac84da18f3999afc0b7db09b78c9849462b0824281",
+      "saved_call_graph_sha256": "5355c65aa00de6d9b52bd9d377a59ad69902e3519179154581c2d1ec3b3c1746"
+    },
+    {
+      "label": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "mode": "for",
+      "executable": "/tmp/matrix_peak_stack_audit/current_b599/current_b599_for",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/current_b599/current_b599_for.o"
+      ],
+      "executable_sha256": "bdb29f1ad87c1cd36a77cd6145e97cc47f56359a2165ab7f79c233c37ebaf2d2",
+      "saved_stack_usage_sha256": "24b3d07198c98f60248958ba8cbe3064ab55e4794a0adac1d7fa78db1b52560a",
+      "saved_call_graph_sha256": "56d7cf12be58fc412e131f7f238a58006212a9ac57b057a1bb151dccf466aa03"
+    }
+  ],
+  "selected_measurements": [
+    {
+      "revision": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "loop": "template",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 616,
+      "stack_written_max": 616,
+      "context_plus_written_max": 2528,
+      "known_call_chain_bytes": 688,
+      "known_chain_plus_red_zone": 816,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2728,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "loop": "template",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 13928,
+      "stack_written_max": 13928,
+      "context_plus_written_max": 24552,
+      "known_call_chain_bytes": 14192,
+      "known_chain_plus_red_zone": 14320,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 24944,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "loop": "for",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 616,
+      "stack_written_max": 616,
+      "context_plus_written_max": 2528,
+      "known_call_chain_bytes": 688,
+      "known_chain_plus_red_zone": 816,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2728,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "loop": "for",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 13928,
+      "stack_written_max": 13928,
+      "context_plus_written_max": 24552,
+      "known_call_chain_bytes": 14192,
+      "known_chain_plus_red_zone": 14320,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 24944,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "loop": "template",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 688,
+      "stack_written_max": 688,
+      "context_plus_written_max": 2600,
+      "known_call_chain_bytes": 776,
+      "known_chain_plus_red_zone": 904,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2816,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "loop": "template",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 14328,
+      "stack_written_max": 14328,
+      "context_plus_written_max": 24952,
+      "known_call_chain_bytes": 14328,
+      "known_chain_plus_red_zone": 14456,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 25080,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "loop": "for",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 616,
+      "stack_written_max": 616,
+      "context_plus_written_max": 2528,
+      "known_call_chain_bytes": 688,
+      "known_chain_plus_red_zone": 816,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2728,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "loop": "for",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 13928,
+      "stack_written_max": 13928,
+      "context_plus_written_max": 24552,
+      "known_call_chain_bytes": 14192,
+      "known_chain_plus_red_zone": 14320,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 24944,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "loop": "template",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 688,
+      "stack_written_max": 688,
+      "context_plus_written_max": 2600,
+      "known_call_chain_bytes": 776,
+      "known_chain_plus_red_zone": 904,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2816,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "loop": "template",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 14328,
+      "stack_written_max": 14328,
+      "context_plus_written_max": 24952,
+      "known_call_chain_bytes": 14328,
+      "known_chain_plus_red_zone": 14456,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 25080,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "loop": "for",
+      "root": "peak_gmres_full_double_8",
+      "type": "double",
+      "n": 8,
+      "context_bytes": 1912,
+      "solver_bytes": 1208,
+      "stack_written_min": 616,
+      "stack_written_max": 616,
+      "context_plus_written_max": 2528,
+      "known_call_chain_bytes": 688,
+      "known_chain_plus_red_zone": 816,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 2728,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    },
+    {
+      "revision": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "loop": "for",
+      "root": "peak_eigen_complex_double_16",
+      "type": "double",
+      "n": 16,
+      "context_bytes": 10624,
+      "solver_bytes": 8576,
+      "stack_written_min": 13928,
+      "stack_written_max": 13928,
+      "context_plus_written_max": 24552,
+      "known_call_chain_bytes": 14192,
+      "known_chain_plus_red_zone": 14320,
+      "call_graph_complete": 0,
+      "context_plus_known_chain": 24944,
+      "unknown_calls": "__stack_chk_fail",
+      "unbounded_frames": ""
+    }
+  ],
+  "gmres_full_double8": {
+    "revision_order": [
+      "last_879",
+      "pre_constants_ab31",
+      "current_b599"
+    ],
+    "solve_frame_bytes": [
+      480,
+      560,
+      560
+    ],
+    "solve_local_stack_reservation_bytes": [
+      424,
+      504,
+      504
+    ],
+    "solve_callee_saved_pushes": [
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ],
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ],
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ]
+    ],
+    "solve_static_call_sites": [
+      12,
+      35,
+      35
+    ],
+    "static_call_sites_are_not_runtime_iterations": true,
+    "known_call_chain_frames_bytes": [
+      [
+        112,
+        480,
+        96
+      ],
+      [
+        112,
+        560,
+        96,
+        8
+      ],
+      [
+        112,
+        560,
+        96,
+        8
+      ]
+    ],
+    "observed_watermark_bytes": [
+      616,
+      688,
+      688
+    ],
+    "assembly_consistent_watermark_terms": [
+      [
+        112,
+        480,
+        24
+      ],
+      [
+        112,
+        560,
+        8,
+        8
+      ],
+      [
+        112,
+        560,
+        8,
+        8
+      ]
+    ],
+    "all_slots_not_mapped_to_source_variables": true,
+    "dynamic_instruction_trace_performed": false
+  },
+  "eigen_complex_double16": {
+    "revision_order": [
+      "last_879",
+      "pre_constants_ab31",
+      "current_b599"
+    ],
+    "outer_frame_bytes": [
+      13872,
+      14064,
+      14064
+    ],
+    "outer_local_stack_reservation_bytes": [
+      13816,
+      14008,
+      14008
+    ],
+    "outer_callee_saved_pushes": [
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ],
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ],
+      [
+        "r15",
+        "r14",
+        "r13",
+        "r12",
+        "rbp",
+        "rbx"
+      ]
+    ],
+    "outer_static_call_sites": [
+      19,
+      30,
+      29
+    ],
+    "static_call_sites_are_not_runtime_iterations": true,
+    "known_call_chain_frames_bytes": [
+      [
+        32,
+        13872,
+        288
+      ],
+      [
+        32,
+        14064,
+        224,
+        8
+      ],
+      [
+        32,
+        14064,
+        224,
+        8
+      ]
+    ],
+    "observed_watermark_bytes": [
+      13928,
+      14328,
+      14328
+    ],
+    "assembly_consistent_watermark_terms": [
+      [
+        32,
+        13872,
+        24
+      ],
+      [
+        32,
+        14064,
+        224,
+        8
+      ],
+      [
+        32,
+        14064,
+        224,
+        8
+      ]
+    ],
+    "dense_multiply_stack_store_instruction": "1bfe8: movsd QWORD PTR [rsp],xmm12",
+    "dense_multiply_stack_reload_instruction": "1c6e7: addsd xmm2,QWORD PTR [rsp]",
+    "dense_multiply_saved_value": "Complex output row 5 real partial sum; also stored at [rdx+0x50].",
+    "old_apply_operator_full_size_skips_vector_initialization": true,
+    "old_apply_operator_canary_address": "[rsp+0x108]",
+    "old_apply_operator_full_size_deepest_write_below_call_site_sp": 24,
+    "dynamic_instruction_trace_performed": false
+  },
+  "limitations": [
+    "Watermarks measure deepest written bytes for the tested input, not deepest reserved SP or all-input worst case.",
+    "Known call-chain totals include paths that need not execute for this input and exclude unresolved external callee internals.",
+    "The entire 400-byte watermark increase is not established as additional spill area; the known-frame sum changes by 136 bytes.",
+    "879 to ab31 contains several changes; this is not a one-commit-at-a-time causal isolation experiment.",
+    "No Arm or other MCU build or execution was performed; x86-64 byte counts are not portable guarantees."
+  ],
+  "primary_sources": [
+    "https://gcc.gnu.org/onlinedocs/gcc/Inline.html",
+    "https://gcc.gnu.org/onlinedocs/gcc-15.1.0/gcc/Optimize-Options.html",
+    "https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html",
+    "https://github.com/ARM-software/abi-aa/blob/main/aapcs32/aapcs32.rst"
+  ],
+  "artifacts": {
+    "assembly_extraction.json": "190a3db149097641fe2011f9724446d011a528fbfc75288a390216d7362d9882",
+    "current_b599_double8_norm.asm": "afd80d85e426929a554d2dd03475d7d6da6b492e9160f33772700b33e99f3479",
+    "current_b599_eigen_complex_double16_frame0.asm": "01bed225929f67f910f906ab00cea2fac2dd135fa9e250c535e9afdfe8479608",
+    "current_b599_eigen_complex_double16_frame1.asm": "1fd9565f182e4dfbf70c444fc80d38fa8ed97f82bafaef90d771c8cf29db2df1",
+    "current_b599_eigen_complex_double16_frame2.asm": "e7a2f8d78471685ecfe516f77c977b132d831496285048276a9df6687398c3d8",
+    "current_b599_eigen_complex_double16_frame3.asm": "28e31b581a551c8ae430f15c158aadad0b4986d6b2b29a8056d823545cf817ac",
+    "current_b599_gmres_double8_frame0.asm": "b9faf8d645f93fe656e1686a3759419209e72408624fa04e84636ff66d18d80b",
+    "current_b599_gmres_double8_frame1.asm": "2e07f32dadcab1c9312ae658dd3c1fd4c5530a283f22fd528f4d6fcec19eedac",
+    "current_b599_gmres_double8_frame2.asm": "aed33927ed7a90147dd6e4954547c0619a6b83401ffdbc32b6a3b845e233455a",
+    "current_b599_gmres_double8_frame3.asm": "c723ee6252fe332fe0ba11f9c6aa2921f642f3d12306308d4e73c26e4e1a1a11",
+    "last_879_eigen_complex_double16_frame0.asm": "31ed2dd0a3fef7799cc92060eb71b85d9f6c24b0d817937f6315e724ac9a9b62",
+    "last_879_eigen_complex_double16_frame1.asm": "d575435d88f51086bb69290ae5955eb88725c5d8b082ecdcbf51b184064d986c",
+    "last_879_eigen_complex_double16_frame2.asm": "4d0614951cf0c4847457458328b49d65c4c30e7a834abba897c8438318fa365c",
+    "last_879_gmres_double8_frame0.asm": "46db4bbf0f82fbc767a85977f8083340ae259144b1a5a5644c23344d11763e0e",
+    "last_879_gmres_double8_frame1.asm": "6591de54a37cc469752520bd74ad4cf3f05d0270e703438e2571117b5a1dcc01",
+    "last_879_gmres_double8_frame2.asm": "30262be7a471d90a0f4806f0315a76a8df5992c0840774baafc9803e2bb122f9",
+    "pre_constants_ab31_eigen_complex_double16_frame0.asm": "8d55980bc0d64961bd5c15c8ff6cbd5ab85103b4b5e98fdb7099fc84a236460b",
+    "pre_constants_ab31_eigen_complex_double16_frame1.asm": "596afabf5870a40956198cbcd82c407ab08c5704e305c33b2539fb2702b3d7f1",
+    "pre_constants_ab31_eigen_complex_double16_frame2.asm": "cd44119700907ec0d73d5ab83a4d897dc1e1de74efd379987b3e82f0e8a71b53",
+    "pre_constants_ab31_eigen_complex_double16_frame3.asm": "3eb58246047c0c9b4e669c1e2b1eb7d3fcef296b11d6e6da66dfc5d083012035",
+    "pre_constants_ab31_gmres_double8_frame0.asm": "257c0f246adb56a261f0d8e0244118511781041c34caec49d0430968391192bc",
+    "pre_constants_ab31_gmres_double8_frame1.asm": "46ab6a72a47fe86c90bc796cb5c939bbce79b4dcc6ef79d9831655e610a99507",
+    "pre_constants_ab31_gmres_double8_frame2.asm": "51924029e8969fd60f66fd70c73a92d10e76fe7031eba3233945a41fabe2666d",
+    "pre_constants_ab31_gmres_double8_frame3.asm": "2309da90ab2f5d17bc23e5235812bce2ca15ef5d6bf56fb948e89c7dec5cc6d8"
+  }
+}

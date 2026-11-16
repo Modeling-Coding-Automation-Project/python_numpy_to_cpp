@@ -1,0 +1,57 @@
+{
+  "selected_at_utc": "2026-11-16T22:19:47.027386+00:00",
+  "provisional_recommendation": {
+    "name": "balanced_recommended",
+    "relative": 1e-06,
+    "vector": 4e-06,
+    "inner": 0.001
+  },
+  "basis": "Best quality/success class on all 140 selection cases, counting unique type/dimension/fixture as well; preferred simpler rtol and intermediate inner tolerance.",
+  "validation_not_yet_executed": true,
+  "timing_ties_pending": [
+    0.0001,
+    0.001,
+    0.002
+  ],
+  "source_sha256": "674257675df46fe507a1f18d75e368a6d9897f00d4c39542d2b703a04c098c6a",
+  "final_decision": {
+    "recorded_at_utc": "2026-11-16T22:29:12.233962+00:00",
+    "recommendation": {
+      "relative": 1e-06,
+      "vector": 4e-06,
+      "inner": 0.001
+    },
+    "unchanged_after_new_dimension_validation": true,
+    "selection_cases": 140,
+    "selection_usable_before_after": [
+      112,
+      126
+    ],
+    "validation_cases": 48,
+    "validation_usable_before_after": [
+      42,
+      40
+    ],
+    "combined_unique_usable_before_after": [
+      72,
+      78
+    ],
+    "combined_unique_inputs": 90,
+    "combined_severe_unique_before_after": [
+      12,
+      10
+    ],
+    "timing_cases": 140,
+    "timing_usable_both_cases": 108,
+    "all_cases_sum_median_time_ratio": 0.970452414523363,
+    "both_usable_general_sum_median_time_ratio": 1.0307895680933463,
+    "inner_2e3_vs_1e3_sum_median_time_ratio": 0.9900925214221628,
+    "reason": "Quality/success class ties with inner1e-4 and2e-3; no case meets material timing-difference criterion between inner candidates. Retain intermediate1e-3. Accept documented new-dimension and worst-error regressions under balanced selection policy.",
+    "limits": [
+      "140 former search/holdout cases were reused for selection.",
+      "48 new-dimension cases use related fixture families.",
+      "No claim of uniformly improved accuracy, runtime, or worst-case residual.",
+      "Default custom math/TMP only for selection; strict std-math regressions are separate."
+    ]
+  }
+}

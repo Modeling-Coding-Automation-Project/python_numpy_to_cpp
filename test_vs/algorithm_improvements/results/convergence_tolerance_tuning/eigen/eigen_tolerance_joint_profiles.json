@@ -1,0 +1,62 @@
+[
+  {
+    "name": "r1e-6_v4.8e-06_i0.005",
+    "relative": 1e-06,
+    "vector": 4.8e-06,
+    "inner": 0.005
+  },
+  {
+    "name": "r1e-6_v6.4e-06_i0.005",
+    "relative": 1e-06,
+    "vector": 6.4e-06,
+    "inner": 0.005
+  },
+  {
+    "name": "r1e-6_v3.2e-06_i0.001",
+    "relative": 1e-06,
+    "vector": 3.2e-06,
+    "inner": 0.001
+  },
+  {
+    "name": "r1e-6_v3.2e-06_i0.0001",
+    "relative": 1e-06,
+    "vector": 3.2e-06,
+    "inner": 0.0001
+  },
+  {
+    "name": "r1e-6_v3.2e-06_i1e-06",
+    "relative": 1e-06,
+    "vector": 3.2e-06,
+    "inner": 1e-06
+  },
+  {
+    "name": "r1e-6_v4.8e-06_i0.001",
+    "relative": 1e-06,
+    "vector": 4.8e-06,
+    "inner": 0.001
+  },
+  {
+    "name": "r1e-6_v4.8e-06_i0.0001",
+    "relative": 1e-06,
+    "vector": 4.8e-06,
+    "inner": 0.0001
+  },
+  {
+    "name": "r1e-6_v4.8e-06_i1e-06",
+    "relative": 1e-06,
+    "vector": 4.8e-06,
+    "inner": 1e-06
+  },
+  {
+    "name": "r3e-7_v4.8e-6_i0.005",
+    "relative": 3e-07,
+    "vector": 4.8e-06,
+    "inner": 0.005
+  },
+  {
+    "name": "r3e-7_v4.8e-6_i0.001",
+    "relative": 3e-07,
+    "vector": 4.8e-06,
+    "inner": 0.001
+  }
+]
