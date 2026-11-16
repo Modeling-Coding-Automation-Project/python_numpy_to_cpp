@@ -2,6 +2,8 @@
 
 セクション1〜8は調査対象 commit 時点の記録。2026-11-17に候補Aを本体へ反映した内容は、[セクション9](#9-固定パラメータの採用2026-11-17)を参照。
 
+その後の[実行時間・RAMの追加調査](11_execution_time_and_peak_ram_recheck.md)では、一部の時間・スタック使用量の増加と、8次floatの固有ベクトル品質の悪化を確認した。本書の有限の試験集合で得た候補Aを、全入力で性能が悪化しない設定とは扱わない。
+
 ## 1. 結論
 
 **収束許容誤差・GMRES の breakdown 判定・逆反復のシフト量を、別々の固定パラメータとして運用できる。これらを機械 epsilon に連動させる必要はない。**
@@ -202,4 +204,4 @@ python3 test_vs/algorithm_improvements/run_fixed_parameter_validation.py \
 
 数値回帰はC++11、既定数学・ホスト標準数学、template・forの両経路で行う。制約監視は `<cmath>` 禁止、例外無効、動的確保の監視を含む。`--legacy-configs` は既存CIの8構成、`--sanitize` はGMRES・Eigenのアドレス・未定義動作・浮動小数点ゼロ除算の検査を追加する。
 
-採用後の検証では、数値回帰20実行、制約監視2実行、sanitizer2実行、既存CI8構成の**計32実行がすべて成功**した。制約監視の動的確保は両経路で0件、sanitizerの診断も0件だった。[実行結果とソースhash](../test_vs/algorithm_improvements/results/fixed_parameter_defaults/README.md)を保存した。実行時間・ピークRAMの再測定は行っていない。
+採用後の検証では、数値回帰20実行、制約監視2実行、sanitizer2実行、既存CI8構成の**計32実行がすべて成功**した。制約監視の動的確保は両経路で0件、sanitizerの診断も0件だった。[実行結果とソースhash](../test_vs/algorithm_improvements/results/fixed_parameter_defaults/README.md)を保存した。この採用時点では実行時間・ピークRAMを再測定していなかった。その後の同条件比較と、呼出し先を含むスタック測定は[追加調査レポート](11_execution_time_and_peak_ram_recheck.md)に記録した。
