@@ -32,6 +32,8 @@ namespace Base {
 namespace Matrix {
 
 constexpr double DEFAULT_DIVISION_MIN_CHOLESKY = 1.0e-10;
+// Zero disables the scale-relative contribution to the pivot floor.
+constexpr double DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY = 0.0;
 
 namespace CholeskyOperation {
 
@@ -243,8 +245,8 @@ template <typename T, std::size_t M> class PackedCholesky {
 public:
   PackedCholesky()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
-        relative_pivot_min(static_cast<T>(0)), valid_(false),
-        threshold_adjusted_(false) {}
+        relative_pivot_min(static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY)),
+        valid_(false), threshold_adjusted_(false) {}
 
   inline void solve(const Matrix<T, M, M> &A) {
     this->_check_thresholds();
@@ -329,7 +331,8 @@ protected:
     this->division_min =
         CholeskyOperation::positive_threshold(this->division_min);
     if (this->relative_pivot_min < static_cast<T>(0)) {
-      this->relative_pivot_min = static_cast<T>(0);
+      this->relative_pivot_min =
+          static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY);
     }
   }
 
@@ -347,8 +350,8 @@ template <typename T, std::size_t M> class SPDLDLT {
 public:
   SPDLDLT()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
-        relative_pivot_min(static_cast<T>(0)), valid_(false),
-        threshold_adjusted_(false) {}
+        relative_pivot_min(static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY)),
+        valid_(false), threshold_adjusted_(false) {}
 
   inline void solve(const Matrix<T, M, M> &A) {
     this->threshold_adjusted_ = !(this->division_min > static_cast<T>(0)) ||
@@ -356,7 +359,8 @@ public:
     this->division_min =
         CholeskyOperation::positive_threshold(this->division_min);
     if (this->relative_pivot_min < static_cast<T>(0)) {
-      this->relative_pivot_min = static_cast<T>(0);
+      this->relative_pivot_min =
+          static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY);
     }
     T scale = static_cast<T>(0);
     for (std::size_t j = 0; j < M; ++j) {

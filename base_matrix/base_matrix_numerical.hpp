@@ -17,15 +17,23 @@ namespace Base {
 namespace Matrix {
 namespace Numerical {
 
+// Fallback for a nonpositive denominator threshold supplied by the caller.
+constexpr double DEFAULT_DIVISION_MIN_NUMERICAL = 1.0e-10;
+// Denominator protection passed to the external sqrt for normalized sums.
+constexpr double NORMALIZED_SQRT_DIVISION_MIN = 1.0e-20;
+
 template <typename T> inline T positive_threshold(T value) {
-  return value > static_cast<T>(0) ? value : static_cast<T>(1.0e-10);
+  return value > static_cast<T>(0)
+             ? value
+             : static_cast<T>(DEFAULT_DIVISION_MIN_NUMERICAL);
 }
 
 // Only normalized, nonnegative sums are passed here (normally [1, 2*N]).
 template <typename T> inline T normalized_sqrt(T value) {
   return value == static_cast<T>(0)
              ? static_cast<T>(0)
-             : Base::Math::sqrt<T>(value, static_cast<T>(1.0e-20));
+             : Base::Math::sqrt<T>(
+                   value, static_cast<T>(NORMALIZED_SQRT_DIVISION_MIN));
 }
 
 template <typename T> struct Scalar {

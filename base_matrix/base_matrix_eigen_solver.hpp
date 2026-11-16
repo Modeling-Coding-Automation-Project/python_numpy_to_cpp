@@ -27,6 +27,30 @@ const std::size_t DEFAULT_ITERATION_MAX_EIGEN_SOLVER = 10;
 const double DEFAULT_DIVISION_MIN_EIGEN_SOLVER = 1.0e-20;
 const double EIGEN_SMALL_VALUE = 1.0e-6;
 
+// Default inverse-iteration budget and its inner GMRES settings.
+constexpr std::size_t DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR = 3;
+constexpr std::size_t DEFAULT_GMRES_CYCLES_EIGEN_SOLVER = 1;
+constexpr std::size_t DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER = 1;
+// A zero decay rate selects the epsilon-based inner GMRES tolerance below.
+constexpr double DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER = 0.0;
+constexpr double DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER = 0.0;
+
+// Relative eigenvalue/eigenvector tolerances are multiples of machine epsilon.
+constexpr double EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER = 8.0;
+constexpr double EIGENVECTOR_TOLERANCE_EPSILON_MULTIPLIER = 32.0;
+// The inner GMRES fallback tolerance is a multiple of sqrt(machine epsilon).
+constexpr double EIGEN_GMRES_TOLERANCE_SQRT_EPSILON_MULTIPLIER = 16.0;
+// Number of QR sweeps between deterministic exceptional shifts.
+constexpr std::size_t EIGEN_EXCEPTIONAL_SHIFT_PERIOD = 8;
+
+// Keep tiny inputs representable by the dependency's float-based sqrt seed.
+// Input scaling and output compensation satisfy factor * compensation^2 = 1.
+constexpr double EIGEN_SQRT_INPUT_MIN = 1.0e-30;
+constexpr double EIGEN_SQRT_INPUT_SCALE_FACTOR = 1.0e30;
+constexpr double EIGEN_SQRT_OUTPUT_SCALE_FACTOR = 1.0e-15;
+// Eleven scaling slots cover IEEE float/double subnormals.
+constexpr std::size_t EIGEN_SQRT_SCALE_MAX_PASSES = 11;
+
 enum class EigenSolverStatus {
   not_started,
   not_converged,
@@ -45,17 +69,17 @@ template <typename T> inline T square_root(T value) {
     return static_cast<T>(0);
   }
   T root_scale = static_cast<T>(1);
-  if (value < static_cast<T>(1e-30)) {
-    // Eleven slots cover the IEEE float/double exponent ranges, including
-    // subnormals. Each multiplication starts below 1e-30 and cannot overflow.
-    for (std::size_t pass = 0; pass < 11; ++pass) {
-      if (value < static_cast<T>(1e-30)) {
-        value *= static_cast<T>(1e30);
-        root_scale *= static_cast<T>(1e-15);
+  if (value < static_cast<T>(EIGEN_SQRT_INPUT_MIN)) {
+    // Multiplication starts below the scaling threshold and cannot overflow.
+    for (std::size_t pass = 0; pass < EIGEN_SQRT_SCALE_MAX_PASSES; ++pass) {
+      if (value < static_cast<T>(EIGEN_SQRT_INPUT_MIN)) {
+        value *= static_cast<T>(EIGEN_SQRT_INPUT_SCALE_FACTOR);
+        root_scale *= static_cast<T>(EIGEN_SQRT_OUTPUT_SCALE_FACTOR);
       }
     }
   }
-  return root_scale * Base::Math::sqrt<T>(value, static_cast<T>(1e-30));
+  return root_scale *
+         Base::Math::sqrt<T>(value, static_cast<T>(EIGEN_SQRT_INPUT_MIN));
 }
 
 template <typename S> struct Shift {
@@ -246,16 +270,25 @@ public:
 
   Solver()
       : iteration_max(M * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        gmres_k_dimension(InnerK), gmres_cycles(1),
-        gmres_orthogonalization_passes(1),
+        iteration_max_for_eigen_vector(
+            DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR *
+            DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        gmres_k_dimension(InnerK),
+        gmres_cycles(DEFAULT_GMRES_CYCLES_EIGEN_SOLVER),
+        gmres_orthogonalization_passes(
+            DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)), gmres_k_decay_rate(0),
-        relative_tolerance(static_cast<T>(8) *
-                           std::numeric_limits<T>::epsilon()),
-        absolute_tolerance(0),
-        eigenvector_tolerance(static_cast<T>(32) *
-                              std::numeric_limits<T>::epsilon()),
+        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
+        gmres_k_decay_rate(
+            static_cast<T>(DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER)),
+        relative_tolerance(
+            static_cast<T>(EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER) *
+            std::numeric_limits<T>::epsilon()),
+        absolute_tolerance(
+            static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
+        eigenvector_tolerance(
+            static_cast<T>(EIGENVECTOR_TOLERANCE_EPSILON_MULTIPLIER) *
+            std::numeric_limits<T>::epsilon()),
         Hessen_(), _eigen_values(), _eigen_vectors(),
         _status(EigenSolverStatus::not_started), _values_converged(false),
         _vectors_converged(false), _threshold_adjusted(false),
@@ -309,7 +342,7 @@ public:
             // its real part is a valid real shift, but is not an eigenvalue.
             // A deterministic exceptional shift breaks zero-shift cycles
             // (for example, a cyclic permutation / companion matrix).
-            if ((this->_sweeps + 1) % 8 == 0) {
+            if ((this->_sweeps + 1) % EIGEN_EXCEPTIONAL_SHIFT_PERIOD == 0) {
               T offset =
                   Numerical::Scalar<S>::magnitude(this->Hessen_(end, end - 1));
               shift = this->Hessen_(end, end) + offset;
@@ -375,8 +408,9 @@ public:
       inner.relative_tolerance =
           this->gmres_k_decay_rate > static_cast<T>(0)
               ? this->gmres_k_decay_rate
-              : static_cast<T>(16) * EigenOperation::square_root(
-                                         std::numeric_limits<T>::epsilon());
+              : static_cast<T>(EIGEN_GMRES_TOLERANCE_SQRT_EPSILON_MULTIPLIER) *
+                    EigenOperation::square_root(
+                        std::numeric_limits<T>::epsilon());
       bool active = this->_values_converged;
       bool converged = false;
       for (std::size_t iteration = 0;
@@ -595,10 +629,13 @@ public:
   EigenSolverSymmetric()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        relative_tolerance(static_cast<T>(8) *
-                           std::numeric_limits<T>::epsilon()),
-        absolute_tolerance(0), _triangle(), _vectors(), _converged(false),
-        _threshold_adjusted(false), _scale(0) {}
+        relative_tolerance(
+            static_cast<T>(EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER) *
+            std::numeric_limits<T>::epsilon()),
+        absolute_tolerance(
+            static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
+        _triangle(), _vectors(), _converged(false), _threshold_adjusted(false),
+        _scale(0) {}
 
   inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
     this->_threshold_adjusted = false;

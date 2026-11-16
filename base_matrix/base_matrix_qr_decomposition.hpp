@@ -33,6 +33,8 @@ namespace Base {
 namespace Matrix {
 
 constexpr double DEFAULT_DIVISION_MIN_QR = 1.0e-10;
+// Lower bound of the normalized squared inputs passed to sqrt/rsqrt.
+constexpr double QR_NORMALIZED_ROOT_DIVISION_MIN = 1.0;
 
 /* Givens Rotation */
 
@@ -66,12 +68,12 @@ inline void givens_rotation(std::size_t i, std::size_t j, Matrix<T, M, M> &Q,
   if (Base::Math::abs(g) > Base::Math::abs(f)) {
     const T ratio = -f / g; // g is nonzero and has the larger magnitude.
     s = Base::Math::rsqrt<T>(static_cast<T>(1) + ratio * ratio,
-                             static_cast<T>(1));
+                             static_cast<T>(QR_NORMALIZED_ROOT_DIVISION_MIN));
     c = s * ratio;
   } else {
     const T ratio = -g / f; // |f| >= |g| > 0.
     c = Base::Math::rsqrt<T>(static_cast<T>(1) + ratio * ratio,
-                             static_cast<T>(1));
+                             static_cast<T>(QR_NORMALIZED_ROOT_DIVISION_MIN));
     s = c * ratio;
   }
 
@@ -256,7 +258,8 @@ public:
           sum += value * value;
         }
         // 1 <= sum <= M: the float-based initial estimate stays in range.
-        const T norm = Base::Math::sqrt<T>(sum, static_cast<T>(1));
+        const T norm = Base::Math::sqrt<T>(
+            sum, static_cast<T>(QR_NORMALIZED_ROOT_DIVISION_MIN));
         const T alpha = this->factors_(column, column) / scale;
         const T beta = alpha >= static_cast<T>(0) ? -norm : norm;
         const T denominator = alpha - beta;

@@ -16,6 +16,17 @@
 
 namespace Base {
 namespace Matrix {
+
+// Default work budget and convergence thresholds for GMRES.
+constexpr std::size_t DEFAULT_CYCLES_GMRES = 1;
+constexpr std::size_t DEFAULT_ORTHOGONALIZATION_PASSES_GMRES = 1;
+constexpr double DEFAULT_DIVISION_MIN_GMRES = 1.0e-10;
+// With both tolerances zero, only an exact zero residual meets convergence.
+constexpr double DEFAULT_RELATIVE_TOLERANCE_GMRES = 0.0;
+constexpr double DEFAULT_ABSOLUTE_TOLERANCE_GMRES = 0.0;
+// Arnoldi breakdown limit: multiplier * machine epsilon * ||A*D^-1*q||.
+constexpr double GMRES_BREAKDOWN_EPSILON_MULTIPLIER = 8.0;
+
 namespace GmresOperation {
 
 /* Vector initialization and projection onto the leading subspace. */
@@ -987,12 +998,12 @@ public:
   static_assert(std::is_floating_point<Real>::value,
                 "GMRES requires floating-point real components.");
 
-  std::size_t cycles = 1;
+  std::size_t cycles = DEFAULT_CYCLES_GMRES;
   std::size_t krylov_dimension = K;
-  std::size_t orthogonalization_passes = 1;
-  Real division_min = static_cast<Real>(1.0e-10);
-  Real relative_tolerance = static_cast<Real>(0);
-  Real absolute_tolerance = static_cast<Real>(0);
+  std::size_t orthogonalization_passes = DEFAULT_ORTHOGONALIZATION_PASSES_GMRES;
+  Real division_min = static_cast<Real>(DEFAULT_DIVISION_MIN_GMRES);
+  Real relative_tolerance = static_cast<Real>(DEFAULT_RELATIVE_TOLERANCE_GMRES);
+  Real absolute_tolerance = static_cast<Real>(DEFAULT_ABSOLUTE_TOLERANCE_GMRES);
 
   template <typename MatrixType>
   inline Vector<T, N>
@@ -1164,9 +1175,9 @@ private:
             // Store H(k+1, k) = ||w|| and detect Arnoldi breakdown.
             Real next_norm = Numerical::norm(product, active_size);
             this->column_[column + 1] = next_norm;
-            Real breakdown_limit = static_cast<Real>(8) *
-                                   std::numeric_limits<Real>::epsilon() *
-                                   product_norm;
+            Real breakdown_limit =
+                static_cast<Real>(GMRES_BREAKDOWN_EPSILON_MULTIPLIER) *
+                std::numeric_limits<Real>::epsilon() * product_norm;
             arnoldi_breakdown = next_norm <= breakdown_limit;
 
             // Normalize the next basis vector only if another step can use it.
