@@ -24,3 +24,12 @@ runnerは既定の数学ライブラリ構成に加え、ホスト確認用の `
 `epsilon()`を固定値`1e-6`〜`1e-16`へ置換した比較は、[調査報告](../../document/09_epsilon_parameter_sweep.md)と[測定データ・再実行手順](results/epsilon_parameter_sweep/README.md)を参照。各`run_epsilon_*.py`は比較対象commitと依存先を一時領域へ展開し、製品ヘッダを変更せず測定する。
 
 用途別に収束許容誤差・breakdown・逆反復シフトを分離した追加比較は、[独立パラメータの調査報告](../../document/10_independent_numerical_parameters.md)と[測定データ・再実行手順](results/independent_numerical_parameters/README.md)を参照。各`run_independent_*.py`も一時コピー上で測定する。候補値を既定値にした試作は、元のassertを維持した回帰試験と固定メモリ・禁止ヘッダの検査で確認している。
+
+候補Aを本体に反映した後の作業ツリーは、次のコマンドで検証できる。標準数学doubleの厳密な精度試験は公開メンバーで精度を明示し、既定値での品質試験も別途行う。
+
+```sh
+python3 test_vs/algorithm_improvements/run_fixed_parameter_validation.py \
+  --output /tmp/fixed_parameter_validation --legacy-configs --sanitize
+```
+
+2026-11-17の[採用後の検証結果](results/fixed_parameter_defaults/README.md)に、全32実行の結果と対象ソースのhashを保存した。

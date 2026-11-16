@@ -175,6 +175,40 @@ template <typename T> void check_real() {
         "sparse explicit normal operator");
 }
 
+template <typename T> inline void check_independent_gmres_tolerances() {
+  // The small second Arnoldi direction is needed to recover x[1]. Use the
+  // same thresholds for float and double: a type-dependent breakdown limit
+  // previously discarded this direction for float after the first step.
+  const T delta = T(2e-10);
+  Matrix<T, 2, 2> matrix({{T(1), T(0)}, {delta, delta}});
+  Vector<T, 2> truth({T(1), T(-1)});
+  Vector<T, 2> rhs({T(1), T(0)});
+  GmresSolver<T, 2> solver;
+  solver.division_min = T(1e-20);
+  solver.relative_tolerance = T(1e-12);
+  auto solution = solver.solve(matrix, rhs, Vector<T, 2>());
+  check(oracle_norm(solution - truth) < T(1e-6),
+        "small Arnoldi direction recovers truth for both scalar types");
+  check(solver.get_iterations() == 2 && solver.is_converged() &&
+            !solver.has_breakdown() &&
+            oracle_norm(rhs - matrix * solution) <=
+                solver.relative_tolerance * oracle_norm(rhs),
+        "strict residual tolerance retains the needed second GMRES step");
+
+  // A loose residual tolerance deliberately accepts the first step. For this
+  // ill-conditioned matrix, that small residual does not imply a small error
+  // in x[1]; convergence and Arnoldi breakdown are separate decisions.
+  solver.relative_tolerance = T(1e-6);
+  solution = solver.solve(matrix, rhs, Vector<T, 2>());
+  const T residual = oracle_norm(rhs - matrix * solution);
+  check(solver.get_iterations() == 1 && solver.is_converged() &&
+            !solver.has_breakdown() && residual > T(0) &&
+            residual <= solver.relative_tolerance * oracle_norm(rhs),
+        "loose residual tolerance permits early convergence without breakdown");
+  check(oracle_norm(solution - truth) > T(0.5),
+        "early residual convergence need not recover ill-conditioned truth");
+}
+
 template <typename T> void check_complex() {
   const T tolerance = sizeof(T) == sizeof(float) ? T(2e-5) : T(1e-12);
   const T root_tolerance = math_tolerance(T(1e-12));
@@ -254,6 +288,8 @@ template <typename T> void check_manufactured_complex_systems() {
 int main() {
   check_real<float>();
   check_real<double>();
+  check_independent_gmres_tolerances<float>();
+  check_independent_gmres_tolerances<double>();
   check_complex<float>();
   check_complex<double>();
   check_manufactured_complex_systems<float>();

@@ -1,5 +1,7 @@
 # 用途別の固定しきい値による運用の調査
 
+セクション1〜8は調査対象 commit 時点の記録。2026-11-17に候補Aを本体へ反映した内容は、[セクション9](#9-固定パラメータの採用2026-11-17)を参照。
+
 ## 1. 結論
 
 **収束許容誤差・GMRES の breakdown 判定・逆反復のシフト量を、別々の固定パラメータとして運用できる。これらを機械 epsilon に連動させる必要はない。**
@@ -10,7 +12,7 @@ Base::Matrix の既存 API では、breakdown 係数以外はすでに別々に�
 
 本調査では本体・外部ライブラリのヘッダを変更していない。追加したものは測定プログラム、結果、本文書である。設定候補は今回の入力集合で確認した値であり、全行列に対する最適値ではない。
 
-## 2. 分けるパラメータと現在の API
+## 2. 分けるパラメータと調査時点の API
 
 以下の値は `epsilon` の代わりに入れてから 8 倍・32 倍する基準値ではなく、**各判定に直接使う最終的な相対係数**である。
 
@@ -157,3 +159,47 @@ vtol = 3.2e-6    固有ベクトル
 ## 8. データと再実行
 
 [測定データ・再実行手順](../test_vs/algorithm_improvements/results/independent_numerical_parameters/README.md)に全件の CSV、係数グリッド、既存回帰試験のログを保存した。[GMRES 補足](../test_vs/algorithm_improvements/results/independent_numerical_parameters/gmres_notes.md)と[固有値補足](../test_vs/algorithm_improvements/results/independent_numerical_parameters/eigen_notes.md)には、各設定の詳細と参照値の算出方法を記載した。
+
+## 9. 固定パラメータの採用（2026-11-17）
+
+既定の数学ライブラリを使う float・double の両方で品質と収束を確認した候補Aを、本体の既定値として採用した。型や数学ライブラリのマクロによる自動切替は行わず、各係数を独立した名前付き定数として定義した。
+
+| 定数 | 採用値 | 定義ファイル |
+| --- | --- | --- |
+| `GMRES_BREAKDOWN_RELATIVE_TOLERANCE` | `8.0e-12` | `base_matrix_gmres.hpp` |
+| `DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER` | `8.0e-9` | `base_matrix_eigen_solver.hpp` |
+| `DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE` | `3.2e-6` | 同上 |
+| `DEFAULT_EIGENVECTOR_RELATIVE_SHIFT` | `3.0e-4` | 同上 |
+| `DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE` | `5.0e-3` | 同上 |
+
+一般固有値・対称 Jacobi の相対許容誤差を同じ定数から初期化する。逆反復シフトの `sqrt(epsilon)` による下限を除去し、`gmres_k_decay_rate <= 0` の場合も固定の内側許容誤差を使う。正の値を指定した場合の上書き動作は維持する。単独 GMRES の相対・絶対許容誤差の既定値は0のままである。
+
+従来の `EIGEN_SMALL_VALUE` は、ソース互換性のため `DEFAULT_EIGENVECTOR_RELATIVE_SHIFT` を参照する定数として残した。従来の値 `1e-6` は `3e-4` に変わる。4個の `*_EPSILON_MULTIPLIER` 定数は役割が変わるため削除し、上表の直接指定する相対係数へ置き換えた。
+
+`division_min` とシフトの分母保護、`numeric_limits<T>::min()` による逆数の表現範囲の保護は維持した。βには非負の `static_assert` を追加し、ゼロ長の探索方向が正規化されることを防ぐ条件を維持する。新しいインスタンスメンバーはなく、反復回数の上限も変更していない。Eigen ヘッダで不要になった `<limits>` を削除し、GMRES 側は `min()` に必要なため残した。
+
+### 高精度を要求する場合
+
+今回の既定値は、標準数学ライブラリの double で従来の機械epsilon相当の精度を自動的に要求する設定ではない。セクション5の候補Bなど、必要な精度に応じて公開メンバーを明示指定する。例えば候補Bを使う場合は、一般固有値ソルバに次のように設定できる。
+
+```cpp
+solver.relative_tolerance = static_cast<T>(8.0e-12);
+solver.eigenvector_tolerance = static_cast<T>(3.2e-10);
+solver.set_small_value(static_cast<T>(1.0e-11));
+solver.set_gmres_k_decay_rate(static_cast<T>(5.0e-3));
+```
+
+これらは調査ケースでの高精度設定例であり、全入力の誤差上限を保証するものではない。より厳しい精度基準を持つ既存回帰試験では、基準自体を緩めず、精度に対応する設定を明示して検証する。既定値での品質・収束も別の試験で確認する。
+
+### 採用後の検証
+
+現在の作業ツリーを直接検証する runner を追加した。過去の調査 runner は比較対象 commit を固定しているため、そのまま保存した。
+
+```sh
+python3 test_vs/algorithm_improvements/run_fixed_parameter_validation.py \
+  --output /tmp/fixed_parameter_validation --legacy-configs --sanitize
+```
+
+数値回帰はC++11、既定数学・ホスト標準数学、template・forの両経路で行う。制約監視は `<cmath>` 禁止、例外無効、動的確保の監視を含む。`--legacy-configs` は既存CIの8構成、`--sanitize` はGMRES・Eigenのアドレス・未定義動作・浮動小数点ゼロ除算の検査を追加する。
+
+採用後の検証では、数値回帰20実行、制約監視2実行、sanitizer2実行、既存CI8構成の**計32実行がすべて成功**した。制約監視の動的確保は両経路で0件、sanitizerの診断も0件だった。[実行結果とソースhash](../test_vs/algorithm_improvements/results/fixed_parameter_defaults/README.md)を保存した。実行時間・ピークRAMの再測定は行っていない。

@@ -24,8 +24,11 @@ constexpr double DEFAULT_DIVISION_MIN_GMRES = 1.0e-10;
 // With both tolerances zero, only an exact zero residual meets convergence.
 constexpr double DEFAULT_RELATIVE_TOLERANCE_GMRES = 0.0;
 constexpr double DEFAULT_ABSOLUTE_TOLERANCE_GMRES = 0.0;
-// Arnoldi breakdown limit: multiplier * machine epsilon * ||A*D^-1*q||.
-constexpr double GMRES_BREAKDOWN_EPSILON_MULTIPLIER = 8.0;
+// Arnoldi breakdown limit: relative tolerance * ||A*D^-1*q||.
+// Keep this independent of the requested residual tolerance.
+constexpr double GMRES_BREAKDOWN_RELATIVE_TOLERANCE = 8.0e-12;
+static_assert(GMRES_BREAKDOWN_RELATIVE_TOLERANCE >= 0.0,
+              "The GMRES breakdown tolerance must be nonnegative.");
 
 namespace GmresOperation {
 
@@ -1176,8 +1179,8 @@ private:
             Real next_norm = Numerical::norm(product, active_size);
             this->column_[column + 1] = next_norm;
             Real breakdown_limit =
-                static_cast<Real>(GMRES_BREAKDOWN_EPSILON_MULTIPLIER) *
-                std::numeric_limits<Real>::epsilon() * product_norm;
+                static_cast<Real>(GMRES_BREAKDOWN_RELATIVE_TOLERANCE) *
+                product_norm;
             arnoldi_breakdown = next_norm <= breakdown_limit;
 
             // Normalize the next basis vector only if another step can use it.

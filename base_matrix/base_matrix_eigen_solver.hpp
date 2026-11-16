@@ -17,7 +17,6 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
 #include <vector>
 
 namespace Base {
@@ -25,21 +24,22 @@ namespace Matrix {
 
 const std::size_t DEFAULT_ITERATION_MAX_EIGEN_SOLVER = 10;
 const double DEFAULT_DIVISION_MIN_EIGEN_SOLVER = 1.0e-20;
-const double EIGEN_SMALL_VALUE = 1.0e-6;
 
 // Default inverse-iteration budget and its inner GMRES settings.
 constexpr std::size_t DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR = 3;
 constexpr std::size_t DEFAULT_GMRES_CYCLES_EIGEN_SOLVER = 1;
 constexpr std::size_t DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER = 1;
-// A zero decay rate selects the epsilon-based inner GMRES tolerance below.
+// A nonpositive decay rate selects the fixed inner GMRES tolerance below.
 constexpr double DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER = 0.0;
 constexpr double DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER = 0.0;
 
-// Relative eigenvalue/eigenvector tolerances are multiples of machine epsilon.
-constexpr double EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER = 8.0;
-constexpr double EIGENVECTOR_TOLERANCE_EPSILON_MULTIPLIER = 32.0;
-// The inner GMRES fallback tolerance is a multiple of sqrt(machine epsilon).
-constexpr double EIGEN_GMRES_TOLERANCE_SQRT_EPSILON_MULTIPLIER = 16.0;
+// Independent relative thresholds shared by float and double.
+constexpr double DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER = 8.0e-9;
+constexpr double DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE = 3.2e-6;
+constexpr double DEFAULT_EIGENVECTOR_RELATIVE_SHIFT = 3.0e-4;
+constexpr double DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE = 5.0e-3;
+// Preserve the existing name for the default inverse-iteration shift.
+const double EIGEN_SMALL_VALUE = DEFAULT_EIGENVECTOR_RELATIVE_SHIFT;
 // Number of QR sweeps between deterministic exceptional shifts.
 constexpr std::size_t EIGEN_EXCEPTIONAL_SHIFT_PERIOD = 8;
 
@@ -268,7 +268,7 @@ public:
   using EigenValues_Type = std::array<S, M>;
 #endif
 
-  Solver()
+  inline Solver()
       : iteration_max(M * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         iteration_max_for_eigen_vector(
             DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR *
@@ -278,17 +278,15 @@ public:
         gmres_orthogonalization_passes(
             DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
+        small_value(static_cast<T>(DEFAULT_EIGENVECTOR_RELATIVE_SHIFT)),
         gmres_k_decay_rate(
             static_cast<T>(DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER)),
         relative_tolerance(
-            static_cast<T>(EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER) *
-            std::numeric_limits<T>::epsilon()),
+            static_cast<T>(DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER)),
         absolute_tolerance(
             static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
         eigenvector_tolerance(
-            static_cast<T>(EIGENVECTOR_TOLERANCE_EPSILON_MULTIPLIER) *
-            std::numeric_limits<T>::epsilon()),
+            static_cast<T>(DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE)),
         Hessen_(), _eigen_values(), _eigen_vectors(),
         _status(EigenSolverStatus::not_started), _values_converged(false),
         _vectors_converged(false), _threshold_adjusted(false),
@@ -297,10 +295,6 @@ public:
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
     this->_eigen_values.resize(M);
 #endif
-    T precision_shift = square_root(std::numeric_limits<T>::epsilon());
-    if (this->small_value < precision_shift) {
-      this->small_value = precision_shift;
-    }
   }
 
   inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
@@ -408,9 +402,7 @@ public:
       inner.relative_tolerance =
           this->gmres_k_decay_rate > static_cast<T>(0)
               ? this->gmres_k_decay_rate
-              : static_cast<T>(EIGEN_GMRES_TOLERANCE_SQRT_EPSILON_MULTIPLIER) *
-                    EigenOperation::square_root(
-                        std::numeric_limits<T>::epsilon());
+              : static_cast<T>(DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE);
       bool active = this->_values_converged;
       bool converged = false;
       for (std::size_t iteration = 0;
@@ -626,12 +618,11 @@ template <typename T, std::size_t M, bool ComputeVectors = true>
 class EigenSolverSymmetric {
 public:
   static_assert(M > 0, "An eigensolver requires a nonempty matrix.");
-  EigenSolverSymmetric()
+  inline EigenSolverSymmetric()
       : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
         relative_tolerance(
-            static_cast<T>(EIGEN_RELATIVE_TOLERANCE_EPSILON_MULTIPLIER) *
-            std::numeric_limits<T>::epsilon()),
+            static_cast<T>(DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER)),
         absolute_tolerance(
             static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
         _triangle(), _vectors(), _converged(false), _threshold_adjusted(false),
