@@ -1,0 +1,31 @@
+{
+  "commit": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+  "submodules": " 6d4807de5eb5bfbad8bff950caf3fd20757a9b30 external_libraries/base_utility_cpp (heads/main)\n 2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e external_libraries/python_math_to_cpp (heads/develop)\n 7633f8ce184082a3647484f98b226a21c32ccde1 test_vs/MCAP_tester (heads/main)\n",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "numpy": "2.5.4",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "source_hashes": {
+    "test_vs/algorithm_improvements/epsilon_eigen_probe.cpp": "8061f35580f7ea97ee4f0c9adde0f4eca824a934d3de504e744ae41ab8ce80a2",
+    "test_vs/algorithm_improvements/run_epsilon_eigen_sweep.py": "f8a861f7e0c40fa27e4786eec7d65eaf6ac4b68981afd3125f1ddbdbabd008c6",
+    "base_matrix/base_matrix_eigen_solver.hpp": "55f65a2171105f27dea08e0b8e49c07c0fa4529f854d371fec75b05872917e8d",
+    "base_matrix/base_matrix_gmres.hpp": "9b893b59fab7249c58e2f021ac00188fd00baab81da38495692df48b7275c844"
+  },
+  "oracle": "NumPy eigenvalues of exact stored input exported via %a; residuals evaluated in binary64",
+  "budget": "N=3, general QR 128 slots, general inverse iteration default 30 slots, Jacobi default 10 sweeps",
+  "note": "Jacobi vector convergence/status and actual sweep count are unavailable and recorded as -1.",
+  "reproduction_after_revision_pinning": {
+    "revision": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+    "archived_files_verified": 68,
+    "sample_raw_csv_identical": true,
+    "driver_sha256": {
+      "test_vs/algorithm_improvements/run_epsilon_eigen_sweep.py": "c4a0571d2f3c7d334d75dfc371eeb682af7f4a13157bd321aa23f373e351632b"
+    }
+  }
+}

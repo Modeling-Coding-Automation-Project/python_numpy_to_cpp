@@ -1,0 +1,19 @@
+{
+  "revision": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+  "dependencies": {
+    "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+    "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+  },
+  "parameters": {
+    "breakdown": "8e-12",
+    "eigenvalue": "8e-9",
+    "eigenvector": "3.2e-6",
+    "shift": "3e-4",
+    "inner": "5e-3"
+  },
+  "math": "default",
+  "flags": "-std=c++11 -O2 -Wall -Wextra -Werror",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "source_sha256": "0e0497f47466818213663af96b1c74e75b0bb11b7a46998694b1b44aa7bc640c",
+  "note": "Prototype-only edits. Test assertions unchanged. Eigen limits include removed only in temporary prototype; GMRES retains limits for min()."
+}

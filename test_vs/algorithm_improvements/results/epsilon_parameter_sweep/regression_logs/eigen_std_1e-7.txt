@@ -1,0 +1,46 @@
+TYPE:float
+TYPE:double
+FAIL: real nonnormal known spectrum
+FAIL: real nonnormal known spectrum
+FAIL: real nonnormal known spectrum
+FAIL: real nonnormal known spectrum
+FAIL: real nonnormal known spectrum
+FAIL: GMRES inverse iteration true residual
+FAIL: complex inverse iteration residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+FAIL: Jacobi eigenvector residual
+eigen regression: 43 failures

@@ -1,0 +1,38 @@
+{
+  "commit": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+  "submodule_revisions": {
+    "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+    "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+  },
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "beta_values": [
+    "8e-7",
+    "8e-12",
+    "8e-16"
+  ],
+  "tau_values": [
+    "0",
+    "1e-3",
+    "1e-6",
+    "1e-12"
+  ],
+  "case_count": 672,
+  "precision": 80,
+  "verification_precision": 120,
+  "finite_outputs": true,
+  "iteration_cap": "K=N, cycles=1",
+  "object_storage_unchanged": true,
+  "for_loop_equivalence": "beta=8e-16/default; all112 rows byte-identical",
+  "gmres_header_sha256": "9b893b59fab7249c58e2f021ac00188fd00baab81da38495692df48b7275c844",
+  "source_sha256": "9f494f28cef13fa6378a44ed61ac3ff74dca68f427b85930e5c18840b87f3e40",
+  "script_sha256": "ea2d223be1c0a279fe9cb13ba2a1b349d4ea83f85b98c1a392b08854b396d1b5",
+  "interpretation": "beta is the final Arnoldi relative coefficient. tau is the public relative_tolerance; absolute_tolerance remains zero. No epsilon factor or automatic machine-epsilon floor is applied to either.",
+  "oracle": "Decimal solution of exact hexadecimal matrix/RHS, verified at80/120 digits. Production headers unchanged."
+}

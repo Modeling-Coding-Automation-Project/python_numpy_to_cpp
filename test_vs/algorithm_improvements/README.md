@@ -20,3 +20,7 @@ python3 test_vs/algorithm_improvements/eigen_numpy_oracle.py
 平方根・逆平方根は数学ライブラリの公開APIに委譲する。現行benchmarkは `QRDecompositionHouseholder<T,M,N>` / `PackedCholesky<T,N>` を使い、クラス側で平方根の反復数や計算方式を選ばない。成分別レポートと `results/` の旧測定値には廃止した精度設定も含まれるため、現行コードを再実行した結果と区別する。
 
 runnerは既定の数学ライブラリ構成に加え、ホスト確認用の `BASE_MATH_USE_STD_MATH_` 構成でも数値回帰試験を実行する。後者は `<cmath>` を使う比較用であり、組み込み構成の代わりにはしない。既定構成の精度assertは依存先の平方根精度を考慮し、標準数学構成では従来の厳密なassertを維持する。構造・零入力・失敗状態の検証は両構成で行う。
+
+`epsilon()`を固定値`1e-6`〜`1e-16`へ置換した比較は、[調査報告](../../document/09_epsilon_parameter_sweep.md)と[測定データ・再実行手順](results/epsilon_parameter_sweep/README.md)を参照。各`run_epsilon_*.py`は比較対象commitと依存先を一時領域へ展開し、製品ヘッダを変更せず測定する。
+
+用途別に収束許容誤差・breakdown・逆反復シフトを分離した追加比較は、[独立パラメータの調査報告](../../document/10_independent_numerical_parameters.md)と[測定データ・再実行手順](results/independent_numerical_parameters/README.md)を参照。各`run_independent_*.py`も一時コピー上で測定する。候補値を既定値にした試作は、元のassertを維持した回帰試験と固定メモリ・禁止ヘッダの検査で確認している。

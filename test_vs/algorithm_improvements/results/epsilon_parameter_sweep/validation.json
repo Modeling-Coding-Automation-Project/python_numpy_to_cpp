@@ -1,0 +1,22 @@
+{
+  "checked_utc": "2026-11-16T12:36:42.671400+00:00",
+  "counts": {
+    "gmres": 1536,
+    "eigen": 1056,
+    "eigen_roles": 440,
+    "regression_summary_rows": 96
+  },
+  "finite_metrics": true,
+  "gmres_iteration_cap": true,
+  "eigen_qr_iteration_cap": true,
+  "object_storage_unchanged": true,
+  "revision": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+  "submodule_revisions": {
+    "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+    "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+  },
+  "pinned_library_headers_match_measurement": 23,
+  "pinned_dependency_headers_match_worktree": 14,
+  "pinned_regression_assertions_and_type_tags_match": true,
+  "note": "No production headers changed. Metadata records validation of saved results and immutable input snapshots, not a repeated full measurement."
+}

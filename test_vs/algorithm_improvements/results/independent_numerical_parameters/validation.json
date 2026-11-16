@@ -1,0 +1,33 @@
+{
+  "revision": "8e22c7b327fa4d783a0db33527cc25b5d941b8ba",
+  "gmres_cases": 672,
+  "eigen_cases": 11616,
+  "eigen_summary_rows": 528,
+  "unique_keys": true,
+  "finite_metrics": true,
+  "gmres_iterations_at_most_N": true,
+  "general_QR_sweeps_at_most_128": true,
+  "constant_object_storage_bytes": {
+    "gmres": {
+      "float/real/6/6": 416,
+      "double/real/6/6": 784,
+      "float/complex/4/4": 424,
+      "double/complex/4/4": 808,
+      "float/real/2/2": 136,
+      "double/real/2/2": 224
+    },
+    "eigen": {
+      "float/real": 176,
+      "float/complex": 264,
+      "float/jacobi": 88,
+      "double/real": 296,
+      "double/complex": 464,
+      "double/jacobi": 168
+    }
+  },
+  "metadata_source_hashes_match": true,
+  "prototype_regressions_passed": 6,
+  "python_AST_valid": 7,
+  "production_headers_unchanged": true,
+  "markdown_local_links_checked": 39
+}

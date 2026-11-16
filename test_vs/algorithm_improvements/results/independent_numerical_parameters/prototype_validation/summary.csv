@@ -1,0 +1,7 @@
+suite,loop_mode,exit_code,result
+gmres,template,0,GMRES regression failures: 0
+eigen,template,0,eigen regression: 0 failures
+constraints,template,0,Fixed-storage allocation audit: 0 allocations
+gmres,for,0,GMRES regression failures: 0
+eigen,for,0,eigen regression: 0 failures
+constraints,for,0,Fixed-storage allocation audit: 0 allocations

@@ -33,4 +33,6 @@
 - [06: 行列アルゴリズムの改善案](06_matrix_algorithm_improvement_proposals.md)
 - [07: 改善の実装・評価結果](07_matrix_algorithm_improvement_results.md)
 - [08: GMRESの改善前後と反復回数の上限](08_gmres_algorithm_changes.md)
+- [09: 固定しきい値基準1e-6〜1e-16の比較](09_epsilon_parameter_sweep.md)
+- [10: 用途別の固定しきい値による運用](10_independent_numerical_parameters.md)
 
