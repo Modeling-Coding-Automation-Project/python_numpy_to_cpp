@@ -310,18 +310,24 @@ private:
          const Vector<T, N> &initial, const Preconditioner &inverse_diagonal,
          std::size_t active_size) {
     using Scalar = Numerical::Scalar<T>;
+
+    // Initialize solver state and correct the denominator threshold.
     const Real zero = static_cast<Real>(0);
     const Real floor = Numerical::positive_threshold(this->division_min);
     this->threshold_adjusted_ = this->division_min <= zero;
     this->iterations_ = 0;
     this->breakdown_ = false;
     this->converged_ = false;
+
+    // Bound the Krylov dimension and select the orthogonalization passes.
     std::size_t dimension = this->krylov_dimension;
     dimension = dimension == 0 ? 1 : (dimension > K ? K : dimension);
     if (dimension > active_size) {
       dimension = active_size;
     }
     const std::size_t passes = this->orthogonalization_passes > 1 ? 2 : 1;
+
+    // Convergence threshold: absolute tolerance + relative tolerance * ||b||.
     const Real relative =
         this->relative_tolerance > zero ? this->relative_tolerance : zero;
     const Real absolute =
@@ -329,6 +335,7 @@ private:
     const Real tolerance =
         absolute + relative * Numerical::norm(right_hand_side, active_size);
 
+    // Initial residual: r = b - A*x. Check for an already converged solution.
     Vector<T, N> solution = initial;
     Vector<T, N> residual;
     GmresOperation::apply_operator(operation, solution, residual, active_size);
@@ -338,13 +345,17 @@ private:
     this->residual_norm_ = Numerical::norm(residual, active_size);
     this->converged_ = this->residual_norm_ <= tolerance;
 
+    // Run the first cycle and any restarts within the configured cycle budget.
     for (std::size_t cycle = 0; cycle < this->cycles; ++cycle) {
       if (!this->converged_ && !this->breakdown_ && dimension > 0) {
+        // Initialize the small least-squares right-hand side: b_hat = ||r||*e1.
         const Real initial_norm = this->residual_norm_;
         for (std::size_t j = 0; j <= K; ++j) {
           this->transformed_rhs_[j] = T();
         }
         this->transformed_rhs_[0] = initial_norm;
+
+        // Normalize r to form the first basis vector of this cycle.
         // initial_norm > tolerance >= 0, so this denominator is nonzero.
         // Use a shared reciprocal only when it is representable.
         const bool initial_reciprocal_safe =
@@ -363,18 +374,25 @@ private:
         bool arnoldi_breakdown = false;
         Vector<T, N> input;
         Vector<T, N> product;
+
+        // Build the Krylov basis and Hessenberg matrix within the step budget.
         for (std::size_t column = 0; column < K; ++column) {
           if (active && column < dimension) {
+            // Apply right preconditioning, then multiply: w = A*(D^-1*q_k).
+            // D^-1 is the identity when no preconditioner is requested.
             for (std::size_t i = 0; i < N; ++i) {
               input[i] = this->basis_[column * N + i] * inverse_diagonal[i];
             }
             GmresOperation::apply_operator(operation, input, product,
                                            active_size);
             Real product_norm = Numerical::norm(product, active_size);
+
+            // Reset the work column of H before orthogonalization.
             for (std::size_t j = 0; j <= K; ++j) {
               this->column_[j] = T();
             }
 
+            // Orthogonalize w against the stored basis and fill H(j, k).
             // Modified Gram-Schmidt; the second pass adds its corrections.
             for (std::size_t pass = 0; pass < passes; ++pass) {
               for (std::size_t j = 0; j <= column; ++j) {
@@ -397,6 +415,8 @@ private:
                 }
               }
             }
+
+            // Store H(k+1, k) = ||w|| and detect Arnoldi breakdown.
             Real next_norm = Numerical::norm(product, active_size);
             this->column_[column + 1] = next_norm;
             Real breakdown_limit = static_cast<Real>(8) *
@@ -404,6 +424,7 @@ private:
                                    product_norm;
             arnoldi_breakdown = next_norm <= breakdown_limit;
 
+            // Normalize the next basis vector only if another step can use it.
             // The last column still needs its subdiagonal and rotation.
             if (!arnoldi_breakdown && column + 1 < dimension) {
               const bool reciprocal_safe =
@@ -416,6 +437,8 @@ private:
                                     : product[i] / next_norm;
               }
             }
+
+            // Apply previous Givens rotations to the current column of H.
             for (std::size_t j = 0; j < column; ++j) {
               T upper = this->column_[j];
               T lower = this->column_[j + 1];
@@ -425,6 +448,8 @@ private:
                   -Scalar::conjugate(this->sine_[j]) * upper +
                   lower * this->cosine_[j];
             }
+
+            // Eliminate H(k+1, k) with a new rotation and store column k of R.
             Numerical::givens(this->column_[column], this->column_[column + 1],
                               this->cosine_[column], this->sine_[column]);
             this->column_[column] =
@@ -433,18 +458,25 @@ private:
             for (std::size_t j = 0; j <= column; ++j) {
               this->_r(j, column) = this->column_[j];
             }
+
+            // Rotate b_hat; the next entry's magnitude estimates ||r||.
             this->transformed_rhs_[column + 1] =
                 -Scalar::conjugate(this->sine_[column]) *
                 this->transformed_rhs_[column];
             this->transformed_rhs_[column] *= this->cosine_[column];
             used = column + 1;
             ++this->iterations_;
+
+            // End Arnoldi updates on breakdown or a sufficiently small
+            // estimate. Final convergence is checked later using the actual
+            // residual.
             active = !arnoldi_breakdown &&
                      Scalar::magnitude(this->transformed_rhs_[column + 1]) >
                          tolerance;
           }
         }
 
+        // Back substitution: solve the used triangular system R*y = b_hat.
         bool triangular_valid = true;
         for (std::size_t offset = 0; offset < K; ++offset) {
           const std::size_t row = K - 1 - offset;
@@ -456,6 +488,7 @@ private:
                 value -= this->_r(row, j) * this->coefficients_[j];
               }
             }
+            // Reject the correction if a diagonal pivot cannot be used safely.
             if (Scalar::magnitude(this->_r(row, row)) < floor) {
               triangular_valid = false;
             } else {
@@ -465,6 +498,7 @@ private:
           }
         }
 
+        // Form the candidate solution: x_candidate = x + D^-1*Q*y.
         if (triangular_valid) {
           Vector<T, N> candidate = solution;
           for (std::size_t i = 0; i < N; ++i) {
@@ -476,17 +510,22 @@ private:
             }
             candidate[i] += inverse_diagonal[i] * correction;
           }
+
+          // Recompute r_candidate = b - A*x_candidate to verify the correction.
           GmresOperation::apply_operator(operation, candidate, residual,
                                          active_size);
           for (std::size_t i = 0; i < N; ++i) {
             residual[i] =
                 i < active_size ? right_hand_side[i] - residual[i] : T();
           }
+
+          // Keep the candidate only when its actual residual does not increase.
           Real candidate_norm = Numerical::norm(residual, active_size);
           if (candidate_norm <= initial_norm) {
             solution = candidate;
             this->residual_norm_ = candidate_norm;
           } else {
+            // Restore the retained solution's residual for a possible restart.
             GmresOperation::apply_operator(operation, solution, residual,
                                            active_size);
             for (std::size_t i = 0; i < N; ++i) {
@@ -494,9 +533,13 @@ private:
                   i < active_size ? right_hand_side[i] - residual[i] : T();
             }
           }
+
+          // Confirm convergence from the retained solution's actual residual.
           this->converged_ = this->residual_norm_ <= tolerance;
         }
+
         // A happy breakdown is successful only when the true residual agrees.
+        // Otherwise, or if the triangular solve failed, disable later cycles.
         this->breakdown_ =
             !triangular_valid || (arnoldi_breakdown && !this->converged_);
       }
