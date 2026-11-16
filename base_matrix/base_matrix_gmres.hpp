@@ -18,9 +18,613 @@ namespace Base {
 namespace Matrix {
 namespace GmresOperation {
 
+/* Vector initialization and projection onto the leading subspace. */
+namespace VectorSubspace {
+
+template <typename T, std::size_t N, std::size_t Index> struct Loop {
+  static inline void clear(Vector<T, N> &output) {
+    output[Index] = T();
+    Loop<T, N, Index + 1>::clear(output);
+  }
+
+  static inline void copy_active(const Vector<T, N> &input,
+                                 Vector<T, N> &output,
+                                 std::size_t active_size) {
+    if (Index < active_size) {
+      output[Index] = input[Index];
+    }
+    Loop<T, N, Index + 1>::copy_active(input, output, active_size);
+  }
+
+  static inline void clear_inactive(Vector<T, N> &output,
+                                    std::size_t active_size) {
+    if (Index >= active_size) {
+      output[Index] = T();
+    }
+    Loop<T, N, Index + 1>::clear_inactive(output, active_size);
+  }
+};
+
+// Termination condition: Index == N.
+template <typename T, std::size_t N> struct Loop<T, N, N> {
+  static inline void clear(Vector<T, N> &) {}
+  static inline void copy_active(const Vector<T, N> &, Vector<T, N> &,
+                                 std::size_t) {}
+  static inline void clear_inactive(Vector<T, N> &, std::size_t) {}
+};
+
+} // namespace VectorSubspace
+
+/* Column-major multiplication; preserve the ascending accumulation order. */
+namespace DenseMultiply {
+
+template <typename T, std::size_t N, std::size_t ColumnIndex,
+          std::size_t RowIndex, bool FullSize>
+struct Row {
+  static inline void compute(const Matrix<T, N, N> &matrix,
+                             const Vector<T, N> &input, Vector<T, N> &output,
+                             std::size_t active_size) {
+    if (FullSize || (RowIndex < active_size && ColumnIndex < active_size)) {
+      output[RowIndex] += matrix(RowIndex, ColumnIndex) * input[ColumnIndex];
+    }
+    Row<T, N, ColumnIndex, RowIndex + 1, FullSize>::compute(
+        matrix, input, output, active_size);
+  }
+};
+
+template <typename T, std::size_t N, std::size_t ColumnIndex, bool FullSize>
+struct Row<T, N, ColumnIndex, N, FullSize> {
+  static inline void compute(const Matrix<T, N, N> &, const Vector<T, N> &,
+                             Vector<T, N> &, std::size_t) {}
+};
+
+template <typename T, std::size_t N, std::size_t ColumnIndex, bool FullSize>
+struct Column {
+  static inline void compute(const Matrix<T, N, N> &matrix,
+                             const Vector<T, N> &input, Vector<T, N> &output,
+                             std::size_t active_size) {
+    Row<T, N, ColumnIndex, 0, FullSize>::compute(matrix, input, output,
+                                                 active_size);
+    Column<T, N, ColumnIndex + 1, FullSize>::compute(matrix, input, output,
+                                                     active_size);
+  }
+};
+
+template <typename T, std::size_t N, bool FullSize>
+struct Column<T, N, N, FullSize> {
+  static inline void compute(const Matrix<T, N, N> &, const Vector<T, N> &,
+                             Vector<T, N> &, std::size_t) {}
+};
+
+template <typename T, std::size_t N>
+inline void compute(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
+                    Vector<T, N> &output, std::size_t active_size) {
+  VectorSubspace::Loop<T, N, 0>::clear(output);
+  if (active_size == N) {
+    Column<T, N, 0, true>::compute(matrix, input, output, active_size);
+  } else {
+    Column<T, N, 0, false>::compute(matrix, input, output, active_size);
+  }
+}
+
+} // namespace DenseMultiply
+
+/* A^T times a vector; used for both the normal operator and its RHS. */
+namespace DenseTransposeMultiply {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
+          std::size_t RowIndex>
+struct Row {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, M> &input, Vector<T, N> &output) {
+    output[ColumnIndex] += matrix(RowIndex, ColumnIndex) * input[RowIndex];
+    Row<T, M, N, ColumnIndex, RowIndex + 1>::compute(matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
+struct Row<T, M, N, ColumnIndex, M> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
+                             Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
+struct Column {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, M> &input, Vector<T, N> &output) {
+    output[ColumnIndex] = T();
+    Row<T, M, N, ColumnIndex, 0>::compute(matrix, input, output);
+    Column<T, M, N, ColumnIndex + 1>::compute(matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
+                             Vector<T, N> &) {}
+};
+
+} // namespace DenseTransposeMultiply
+
+/* Explicit dense normal equations: fill one Gram column and RHS entry. */
+namespace DenseNormalEquations {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
+          std::size_t GramRowIndex, std::size_t RowIndex>
+struct Product {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             Matrix<T, N, N> &gram) {
+    gram(GramRowIndex, ColumnIndex) +=
+        matrix(RowIndex, GramRowIndex) * matrix(RowIndex, ColumnIndex);
+    Product<T, M, N, ColumnIndex, GramRowIndex, RowIndex + 1>::compute(matrix,
+                                                                       gram);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
+          std::size_t GramRowIndex>
+struct Product<T, M, N, ColumnIndex, GramRowIndex, M> {
+  static inline void compute(const Matrix<T, M, N> &, Matrix<T, N, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
+          std::size_t GramRowIndex>
+struct Row {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             Matrix<T, N, N> &gram) {
+    gram(GramRowIndex, ColumnIndex) = T();
+    Product<T, M, N, ColumnIndex, GramRowIndex, 0>::compute(matrix, gram);
+    Row<T, M, N, ColumnIndex, GramRowIndex + 1>::compute(matrix, gram);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
+struct Row<T, M, N, ColumnIndex, N> {
+  static inline void compute(const Matrix<T, M, N> &, Matrix<T, N, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
+struct Column {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, M> &right_hand_side,
+                             Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
+    Row<T, M, N, ColumnIndex, 0>::compute(matrix, gram);
+    normal_rhs[ColumnIndex] = T();
+    DenseTransposeMultiply::Row<T, M, N, ColumnIndex, 0>::compute(
+        matrix, right_hand_side, normal_rhs);
+    Column<T, M, N, ColumnIndex + 1>::compute(matrix, right_hand_side, gram,
+                                              normal_rhs);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
+                             Matrix<T, N, N> &, Vector<T, N> &) {}
+};
+
+} // namespace DenseNormalEquations
+
+/* Clear the Gram matrix and normal RHS before accumulating sparse rows. */
+namespace ZeroNormalEquations {
+
+template <typename T, std::size_t N, std::size_t ColumnIndex,
+          std::size_t RowIndex>
+struct Row {
+  static inline void compute(Matrix<T, N, N> &gram) {
+    gram(RowIndex, ColumnIndex) = T();
+    Row<T, N, ColumnIndex, RowIndex + 1>::compute(gram);
+  }
+};
+
+template <typename T, std::size_t N, std::size_t ColumnIndex>
+struct Row<T, N, ColumnIndex, N> {
+  static inline void compute(Matrix<T, N, N> &) {}
+};
+
+template <typename T, std::size_t N, std::size_t ColumnIndex> struct Column {
+  static inline void compute(Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
+    normal_rhs[ColumnIndex] = T();
+    Row<T, N, ColumnIndex, 0>::compute(gram);
+    Column<T, N, ColumnIndex + 1>::compute(gram, normal_rhs);
+  }
+};
+
+template <typename T, std::size_t N> struct Column<T, N, N> {
+  static inline void compute(Matrix<T, N, N> &, Vector<T, N> &) {}
+};
+
+} // namespace ZeroNormalEquations
+
+/* Direct evaluation of A^T(b-Ax), keeping each subtraction in row order. */
+namespace DenseNormalResidual {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex,
+          std::size_t ColumnIndex>
+struct Column {
+  static inline void subtract(const Matrix<T, M, N> &matrix,
+                              const Vector<T, N> &solution, T &residual) {
+    residual -= matrix(RowIndex, ColumnIndex) * solution[ColumnIndex];
+    Column<T, M, N, RowIndex, ColumnIndex + 1>::subtract(matrix, solution,
+                                                         residual);
+  }
+
+  static inline void accumulate(const Matrix<T, M, N> &matrix,
+                                const T &residual, Vector<T, N> &stationarity) {
+    stationarity[ColumnIndex] += matrix(RowIndex, ColumnIndex) * residual;
+    Column<T, M, N, RowIndex, ColumnIndex + 1>::accumulate(matrix, residual,
+                                                           stationarity);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
+struct Column<T, M, N, RowIndex, N> {
+  static inline void subtract(const Matrix<T, M, N> &, const Vector<T, N> &,
+                              T &) {}
+  static inline void accumulate(const Matrix<T, M, N> &, const T &,
+                                Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
+struct Row {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, M> &right_hand_side,
+                             const Vector<T, N> &solution,
+                             Vector<T, N> &stationarity) {
+    T residual = right_hand_side[RowIndex];
+    Column<T, M, N, RowIndex, 0>::subtract(matrix, solution, residual);
+    Column<T, M, N, RowIndex, 0>::accumulate(matrix, residual, stationarity);
+    Row<T, M, N, RowIndex + 1>::compute(matrix, right_hand_side, solution,
+                                        stationarity);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
+                             const Vector<T, N> &, Vector<T, N> &) {}
+};
+
+} // namespace DenseNormalResidual
+
+/* First product A*x for the dense normal operator. */
+namespace DenseNormalProduct {
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex,
+          std::size_t ColumnIndex>
+struct Column {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, N> &input,
+                             Vector<T, M> &intermediate) {
+    intermediate[RowIndex] +=
+        matrix(RowIndex, ColumnIndex) * input[ColumnIndex];
+    Column<T, M, N, RowIndex, ColumnIndex + 1>::compute(matrix, input,
+                                                        intermediate);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
+struct Column<T, M, N, RowIndex, N> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, N> &,
+                             Vector<T, M> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
+struct Row {
+  static inline void compute(const Matrix<T, M, N> &matrix,
+                             const Vector<T, N> &input,
+                             Vector<T, M> &intermediate) {
+    Column<T, M, N, RowIndex, 0>::compute(matrix, input, intermediate);
+    Row<T, M, N, RowIndex + 1>::compute(matrix, input, intermediate);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
+  static inline void compute(const Matrix<T, M, N> &, const Vector<T, N> &,
+                             Vector<T, M> &) {}
+};
+
+} // namespace DenseNormalProduct
+
+/* Sparse matrix-vector multiplication in the leading active subspace. */
+namespace SparseMultiply {
+
+template <typename T, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex, std::size_t Start,
+          std::size_t End>
+struct Loop {
+  static inline void
+  compute(const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, N> &input, Vector<T, N> &output,
+          std::size_t active_size) {
+    if (RowIndex < active_size && CSRIndicesType::list[Start] < active_size) {
+      output[RowIndex] +=
+          matrix.values[Start] * input[CSRIndicesType::list[Start]];
+    }
+    Loop<T, N, CSRIndicesType, CSRPointersType, RowIndex, Start + 1,
+         End>::compute(matrix, input, output, active_size);
+  }
+};
+
+// Empty rows and the end of each row require no element access.
+template <typename T, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex, std::size_t End>
+struct Loop<T, N, CSRIndicesType, CSRPointersType, RowIndex, End, End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, N> &, Vector<T, N> &, std::size_t) {}
+};
+
+template <typename T, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex>
+struct Row {
+  static inline void
+  compute(const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, N> &input, Vector<T, N> &output,
+          std::size_t active_size) {
+    output[RowIndex] = T();
+    Loop<T, N, CSRIndicesType, CSRPointersType, RowIndex,
+         CSRPointersType::list[RowIndex],
+         CSRPointersType::list[RowIndex + 1]>::compute(matrix, input, output,
+                                                       active_size);
+    Row<T, N, CSRIndicesType, CSRPointersType, RowIndex + 1>::compute(
+        matrix, input, output, active_size);
+  }
+};
+
+template <typename T, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct Row<T, N, CSRIndicesType, CSRPointersType, N> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, N> &, Vector<T, N> &, std::size_t) {}
+};
+
+} // namespace SparseMultiply
+
+/* Add each sparse row's contribution to A^T A and A^T b. */
+namespace SparseNormalEquations {
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t FirstIndex, std::size_t Start,
+          std::size_t End>
+struct SecondEntry {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          Matrix<T, N, N> &gram) {
+    gram(CSRIndicesType::list[FirstIndex], CSRIndicesType::list[Start]) +=
+        matrix.values[FirstIndex] * matrix.values[Start];
+    SecondEntry<T, M, N, CSRIndicesType, CSRPointersType, FirstIndex, Start + 1,
+                End>::compute(matrix, gram);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t FirstIndex, std::size_t End>
+struct SecondEntry<T, M, N, CSRIndicesType, CSRPointersType, FirstIndex, End,
+                   End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      Matrix<T, N, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex, std::size_t Start,
+          std::size_t End>
+struct FirstEntry {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, M> &right_hand_side, Matrix<T, N, N> &gram,
+          Vector<T, N> &normal_rhs) {
+    normal_rhs[CSRIndicesType::list[Start]] +=
+        matrix.values[Start] * right_hand_side[RowIndex];
+    SecondEntry<T, M, N, CSRIndicesType, CSRPointersType, Start,
+                CSRPointersType::list[RowIndex], End>::compute(matrix, gram);
+    FirstEntry<T, M, N, CSRIndicesType, CSRPointersType, RowIndex, Start + 1,
+               End>::compute(matrix, right_hand_side, gram, normal_rhs);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex, std::size_t End>
+struct FirstEntry<T, M, N, CSRIndicesType, CSRPointersType, RowIndex, End,
+                  End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, M> &, Matrix<T, N, N> &, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex>
+struct Row {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, M> &right_hand_side, Matrix<T, N, N> &gram,
+          Vector<T, N> &normal_rhs) {
+    FirstEntry<T, M, N, CSRIndicesType, CSRPointersType, RowIndex,
+               CSRPointersType::list[RowIndex],
+               CSRPointersType::list[RowIndex + 1]>::compute(matrix,
+                                                             right_hand_side,
+                                                             gram, normal_rhs);
+    Row<T, M, N, CSRIndicesType, CSRPointersType, RowIndex + 1>::compute(
+        matrix, right_hand_side, gram, normal_rhs);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, M> &, Matrix<T, N, N> &, Vector<T, N> &) {}
+};
+
+} // namespace SparseNormalEquations
+
+/* Scatter a sparse row times a scalar, preserving stored entry order. */
+namespace SparseTransposeMultiply {
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t Start, std::size_t End>
+struct Loop {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const T &input, Vector<T, N> &output) {
+    output[CSRIndicesType::list[Start]] += matrix.values[Start] * input;
+    Loop<T, M, N, CSRIndicesType, CSRPointersType, Start + 1, End>::compute(
+        matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t End>
+struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const T &, Vector<T, N> &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex>
+struct Row {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, M> &input, Vector<T, N> &output) {
+    Loop<T, M, N, CSRIndicesType, CSRPointersType,
+         CSRPointersType::list[RowIndex],
+         CSRPointersType::list[RowIndex + 1]>::compute(matrix, input[RowIndex],
+                                                       output);
+    Row<T, M, N, CSRIndicesType, CSRPointersType, RowIndex + 1>::compute(
+        matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, M> &, Vector<T, N> &) {}
+};
+
+} // namespace SparseTransposeMultiply
+
+/* Form b-Ax one row at a time, then accumulate A^T(b-Ax). */
+namespace SparseNormalResidual {
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t Start, std::size_t End>
+struct Loop {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, N> &solution, T &residual) {
+    residual -= matrix.values[Start] * solution[CSRIndicesType::list[Start]];
+    Loop<T, M, N, CSRIndicesType, CSRPointersType, Start + 1, End>::compute(
+        matrix, solution, residual);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t End>
+struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, N> &, T &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex>
+struct Row {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, M> &right_hand_side, const Vector<T, N> &solution,
+          Vector<T, N> &stationarity) {
+    T residual = right_hand_side[RowIndex];
+    Loop<T, M, N, CSRIndicesType, CSRPointersType,
+         CSRPointersType::list[RowIndex],
+         CSRPointersType::list[RowIndex + 1]>::compute(matrix, solution,
+                                                       residual);
+    SparseTransposeMultiply::Loop<
+        T, M, N, CSRIndicesType, CSRPointersType,
+        CSRPointersType::list[RowIndex],
+        CSRPointersType::list[RowIndex + 1]>::compute(matrix, residual,
+                                                      stationarity);
+    Row<T, M, N, CSRIndicesType, CSRPointersType, RowIndex + 1>::compute(
+        matrix, right_hand_side, solution, stationarity);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, M> &, const Vector<T, N> &, Vector<T, N> &) {}
+};
+
+} // namespace SparseNormalResidual
+
+/* Accumulate Ax into the zero-initialized normal-operator intermediate. */
+namespace SparseNormalProduct {
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t Start, std::size_t End>
+struct Loop {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, N> &input, T &output) {
+    output += matrix.values[Start] * input[CSRIndicesType::list[Start]];
+    Loop<T, M, N, CSRIndicesType, CSRPointersType, Start + 1, End>::compute(
+        matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t End>
+struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, N> &, T &) {}
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType, std::size_t RowIndex>
+struct Row {
+  static inline void
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
+              &matrix,
+          const Vector<T, N> &input, Vector<T, M> &output) {
+    Loop<T, M, N, CSRIndicesType, CSRPointersType,
+         CSRPointersType::list[RowIndex],
+         CSRPointersType::list[RowIndex + 1]>::compute(matrix, input,
+                                                       output[RowIndex]);
+    Row<T, M, N, CSRIndicesType, CSRPointersType, RowIndex + 1>::compute(
+        matrix, input, output);
+  }
+};
+
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  static inline void compute(
+      const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
+      const Vector<T, N> &, Vector<T, M> &) {}
+};
+
+} // namespace SparseNormalProduct
+
 template <typename T, std::size_t N>
 inline void multiply(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
                      Vector<T, N> &output, std::size_t active_size) {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t i = 0; i < N; ++i) {
     output[i] = T();
   }
@@ -40,21 +644,41 @@ inline void multiply(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  DenseMultiply::compute(matrix, input, output, active_size);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
-template <typename T, std::size_t N, typename Indices, typename Pointers>
-inline void
-multiply(const CompiledSparseMatrix<T, N, N, Indices, Pointers> &matrix,
-         const Vector<T, N> &input, Vector<T, N> &output,
-         std::size_t active_size) {
+template <typename T, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+inline void multiply(const CompiledSparseMatrix<T, N, N, CSRIndicesType,
+                                                CSRPointersType> &matrix,
+                     const Vector<T, N> &input, Vector<T, N> &output,
+                     std::size_t active_size) {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t i = 0; i < N; ++i) {
     output[i] = T();
-    for (std::size_t j = Pointers::list[i]; j < Pointers::list[i + 1]; ++j) {
-      if (i < active_size && Indices::list[j] < active_size) {
-        output[i] += matrix.values[j] * input[Indices::list[j]];
+    // An empty compile-time pattern has no index or value to access.
+    if (CSRIndicesType::size > 0) {
+      for (std::size_t j = CSRPointersType::list[i];
+           j < CSRPointersType::list[i + 1]; ++j) {
+        if (i < active_size && CSRIndicesType::list[j] < active_size) {
+          output[i] += matrix.values[j] * input[CSRIndicesType::list[j]];
+        }
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  SparseMultiply::Row<T, N, CSRIndicesType, CSRPointersType, 0>::compute(
+      matrix, input, output, active_size);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 template <typename MatrixType, typename T, std::size_t N>
@@ -75,17 +699,34 @@ inline void apply_operator(const Operator &operation, const Vector<T, N> &input,
     operation(input, output);
   } else {
     Vector<T, N> active_input;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < N; ++i) {
       if (i < active_size) {
         active_input[i] = input[i];
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    VectorSubspace::Loop<T, N, 0>::copy_active(input, active_input,
+                                               active_size);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
     operation(active_input, output);
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < N; ++i) {
       if (i >= active_size) {
         output[i] = T();
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    VectorSubspace::Loop<T, N, 0>::clear_inactive(output, active_size);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
 }
 
@@ -98,6 +739,8 @@ template <typename T, std::size_t M, std::size_t N>
 inline void normal_equations(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &right_hand_side,
                              Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t j = 0; j < N; ++j) {
     for (std::size_t i = 0; i < N; ++i) {
       gram(i, j) = T();
@@ -110,28 +753,54 @@ inline void normal_equations(const Matrix<T, M, N> &matrix,
       normal_rhs[j] += matrix(row, j) * right_hand_side[row];
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  DenseNormalEquations::Column<T, M, N, 0>::compute(matrix, right_hand_side,
+                                                    gram, normal_rhs);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
-template <typename T, std::size_t M, std::size_t N, typename I, typename P>
-inline void normal_equations(const CompiledSparseMatrix<T, M, N, I, P> &matrix,
-                             const Vector<T, M> &right_hand_side,
-                             Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+inline void
+normal_equations(const CompiledSparseMatrix<T, M, N, CSRIndicesType,
+                                            CSRPointersType> &matrix,
+                 const Vector<T, M> &right_hand_side, Matrix<T, N, N> &gram,
+                 Vector<T, N> &normal_rhs) {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t j = 0; j < N; ++j) {
     normal_rhs[j] = T();
     for (std::size_t i = 0; i < N; ++i) {
       gram(i, j) = T();
     }
   }
-  for (std::size_t row = 0; row < M; ++row) {
-    for (std::size_t first = P::list[row]; first < P::list[row + 1]; ++first) {
-      normal_rhs[I::list[first]] += matrix.values[first] * right_hand_side[row];
-      for (std::size_t second = P::list[row]; second < P::list[row + 1];
-           ++second) {
-        gram(I::list[first], I::list[second]) +=
-            matrix.values[first] * matrix.values[second];
+  // Skip entry access when the compile-time CSR pattern is empty.
+  if (CSRIndicesType::size > 0) {
+    for (std::size_t row = 0; row < M; ++row) {
+      for (std::size_t first = CSRPointersType::list[row];
+           first < CSRPointersType::list[row + 1]; ++first) {
+        normal_rhs[CSRIndicesType::list[first]] +=
+            matrix.values[first] * right_hand_side[row];
+        for (std::size_t second = CSRPointersType::list[row];
+             second < CSRPointersType::list[row + 1]; ++second) {
+          gram(CSRIndicesType::list[first], CSRIndicesType::list[second]) +=
+              matrix.values[first] * matrix.values[second];
+        }
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  ZeroNormalEquations::Column<T, N, 0>::compute(gram, normal_rhs);
+  SparseNormalEquations::Row<T, M, N, CSRIndicesType, CSRPointersType,
+                             0>::compute(matrix, right_hand_side, gram,
+                                         normal_rhs);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
 /** Evaluate A^T(b-Ax) directly, including for an explicitly formed Gram. */
@@ -140,6 +809,8 @@ inline T normal_residual(const Matrix<T, M, N> &matrix,
                          const Vector<T, M> &right_hand_side,
                          const Vector<T, N> &solution) {
   Vector<T, N> stationarity;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t row = 0; row < M; ++row) {
     T residual = right_hand_side[row];
     for (std::size_t j = 0; j < N; ++j) {
@@ -149,23 +820,49 @@ inline T normal_residual(const Matrix<T, M, N> &matrix,
       stationarity[j] += matrix(row, j) * residual;
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  DenseNormalResidual::Row<T, M, N, 0>::compute(matrix, right_hand_side,
+                                                solution, stationarity);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   return Numerical::norm(stationarity);
 }
 
-template <typename T, std::size_t M, std::size_t N, typename I, typename P>
-inline T normal_residual(const CompiledSparseMatrix<T, M, N, I, P> &matrix,
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+inline T normal_residual(const CompiledSparseMatrix<T, M, N, CSRIndicesType,
+                                                    CSRPointersType> &matrix,
                          const Vector<T, M> &right_hand_side,
                          const Vector<T, N> &solution) {
   Vector<T, N> stationarity;
-  for (std::size_t row = 0; row < M; ++row) {
-    T residual = right_hand_side[row];
-    for (std::size_t entry = P::list[row]; entry < P::list[row + 1]; ++entry) {
-      residual -= matrix.values[entry] * solution[I::list[entry]];
-    }
-    for (std::size_t entry = P::list[row]; entry < P::list[row + 1]; ++entry) {
-      stationarity[I::list[entry]] += matrix.values[entry] * residual;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  // Skip entry access when the compile-time CSR pattern is empty.
+  if (CSRIndicesType::size > 0) {
+    for (std::size_t row = 0; row < M; ++row) {
+      T residual = right_hand_side[row];
+      for (std::size_t entry = CSRPointersType::list[row];
+           entry < CSRPointersType::list[row + 1]; ++entry) {
+        residual -=
+            matrix.values[entry] * solution[CSRIndicesType::list[entry]];
+      }
+      for (std::size_t entry = CSRPointersType::list[row];
+           entry < CSRPointersType::list[row + 1]; ++entry) {
+        stationarity[CSRIndicesType::list[entry]] +=
+            matrix.values[entry] * residual;
+      }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  SparseNormalResidual::Row<T, M, N, CSRIndicesType, CSRPointersType,
+                            0>::compute(matrix, right_hand_side, solution,
+                                        stationarity);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   return Numerical::norm(stationarity);
 }
 
@@ -179,47 +876,95 @@ struct NormalOperator<Matrix<T, M, N>, T, M, N> {
   const Matrix<T, M, N> &matrix;
   inline void transpose_multiply(const Vector<T, M> &input,
                                  Vector<T, N> &output) const {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t j = 0; j < N; ++j) {
       output[j] = T();
       for (std::size_t i = 0; i < M; ++i) {
         output[j] += this->matrix(i, j) * input[i];
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    DenseTransposeMultiply::Column<T, M, N, 0>::compute(this->matrix, input,
+                                                        output);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
   inline void operator()(const Vector<T, N> &input,
                          Vector<T, N> &output) const {
     Vector<T, M> intermediate;
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t i = 0; i < M; ++i) {
       for (std::size_t j = 0; j < N; ++j) {
         intermediate[i] += this->matrix(i, j) * input[j];
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    DenseNormalProduct::Row<T, M, N, 0>::compute(this->matrix, input,
+                                                 intermediate);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
     this->transpose_multiply(intermediate, output);
   }
 };
 
-template <typename T, std::size_t M, std::size_t N, typename I, typename P>
-struct NormalOperator<CompiledSparseMatrix<T, M, N, I, P>, T, M, N> {
-  const CompiledSparseMatrix<T, M, N, I, P> &matrix;
+template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
+          typename CSRPointersType>
+struct NormalOperator<
+    CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>, T, M, N> {
+  const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &matrix;
   inline void transpose_multiply(const Vector<T, M> &input,
                                  Vector<T, N> &output) const {
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
     for (std::size_t j = 0; j < N; ++j) {
       output[j] = T();
     }
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = P::list[i]; j < P::list[i + 1]; ++j) {
-        output[I::list[j]] += this->matrix.values[j] * input[i];
+    // Skip entry access when the compile-time CSR pattern is empty.
+    if (CSRIndicesType::size > 0) {
+      for (std::size_t i = 0; i < M; ++i) {
+        for (std::size_t j = CSRPointersType::list[i];
+             j < CSRPointersType::list[i + 1]; ++j) {
+          output[CSRIndicesType::list[j]] += this->matrix.values[j] * input[i];
+        }
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    VectorSubspace::Loop<T, N, 0>::clear(output);
+    SparseTransposeMultiply::Row<T, M, N, CSRIndicesType, CSRPointersType,
+                                 0>::compute(this->matrix, input, output);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
   inline void operator()(const Vector<T, N> &input,
                          Vector<T, N> &output) const {
     Vector<T, M> intermediate;
-    for (std::size_t i = 0; i < M; ++i) {
-      for (std::size_t j = P::list[i]; j < P::list[i + 1]; ++j) {
-        intermediate[i] += this->matrix.values[j] * input[I::list[j]];
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    // Skip entry access when the compile-time CSR pattern is empty.
+    if (CSRIndicesType::size > 0) {
+      for (std::size_t i = 0; i < M; ++i) {
+        for (std::size_t j = CSRPointersType::list[i];
+             j < CSRPointersType::list[i + 1]; ++j) {
+          intermediate[i] +=
+              this->matrix.values[j] * input[CSRIndicesType::list[j]];
+        }
       }
     }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+    SparseNormalProduct::Row<T, M, N, CSRIndicesType, CSRPointersType,
+                             0>::compute(this->matrix, input, intermediate);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
     this->transpose_multiply(intermediate, output);
   }
 };

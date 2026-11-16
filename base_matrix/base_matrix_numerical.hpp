@@ -85,11 +85,73 @@ template <typename T> struct Scalar<Complex<T>> {
   }
 };
 
+/* Scaled vector norm */
+namespace VectorNorm {
+
+// Find the largest active component in ascending index order.
+template <typename T, std::size_t N, std::size_t Index> struct ScaleLoop {
+  using Real = typename Scalar<T>::Real;
+
+  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
+                             Real &scale) {
+    if (Index < active_size) {
+      Real candidate = Scalar<T>::component_max(value[Index]);
+      if (candidate > scale) {
+        scale = candidate;
+      }
+    }
+    ScaleLoop<T, N, Index + 1>::compute(value, active_size, scale);
+  }
+};
+
+// End of the component scan.
+template <typename T, std::size_t N> struct ScaleLoop<T, N, N> {
+  using Real = typename Scalar<T>::Real;
+
+  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
+                             Real &scale) {
+    static_cast<void>(value);
+    static_cast<void>(active_size);
+    static_cast<void>(scale);
+  }
+};
+
+// Accumulate scaled squares in the same order as the for-loop path.
+template <typename T, std::size_t N, std::size_t Index> struct SquaredSumLoop {
+  using Real = typename Scalar<T>::Real;
+
+  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
+                             Real scale, Real &sum) {
+    if (Index < active_size) {
+      sum += Scalar<T>::squared_abs(value[Index] / scale);
+    }
+    SquaredSumLoop<T, N, Index + 1>::compute(value, active_size, scale, sum);
+  }
+};
+
+// End of the scaled-square accumulation.
+template <typename T, std::size_t N> struct SquaredSumLoop<T, N, N> {
+  using Real = typename Scalar<T>::Real;
+
+  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
+                             Real scale, Real &sum) {
+    static_cast<void>(value);
+    static_cast<void>(active_size);
+    static_cast<void>(scale);
+    static_cast<void>(sum);
+  }
+};
+
+} // namespace VectorNorm
+
 template <typename T, std::size_t N>
 inline typename Scalar<T>::Real norm(const Vector<T, N> &value,
                                      std::size_t active_size = N) {
   using Real = typename Scalar<T>::Real;
   Real scale = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t i = 0; i < N; ++i) {
     if (i < active_size) {
       Real candidate = Scalar<T>::component_max(value[i]);
@@ -98,15 +160,32 @@ inline typename Scalar<T>::Real norm(const Vector<T, N> &value,
       }
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  VectorNorm::ScaleLoop<T, N, 0>::compute(value, active_size, scale);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   if (scale == static_cast<Real>(0)) {
     return static_cast<Real>(0);
   }
   Real sum = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   for (std::size_t i = 0; i < N; ++i) {
     if (i < active_size) {
       sum += Scalar<T>::squared_abs(value[i] / scale);
     }
   }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  VectorNorm::SquaredSumLoop<T, N, 0>::compute(value, active_size, scale, sum);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
   return scale * normalized_sqrt(sum);
 }
 
