@@ -35,4 +35,5 @@
 - [08: GMRESの改善前後と反復回数の上限](08_gmres_algorithm_changes.md)
 - [09: 固定しきい値基準1e-6〜1e-16の比較](09_epsilon_parameter_sweep.md)
 - [10: 用途別の固定しきい値による運用](10_independent_numerical_parameters.md)
+- [11: 前回測定からの実行時間・RAMの再評価](11_execution_time_and_peak_ram_recheck.md)
 

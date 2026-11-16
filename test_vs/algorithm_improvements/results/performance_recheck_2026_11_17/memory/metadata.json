@@ -1,0 +1,213 @@
+{
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "machine": "x86_64",
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fstack-usage",
+    "-fcallgraph-info=su",
+    "-pthread"
+  ],
+  "worker_extra_flags": [
+    "-mno-red-zone",
+    "-fno-shrink-wrap",
+    "-fno-shrink-wrap-separate"
+  ],
+  "build_dir": "/tmp/matrix_peak_stack_audit",
+  "harness_hashes": {
+    "peak_stack_worker.cpp": "9b607a258d3faf89c1a4781062d07fc69270fdc9d1a7d8b58c4a588357e522e0",
+    "peak_stack_method.md": "bf6ac6ef4e12fbbe778603ee6d0693979fc5468e724631ade31da2bdace001c4",
+    "peak_stack_run.py": "1aca0e6bdf45dc13a2456069a145663c941af4d9b478bd697e63169abc98b43d",
+    "peak_stack_worker.hpp": "5c9cbaec4bd09a7c1cf885c2cdcc9e24bb11c0ae0a67a38a5dc8432509c59369",
+    "peak_stack_probe.cpp": "82d6e85aa1fb3e9587f683824648fabefaaef60fcc2a9485d0a25343ba6700dd"
+  },
+  "variants": [
+    {
+      "label": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "template",
+      "name": "last_879_template",
+      "executable": "/tmp/matrix_peak_stack_audit/last_879/last_879_template",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/last_879/last_879_template.o"
+      ]
+    },
+    {
+      "label": "last_879",
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "for",
+      "name": "last_879_for",
+      "executable": "/tmp/matrix_peak_stack_audit/last_879/last_879_for",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/last_879/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/last_879/last_879_for.o"
+      ]
+    },
+    {
+      "label": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "template",
+      "name": "pre_constants_ab31_template",
+      "executable": "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_template",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_template.o"
+      ]
+    },
+    {
+      "label": "pre_constants_ab31",
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "for",
+      "name": "pre_constants_ab31_for",
+      "executable": "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_for",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/pre_constants_ab31/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/pre_constants_ab31/pre_constants_ab31_for.o"
+      ]
+    },
+    {
+      "label": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "template",
+      "name": "current_b599_template",
+      "executable": "/tmp/matrix_peak_stack_audit/current_b599/current_b599_template",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/current_b599/current_b599_template.o"
+      ]
+    },
+    {
+      "label": "current_b599",
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      },
+      "mode": "for",
+      "name": "current_b599_for",
+      "executable": "/tmp/matrix_peak_stack_audit/current_b599/current_b599_for",
+      "compile_command": [
+        "g++",
+        "-std=c++11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-usage",
+        "-fcallgraph-info=su",
+        "-pthread",
+        "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/base_matrix",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/base_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/python_math_to_cpp/python_math",
+        "-I/tmp/matrix_peak_stack_audit/current_b599/headers/external_libraries/base_utility_cpp/base_utility",
+        "-c",
+        "/opt/ModelingCodingAutomationProject/python_numpy_to_cpp/test_vs/algorithm_improvements/memory/peak_stack_probe.cpp",
+        "-o",
+        "/tmp/matrix_peak_stack_audit/current_b599/current_b599_for.o"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fstack-usage",
+    "-DALGORITHM_IMPROVEMENTS",
+    "-DBASE_MATRIX_USE_FOR_LOOP_OPERATION_"
+  ],
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "host": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "cpuinfo": "processor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 0\ncpu cores\t: 6\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 1\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 0\ncpu cores\t: 6\napicid\t\t: 1\ninitial apicid\t: 1\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 2\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 1\ncpu cores\t: 6\napicid\t\t: 2\ninitial apicid\t: 2\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 3\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 1\ncpu cores\t: 6\napicid\t\t: 3\ninitial apicid\t: 3\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 4\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 2\ncpu cores\t: 6\napicid\t\t: 4\ninitial apicid\t: 4\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 5\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 2\ncpu cores\t: 6\napicid\t\t: 5\ninitial apicid\t: 5\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 6\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 3\ncpu cores\t: 6\napicid\t\t: 6\ninitial apicid\t: 6\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 7\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 3\ncpu cores\t: 6\napicid\t\t: 7\ninitial apicid\t: 7\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 8\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 4\ncpu cores\t: 6\napicid\t\t: 8\ninitial apicid\t: 8\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 9\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 4\ncpu cores\t: 6\napicid\t\t: 9\ninitial apicid\t: 9\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 10\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 5\ncpu cores\t: 6\napicid\t\t: 10\ninitial apicid\t: 10\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 11\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.009\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 5\ncpu cores\t: 6\napicid\t\t: 11\ninitial apicid\t: 11\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\n",
+  "loop_mode": "for",
+  "benchmarks": [
+    "gmres_benchmark",
+    "gmres_rect_benchmark"
+  ],
+  "versions": {
+    "last_timing": {
+      "commit": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      }
+    },
+    "before_fixed": {
+      "commit": "ab31b0d25f5b081435864541d882f67571db74dd",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      }
+    },
+    "current": {
+      "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+      "dependencies": {
+        "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+        "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+      }
+    }
+  },
+  "sources": {
+    "gmres_benchmark": "eaedcf5e155b40949753bbc575dcd6387912d3db5e68f5c4c7ff267f17852b58",
+    "gmres_rect_benchmark": "93521c8da34629976a4f4eabcb158d291336ddf2916d03df9b70fd2f5c6175c2"
+  },
+  "cpu": 0,
+  "process_repeats": 7,
+  "process_order": [
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 0,
+      "process_seconds": 0.42344767799659166
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 0,
+      "process_seconds": 0.43537770999682834
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 0,
+      "process_seconds": 0.4420659719980904
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 1,
+      "process_seconds": 0.4291890470049111
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 1,
+      "process_seconds": 0.43634412700339453
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 1,
+      "process_seconds": 0.42506408000190277
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 2,
+      "process_seconds": 0.4484484610002255
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 2,
+      "process_seconds": 0.4291121890055365
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 2,
+      "process_seconds": 0.4239106660024845
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 3,
+      "process_seconds": 0.43491428600100335
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 3,
+      "process_seconds": 0.4223928520004847
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 3,
+      "process_seconds": 0.4357101510031498
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 4,
+      "process_seconds": 0.41690517499955604
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 4,
+      "process_seconds": 0.44516484400082845
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 4,
+      "process_seconds": 0.42702197200560477
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 5,
+      "process_seconds": 0.42987729600281455
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 5,
+      "process_seconds": 0.42304745499859564
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 5,
+      "process_seconds": 0.44193388400162803
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "last_timing",
+      "repeat": 6,
+      "process_seconds": 0.4206186310038902
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "before_fixed",
+      "repeat": 6,
+      "process_seconds": 0.41915753400098765
+    },
+    {
+      "benchmark": "gmres_benchmark",
+      "version": "current",
+      "repeat": 6,
+      "process_seconds": 0.44791339299990796
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 0,
+      "process_seconds": 0.06728507299703779
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 0,
+      "process_seconds": 0.06695547800336499
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 0,
+      "process_seconds": 0.062746513998718
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 1,
+      "process_seconds": 0.06587613100418821
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 1,
+      "process_seconds": 0.06840672299586004
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 1,
+      "process_seconds": 0.06654636900202604
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 2,
+      "process_seconds": 0.0643965199997183
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 2,
+      "process_seconds": 0.06663294800091535
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 2,
+      "process_seconds": 0.06760231399675831
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 3,
+      "process_seconds": 0.06413804600015283
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 3,
+      "process_seconds": 0.06606540900247637
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 3,
+      "process_seconds": 0.06928601300023729
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 4,
+      "process_seconds": 0.06533886399847688
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 4,
+      "process_seconds": 0.06375425699661719
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 4,
+      "process_seconds": 0.06490142500115326
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 5,
+      "process_seconds": 0.06562727400159929
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 5,
+      "process_seconds": 0.06696241900499444
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 5,
+      "process_seconds": 0.06348814300145023
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "last_timing",
+      "repeat": 6,
+      "process_seconds": 0.06583081300050253
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "before_fixed",
+      "repeat": 6,
+      "process_seconds": 0.06760543400014285
+    },
+    {
+      "benchmark": "gmres_rect_benchmark",
+      "version": "current",
+      "repeat": 6,
+      "process_seconds": 0.0638672269997187
+    }
+  ]
+}

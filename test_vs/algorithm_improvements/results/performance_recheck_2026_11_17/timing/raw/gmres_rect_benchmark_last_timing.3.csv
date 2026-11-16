@@ -1,0 +1,15 @@
+mode,type,m,n,ns,rms_target_error
+rect_api,float,32,8,2125.509,4.33928364e-07
+explicit,float,32,8,2267.805,4.33928364e-07
+rect_api,double,32,8,2003.644,6.56816799e-16
+explicit,double,32,8,2046.372,6.56816799e-16
+rect_api,float,24,16,7042.745,3.36515599e-07
+explicit,float,24,16,8309.543,3.36515599e-07
+rect_api,double,24,16,7901.424,9.26387815e-16
+explicit,double,24,16,7909.893,9.26387815e-16
+rect_api,double,128,4,1333.145,2.96556344e-15
+matrix_free,float,32,8,2392.183,4.66480131e-07
+matrix_free,double,32,8,2897.937,1.25238866e-15
+matrix_free,float,24,16,7714.637,3.45629856e-07
+matrix_free,double,24,16,8296.165,6.57402981e-16
+matrix_free,double,128,4,2432.673,3.55488142e-15

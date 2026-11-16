@@ -1,0 +1,10 @@
+{
+  "before": "f50060e726c2fb03fa2a1bc44bc91c538966de96",
+  "after": "879a31981d4cb99173939bd4a12df96bf8ccdf1a",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "flags": "-std=c++11 -Wall -Wextra -Werror -O2 -DALGORITHM_IMPROVEMENTS",
+  "timing_cpu": 0,
+  "process_repeats": 5,
+  "dependency_gitlinks": "160000 commit 6d4807de5eb5bfbad8bff950caf3fd20757a9b30\texternal_libraries/base_utility_cpp\n160000 commit 2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e\texternal_libraries/python_math_to_cpp\n",
+  "cpuinfo": "processor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 154\nmodel name\t: 12th Gen Intel(R) Core(TM) i5-1235U\nstepping\t: 4\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 2496.008\ncache size\t: 12288 KB\nphysical id\t: 0\nsiblings\t: 12\ncore id\t\t: 0\ncpu cores\t: 6\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling usr_wait_pause\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed eibrs_pbrsb rfds bhi spectre_v2_user\nbogomips\t: 4992.01\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:"
+}

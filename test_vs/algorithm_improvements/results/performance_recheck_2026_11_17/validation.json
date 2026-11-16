@@ -1,0 +1,58 @@
+{
+  "timing": {
+    "case_settings": 413,
+    "quality_rows": 1239,
+    "comparison_rows": 826,
+    "raw_files": 105,
+    "source_hashes_match": true,
+    "finite_metrics": true,
+    "object_sizes_unchanged": true
+  },
+  "eigen_probe": {
+    "case_settings": 144,
+    "quality_rows": 432,
+    "comparison_rows": 288,
+    "raw_files": 21,
+    "source_hashes_match": true,
+    "finite_metrics": true,
+    "object_sizes_unchanged": true
+  },
+  "timing_for": {
+    "case_settings": 140,
+    "quality_rows": 420,
+    "comparison_rows": 280,
+    "raw_files": 42,
+    "source_hashes_match": true,
+    "finite_metrics": true,
+    "object_sizes_unchanged": true
+  },
+  "gmres_diagnostics": {
+    "rows": 324,
+    "iteration_budget_violations": 0
+  },
+  "memory": {
+    "rows": 348,
+    "algorithm_cases_per_variant": 56,
+    "context_and_solver_sizes_unchanged": true,
+    "source_hashes_match": true
+  },
+  "unchanged_binary_sections": [
+    "QR .text/.rodata",
+    "LU-Cholesky .text/.rodata"
+  ],
+  "production_unchanged": true,
+  "local_markdown_links_checked": 65,
+  "preexisting_missing_links": [
+    {
+      "source": "document/10_independent_numerical_parameters.md",
+      "target": "../test_vs/algorithm_improvements/results/fixed_parameter_defaults/README.md",
+      "note": "Pre-existing link to prior validation artifacts absent at start of this task; current recheck links resolve."
+    },
+    {
+      "source": "test_vs/algorithm_improvements/README.md",
+      "target": "results/fixed_parameter_defaults/README.md",
+      "note": "Pre-existing link to prior validation artifacts absent at start of this task; current recheck links resolve."
+    }
+  ],
+  "new_report_and_result_links_resolve": true
+}

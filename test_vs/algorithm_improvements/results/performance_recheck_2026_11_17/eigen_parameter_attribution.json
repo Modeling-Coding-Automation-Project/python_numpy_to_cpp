@@ -1,0 +1,21 @@
+{
+  "commit": "b599e8461d0a4b07aa007bc6376746744767e671",
+  "source_sha256": "6504669c419d44a1cb6dfab994eee46dfb84ef2549d06e9d3486c3a7c1e7f4ce",
+  "results_sha256": "96174db1c0be6d75358462a8d1d895e852684088683dfc62ef8fbcd6b9cd18ea",
+  "source_origin": "Derived from eigen_performance_probe.cpp helpers; no timing; symmetric N8 float only.",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "flags": [
+    "-std=c++11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "headers": "/tmp/matrix_eigen_performance_recheck_20261117/build/current (pinned archive)",
+  "dependencies": {
+    "external_libraries/python_math_to_cpp": "2a2c19b91e9dfe69de532abebbcbdd25f8fbbd5e",
+    "external_libraries/base_utility_cpp": "6d4807de5eb5bfbad8bff950caf3fd20757a9b30"
+  },
+  "rows": 12,
+  "execution": "One untimed diagnostic execution; production sources unchanged."
+}

@@ -33,3 +33,5 @@ python3 test_vs/algorithm_improvements/run_fixed_parameter_validation.py \
 ```
 
 2026-11-17の[採用後の検証結果](results/fixed_parameter_defaults/README.md)に、全32実行の結果と対象ソースのhashを保存した。
+
+前回性能測定時からの実行時間・RAMの変化は、[再評価レポート](../../document/11_execution_time_and_peak_ram_recheck.md)と[全測定データ・再実行手順](results/performance_recheck_2026_11_17/README.md)を参照。既定値変更による時間・精度の悪化例と、テンプレート構成でのスタック増加を確認している。
