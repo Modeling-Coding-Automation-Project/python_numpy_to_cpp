@@ -2,6 +2,7 @@
 #define PYTHON_NUMPY_MATH_HPP_
 
 #include "base_matrix.hpp"
+#include "python_math.hpp"
 
 #include "python_numpy_augmented_matrix.hpp"
 #include "python_numpy_base.hpp"
@@ -22,22 +23,7 @@ constexpr double LN_10 = Base::Matrix::LN_10;
 
 /* abs */
 
-/**
- * @brief Computes the absolute value of a given input.
- *
- * This function is a template that computes the absolute value of its argument
- * by delegating to Base::Matrix::abs. It works for any type T for which
- * Base::Matrix::abs is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose absolute value is to be computed.
- * @return The absolute value of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-abs(const T &x) {
-  return Base::Matrix::abs(x);
-}
+using PythonMath::abs;
 
 /**
  * @brief Computes the element-wise absolute value of a Matrix.
@@ -208,24 +194,7 @@ abs(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* fmod */
 
-/**
- * @brief Computes the floating-point modulus of a given input with respect to
- * a divisor.
- *
- * This function is a template that computes the floating-point modulus of its
- * argument by delegating to Base::Matrix::fmod. It works for any type T for
- * which Base::Matrix::fmod is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose floating-point modulus is to be computed.
- * @param y The divisor for the modulus operation.
- * @return The floating-point modulus of x with respect to y.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-fmod(const T &x, const T &y) {
-  return Base::Matrix::fmod(x, y);
-}
+using PythonMath::fmod;
 
 /**
  * @brief Computes the element-wise floating-point modulus of a Matrix with
@@ -394,22 +363,7 @@ inline auto fmod(
 
 /* sqrt */
 
-/**
- * @brief Computes the square root of a given input.
- *
- * This function is a template that computes the square root of its argument
- * by delegating to Base::Matrix::sqrt. It works for any type T for which
- * Base::Matrix::sqrt is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose square root is to be computed.
- * @return The square root of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-sqrt(const T &x) {
-  return Base::Matrix::sqrt(x);
-}
+using PythonMath::sqrt;
 
 /**
  * @brief Computes the element-wise square root of a Matrix.
@@ -565,22 +519,7 @@ inline auto sqrt(
 
 /* exp */
 
-/**
- * @brief Computes the exponential of a given input.
- *
- * This function is a template that computes the exponential of its argument
- * by delegating to Base::Matrix::exp. It works for any type T for which
- * Base::Matrix::exp is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose exponential is to be computed.
- * @return The exponential of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-exp(const T &x) {
-  return Base::Matrix::exp(x);
-}
+using PythonMath::exp;
 
 /**
  * @brief Computes the element-wise exponential of a Matrix.
@@ -735,22 +674,7 @@ exp(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* exp2 */
 
-/**
- * @brief Computes the base-2 exponential of a given input.
- *
- * This function is a template that computes the base-2 exponential of its
- * argument by delegating to Base::Matrix::exp2. It works for any type T for
- * which Base::Matrix::exp2 is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose base-2 exponential is to be computed.
- * @return The base-2 exponential of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-exp2(const T &x) {
-  return Base::Matrix::exp2(x);
-}
+using PythonMath::exp2;
 
 /**
  * @brief Computes the element-wise base-2 exponential of a Matrix.
@@ -906,22 +830,7 @@ inline auto exp2(
 
 /* log */
 
-/**
- * @brief Computes the natural logarithm of a given input.
- *
- * This function is a template that computes the natural logarithm of its
- * argument by delegating to Base::Matrix::log. It works for any type T for
- * which Base::Matrix::log is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose natural logarithm is to be computed.
- * @return The natural logarithm of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-log(const T &x) {
-  return Base::Matrix::log(x);
-}
+using PythonMath::log;
 
 /**
  * @brief Computes the element-wise natural logarithm of a Matrix.
@@ -1077,22 +986,7 @@ log(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* log2 */
 
-/**
- * @brief Computes the base-2 logarithm of a given input.
- *
- * This function is a template that computes the base-2 logarithm of its
- * argument by delegating to Base::Matrix::log2. It works for any type T for
- * which Base::Matrix::log2 is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose base-2 logarithm is to be computed.
- * @return The base-2 logarithm of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-log2(const T &x) {
-  return Base::Matrix::log2(x);
-}
+using PythonMath::log2;
 
 /**
  * @brief Computes the element-wise base-2 logarithm of a Matrix.
@@ -1248,22 +1142,7 @@ inline auto log2(
 
 /* log10 */
 
-/**
- * @brief Computes the base-10 logarithm of a given input.
- *
- * This function is a template that computes the base-10 logarithm of its
- * argument by delegating to Base::Matrix::log10. It works for any type T for
- * which Base::Matrix::log10 is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose base-10 logarithm is to be computed.
- * @return The base-10 logarithm of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-log10(const T &x) {
-  return Base::Matrix::log10(x);
-}
+using PythonMath::log10;
 
 /**
  * @brief Computes the element-wise base-10 logarithm of a Matrix.
@@ -1420,23 +1299,7 @@ inline auto log10(
 
 /* pow */
 
-/**
- * @brief Computes the power of a given input raised to a specified exponent.
- *
- * This function is a template that computes the power of its argument by
- * delegating to Base::Matrix::pow. It works for any type T for which
- * Base::Matrix::pow is defined.
- *
- * @tparam T The type of the input value.
- * @param x The base value.
- * @param y The exponent value.
- * @return The result of raising x to the power of y.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-pow(const T &x, const T &y) {
-  return Base::Matrix::pow(x, y);
-}
+using PythonMath::pow;
 
 /**
  * @brief Computes the element-wise power of a Matrix raised to a specified
@@ -1605,22 +1468,7 @@ pow(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix,
 
 /* sin */
 
-/**
- * @brief Computes the sine of a given input.
- *
- * This function is a template that computes the sine of its argument by
- * delegating to Base::Matrix::sin. It works for any type T for which
- * Base::Matrix::sin is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose sine is to be computed.
- * @return The sine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-sin(const T &x) {
-  return Base::Matrix::sin(x);
-}
+using PythonMath::sin;
 
 /**
  * @brief Computes the element-wise sine of a Matrix.
@@ -1775,22 +1623,7 @@ sin(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* cos */
 
-/**
- * @brief Computes the cosine of a given input.
- *
- * This function is a template that computes the cosine of its argument by
- * delegating to Base::Matrix::cos. It works for any type T for which
- * Base::Matrix::cos is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose cosine is to be computed.
- * @return The cosine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-cos(const T &x) {
-  return Base::Matrix::cos(x);
-}
+using PythonMath::cos;
 
 /**
  * @brief Computes the element-wise cosine of a Matrix.
@@ -1945,22 +1778,7 @@ cos(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* tan */
 
-/**
- * @brief Computes the tangent of a given input.
- *
- * This function is a template that computes the tangent of its argument by
- * delegating to Base::Matrix::tan. It works for any type T for which
- * Base::Matrix::tan is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose tangent is to be computed.
- * @return The tangent of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-tan(const T &x) {
-  return Base::Matrix::tan(x);
-}
+using PythonMath::tan;
 
 /**
  * @brief Computes the element-wise tangent of a Matrix.
@@ -2115,22 +1933,7 @@ tan(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks> &augmented_matrix)
 
 /* asin */
 
-/**
- * @brief Computes the arcsine of a given input.
- *
- * This function is a template that computes the arcsine of its argument by
- * delegating to Base::Matrix::asin. It works for any type T for which
- * Base::Matrix::asin is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose arcsine is to be computed.
- * @return The arcsine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-asin(const T &x) {
-  return Base::Matrix::asin(x);
-}
+using PythonMath::asin;
 
 /**
  * @brief Computes the element-wise arcsine of a Matrix.
@@ -2285,22 +2088,7 @@ inline auto asin(
 
 /* acos */
 
-/**
- * @brief Computes the arccosine of a given input.
- *
- * This function is a template that computes the arccosine of its argument by
- * delegating to Base::Matrix::acos. It works for any type T for which
- * Base::Matrix::acos is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose arccosine is to be computed.
- * @return The arccosine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-acos(const T &x) {
-  return Base::Matrix::acos(x);
-}
+using PythonMath::acos;
 
 /**
  * @brief Computes the element-wise arccosine of a Matrix.
@@ -2455,22 +2243,7 @@ inline auto acos(
 
 /* atan */
 
-/**
- * @brief Computes the arctangent of a given input.
- *
- * This function is a template that computes the arctangent of its argument by
- * delegating to Base::Matrix::atan. It works for any type T for which
- * Base::Matrix::atan is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose arctangent is to be computed.
- * @return The arctangent of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-atan(const T &x) {
-  return Base::Matrix::atan(x);
-}
+using PythonMath::atan;
 
 /**
  * @brief Computes the element-wise arctangent of a Matrix.
@@ -2626,23 +2399,7 @@ inline auto atan(
 
 /* atan2 */
 
-/**
- * @brief Computes the element-wise arctangent of the quotient of two values.
- *
- * This function computes the arctangent of the quotient of two values, `x` and
- * `y`, and returns the angle in radians. It is a wrapper around the
- * Base::Matrix::atan2 function, which handles both scalar and matrix inputs.
- *
- * @tparam T The type of the input values (must be arithmetic).
- * @param x The numerator value.
- * @param y The denominator value.
- * @return The angle in radians as a value of type T.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-atan2(const T &x, const T &y) {
-  return Base::Matrix::atan2(x, y);
-}
+using PythonMath::atan2;
 
 /**
  * @brief Computes the element-wise arctangent of the quotient of two matrices.
@@ -2830,22 +2587,7 @@ inline auto atan2(const AugmentedMatrix<Tuple_Type, Row_Blocks, Col_Blocks>
 
 /* sinh */
 
-/**
- * @brief Computes the hyperbolic sine of a given input.
- *
- * This function is a template that computes the hyperbolic sine of its argument
- * by delegating to Base::Matrix::sinh. It works for any type T for which
- * Base::Matrix::sinh is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose hyperbolic sine is to be computed.
- * @return The hyperbolic sine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-sinh(const T &x) {
-  return Base::Matrix::sinh(x);
-}
+using PythonMath::sinh;
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto sinh(const Matrix<DefDense, T, M, N> &matrix)
@@ -2985,22 +2727,7 @@ inline auto sinh(
 
 /* cosh */
 
-/**
- * @brief Computes the hyperbolic cosine of a given input.
- *
- * This function is a template that computes the hyperbolic cosine of its
- * argument by delegating to Base::Matrix::cosh. It works for any type T for
- * which Base::Matrix::cosh is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose hyperbolic cosine is to be computed.
- * @return The hyperbolic cosine of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-cosh(const T &x) {
-  return Base::Matrix::cosh(x);
-}
+using PythonMath::cosh;
 
 template <typename T, std::size_t M, std::size_t N>
 inline auto cosh(const Matrix<DefDense, T, M, N> &matrix)
@@ -3140,22 +2867,7 @@ inline auto cosh(
 
 /* tanh */
 
-/**
- * @brief Computes the hyperbolic tangent of a given input.
- *
- * This function is a template that computes the hyperbolic tangent of its
- * argument by delegating to Base::Matrix::tanh. It works for any type T for
- * which Base::Matrix::tanh is defined.
- *
- * @tparam T The type of the input value.
- * @param x The value whose hyperbolic tangent is to be computed.
- * @return The hyperbolic tangent of x.
- */
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-tanh(const T &x) {
-  return Base::Matrix::tanh(x);
-}
+using PythonMath::tanh;
 
 /**
  * @brief Computes the element-wise hyperbolic tangent of a Matrix.

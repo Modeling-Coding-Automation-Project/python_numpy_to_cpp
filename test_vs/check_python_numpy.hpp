@@ -4367,6 +4367,36 @@ void CheckPythonNumpy<T>::check_python_numpy_math(void) {
     constexpr T NEAR_LIMIT_STRICT = std::is_same<T, double>::value ? T(1.0e-5) : T(1.0e-4);
     //const T NEAR_LIMIT_SOFT = 1.0e-2F;
 
+    {
+        using namespace PythonMath;
+        const T x = static_cast<T>(0.5);
+        const T y = static_cast<T>(1.0);
+        (void)abs<T>(x);
+        (void)fmod<T>(x, y);
+        (void)sqrt<T>(x);
+        (void)exp<T>(x);
+        (void)exp2<T>(x);
+        (void)log<T>(x);
+        (void)log2<T>(x);
+        (void)log10<T>(x);
+        (void)pow<T>(x, y);
+        (void)sin<T>(x);
+        (void)cos<T>(x);
+        (void)tan<T>(x);
+        (void)asin<T>(x);
+        (void)acos<T>(x);
+        (void)atan<T>(x);
+        (void)atan2<T>(x, y);
+        (void)sinh<T>(x);
+        (void)cosh<T>(x);
+        (void)tanh<T>(x);
+
+        Matrix<DefDense, T, 1, 1> input({{x}});
+        auto result = sin(input);
+        tester.expect_near(result(0, 0), PythonMath::sin(x), NEAR_LIMIT_STRICT,
+            "check sin Matrix with both namespaces.");
+    }
+
     /* abs - Scalar */
     T scalar_input = -5;
     T scalar_result = PythonNumpy::abs(scalar_input);
