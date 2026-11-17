@@ -76,6 +76,8 @@ Linux x86-64、g++ 15.2.0、C++11、`-O2`。本体は`6b1d627`の隔離コピー
 
 [全40追跡の回数・内訳・再実行手順](../test_vs/algorithm_improvements/results/convergence_tolerance_tuning/instruction_counts/README.md)に原記録を保存した。専用host probeでの比較であり、以前のRAM測定バイナリそのものの命令回数ではない。マイコン向けの命令数・速度も、このx86-64の結果からは断定しない。
 
+SIMDの採用条件、テンプレート展開で採用・見送りになった箇所、使用を保証できる範囲は、[テンプレート展開とSIMDの採用条件](13_simd_vectorization_notes.md)にまとめた。
+
 ### 3.3 四則演算が同じでもRAMが増える理由
 
 配列容量が同じでも、コンパイラが生成する途中値の保存領域や、関数をインライン化する範囲は変わり得る。`inline`指定も全呼出しのインライン化を保証しない。[GCCの説明](https://gcc.gnu.org/onlinedocs/gcc/Inline.html)

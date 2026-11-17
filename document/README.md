@@ -36,4 +36,6 @@
 - [09: 固定しきい値基準1e-6〜1e-16の比較](09_epsilon_parameter_sweep.md)
 - [10: 用途別の固定しきい値による運用](10_independent_numerical_parameters.md)
 - [11: 前回測定からの実行時間・RAMの再評価](11_execution_time_and_peak_ram_recheck.md)
+- [12: 許容誤差の既定値選定とテンプレート展開の検証](12_convergence_tolerance_tuning.md)
+- [13: テンプレート展開とSIMDの採用条件](13_simd_vectorization_notes.md)
 
