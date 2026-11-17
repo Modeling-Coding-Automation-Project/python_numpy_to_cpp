@@ -21,12 +21,20 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
 
 namespace Base {
 namespace Matrix {
 
 constexpr double DEFAULT_DIVISION_MIN_LU_DECOMPOSITION = 1.0e-10;
+// Below this magnitude, divide directly instead of caching a reciprocal.
+// This does not change the pivot acceptance threshold (division_min).
+constexpr double RECIPROCAL_MIN_LU_DECOMPOSITION = 1.0e-30;
+// Validate the shared float/double setting using the narrower type.
+static_assert(static_cast<float>(RECIPROCAL_MIN_LU_DECOMPOSITION) > 0.0f &&
+                  1.0f / static_cast<float>(RECIPROCAL_MIN_LU_DECOMPOSITION) >
+                      0.0f,
+              "The LU reciprocal threshold must have a positive, "
+              "representable float reciprocal.");
 
 /**
  * @brief Compact partial-pivoted LU, with the convention P A = L U.
@@ -55,8 +63,9 @@ public:
         this->singular_ = true;
       }
       if (CACHE_INVERSE) {
-        bool reciprocal_is_safe = magnitude >= this->division_min &&
-                                  magnitude >= std::numeric_limits<T>::min();
+        bool reciprocal_is_safe =
+            magnitude >= this->division_min &&
+            magnitude >= static_cast<T>(RECIPROCAL_MIN_LU_DECOMPOSITION);
         this->inverse_diagonal_[i] = reciprocal_is_safe
                                          ? static_cast<T>(1) / matrix[i]
                                          : static_cast<T>(0);
@@ -258,10 +267,10 @@ protected:
             }
             this->odd_permutation_ = !this->odd_permutation_;
           }
-          // Subnormal pivots can have finite ratios although their reciprocal
-          // would overflow. In that range retain direct division instead.
-          bool use_reciprocal =
-              Base::Math::abs(this->LU_(k, k)) >= std::numeric_limits<T>::min();
+          // Small pivots can have finite ratios although their reciprocal
+          // would overflow. Below the configured limit, divide directly.
+          bool use_reciprocal = Base::Math::abs(this->LU_(k, k)) >=
+                                static_cast<T>(RECIPROCAL_MIN_LU_DECOMPOSITION);
           T inverse_pivot = use_reciprocal ? static_cast<T>(1) / this->LU_(k, k)
                                            : static_cast<T>(0);
           if (CACHE_INVERSE) {

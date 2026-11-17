@@ -25,7 +25,6 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
 #include <tuple>
 
 namespace Base {
@@ -34,6 +33,14 @@ namespace Matrix {
 constexpr double DEFAULT_DIVISION_MIN_CHOLESKY = 1.0e-10;
 // Zero disables the scale-relative contribution to the pivot floor.
 constexpr double DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY = 0.0;
+// SPD LDLT divides directly below this magnitude, independently of pivot
+// limits.
+constexpr double RECIPROCAL_MIN_CHOLESKY = 1.0e-30;
+// Validate the shared float/double setting using the narrower type.
+static_assert(static_cast<float>(RECIPROCAL_MIN_CHOLESKY) > 0.0f &&
+                  1.0f / static_cast<float>(RECIPROCAL_MIN_CHOLESKY) > 0.0f,
+              "The Cholesky reciprocal threshold must have a positive, "
+              "representable float reciprocal.");
 
 namespace CholeskyOperation {
 
@@ -380,7 +387,8 @@ public:
         if (diagonal < floor || diagonal <= static_cast<T>(0)) {
           this->valid_ = false;
         } else {
-          bool use_reciprocal = diagonal >= std::numeric_limits<T>::min();
+          bool use_reciprocal =
+              diagonal >= static_cast<T>(RECIPROCAL_MIN_CHOLESKY);
           T inverse_diagonal =
               use_reciprocal ? static_cast<T>(1) / diagonal : static_cast<T>(0);
           for (std::size_t j = k + 1; j < M; ++j) {

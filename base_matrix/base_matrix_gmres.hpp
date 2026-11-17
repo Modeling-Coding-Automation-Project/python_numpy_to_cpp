@@ -11,7 +11,6 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
 #include <type_traits>
 
 namespace Base {
@@ -21,6 +20,22 @@ namespace Matrix {
 constexpr std::size_t DEFAULT_CYCLES_GMRES = 1;
 constexpr std::size_t DEFAULT_ORTHOGONALIZATION_PASSES_GMRES = 1;
 constexpr double DEFAULT_DIVISION_MIN_GMRES = 1.0e-10;
+// Smaller nonzero norms use direct division; this is not a convergence
+// tolerance.
+constexpr double NORMALIZATION_RECIPROCAL_MIN_GMRES = 1.0e-30;
+// Smaller diagonal magnitudes use identity in the optional preconditioner.
+constexpr double PRECONDITIONER_RECIPROCAL_MIN_GMRES = 1.0e-30;
+// Validate the shared float/double settings using the narrower type.
+static_assert(
+    static_cast<float>(NORMALIZATION_RECIPROCAL_MIN_GMRES) > 0.0f &&
+        1.0f / static_cast<float>(NORMALIZATION_RECIPROCAL_MIN_GMRES) > 0.0f,
+    "The GMRES normalization threshold must have a positive, "
+    "representable float reciprocal.");
+static_assert(
+    static_cast<float>(PRECONDITIONER_RECIPROCAL_MIN_GMRES) > 0.0f &&
+        1.0f / static_cast<float>(PRECONDITIONER_RECIPROCAL_MIN_GMRES) > 0.0f,
+    "The GMRES preconditioner threshold must have a positive, "
+    "representable float reciprocal.");
 // Conservative shared default; callers can request a different residual target.
 // With both tolerances zero, only an exact zero residual meets convergence.
 // Legacy APIs explicitly replace this value with their decay_rate argument.
@@ -1118,9 +1133,10 @@ private:
 
         // Normalize r to form the first basis vector of this cycle.
         // initial_norm > tolerance >= 0, so this denominator is nonzero.
-        // Use a shared reciprocal only when it is representable.
+        // Below the reciprocal threshold, retain direct division.
         const bool initial_reciprocal_safe =
-            initial_norm >= std::numeric_limits<Real>::min();
+            initial_norm >=
+            static_cast<Real>(NORMALIZATION_RECIPROCAL_MIN_GMRES);
         const Real initial_inverse = initial_reciprocal_safe
                                          ? static_cast<Real>(1) / initial_norm
                                          : zero;
@@ -1189,7 +1205,8 @@ private:
             // The last column still needs its subdiagonal and rotation.
             if (!arnoldi_breakdown && column + 1 < dimension) {
               const bool reciprocal_safe =
-                  next_norm >= std::numeric_limits<Real>::min();
+                  next_norm >=
+                  static_cast<Real>(NORMALIZATION_RECIPROCAL_MIN_GMRES);
               const Real inverse_norm =
                   reciprocal_safe ? static_cast<Real>(1) / next_norm : zero;
               for (std::size_t i = 0; i < N; ++i) {
@@ -1321,10 +1338,12 @@ gmres_inverse_diagonal(const Matrix<T, N, N> &matrix,
   Vector<T, N> inverse;
   for (std::size_t i = 0; i < N; ++i) {
     const Real magnitude = Scalar::magnitude(matrix(i, i));
-    inverse[i] =
-        magnitude < floor || magnitude < std::numeric_limits<Real>::min()
-            ? static_cast<T>(1)
-            : Scalar::divide(static_cast<T>(1), matrix(i, i), floor);
+    const bool use_identity =
+        magnitude < floor ||
+        magnitude < static_cast<Real>(PRECONDITIONER_RECIPROCAL_MIN_GMRES);
+    inverse[i] = use_identity
+                     ? static_cast<T>(1)
+                     : Scalar::divide(static_cast<T>(1), matrix(i, i), floor);
   }
   return inverse;
 }

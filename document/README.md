@@ -38,4 +38,5 @@
 - [11: 前回測定からの実行時間・RAMの再評価](11_execution_time_and_peak_ram_recheck.md)
 - [12: 許容誤差の既定値選定とテンプレート展開の検証](12_convergence_tolerance_tuning.md)
 - [13: テンプレート展開とSIMDの採用条件](13_simd_vectorization_notes.md)
+- [14: 逆数を使用する下限値の定数化](14_reciprocal_threshold_parameters.md)
 
