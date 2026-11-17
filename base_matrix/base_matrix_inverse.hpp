@@ -81,9 +81,8 @@ gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
 /**
  * @brief Core function for GMRES K method for 1x1 matrices.
  *
- * This specialization handles the case where the matrix size is 1x1, which is a
- * trivial case. It simply computes the inverse of the single element in the
- * matrix.
+ * This overload delegates a one-dimensional system to GmresSolver, preserving
+ * its initial-residual check, denominator protection, and iteration reporting.
  *
  * @tparam T The data type of the matrix and vector elements.
  * @tparam M The size of the square matrix (M x M), must be 1 in this case.
@@ -339,24 +338,24 @@ gmres_k_partition_matrix(const Matrix<T, M, M> &A, const DiagMatrix<T, M> &B,
 /* GMRES K for rectangular matrix */
 
 /**
- * @brief GMRES K method for rectangular matrices.
+ * @brief Solves dense normal equations without constructing a Gram matrix.
  *
- * This function solves the linear system Ax = b using the GMRES K method,
- * where A is a rectangular matrix (M x N), b is a vector, and x_1 is an
- * initial guess. It returns the solution vector x.
+ * For M > N, the operator applies A^T(A*x) and the right-hand side is A^T*b.
+ * The input matrix is borrowed for the duration of this call. One GMRES cycle
+ * uses at most N Arnoldi steps; the returned iterate need not have converged.
+ * This path avoids the N-by-N Gram matrix but still solves normal equations.
  *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of columns in the matrix A.
- * @tparam N The number of rows in the matrix A.
- * @param In_A The input matrix A.
- * @param b The right-hand side vector b.
- * @param x_1 The initial guess for the solution vector x.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @return A tuple of (solution vector x, residual norm rho, number of
- * iterations rep_num).
+ * @tparam T The real floating-point element type.
+ * @tparam M The number of input rows, greater than N.
+ * @tparam N The number of input columns and solution components.
+ * @param In_A The rectangular input matrix A.
+ * @param b The original right-hand side with M components.
+ * @param x_1 The initial guess with N components.
+ * @param decay_rate The relative residual tolerance against the norm of A^T*b.
+ * @param division_min The denominator protection threshold for GMRES.
+ * @return A tuple containing the solution estimate, the norm of A^T*(b-A*x),
+ * and the number of Arnoldi steps performed.
  */
-// Optional low-memory operator path; no explicit Gram matrix.
 template <typename T, std::size_t M, std::size_t N>
 inline std::tuple<Vector<T, N>, T, std::size_t>
 gmres_k_rect_matrix_free(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
@@ -377,6 +376,24 @@ gmres_k_rect_matrix_free(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
                          solver.get_iterations());
 }
 
+/**
+ * @brief Solves a dense rectangular system through explicit normal equations.
+ *
+ * Constructs A^T*A and A^T*b, then performs one GMRES cycle with at most N
+ * Arnoldi steps. The residual is recomputed from the original matrix and
+ * right-hand side. Use gmres_k_rect_matrix_free() to avoid Gram storage.
+ *
+ * @tparam T The real floating-point element type.
+ * @tparam M The number of input rows, greater than N.
+ * @tparam N The number of input columns and solution components.
+ * @param In_A The rectangular input matrix A.
+ * @param b The original right-hand side with M components.
+ * @param x_1 The initial guess with N components.
+ * @param decay_rate The relative residual tolerance against the norm of A^T*b.
+ * @param division_min The denominator protection threshold for GMRES.
+ * @return A tuple containing the solution estimate, the norm of A^T*(b-A*x),
+ * and the number of Arnoldi steps performed. Convergence is not guaranteed.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline std::tuple<Vector<T, N>, T, std::size_t>
 gmres_k_rect(const Matrix<T, M, N> &In_A, const Vector<T, M> &b,
@@ -724,24 +741,26 @@ sparse_gmres_k_partition_matrix(
 /* Sparse GMRES K for rectangular matrix */
 
 /**
- * @brief GMRES K method for rectangular matrices.
+ * @brief Solves sparse normal equations without constructing a Gram matrix.
  *
- * This function solves the linear system Ax = b using the GMRES K method,
- * where A is a rectangular matrix (M x N), b is a vector, and x_1 is an
- * initial guess. It returns the solution vector x.
+ * Applies A^T(A*x) through the fixed CSR pattern and constructs only A^T*b.
+ * The input matrix is borrowed for the duration of this call. One GMRES cycle
+ * uses at most N Arnoldi steps; the returned iterate need not have converged.
+ * Avoiding Gram storage does not change the use of normal equations.
  *
- * @tparam T The data type of the matrix and vector elements.
- * @tparam M The number of columns in the matrix A.
- * @tparam N The number of rows in the matrix A.
- * @param In_SA The compiled sparse matrix A.
- * @param b The right-hand side vector b.
- * @param x_1 The initial guess for the solution vector x.
- * @param decay_rate The convergence criterion for the GMRES method.
- * @param division_min A small value to avoid division by zero.
- * @return A tuple of (solution vector x, residual norm rho, number of
- * iterations rep_num).
+ * @tparam T The real floating-point element type.
+ * @tparam M The number of input rows, greater than N.
+ * @tparam N The number of input columns and solution components.
+ * @tparam CSRIndices_A The compile-time CSR column-index sequence.
+ * @tparam CSRPointers_A The compile-time CSR row-pointer sequence.
+ * @param In_SA The rectangular compiled sparse input matrix A.
+ * @param b The original right-hand side with M components.
+ * @param x_1 The initial guess with N components.
+ * @param decay_rate The relative residual tolerance against the norm of A^T*b.
+ * @param division_min The denominator protection threshold for GMRES.
+ * @return A tuple containing the solution estimate, the norm of A^T*(b-A*x),
+ * and the number of Arnoldi steps performed.
  */
-// Optional low-memory operator path; no explicit Gram matrix.
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
 inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect_matrix_free(
@@ -765,6 +784,26 @@ inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect_matrix_free(
                          solver.get_iterations());
 }
 
+/**
+ * @brief Solves sparse rectangular input through dense normal equations.
+ *
+ * Accumulates A^T*A and A^T*b from the CSR entries, then performs at most N
+ * GMRES steps in one cycle. The normal residual is recomputed from the original
+ * input. Use sparse_gmres_k_rect_matrix_free() to avoid dense Gram storage.
+ *
+ * @tparam T The real floating-point element type.
+ * @tparam M The number of input rows, greater than N.
+ * @tparam N The number of input columns and solution components.
+ * @tparam CSRIndices_A The compile-time CSR column-index sequence.
+ * @tparam CSRPointers_A The compile-time CSR row-pointer sequence.
+ * @param In_SA The rectangular compiled sparse input matrix A.
+ * @param b The original right-hand side with M components.
+ * @param x_1 The initial guess with N components.
+ * @param decay_rate The relative residual tolerance against the norm of A^T*b.
+ * @param division_min The denominator protection threshold for GMRES.
+ * @return A tuple containing the solution estimate, the norm of A^T*(b-A*x),
+ * and the number of Arnoldi steps performed. Convergence is not guaranteed.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_A,
           typename CSRPointers_A>
 inline std::tuple<Vector<T, N>, T, std::size_t> sparse_gmres_k_rect(

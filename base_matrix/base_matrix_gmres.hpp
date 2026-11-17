@@ -1,6 +1,14 @@
 /**
  * @file base_matrix_gmres.hpp
  * @brief Fixed-capacity restarted GMRES with real or complex arithmetic.
+ *
+ * Provides reusable solver storage, dense and compiled-CSR products, optional
+ * right diagonal preconditioning, and real normal-equation operators. The
+ * default fixed-size container configuration uses bounded solver storage.
+ * Helper operations support for loops or recursive template expansion through
+ * BASE_MATRIX_USE_FOR_LOOP_OPERATION_. The caller checks non-finite inputs
+ * and outputs; intermediate products and final norms must
+ * fit their scalar type.
  */
 #ifndef BASE_MATRIX_GMRES_HPP_
 #define BASE_MATRIX_GMRES_HPP_
@@ -52,12 +60,34 @@ namespace GmresOperation {
 /* Vector initialization and projection onto the leading subspace. */
 namespace VectorSubspace {
 
+/**
+ * @brief Visits vector components for initialization and subspace projection.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The vector capacity.
+ * @tparam Index The current vector index.
+ */
 template <typename T, std::size_t N, std::size_t Index> struct Loop {
+  /**
+   * @brief Clears this component and all remaining components.
+   *
+   * @param output The vector to modify; components outside this
+   * operation are retained.
+   */
   static inline void clear(Vector<T, N> &output) {
     output[Index] = T();
     Loop<T, N, Index + 1>::clear(output);
   }
 
+  /**
+   * @brief Copies the remaining components that belong to
+   * the active subspace.
+   *
+   * @param input The vector whose active components are copied.
+   * @param output The vector to modify; components outside this
+   * operation are retained.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void copy_active(const Vector<T, N> &input,
                                  Vector<T, N> &output,
                                  std::size_t active_size) {
@@ -67,6 +97,13 @@ template <typename T, std::size_t N, std::size_t Index> struct Loop {
     Loop<T, N, Index + 1>::copy_active(input, output, active_size);
   }
 
+  /**
+   * @brief Clears the remaining components outside the active subspace.
+   *
+   * @param output The vector to modify; components outside this
+   * operation are retained.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void clear_inactive(Vector<T, N> &output,
                                     std::size_t active_size) {
     if (Index >= active_size) {
@@ -77,10 +114,25 @@ template <typename T, std::size_t N, std::size_t Index> struct Loop {
 };
 
 // Termination condition: Index == N.
+/**
+ * @brief Terminates VectorSubspace recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The vector capacity.
+ */
 template <typename T, std::size_t N> struct Loop<T, N, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void clear(Vector<T, N> &) {}
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void copy_active(const Vector<T, N> &, Vector<T, N> &,
                                  std::size_t) {}
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void clear_inactive(Vector<T, N> &, std::size_t) {}
 };
 
@@ -89,9 +141,26 @@ template <typename T, std::size_t N> struct Loop<T, N, N> {
 /* Column-major multiplication; preserve the ascending accumulation order. */
 namespace DenseMultiply {
 
+/**
+ * @brief Accumulates one dense column into the active output rows.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam RowIndex The current matrix row.
+ * @tparam FullSize Whether every matrix row and column is active.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex,
           std::size_t RowIndex, bool FullSize>
 struct Row {
+  /**
+   * @brief Adds the current column contribution to each remaining active row.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void compute(const Matrix<T, N, N> &matrix,
                              const Vector<T, N> &input, Vector<T, N> &output,
                              std::size_t active_size) {
@@ -103,14 +172,41 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates DenseMultiply recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam FullSize Whether every matrix row and column is active.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex, bool FullSize>
 struct Row<T, N, ColumnIndex, N, FullSize> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, N, N> &, const Vector<T, N> &,
                              Vector<T, N> &, std::size_t) {}
 };
 
+/**
+ * @brief Visits dense columns in ascending order for a matrix-vector product.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam FullSize Whether every matrix row and column is active.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex, bool FullSize>
 struct Column {
+  /**
+   * @brief Accumulates the current and remaining dense matrix columns.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void compute(const Matrix<T, N, N> &matrix,
                              const Vector<T, N> &input, Vector<T, N> &output,
                              std::size_t active_size) {
@@ -121,12 +217,35 @@ struct Column {
   }
 };
 
+/**
+ * @brief Terminates DenseMultiply recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam FullSize Whether every matrix row and column is active.
+ */
 template <typename T, std::size_t N, bool FullSize>
 struct Column<T, N, N, FullSize> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, N, N> &, const Vector<T, N> &,
                              Vector<T, N> &, std::size_t) {}
 };
 
+/**
+ * @brief Computes the dense product in the leading active subspace.
+ *
+ * Output is cleared first. Input and output must refer to different vectors.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @param matrix The input dense matrix.
+ * @param input The source vector.
+ * @param output The product; inactive components are set to zero.
+ * @param active_size The number of active leading rows
+ * and columns, at most N.
+ */
 template <typename T, std::size_t N>
 inline void compute(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
                     Vector<T, N> &output, std::size_t active_size) {
@@ -143,9 +262,28 @@ inline void compute(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
 /* A^T times a vector; used for both the normal operator and its RHS. */
 namespace DenseTransposeMultiply {
 
+/**
+ * @brief Accumulates one output component of a dense transpose product.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
           std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Adds the remaining row contributions to one
+   * transpose-product component.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &input, Vector<T, N> &output) {
     output[ColumnIndex] += matrix(RowIndex, ColumnIndex) * input[RowIndex];
@@ -153,14 +291,47 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates DenseTransposeMultiply recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
 struct Row<T, M, N, ColumnIndex, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
                              Vector<T, N> &) {}
 };
 
+/**
+ * @brief Initializes and computes each component of a
+ * dense transpose product.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
 struct Column {
+  /**
+   * @brief Overwrites the remaining output components with
+   * the transpose product.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &input, Vector<T, N> &output) {
     output[ColumnIndex] = T();
@@ -169,7 +340,20 @@ struct Column {
   }
 };
 
+/**
+ * @brief Terminates DenseTransposeMultiply recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ */
 template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
                              Vector<T, N> &) {}
 };
@@ -179,9 +363,27 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
 /* Explicit dense normal equations: fill one Gram column and RHS entry. */
 namespace DenseNormalEquations {
 
+/**
+ * @brief Accumulates one entry of the dense Gram matrix.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam GramRowIndex The current row of the Gram matrix.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
           std::size_t GramRowIndex, std::size_t RowIndex>
 struct Product {
+  /**
+   * @brief Adds the remaining row products to one Gram-matrix entry.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              Matrix<T, N, N> &gram) {
     gram(GramRowIndex, ColumnIndex) +=
@@ -191,15 +393,46 @@ struct Product {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalEquations recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam GramRowIndex The current row of the Gram matrix.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
           std::size_t GramRowIndex>
 struct Product<T, M, N, ColumnIndex, GramRowIndex, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, Matrix<T, N, N> &) {}
 };
 
+/**
+ * @brief Initializes and fills one column of the dense Gram matrix.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam GramRowIndex The current row of the Gram matrix.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex,
           std::size_t GramRowIndex>
 struct Row {
+  /**
+   * @brief Overwrites the remaining Gram entries in the current column.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              Matrix<T, N, N> &gram) {
     gram(GramRowIndex, ColumnIndex) = T();
@@ -208,13 +441,45 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalEquations recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
 struct Row<T, M, N, ColumnIndex, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, Matrix<T, N, N> &) {}
 };
 
+/**
+ * @brief Computes dense normal equations one Gram column at a time.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t ColumnIndex>
 struct Column {
+  /**
+   * @brief Fills the remaining Gram columns and normal
+   * right-hand-side entries.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param right_hand_side The original right-hand side b.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   * @param normal_rhs The normal-equation right-hand-side storage for A^T*b.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &right_hand_side,
                              Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
@@ -227,7 +492,19 @@ struct Column {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalEquations recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ */
 template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
                              Matrix<T, N, N> &, Vector<T, N> &) {}
 };
@@ -237,21 +514,57 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, N> {
 /* Clear the Gram matrix and normal RHS before accumulating sparse rows. */
 namespace ZeroNormalEquations {
 
+/**
+ * @brief Clears the entries in one Gram-matrix column.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The Gram-matrix size and normal-vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex,
           std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Zeros the remaining entries in the current Gram column.
+   *
+   * @param gram The Gram-matrix storage updated by this recursion.
+   */
   static inline void compute(Matrix<T, N, N> &gram) {
     gram(RowIndex, ColumnIndex) = T();
     Row<T, N, ColumnIndex, RowIndex + 1>::compute(gram);
   }
 };
 
+/**
+ * @brief Terminates ZeroNormalEquations recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The Gram-matrix size and normal-vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex>
 struct Row<T, N, ColumnIndex, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(Matrix<T, N, N> &) {}
 };
 
+/**
+ * @brief Clears the Gram matrix and the normal-equation right-hand side.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The Gram-matrix size and normal-vector capacity.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t N, std::size_t ColumnIndex> struct Column {
+  /**
+   * @brief Zeros the remaining Gram columns and right-hand-side entries.
+   *
+   * @param gram The Gram-matrix storage updated by this recursion.
+   * @param normal_rhs The normal-equation right-hand-side storage for A^T*b.
+   */
   static inline void compute(Matrix<T, N, N> &gram, Vector<T, N> &normal_rhs) {
     normal_rhs[ColumnIndex] = T();
     Row<T, N, ColumnIndex, 0>::compute(gram);
@@ -259,7 +572,16 @@ template <typename T, std::size_t N, std::size_t ColumnIndex> struct Column {
   }
 };
 
+/**
+ * @brief Terminates ZeroNormalEquations recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The Gram-matrix size and normal-vector capacity.
+ */
 template <typename T, std::size_t N> struct Column<T, N, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(Matrix<T, N, N> &, Vector<T, N> &) {}
 };
 
@@ -268,9 +590,28 @@ template <typename T, std::size_t N> struct Column<T, N, N> {
 /* Direct evaluation of A^T(b-Ax), keeping each subtraction in row order. */
 namespace DenseNormalResidual {
 
+/**
+ * @brief Visits a dense row to form its residual and transpose contribution.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex,
           std::size_t ColumnIndex>
 struct Column {
+  /**
+   * @brief Subtracts the remaining dense row products from a residual.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param solution The current candidate solution x.
+   * @param residual The row residual, initialized from the
+   * corresponding entry of b.
+   */
   static inline void subtract(const Matrix<T, M, N> &matrix,
                               const Vector<T, N> &solution, T &residual) {
     residual -= matrix(RowIndex, ColumnIndex) * solution[ColumnIndex];
@@ -278,6 +619,14 @@ struct Column {
                                                          residual);
   }
 
+  /**
+   * @brief Adds a row residual multiplied by the remaining matrix entries.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param residual The already computed residual for the current input row.
+   * @param stationarity The accumulator for A^T*(b-A*x);
+   * initialize it to zero first.
+   */
   static inline void accumulate(const Matrix<T, M, N> &matrix,
                                 const T &residual, Vector<T, N> &stationarity) {
     stationarity[ColumnIndex] += matrix(RowIndex, ColumnIndex) * residual;
@@ -286,16 +635,51 @@ struct Column {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalResidual recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
 struct Column<T, M, N, RowIndex, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void subtract(const Matrix<T, M, N> &, const Vector<T, N> &,
                               T &) {}
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void accumulate(const Matrix<T, M, N> &, const T &,
                                 Vector<T, N> &) {}
 };
 
+/**
+ * @brief Accumulates the dense normal residual one input row at a time.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Adds the remaining row contributions to A^T*(b-A*x).
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param right_hand_side The original right-hand side b.
+   * @param solution The current candidate solution x.
+   * @param stationarity The accumulator for A^T*(b-A*x);
+   * initialize it to zero first.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &right_hand_side,
                              const Vector<T, N> &solution,
@@ -308,7 +692,19 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalResidual recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ */
 template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, M> &,
                              const Vector<T, N> &, Vector<T, N> &) {}
 };
@@ -318,9 +714,25 @@ template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
 /* First product A*x for the dense normal operator. */
 namespace DenseNormalProduct {
 
+/**
+ * @brief Accumulates one component of the dense product A*x.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ * @tparam ColumnIndex The current matrix column.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex,
           std::size_t ColumnIndex>
 struct Column {
+  /**
+   * @brief Adds the remaining column products to one intermediate component.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param intermediate The accumulator for A*x; initialize it to zero first.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, N> &input,
                              Vector<T, M> &intermediate) {
@@ -331,14 +743,40 @@ struct Column {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalProduct recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
 struct Column<T, M, N, RowIndex, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, N> &,
                              Vector<T, M> &) {}
 };
 
+/**
+ * @brief Visits the rows of the dense product used by the normal operator.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Accumulates each remaining row of the intermediate product A*x.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param intermediate The accumulator for A*x; initialize it to zero first.
+   */
   static inline void compute(const Matrix<T, M, N> &matrix,
                              const Vector<T, N> &input,
                              Vector<T, M> &intermediate) {
@@ -347,7 +785,17 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates DenseNormalProduct recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ */
 template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(const Matrix<T, M, N> &, const Vector<T, N> &,
                              Vector<T, M> &) {}
 };
@@ -357,10 +805,29 @@ template <typename T, std::size_t M, std::size_t N> struct Row<T, M, N, M> {
 /* Sparse matrix-vector multiplication in the leading active subspace. */
 namespace SparseMultiply {
 
+/**
+ * @brief Accumulates active stored entries from one CSR row.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex, std::size_t Start,
           std::size_t End>
 struct Loop {
+  /**
+   * @brief Adds the remaining stored entries whose row and column are active.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -376,17 +843,48 @@ struct Loop {
 };
 
 // Empty rows and the end of each row require no element access.
+/**
+ * @brief Terminates SparseMultiply recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex, std::size_t End>
 struct Loop<T, N, CSRIndicesType, CSRPointersType, RowIndex, End, End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, N> &, Vector<T, N> &, std::size_t) {}
 };
 
+/**
+ * @brief Initializes each output row and evaluates the active sparse product.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Zeros and computes the remaining output rows
+   * of the sparse product.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   * @param active_size The number of active leading components, at most N.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -402,9 +900,20 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates SparseMultiply recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct Row<T, N, CSRIndicesType, CSRPointersType, N> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, N, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, N> &, Vector<T, N> &, std::size_t) {}
@@ -415,10 +924,31 @@ struct Row<T, N, CSRIndicesType, CSRPointersType, N> {
 /* Add each sparse row's contribution to A^T A and A^T b. */
 namespace SparseNormalEquations {
 
+/**
+ * @brief Accumulates Gram entries paired with one stored row entry.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam FirstIndex The stored entry paired with the remaining row entries.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t FirstIndex, std::size_t Start,
           std::size_t End>
 struct SecondEntry {
+  /**
+   * @brief Adds products pairing FirstIndex with the
+   * remaining stored row entries.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -430,19 +960,58 @@ struct SecondEntry {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalEquations recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam FirstIndex The stored entry paired with the remaining row entries.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t FirstIndex, std::size_t End>
 struct SecondEntry<T, M, N, CSRIndicesType, CSRPointersType, FirstIndex, End,
                    End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       Matrix<T, N, N> &) {}
 };
 
+/**
+ * @brief Adds one stored entry to the normal right-hand side and Gram matrix.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex, std::size_t Start,
           std::size_t End>
 struct FirstEntry {
+  /**
+   * @brief Adds the remaining entries of a CSR row to A^T*A and A^T*b.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param right_hand_side The original right-hand side b.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   * @param normal_rhs The normal-equation right-hand-side storage for A^T*b.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -457,18 +1026,55 @@ struct FirstEntry {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalEquations recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex, std::size_t End>
 struct FirstEntry<T, M, N, CSRIndicesType, CSRPointersType, RowIndex, End,
                   End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, M> &, Matrix<T, N, N> &, Vector<T, N> &) {}
 };
 
+/**
+ * @brief Visits CSR rows to accumulate the explicit normal equations.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Adds the remaining CSR rows to A^T*A and A^T*b.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param right_hand_side The original right-hand side b.
+   * @param gram The Gram-matrix storage updated by this recursion.
+   * @param normal_rhs The normal-equation right-hand-side storage for A^T*b.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -484,9 +1090,24 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalEquations recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, M> &, Matrix<T, N, N> &, Vector<T, N> &) {}
@@ -497,9 +1118,29 @@ struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
 /* Scatter a sparse row times a scalar, preserving stored entry order. */
 namespace SparseTransposeMultiply {
 
+/**
+ * @brief Scatters one sparse row scaled by an input component.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t Start, std::size_t End>
 struct Loop {
+  /**
+   * @brief Adds the remaining scaled row entries to their output columns.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The scalar multiplying each entry in the current row.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -510,17 +1151,52 @@ struct Loop {
   }
 };
 
+/**
+ * @brief Terminates SparseTransposeMultiply recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t End>
 struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const T &, Vector<T, N> &) {}
 };
 
+/**
+ * @brief Visits CSR rows to accumulate a sparse transpose product.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Adds the remaining CSR rows to the transpose product.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The vector supplying one scale for each input row.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -534,9 +1210,24 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates SparseTransposeMultiply recursion
+ * without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, M> &, Vector<T, N> &) {}
@@ -547,9 +1238,30 @@ struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
 /* Form b-Ax one row at a time, then accumulate A^T(b-Ax). */
 namespace SparseNormalResidual {
 
+/**
+ * @brief Subtracts a sparse row product from its residual accumulator.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t Start, std::size_t End>
 struct Loop {
+  /**
+   * @brief Subtracts the remaining stored row products from a residual.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param solution The current candidate solution x.
+   * @param residual The row residual, initialized from the
+   * corresponding entry of b.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -560,17 +1272,53 @@ struct Loop {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalResidual recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t End>
 struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, N> &, T &) {}
 };
 
+/**
+ * @brief Accumulates the sparse normal residual one input row at a time.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Adds the remaining CSR row contributions to A^T*(b-A*x).
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param right_hand_side The original right-hand side b.
+   * @param solution The current candidate solution x.
+   * @param stationarity The accumulator for A^T*(b-A*x);
+   * initialize it to zero first.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -591,9 +1339,23 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalResidual recursion without accessing storage.
+ *
+ * Transpose operations do not conjugate complex entries.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, M> &, const Vector<T, N> &, Vector<T, N> &) {}
@@ -604,9 +1366,27 @@ struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
 /* Accumulate Ax into the zero-initialized normal-operator intermediate. */
 namespace SparseNormalProduct {
 
+/**
+ * @brief Accumulates one sparse row product into a scalar result.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam Start The current stored-entry index.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t Start, std::size_t End>
 struct Loop {
+  /**
+   * @brief Adds the remaining stored row products to a scalar output.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -617,17 +1397,48 @@ struct Loop {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalProduct recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam End The exclusive end of the stored-entry range.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t End>
 struct Loop<T, M, N, CSRIndicesType, CSRPointersType, End, End> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, N> &, T &) {}
 };
 
+/**
+ * @brief Visits CSR rows to form the intermediate product A*x.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @tparam RowIndex The current matrix row.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType, std::size_t RowIndex>
 struct Row {
+  /**
+   * @brief Accumulates the remaining CSR row products into the
+   * intermediate vector.
+   *
+   * @param matrix The input matrix, whose entries are unchanged.
+   * @param input The source vector for the matrix product.
+   * @param output The result storage updated by this recursion.
+   */
   static inline void
   compute(const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>
               &matrix,
@@ -641,9 +1452,21 @@ struct Row {
   }
 };
 
+/**
+ * @brief Terminates SparseNormalProduct recursion without accessing storage.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
+  /**
+   * @brief Ends this recursion; all arguments are unused.
+   */
   static inline void compute(
       const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &,
       const Vector<T, N> &, Vector<T, M> &) {}
@@ -651,6 +1474,18 @@ struct Row<T, M, N, CSRIndicesType, CSRPointersType, M> {
 
 } // namespace SparseNormalProduct
 
+/**
+ * @brief Computes a dense matrix-vector product in the
+ * active leading subspace.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @param matrix The input matrix.
+ * @param input The source vector; it must not alias output.
+ * @param output The product, with inactive components set to zero.
+ * @param active_size The number of leading rows and
+ * columns to use, at most N.
+ */
 template <typename T, std::size_t N>
 inline void multiply(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
                      Vector<T, N> &output, std::size_t active_size) {
@@ -683,6 +1518,20 @@ inline void multiply(const Matrix<T, N, N> &matrix, const Vector<T, N> &input,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Computes a compiled-CSR matrix-vector product in
+ * the active subspace.
+ *
+ * @tparam T The matrix and vector element type.
+ * @tparam N The square matrix size and vector capacity.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @param matrix The input matrix.
+ * @param input The source vector; it must not alias output.
+ * @param output The product, with inactive components set to zero.
+ * @param active_size The number of leading rows and
+ * columns to use, at most N.
+ */
 template <typename T, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 inline void multiply(const CompiledSparseMatrix<T, N, N, CSRIndicesType,
@@ -712,17 +1561,48 @@ inline void multiply(const CompiledSparseMatrix<T, N, N, CSRIndicesType,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Adapts a borrowed matrix and active size to the
+ * GMRES callback interface.
+ *
+ * The referenced matrix must outlive every use of this wrapper.
+ *
+ * @tparam MatrixType A matrix type supported by multiply.
+ * @tparam T The matrix and vector element type.
+ * @tparam N The vector capacity.
+ */
 template <typename MatrixType, typename T, std::size_t N>
 struct MatrixOperator {
   const MatrixType &matrix;
   std::size_t active_size;
+  /**
+   * @brief Applies the borrowed matrix in its configured leading subspace.
+   *
+   * @param input The source vector; it must not alias output.
+   * @param output The product, including zeroed inactive components.
+   */
   inline void operator()(const Vector<T, N> &input,
                          Vector<T, N> &output) const {
     multiply(this->matrix, input, output, this->active_size);
   }
 };
 
-/** Keep a public callback inside the requested leading subspace. */
+/**
+ * @brief Applies an operator while masking components outside
+ * the active subspace.
+ *
+ * The callback must overwrite its output and accept distinct input and output
+ * vectors of capacity N. Partial-subspace calls use a temporary zero-padded
+ * input and clear inactive output components after the callback.
+ *
+ * @tparam Operator A callable accepting input and output vector references.
+ * @tparam T The vector element type.
+ * @tparam N The vector capacity.
+ * @param operation The callback to invoke.
+ * @param input The source vector.
+ * @param output The callback result with inactive components cleared.
+ * @param active_size The number of active leading components, at most N.
+ */
 template <typename Operator, typename T, std::size_t N>
 inline void apply_operator(const Operator &operation, const Vector<T, N> &input,
                            Vector<T, N> &output, std::size_t active_size) {
@@ -761,11 +1641,39 @@ inline void apply_operator(const Operator &operation, const Vector<T, N> &input,
   }
 }
 
+/**
+ * @brief Supplies unit diagonal entries without storing a
+ * preconditioning vector.
+ *
+ * @tparam T The scalar type returned for each diagonal entry.
+ */
 template <typename T> struct IdentityPreconditioner {
+  /**
+   * @brief Returns the multiplicative identity for any requested index.
+   *
+   * The index is unused; no storage is accessed.
+   *
+   * @return A scalar value equal to one.
+   */
   inline T operator[](std::size_t) const { return static_cast<T>(1); }
 };
 
-/** Explicit normal equations are useful for tall inputs or repeated RHS. */
+/**
+ * @brief Forms explicit normal equations from a dense matrix.
+ *
+ * Explicit normal equations may be useful for tall matrices or repeated
+ * right-hand sides. This operation uses an ordinary transpose, without
+ * conjugation, and is intended for real least-squares systems. Output storage
+ * must not alias the inputs.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @param matrix The input matrix A.
+ * @param right_hand_side The original right-hand side b.
+ * @param gram The overwritten dense matrix A^T*A.
+ * @param normal_rhs The overwritten vector A^T*b.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline void normal_equations(const Matrix<T, M, N> &matrix,
                              const Vector<T, M> &right_hand_side,
@@ -793,6 +1701,24 @@ inline void normal_equations(const Matrix<T, M, N> &matrix,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
+/**
+ * @brief Forms dense normal equations by accumulating compiled-CSR rows.
+ *
+ * Explicit normal equations may be useful for tall matrices or repeated
+ * right-hand sides. This operation uses an ordinary transpose, without
+ * conjugation, and is intended for real least-squares systems. Output storage
+ * must not alias the inputs.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @param matrix The input matrix A.
+ * @param right_hand_side The original right-hand side b.
+ * @param gram The overwritten dense matrix A^T*A.
+ * @param normal_rhs The overwritten vector A^T*b.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 inline void
@@ -834,7 +1760,21 @@ normal_equations(const CompiledSparseMatrix<T, M, N, CSRIndicesType,
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 }
 
-/** Evaluate A^T(b-Ax) directly, including for an explicitly formed Gram. */
+/**
+ * @brief Computes the normal-equation residual norm from a dense matrix.
+ *
+ * Evaluates the original matrix directly rather than using a stored Gram
+ * matrix. The transpose is not conjugated; this helper is intended for real
+ * least-squares systems.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @param matrix The original matrix A.
+ * @param right_hand_side The original right-hand side b.
+ * @param solution The candidate solution x.
+ * @return The Euclidean norm of A^T*(b-A*x), evaluated with scaling.
+ */
 template <typename T, std::size_t M, std::size_t N>
 inline T normal_residual(const Matrix<T, M, N> &matrix,
                          const Vector<T, M> &right_hand_side,
@@ -861,6 +1801,24 @@ inline T normal_residual(const Matrix<T, M, N> &matrix,
   return Numerical::norm(stationarity);
 }
 
+/**
+ * @brief Computes the normal-equation residual norm from a
+ * compiled-CSR matrix.
+ *
+ * Evaluates the original matrix directly rather than using a stored Gram
+ * matrix. The transpose is not conjugated; this helper is intended for real
+ * least-squares systems.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ * @param matrix The original matrix A.
+ * @param right_hand_side The original right-hand side b.
+ * @param solution The candidate solution x.
+ * @return The Euclidean norm of A^T*(b-A*x), evaluated with scaling.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 inline T normal_residual(const CompiledSparseMatrix<T, M, N, CSRIndicesType,
@@ -897,14 +1855,44 @@ inline T normal_residual(const CompiledSparseMatrix<T, M, N, CSRIndicesType,
   return Numerical::norm(stationarity);
 }
 
-/** The normal operator avoids storing A^T A; it is still GMRES on that system.
+/**
+ * @brief Declares a matrix-free adapter for applying the
+ * normal operator A^T*A.
+ *
+ * Specializations borrow the original matrix and form products without
+ * storing a Gram matrix. Applying GMRES to this operator still solves the
+ * normal equations; their conditioning is not changed by avoiding Gram
+ * storage. Transposes do not conjugate entries, so the adapter is intended
+ * for real least-squares systems.
+ *
+ * @tparam MatrixType The supported dense or compiled-CSR matrix type.
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
  */
 template <typename MatrixType, typename T, std::size_t M, std::size_t N>
 struct NormalOperator;
 
+/**
+ * @brief Applies a dense normal operator while borrowing the original matrix.
+ *
+ * The matrix must outlive this wrapper. An intermediate vector of length M is
+ * used for each application; the dense Gram matrix is not stored.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ */
 template <typename T, std::size_t M, std::size_t N>
 struct NormalOperator<Matrix<T, M, N>, T, M, N> {
   const Matrix<T, M, N> &matrix;
+  /**
+   * @brief Overwrites the output with the ordinary
+   * transpose product A^T*input.
+   *
+   * @param input The vector of length M; it must not alias output.
+   * @param output The transpose product of length N.
+   */
   inline void transpose_multiply(const Vector<T, M> &input,
                                  Vector<T, N> &output) const {
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
@@ -923,6 +1911,12 @@ struct NormalOperator<Matrix<T, M, N>, T, M, N> {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
+  /**
+   * @brief Applies A^T*A without constructing the Gram matrix.
+   *
+   * @param input The vector multiplied by the normal operator.
+   * @param output The overwritten normal-operator product.
+   */
   inline void operator()(const Vector<T, N> &input,
                          Vector<T, N> &output) const {
     Vector<T, M> intermediate;
@@ -944,11 +1938,30 @@ struct NormalOperator<Matrix<T, M, N>, T, M, N> {
   }
 };
 
+/**
+ * @brief Applies a compiled-CSR normal operator while borrowing its matrix.
+ *
+ * The matrix must outlive this wrapper. The stored CSR entries are reused for
+ * both products, with an intermediate vector of length M.
+ *
+ * @tparam T The real matrix and vector element type.
+ * @tparam M The number of matrix rows.
+ * @tparam N The number of matrix columns.
+ * @tparam CSRIndicesType The compile-time CSR column-index sequence.
+ * @tparam CSRPointersType The compile-time CSR row-pointer sequence.
+ */
 template <typename T, std::size_t M, std::size_t N, typename CSRIndicesType,
           typename CSRPointersType>
 struct NormalOperator<
     CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType>, T, M, N> {
   const CompiledSparseMatrix<T, M, N, CSRIndicesType, CSRPointersType> &matrix;
+  /**
+   * @brief Overwrites the output with the ordinary
+   * transpose product A^T*input.
+   *
+   * @param input The vector of length M; it must not alias output.
+   * @param output The transpose product of length N.
+   */
   inline void transpose_multiply(const Vector<T, M> &input,
                                  Vector<T, N> &output) const {
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
@@ -974,6 +1987,12 @@ struct NormalOperator<
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
   }
+  /**
+   * @brief Applies A^T*A without constructing the Gram matrix.
+   *
+   * @param input The vector multiplied by the normal operator.
+   * @param output The overwritten normal-operator product.
+   */
   inline void operator()(const Vector<T, N> &input,
                          Vector<T, N> &output) const {
     Vector<T, M> intermediate;
@@ -1003,13 +2022,20 @@ struct NormalOperator<
 } // namespace GmresOperation
 
 /**
- * @brief Reusable GMRES workspace; K controls storage, cycles controls
- * restarts.
+ * @brief Reusable GMRES workspace; K controls storage,
+ * cycles controls restarts.
  *
- * All cycle/Arnoldi slots are visited; completed slots skip numerical updates.
- * Iteration counts report actual Arnoldi updates, not the configured slots.
- * rho is always the norm of the true final residual (also for complex inputs).
- * No non-finite checks are made here. Products and final norms must fit Real.
+ * Cycle and Arnoldi loops have fixed upper bounds; inactive numerical
+ * updates are skipped. Iteration counts report actual Arnoldi updates, not
+ * the configured slots. rho is always the norm of the true final residual
+ * (also for complex inputs). No non-finite checks are made here. Products and
+ * final norms must fit Real. The true residual is checked after each
+ * candidate correction; corrections that increase it are discarded. This is
+ * not a forward-error guarantee.
+ *
+ * @tparam T The real or complex matrix and vector element type.
+ * @tparam N The matrix dimension and vector capacity.
+ * @tparam K The stored Krylov dimension, with 1 <= K <= N.
  */
 template <typename T, std::size_t N, std::size_t K = N> class GmresSolver {
 public:
@@ -1025,6 +2051,21 @@ public:
   Real relative_tolerance = static_cast<Real>(DEFAULT_RELATIVE_TOLERANCE_GMRES);
   Real absolute_tolerance = static_cast<Real>(DEFAULT_ABSOLUTE_TOLERANCE_GMRES);
 
+  /**
+   * @brief Solves a dense or compiled-CSR system within the work budget.
+   *
+   * Only the leading active subspace participates in the residual and
+   * correction. The active size is clamped to N; inactive initial components
+   * are retained. Inspect the status getters to distinguish convergence,
+   * breakdown, and budget exhaustion.
+   *
+   * @tparam MatrixType A matrix type supported by GmresOperation::multiply.
+   * @param matrix The coefficient matrix, borrowed for this solve.
+   * @param right_hand_side The right-hand side b.
+   * @param initial The initial solution estimate.
+   * @param active_size The number of leading components to solve for.
+   * @return The retained solution after the configured cycles.
+   */
   template <typename MatrixType>
   inline Vector<T, N>
   solve(const MatrixType &matrix, const Vector<T, N> &right_hand_side,
@@ -1036,6 +2077,21 @@ public:
                                 active_size);
   }
 
+  /**
+   * @brief Solves the full system with a fixed right diagonal preconditioner.
+   *
+   * The supplied inverse diagonal is used in A*D^-1 and in the final
+   * correction. It is borrowed for this solve and is not
+   * recomputed or validated here.
+   *
+   * @tparam MatrixType A matrix type supported by GmresOperation::multiply.
+   * @param matrix The coefficient matrix.
+   * @param right_hand_side The right-hand side b.
+   * @param initial The initial solution estimate.
+   * @param inverse_diagonal The fixed inverse diagonal D^-1.
+   * @return The retained solution in the original,
+   * unpreconditioned coordinates.
+   */
   template <typename MatrixType>
   inline Vector<T, N> solve_preconditioned(
       const MatrixType &matrix, const Vector<T, N> &right_hand_side,
@@ -1045,6 +2101,20 @@ public:
                         N);
   }
 
+  /**
+   * @brief Solves a system represented by a matrix-vector callback.
+   *
+   * The callback receives distinct input and output vectors and must
+   * overwrite all output components. Partial-subspace calls mask the inactive
+   * components. No explicit matrix or preconditioning vector is required.
+   *
+   * @tparam Operator A callable accepting input and output vector references.
+   * @param operation The matrix-vector callback, borrowed for this solve.
+   * @param right_hand_side The right-hand side b.
+   * @param initial The initial solution estimate.
+   * @param active_size The number of active leading components, clamped to N.
+   * @return The retained solution after the configured cycles.
+   */
   template <typename Operator>
   inline Vector<T, N>
   solve_operator(const Operator &operation, const Vector<T, N> &right_hand_side,
@@ -1054,10 +2124,37 @@ public:
                         active_size > N ? N : active_size);
   }
 
+  /**
+   * @brief Returns the true residual norm of the last retained solution.
+   *
+   * @return The residual norm over the active subspace.
+   */
   inline Real get_residual_norm() const { return this->residual_norm_; }
+  /**
+   * @brief Returns the number of Arnoldi updates performed by the last solve.
+   *
+   * @return The actual update count across all executed cycles.
+   */
   inline std::size_t get_iterations() const { return this->iterations_; }
+  /**
+   * @brief Reports whether the retained true residual meets the tolerance.
+   *
+   * @return True if the last solve met the configured residual criterion.
+   */
   inline bool is_converged() const { return this->converged_; }
+  /**
+   * @brief Reports an unusable triangular correction or
+   * unsuccessful Arnoldi breakdown.
+   *
+   * @return True if breakdown prevented further cycles in the last solve.
+   */
   inline bool has_breakdown() const { return this->breakdown_; }
+  /**
+   * @brief Reports whether a nonpositive division threshold
+   * required a local fallback.
+   *
+   * @return True if division_min was nonpositive for the last solve.
+   */
   inline bool threshold_was_adjusted() const {
     return this->threshold_adjusted_;
   }
@@ -1076,10 +2173,38 @@ private:
   bool breakdown_ = false;
   bool threshold_adjusted_ = false;
 
+  /**
+   * @brief Accesses the packed upper-triangular least-squares factor.
+   *
+   * @param row The row index, with row <= column.
+   * @param column The column index, less than K.
+   * @return A mutable reference to the stored triangular entry.
+   */
   inline T &_r(std::size_t row, std::size_t column) {
     return this->triangular_[column * (column + 1) / 2 + row];
   }
 
+  /**
+   * @brief Runs bounded right-preconditioned GMRES and
+   * updates the solve status.
+   *
+   * Uses modified Gram-Schmidt, Givens rotations, and true-residual checks.
+   * Completed cycle and Arnoldi slots skip numerical updates. The caller
+   * supplies an active size at most N and an indexable inverse diagonal
+   * covering N entries. A failed triangular correction leaves the last
+   * retained solution intact.
+   *
+   * @tparam Operator A callable providing the matrix-vector product.
+   * @tparam Preconditioner An indexable provider of inverse-diagonal entries.
+   * @param operation The borrowed matrix-vector callback.
+   * @param right_hand_side The right-hand side b.
+   * @param initial The starting solution estimate.
+   * @param inverse_diagonal The fixed right inverse
+   * diagonal, or the identity.
+   * @param active_size The number of leading components to include.
+   * @return The retained solution after convergence, breakdown,
+   * or budget exhaustion.
+   */
   template <typename Operator, typename Preconditioner>
   inline Vector<T, N>
   _solve(const Operator &operation, const Vector<T, N> &right_hand_side,
@@ -1326,7 +2451,18 @@ private:
   }
 };
 
-/** Build an optional fixed right preconditioner; tiny diagonals use identity.
+/**
+ * @brief Builds an optional right inverse-diagonal preconditioner.
+ *
+ * Diagonal magnitudes below division_min or the reciprocal-use threshold
+ * produce a unit entry, leaving that component unpreconditioned. A
+ * nonpositive division_min is replaced locally by the numerical default.
+ *
+ * @tparam T The real or complex matrix element type.
+ * @tparam N The square matrix size.
+ * @param matrix The coefficient matrix.
+ * @param division_min The positive denominator-protection threshold.
+ * @return The inverse-diagonal vector, with unit entries for small diagonals.
  */
 template <typename T, std::size_t N>
 inline Vector<T, N>

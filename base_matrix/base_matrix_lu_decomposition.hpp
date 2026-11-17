@@ -4,10 +4,10 @@
  *
  * This file defines the LUDecomposition class template within the Base::Matrix
  * namespace. The LUDecomposition class implements LU decomposition for square
- * matrices of fixed size, supporting operations such as matrix decomposition,
- * solving linear systems, and computing determinants. The class is templated on
- * the matrix element type and matrix size, and supports copy and move
- * semantics.
+ * matrices of fixed size using compact partial-pivoted factors. It supports
+ * repeated right-hand sides, determinant calculation, optional reciprocal
+ * caching, scaled pivot selection, and a fixed number of refinement steps.
+ * Factorization and solve status are reported without exceptions.
  */
 #ifndef BASE_MATRIX_LU_DECOMPOSITION_HPP_
 #define BASE_MATRIX_LU_DECOMPOSITION_HPP_
@@ -43,15 +43,34 @@ static_assert(static_cast<float>(RECIPROCAL_MIN_LU_DECOMPOSITION) > 0.0f &&
  * solve_rhs(b). Modifying A does not update those factors. CACHE_INVERSE adds M
  * reciprocals for applications that solve many right-hand sides.
  * Inputs and arithmetic results must be finite and representable in T.
+ * A pivot below division_min invalidates the factorization, and solve_rhs()
+ * returns a zero vector for invalid factors.
+ *
+ * @tparam T The real scalar type of the matrix elements and stored factors.
+ * @tparam M The number of rows and columns in the square matrix.
+ * @tparam CACHE_INVERSE Whether to retain usable U-diagonal reciprocals for
+ * repeated solves; very small pivots continue to use direct division.
  */
 template <typename T, std::size_t M, bool CACHE_INVERSE = false>
 class LUDecomposition {
 public:
+  /**
+   * @brief Initializes the default threshold with no valid factorization.
+   */
   LUDecomposition()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_LU_DECOMPOSITION)),
         factor_valid_(false), singular_(false), threshold_adjusted_(false),
         odd_permutation_(false) {}
 
+  /**
+   * @brief Initializes compact factors directly from a diagonal matrix.
+   *
+   * The permutation and L are identity. Diagonal magnitudes below the default
+   * division_min mark the factors invalid. When caching is enabled, usable
+   * diagonal reciprocals are retained for subsequent right-hand sides.
+   *
+   * @param matrix The finite diagonal matrix supplying U.
+   */
   LUDecomposition(const DiagMatrix<T, M> &matrix) : LUDecomposition() {
     this->factor_valid_ = true;
     for (std::size_t i = 0; i < M; ++i) {
@@ -74,12 +93,26 @@ public:
   }
 
   /* Copy and move preserve the compact factors and their validity. */
+  /** @brief Copies the factors, permutation, threshold, cache, and status. */
   LUDecomposition(const LUDecomposition &) = default;
+  /**
+   * @brief Copies the factors, permutation, threshold, cache, and status.
+   * @return A reference to this solver.
+   */
   LUDecomposition &operator=(const LUDecomposition &) = default;
+  /** @brief Moves the factors and preserves their permutation and status. */
   LUDecomposition(LUDecomposition &&) noexcept = default;
+  /**
+   * @brief Moves the factors and preserves their permutation and status.
+   * @return A reference to this solver.
+   */
   LUDecomposition &operator=(LUDecomposition &&) noexcept = default;
 
   /* Get */
+  /**
+   * @brief Expands the unit lower triangular factor from compact storage.
+   * @return L with an explicit unit diagonal and zero upper triangle.
+   */
   inline Matrix<T, M, M> get_L() const {
     Matrix<T, M, M> result = Matrix<T, M, M>::identity();
     for (std::size_t j = 0; j < M; ++j) {
@@ -90,6 +123,10 @@ public:
     return result;
   }
 
+  /**
+   * @brief Expands the upper triangular factor from compact storage.
+   * @return U with zero entries below its diagonal.
+   */
   inline Matrix<T, M, M> get_U() const {
     Matrix<T, M, M> result;
     for (std::size_t j = 0; j < M; ++j) {
@@ -100,10 +137,19 @@ public:
     return result;
   }
 
+  /**
+   * @brief Returns the row permutation accumulated during factorization.
+   * @return Indices mapping each factor row to its original input row.
+   */
   inline Vector<std::size_t, M> get_pivot_indices() const {
     return this->pivot_index_;
   }
 
+  /**
+   * @brief Expands the stored row permutation as a matrix.
+   * @return P with P(i, pivot_index[i]) = 1, so valid factors satisfy P A = L
+   * U.
+   */
   inline Matrix<T, M, M> get_P() const {
     Matrix<T, M, M> result;
     for (std::size_t i = 0; i < M; ++i) {
@@ -112,12 +158,28 @@ public:
     return result;
   }
 
+  /**
+   * @brief Reports whether the retained factors can be used by solve_rhs().
+   * @return True after a factorization that accepted every pivot.
+   */
   inline bool is_valid() const { return this->factor_valid_; }
+  /**
+   * @brief Reports whether a pivot was rejected by the absolute threshold.
+   * @return True if a pivot magnitude was below division_min.
+   */
   inline bool is_singular() const { return this->singular_; }
+  /**
+   * @brief Reports whether dense factorization corrected division_min.
+   * @return True if a nonpositive requested threshold was replaced.
+   */
   inline bool threshold_was_adjusted() const {
     return this->threshold_adjusted_;
   }
 
+  /**
+   * @brief Computes the determinant from U and the row-swap parity.
+   * @return The signed product of U's diagonal, or zero for invalid factors.
+   */
   inline T get_determinant() const {
     T result = this->odd_permutation_ ? static_cast<T>(-1) : static_cast<T>(1);
     for (std::size_t i = 0; i < M; ++i) {
@@ -127,18 +189,51 @@ public:
   }
 
   /* Solve */
+  /**
+   * @brief Factors a dense matrix using partial pivoting.
+   *
+   * New factors, permutation, and status replace the previous factorization.
+   * A nonpositive division_min is replaced by the default before pivot checks.
+   *
+   * @param A The finite square input matrix to factor without modifying it.
+   */
   inline void solve(const Matrix<T, M, M> &A) { this->_decompose<false>(A); }
 
   // Row scales affect pivot comparison only; neither A nor b is rescaled.
+  /**
+   * @brief Factors a dense matrix using row-scaled partial pivot selection.
+   *
+   * Each pivot candidate is scored relative to its input row's largest
+   * magnitude. Acceptance still uses the absolute division_min threshold.
+   *
+   * @param A The finite square input matrix to factor without modifying it.
+   */
   inline void solve_scaled(const Matrix<T, M, M> &A) {
     this->_decompose<true>(A);
   }
 
+  /**
+   * @brief Factors A and solves one right-hand side with the retained factors.
+   * @param A The finite square coefficient matrix.
+   * @param b The right-hand side in the original row order.
+   * @return The solution of A x = b, or a zero vector if factorization failed.
+   */
   inline Vector<T, M> solve(const Matrix<T, M, M> &A, const Vector<T, M> &b) {
     this->solve(A);
     return this->solve_rhs(b);
   }
 
+  /**
+   * @brief Solves a right-hand side using the current compact LU factors.
+   *
+   * The stored permutation is applied before forward and backward
+   * substitution. Cached reciprocals are used when available; otherwise each
+   * accepted diagonal is divided directly. Changing division_min after
+   * factorization does not change this solve's denominators.
+   *
+   * @param b The right-hand side in the original row order.
+   * @return The solution from retained factors, or zero if they are invalid.
+   */
   inline Vector<T, M> solve_rhs(const Vector<T, M> &b) const {
     Vector<T, M> result;
     if (this->factor_valid_) {
@@ -167,7 +262,20 @@ public:
     return result;
   }
 
-  /** Fixed correction budget; original A is borrowed, never copied. */
+  /**
+   * @brief Applies a fixed number of residual-based solution corrections.
+   *
+   * The original A is borrowed, never copied. Residuals are accumulated in
+   * ResidualT and converted to T before solving with the retained factors.
+   * The factors must correspond to A; invalid factors leave x unchanged.
+   *
+   * @tparam ResidualT The scalar type used to accumulate each residual.
+   * @param A The original coefficient matrix matching the retained factors.
+   * @param b The original right-hand side.
+   * @param x The initial solution estimate, updated in a local copy.
+   * @param corrections The fixed number of correction passes to perform.
+   * @return The estimate after the requested correction passes.
+   */
   template <typename ResidualT = T>
   inline Vector<T, M> refine(const Matrix<T, M, M> &A, const Vector<T, M> &b,
                              Vector<T, M> x, std::size_t corrections) const {
@@ -191,6 +299,18 @@ public:
     return x;
   }
 
+  /**
+   * @brief Factors A, solves for b, and performs fixed-budget refinement.
+   *
+   * This uses partial pivoting for the initial factorization and retains the
+   * same factors for every correction pass.
+   *
+   * @tparam ResidualT The scalar type used to accumulate refinement residuals.
+   * @param A The finite square coefficient matrix.
+   * @param b The right-hand side in the original row order.
+   * @param corrections The fixed number of correction passes to perform.
+   * @return The refined solution, or a zero vector if factorization failed.
+   */
   template <typename ResidualT = T>
   inline Vector<T, M> solve_refined(const Matrix<T, M, M> &A,
                                     const Vector<T, M> &b,
@@ -211,6 +331,17 @@ protected:
   bool threshold_adjusted_;
   bool odd_permutation_;
 
+  /**
+   * @brief Builds compact LU factors and records row permutations and status.
+   *
+   * Each pivot step selects and swaps a row before eliminating the trailing
+   * submatrix. A rejected pivot disables the remaining fixed pivot slots.
+   * Reciprocal sharing is used only above its configured magnitude limit;
+   * smaller accepted pivots retain direct division.
+   *
+   * @tparam SCALED Whether row maxima scale the pivot-comparison scores.
+   * @param A The finite square matrix copied into compact factor storage.
+   */
   template <bool SCALED> inline void _decompose(const Matrix<T, M, M> &A) {
     this->LU_ = A;
     this->threshold_adjusted_ = !(this->division_min > static_cast<T>(0));
