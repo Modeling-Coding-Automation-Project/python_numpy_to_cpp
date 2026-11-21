@@ -42,7 +42,7 @@
 | `E = C * D`（要素積） | `element_wise_multiply(E, C, D)` |
 | `np.linalg.solve(A,C)` | `make_LinalgSolver<...>().solve(A,C)` |
 | `np.linalg.inv(A)` | `make_LinalgSolverInv<...>().inv(A)` |
-| `np.linalg.cholesky(A)` | `make_LinalgSolverCholesky<...>().solve(A)` |
+| `np.linalg.cholesky(A).T`（上三角因子） | `make_LinalgSolverCholesky<...>().solve(A)` |
 | `np.linalg.qr(A)` | `make_LinalgSolverQR<...>()` + `solve/get_Q/get_R` |
 | `np.linalg.eig(A)` | `make_LinalgSolverEig*<...>()` + `solve_eigen_*/get_*` |
 | `np.sin(2*np.pi*time)` | `sin(2.0 * PI * time)` |
