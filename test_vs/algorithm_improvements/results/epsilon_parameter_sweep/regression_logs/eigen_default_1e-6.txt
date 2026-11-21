@@ -1,5 +1,0 @@
-TYPE:float
-FAIL: GMRES inverse iteration true residual
-TYPE:double
-FAIL: GMRES inverse iteration true residual
-eigen regression: 2 failures

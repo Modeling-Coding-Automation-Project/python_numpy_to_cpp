@@ -1,3 +1,0 @@
-TYPE:float
-TYPE:double
-eigen regression: 0 failures

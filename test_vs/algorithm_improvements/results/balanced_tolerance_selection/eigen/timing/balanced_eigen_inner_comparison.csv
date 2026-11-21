@@ -1,7 +1,0 @@
-baseline,profile,group,cases,median_case_ratio,sum_case_medians_ratio,material_speedup,material_slowdown
-candidate_inner_1e-3,candidate_inner_1e-4,all,140,1.004824708318126,1.0410468828512656,0,0
-candidate_inner_1e-3,candidate_inner_1e-4,general,116,1.006771538465562,1.0419508354648082,0,0
-candidate_inner_1e-3,candidate_inner_1e-4,jacobi,24,1.000869745004616,0.9890199115842516,0,0
-candidate_inner_1e-3,candidate_inner_2e-3,all,140,0.9980702897251932,0.9900925214221628,0,0
-candidate_inner_1e-3,candidate_inner_2e-3,general,116,0.9979184200246173,0.990126336229996,0,0
-candidate_inner_1e-3,candidate_inner_2e-3,jacobi,24,0.9997710019013781,0.9881463109580452,0,0

@@ -1,7 +1,0 @@
-TYPE:float
-TYPE:double
-TYPE:float
-TYPE:double
-TYPE:float
-TYPE:double
-GMRES regression failures: 0
