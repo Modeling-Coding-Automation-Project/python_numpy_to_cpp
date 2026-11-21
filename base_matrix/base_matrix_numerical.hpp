@@ -351,6 +351,68 @@ inline typename Scalar<T>::Real norm(const Vector<T, N> &value,
 }
 
 /**
+ * @brief Computes the reciprocal of the scaled Euclidean norm.
+ *
+ * Uses the same two-scan scaling as norm(), then evaluates
+ * 1 / (scale * sqrt(sum)) as rsqrt(sum) / scale, so no separate square root
+ * and division of the full norm is needed. Because sum is in [1, 2*N] after
+ * scaling, rsqrt is always well-conditioned. A zero or empty vector returns
+ * zero instead of dividing by zero.
+ *
+ * @tparam T The real or complex vector element type.
+ * @tparam N The fixed vector capacity.
+ * @param value The input vector.
+ * @param active_size The number of leading components to include, up to N.
+ * @return 1 / norm(value, active_size), or zero if the norm is zero.
+ */
+template <typename T, std::size_t N>
+inline typename Scalar<T>::Real norm_inv(const Vector<T, N> &value,
+                                         std::size_t active_size = N) {
+  using Real = typename Scalar<T>::Real;
+  Real scale = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < N; ++i) {
+    if (i < active_size) {
+      Real candidate = Scalar<T>::component_max(value[i]);
+      if (candidate > scale) {
+        scale = candidate;
+      }
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  VectorNorm::ScaleLoop<T, N, 0>::compute(value, active_size, scale);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  if (scale == static_cast<Real>(0)) {
+    return static_cast<Real>(0);
+  }
+  Real sum = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < N; ++i) {
+    if (i < active_size) {
+      sum += Scalar<T>::squared_abs(value[i] / scale);
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  VectorNorm::SquaredSumLoop<T, N, 0>::compute(value, active_size, scale, sum);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return Base::Math::rsqrt<Real>(
+             sum, static_cast<Real>(NORMALIZED_SQRT_DIVISION_MIN)) /
+         scale;
+}
+
+/**
  * @brief Computes scaled Givens coefficients for a real or complex pair.
  *
  * The rotation is [c s; -conj(s) c], where c is real. Its second component

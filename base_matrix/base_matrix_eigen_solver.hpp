@@ -538,7 +538,7 @@ public:
       if (!this->_vectors_initialized) {
         vector[k] += static_cast<T>(1);
       }
-      T length_inverse = static_cast<T>(1) / Numerical::norm(vector);
+      T length_inverse = Numerical::norm_inv(vector);
       for (std::size_t i = 0; i < M; ++i) {
         vector[i] = vector[i] * length_inverse;
       }
