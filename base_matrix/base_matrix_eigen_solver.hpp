@@ -1,39 +1,24 @@
 /**
  * @file base_matrix_eigen_solver.hpp
- * @brief Eigenvalue and Eigenvector Solver for Real and Complex Matrices
+ * @brief Fixed-budget Hessenberg QR and symmetric Jacobi eigensolvers.
  *
- * This header provides template classes for computing eigenvalues and
- * eigenvectors of square matrices, supporting both real and complex types. The
- * solvers use the QR algorithm (with optional Hessenberg reduction and
- * Wilkinson shift) for eigenvalue computation, and the inverse iteration method
- * for eigenvector computation. The implementation is compatible with both
- * std::vector and std::array storage, controlled by the
- * BASE_MATRIX_USE_STD_VECTOR_ macro.
- *
- * @note
- * tparam M is the number of rows in the matrix.
- * tparam N is the number of columns in the matrix.
- * Somehow Programming custom is vice versa,
- * but in this project, we use the mathematical custom.
+ * The general solvers accept real input. EigenSolverComplex also represents
+ * complex conjugate eigenvalue pairs. Inputs must be finite; the caller checks
+ * non-finite outputs. iteration_max is the total number of QR sweep slots per
+ * call, including continue_solving_eigen_values().
  */
 #ifndef BASE_MATRIX_EIGEN_SOLVER_HPP_
 #define BASE_MATRIX_EIGEN_SOLVER_HPP_
 
 #include "base_matrix_macros.hpp"
 
-#include "base_math.hpp"
-#include "base_matrix_complex.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_inverse.hpp"
-#include "base_matrix_lu_decomposition.hpp"
-#include "base_matrix_matrix.hpp"
-#include "base_matrix_variable_sparse.hpp"
-#include "base_matrix_vector.hpp"
-#include "base_utility.hpp"
+#include "base_matrix_numerical.hpp"
+#include "base_matrix_reciprocal.hpp"
 
 #include <array>
 #include <cstddef>
-#include <tuple>
 #include <vector>
 
 namespace Base {
@@ -41,1123 +26,1161 @@ namespace Matrix {
 
 const std::size_t DEFAULT_ITERATION_MAX_EIGEN_SOLVER = 10;
 const double DEFAULT_DIVISION_MIN_EIGEN_SOLVER = 1.0e-20;
-const double EIGEN_SMALL_VALUE = 1.0e-6;
+
+// Default inverse-iteration budget and its inner GMRES settings.
+constexpr std::size_t DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR = 3;
+constexpr std::size_t DEFAULT_GMRES_CYCLES_EIGEN_SOLVER = 1;
+constexpr std::size_t DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER = 1;
+// A nonpositive decay rate selects the fixed inner GMRES tolerance below.
+constexpr double DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER = 0.0;
+constexpr double DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER = 0.0;
+
+// Independent relative thresholds shared by float and double.
+constexpr double DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER = 1.0e-6;
+constexpr double DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE = 4.0e-6;
+constexpr double DEFAULT_EIGENVECTOR_RELATIVE_SHIFT = 3.0e-4;
+constexpr double DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE = 1.0e-3;
+// Preserve the existing name for the default inverse-iteration shift.
+const double EIGEN_SMALL_VALUE = DEFAULT_EIGENVECTOR_RELATIVE_SHIFT;
+// Number of QR sweeps between deterministic exceptional shifts.
+constexpr std::size_t EIGEN_EXCEPTIONAL_SHIFT_PERIOD = 8;
+
+// Keep tiny inputs representable by the dependency's float-based sqrt seed.
+// Input scaling and output compensation satisfy factor * compensation^2 = 1.
+constexpr double EIGEN_SQRT_INPUT_MIN = 1.0e-30;
+constexpr double EIGEN_SQRT_INPUT_SCALE_FACTOR = 1.0e30;
+constexpr double EIGEN_SQRT_OUTPUT_SCALE_FACTOR = 1.0e-15;
+// Eleven scaling slots cover IEEE float/double subnormals.
+constexpr std::size_t EIGEN_SQRT_SCALE_MAX_PASSES = 11;
 
 /**
- * @brief EigenSolverReal is a template class for computing eigenvalues and
- * eigenvectors of real square matrices.
+ * @brief Describes the latest eigenvalue or eigenvector solve outcome.
  *
- * This class provides methods to solve eigenvalues and eigenvectors using the
- * QR algorithm, with optional Hessenberg reduction and Wilkinson shift. It
- * supports both std::vector and std::array storage for eigenvalues.
- *
- * @tparam T Type of the matrix elements (e.g., float, double).
- * @tparam M Size of the square matrix (number of columns and rows).
+ * A converged status applies to the most recently completed solve stage. The
+ * separate eigenvalue and eigenvector flags retain their respective results.
  */
-template <typename T, std::size_t M> class EigenSolverReal {
-public:
-  /* Constructor */
+enum class EigenSolverStatus {
+  not_started,
+  not_converged,
+  converged,
+  complex_pair,
+  inner_failure,
+  zero_vector
+};
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR_
+namespace EigenOperation {
 
-  EigenSolverReal()
-      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), House_(), Hessen_(),
-        _eigen_values(M, static_cast<T>(0)),
-        _eigen_vectors(Matrix<T, M, M>::ones()),
-        _gmres_k_rho(static_cast<std::size_t>(0)),
-        _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
-
-#else // BASE_MATRIX_USE_STD_VECTOR_
-
-  EigenSolverReal()
-      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), House_(), Hessen_(),
-        _eigen_values(), _eigen_vectors(Matrix<T, M, M>::ones()),
-        _gmres_k_rho(static_cast<std::size_t>(0)),
-        _gmres_k_rep_num(static_cast<std::size_t>(0)) {}
-
-#endif // BASE_MATRIX_USE_STD_VECTOR_
-
-  /* Copy Constructor */
-  EigenSolverReal(const EigenSolverReal<T, M> &other)
-      : iteration_max(other.iteration_max), division_min(other.division_min),
-        small_value(other.small_value),
-        gmres_k_decay_rate(other.gmres_k_decay_rate), House_(other.House_),
-        Hessen_(other.Hessen_), _eigen_values(other._eigen_values),
-        _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
-        _gmres_k_rep_num(other._gmres_k_rep_num) {}
-
-  EigenSolverReal &operator=(const EigenSolverReal<T, M> &other) {
-    if (this != &other) {
-      this->iteration_max = other.iteration_max;
-      this->division_min = other.division_min;
-      this->small_value = other.small_value;
-      this->gmres_k_decay_rate = other.gmres_k_decay_rate;
-      this->House_ = other.House_;
-      this->Hessen_ = other.Hessen_;
-      this->_eigen_values = other._eigen_values;
-      this->_eigen_vectors = other._eigen_vectors;
-      this->_gmres_k_rho = other._gmres_k_rho;
-      this->_gmres_k_rep_num = other._gmres_k_rep_num;
-    }
-    return *this;
+/**
+ * @brief Evaluates a square root after scaling very small arguments.
+ *
+ * Positive inputs are scaled through a fixed number of slots before delegating
+ * to Base::Math::sqrt, and the result is compensated for that scaling. This
+ * helper does not select the dependency's square-root iteration count.
+ *
+ * @tparam T The real floating-point type.
+ * @param value The nonnegative value from a scaled eigenvalue calculation.
+ * @return The approximate square root, or zero for a nonpositive input.
+ */
+template <typename T> inline T square_root(T value) {
+  if (value <= static_cast<T>(0)) {
+    return static_cast<T>(0);
   }
-
-  /* Move Constructor */
-  EigenSolverReal(EigenSolverReal<T, M> &&other) noexcept
-      : iteration_max(std::move(other.iteration_max)),
-        division_min(std::move(other.division_min)),
-        small_value(std::move(other.small_value)),
-        gmres_k_decay_rate(std::move(other.gmres_k_decay_rate)),
-        House_(std::move(other.House_)), Hessen_(std::move(other.Hessen_)),
-        _eigen_values(std::move(other._eigen_values)),
-        _eigen_vectors(std::move(other._eigen_vectors)),
-        _gmres_k_rho(std::move(other._gmres_k_rho)),
-        _gmres_k_rep_num(std::move(other._gmres_k_rep_num)) {}
-
-  EigenSolverReal &operator=(EigenSolverReal<T, M> &&other) noexcept {
-    if (this != &other) {
-      this->iteration_max = std::move(other.iteration_max);
-      this->division_min = std::move(other.division_min);
-      this->small_value = std::move(other.small_value);
-      this->gmres_k_decay_rate = std::move(other.gmres_k_decay_rate);
-      this->House_ = std::move(other.House_);
-      this->Hessen_ = std::move(other.Hessen_);
-      this->_eigen_values = std::move(other._eigen_values);
-      this->_eigen_vectors = std::move(other._eigen_vectors);
-      this->_gmres_k_rho = std::move(other._gmres_k_rho);
-      this->_gmres_k_rep_num = std::move(other._gmres_k_rep_num);
-    }
-    return *this;
-  }
-
-public:
-  /* Function */
-
-  /**
-   * @brief Computes the eigenvalues of a square matrix using the QR method.
-   *
-   * This function takes a square matrix as input and computes its eigenvalues
-   * by internally invoking the QR algorithm. The results are stored within the
-   * class instance.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input square matrix whose eigenvalues are to be computed.
-   */
-  inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
-    this->_solve_values_with_qr_method(matrix);
-  }
-
-  /**
-   * @brief Continues solving eigenvalues using the QR method.
-   *
-   * This function continues the process of computing eigenvalues using the QR
-   * method, which may have been started previously. It is useful for iterative
-   * refinement of eigenvalue calculations.
-   */
-  inline void continue_solving_eigen_values(void) {
-    this->_continue_solving_values_with_qr_method();
-  }
-
-  /**
-   * @brief Computes the eigenvectors of a square matrix using the inverse
-   * iteration method.
-   *
-   * This function takes a square matrix as input and computes its eigenvectors
-   * by internally invoking the inverse iteration method. The results are stored
-   * within the class instance.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input square matrix whose eigenvectors are to be
-   * computed.
-   */
-  inline void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
-    this->_solve_vectors_with_inverse_iteration_method(matrix);
-  }
-
-  /**
-   * @brief Computes both eigenvalues and eigenvectors of a square matrix.
-   *
-   * This function computes the eigenvalues using the QR method and the
-   * eigenvectors using the inverse iteration method, storing the results
-   * within the class instance.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input square matrix whose eigenvalues and eigenvectors
-   * are to be computed.
-   */
-  inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
-    this->_solve_values_with_qr_method(matrix);
-    this->_solve_vectors_with_inverse_iteration_method(matrix);
-  }
-
-#ifdef BASE_MATRIX_USE_STD_VECTOR_
-  /**
-   * @brief Retrieves the computed eigenvalues.
-   * This function returns the eigenvalues computed by the QR method as a
-   * vector.
-   * @return std::vector<T> A vector containing the eigenvalues.
-   * */
-  inline std::vector<T> get_eigen_values(void) { return this->_eigen_values; }
-#else  // BASE_MATRIX_USE_STD_VECTOR_
-  /**
-   * @brief Retrieves the computed eigenvalues.
-   * This function returns the eigenvalues computed by the QR method as an
-   * array.
-   * @return std::array<T, M> An array containing the eigenvalues.
-   * */
-  inline std::array<T, M> get_eigen_values(void) { return this->_eigen_values; }
-#endif // BASE_MATRIX_USE_STD_VECTOR_
-
-  /**
-   * @brief Retrieves the computed eigenvectors.
-   * This function returns the eigenvectors computed by the inverse iteration
-   * method as a matrix.
-   * @return Matrix<T, M, M> A matrix containing the eigenvectors.
-   */
-  inline Matrix<T, M, M> get_eigen_vectors(void) {
-    return this->_eigen_vectors;
-  }
-
-  /**
-   * @brief Retrieves the Hessenberg form of the matrix.
-   * This function returns the Hessenberg form of the matrix computed during the
-   * QR method.
-   * @return Matrix<T, M, M> A matrix in Hessenberg form.
-   */
-  inline void set_iteration_max(const std::size_t &iteration_max_in) {
-    this->iteration_max = iteration_max_in;
-  }
-
-  /**
-   * @brief Sets the minimum division value for numerical stability.
-   * This function sets the minimum value used to avoid division by zero in
-   * numerical computations.
-   * @param division_min_in The minimum division value.
-   */
-  inline void set_division_min(const T &division_min_in) {
-    this->division_min = division_min_in;
-  }
-
-  /**
-   * @brief Sets a small value for numerical stability.
-   * This function sets a small value used to determine convergence in the QR
-   * method.
-   * @param small_value_in The small value for numerical stability.
-   */
-  inline void set_small_value(const T &small_value_in) {
-    this->small_value = small_value_in;
-  }
-
-  /**
-   * @brief Sets the decay rate for GMRES k.
-   * This function sets the decay rate for the GMRES k method, which is used in
-   * iterative methods for solving linear systems.
-   * @param gmres_k_decay_rate_in The decay rate for GMRES k.
-   */
-  inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
-    this->gmres_k_decay_rate = gmres_k_decay_rate_in;
-  }
-
-  /**
-   * @brief Retrieves the Hessenberg form of the matrix.
-   * This function returns the Hessenberg form of the matrix computed during the
-   * QR method.
-   * @return Matrix<T, M, M> A matrix in Hessenberg form.
-   */
-  inline Matrix<T, M, M> check_validity(const Matrix<T, M, M> &matrix) {
-    Matrix<T, M, M> result =
-        matrix * this->_eigen_vectors -
-        this->_eigen_vectors *
-            Base::Matrix::DiagMatrix<T, M>(this->_eigen_values);
-
-    return result;
-  }
-
-public:
-  /* Variable */
-  std::size_t iteration_max;
-  T division_min;
-  T small_value;
-  T gmres_k_decay_rate;
-
-protected:
-  /* Variable */
-  VariableSparseMatrix<T, M, M> House_;
-  Matrix<T, M, M> Hessen_;
-#ifdef BASE_MATRIX_USE_STD_VECTOR_
-  std::vector<T> _eigen_values;
-#else  // BASE_MATRIX_USE_STD_VECTOR_
-  std::array<T, M> _eigen_values;
-#endif // BASE_MATRIX_USE_STD_VECTOR_
-
-  Matrix<T, M, M> _eigen_vectors;
-
-  T _gmres_k_rho = static_cast<T>(0);
-  std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
-
-protected:
-  /* Function */
-
-  /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A The input square matrix whose eigenvalues are to be computed.
-   */
-  inline void _hessenberg(const Matrix<T, M, M> &A) {
-    Matrix<T, M, M> R = A;
-    std::array<T, M> u;
-
-    for (std::size_t k = 0; k < M - 2; ++k) {
-      T x_abs = static_cast<T>(0);
-      for (std::size_t i = k + 1; i < M; ++i) {
-        x_abs += R(i, k) * R(i, k);
+  T root_scale = static_cast<T>(1);
+  if (value < static_cast<T>(EIGEN_SQRT_INPUT_MIN)) {
+    // Multiplication starts below the scaling threshold and cannot overflow.
+    for (std::size_t pass = 0; pass < EIGEN_SQRT_SCALE_MAX_PASSES; ++pass) {
+      if (value < static_cast<T>(EIGEN_SQRT_INPUT_MIN)) {
+        value *= static_cast<T>(EIGEN_SQRT_INPUT_SCALE_FACTOR);
+        root_scale *= static_cast<T>(EIGEN_SQRT_OUTPUT_SCALE_FACTOR);
       }
-      if (Base::Utility::near_zero(x_abs, this->division_min)) {
-        continue;
-      }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
-
-      u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
-      T u_abs = u[k + 1] * u[k + 1];
-      for (std::size_t i = k + 2; i < M; ++i) {
-        u[i] = R(i, k);
-        u_abs += u[i] * u[i];
-      }
-
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
-
-      std::size_t H_value_count = 0;
-      for (std::size_t i = 0; i < k + 1; i++) {
-        this->House_.values[H_value_count] = static_cast<T>(1);
-        this->House_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k + 1; i < M; ++i) {
-        for (std::size_t j = k + 1; j < M; ++j) {
-
-          if (i == j) {
-            this->House_.values[H_value_count] = static_cast<T>(1);
-          }
-
-          this->House_.values[H_value_count] -=
-              static_cast<T>(2) * u[i] * u[j] /
-              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
-
-          this->House_.csr_indices[H_value_count] = j;
-          H_value_count++;
-        }
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      R = this->House_ * R * this->House_;
-    }
-
-    this->Hessen_ = R;
-  }
-
-  /**
-   * @brief Performs QR decomposition of a square matrix.
-   * This function computes the QR decomposition of the input matrix A using
-   * Householder reflections.
-   * @param A The input square matrix to be decomposed.
-   * @return std::tuple<Matrix<T, M, M>, Matrix<T, M, M>> A tuple containing
-   * the orthogonal matrix Q and the upper triangular matrix R.
-   */
-  inline std::tuple<Matrix<T, M, M>, Matrix<T, M, M>>
-  _qr_decomposition(const Matrix<T, M, M> &A) {
-    Matrix<T, M, M> Q = Matrix<T, M, M>::identity();
-    Matrix<T, M, M> R = A;
-    std::array<T, M> u;
-
-    for (std::size_t k = 0; k < M - 1; ++k) {
-      T x_abs = static_cast<T>(0);
-      for (std::size_t i = k; i < k + 2; ++i) {
-        x_abs += R(i, k) * R(i, k);
-      }
-      if (Base::Utility::near_zero(x_abs, this->division_min)) {
-        continue;
-      }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
-
-      u[k] = R(k, k) + Base::Utility::sign(R(k, k)) * x_abs;
-      u[k + 1] = R(k + 1, k);
-      T u_abs = u[k] * u[k] + u[k + 1] * u[k + 1];
-
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
-
-      std::size_t H_value_count = 0;
-      for (std::size_t i = 0; i < k; i++) {
-        this->House_.values[H_value_count] = static_cast<T>(1);
-        this->House_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k; i < k + 2; ++i) {
-        for (std::size_t j = k; j < k + 2; ++j) {
-
-          if (i == j) {
-            this->House_.values[H_value_count] = static_cast<T>(1);
-          }
-
-          this->House_.values[H_value_count] -=
-              static_cast<T>(2) * u[i] * u[j] /
-              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
-
-          this->House_.csr_indices[H_value_count] = j;
-          H_value_count++;
-        }
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k + 2; i < M; i++) {
-        this->House_.values[H_value_count] = static_cast<T>(1);
-        this->House_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      R = this->House_ * R;
-      Q = Q * this->House_;
-    }
-
-    return std::make_tuple(Q, R);
-  }
-
-  /**
-   * @brief Computes the Wilkinson shift for the QR method.
-   * This function computes the Wilkinson shift, which is used to improve the
-   * convergence of the QR algorithm for eigenvalue computation.
-   * @param A The input square matrix from which the Wilkinson shift is
-   * computed.
-   * @return T The computed Wilkinson shift value.
-   */
-  inline T _wilkinson_shift(const Matrix<T, M, M> &A) {
-    T a11 = A(M - 2, M - 2);
-    T a12 = A(M - 2, M - 1);
-    T a21 = A(M - 1, M - 2);
-    T a22 = A(M - 1, M - 1);
-    T c1 = a11 + a22;
-
-    T c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    T c2;
-    if (c2_2 >= 0) {
-      c2 = Base::Math::sqrt<T>(c2_2, this->division_min);
-    } else {
-      c2 = static_cast<T>(0);
-    }
-
-    T mu1 = static_cast<T>(0.5) * (c1 + c2);
-    T mu2 = static_cast<T>(0.5) * (c1 - c2);
-    T dmu1 = Base::Math::abs(a22 - mu1);
-    T dmu2 = Base::Math::abs(a22 - mu2);
-    return (dmu1 <= dmu2) ? mu1 : mu2;
-  }
-
-  /**
-   * @brief Continues solving eigenvalues using the QR method.
-   * This function continues the process of computing eigenvalues using the QR
-   * method, which may have been started previously. It is useful for iterative
-   * refinement of eigenvalue calculations.
-   */
-  inline void _continue_solving_values_with_qr_method(void) {
-    for (std::size_t k = M; k > 1; --k) {
-      Matrix<T, M, M> A = this->Hessen_;
-
-      for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
-        T mu = this->_wilkinson_shift(A);
-        for (std::size_t i = 0; i < k; ++i) {
-          A(i, i) -= mu;
-        }
-
-        Matrix<T, M, M> Q;
-        Matrix<T, M, M> R;
-        std::tie(Q, R) = this->_qr_decomposition(A);
-        A = Base::Matrix::matrix_multiply_Upper_triangular_A_mul_B(R, Q);
-
-        for (std::size_t i = 0; i < k; ++i) {
-          A(i, i) += mu;
-        }
-
-        if (Base::Math::abs(A(k - 1, k - 2)) < this->division_min) {
-          break;
-        }
-      }
-
-      this->_eigen_values[k - 1] = A(k - 1, k - 1);
-      if (k == 2) {
-        this->_eigen_values[0] = A(0, 0);
-      }
-      this->Hessen_ = A;
     }
   }
+  return root_scale *
+         Base::Math::sqrt<T>(value, static_cast<T>(EIGEN_SQRT_INPUT_MIN));
+}
 
+/**
+ * @brief Supplies real-valued operations for a trailing-block QR shift.
+ * @tparam S The real floating-point type used for the shift.
+ */
+template <typename S> struct Shift {
+  using T = S;
   /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A0 The input square matrix whose eigenvalues are to be computed.
+   * @brief Returns a real scalar without conversion.
+   * @param value The real scalar.
+   * @return The input value.
    */
-  inline void _solve_values_with_qr_method(const Matrix<T, M, M> &A0) {
-    this->_hessenberg(A0);
-
-    this->_continue_solving_values_with_qr_method();
-  }
-
+  static inline T real_part(T value) { return value; }
   /**
-   * @brief Solves eigenvectors using the inverse iteration method.
-   * This function computes the eigenvectors of a square matrix using the
-   * inverse iteration method, which is applied to each eigenvalue computed by
-   * the QR method.
-   * @param matrix The input square matrix whose eigenvectors are to be
-   * computed.
+   * @brief Evaluates a real discriminant root and identifies a complex pair.
+   * @param value The real discriminant of the scaled trailing block.
+   * @param complex_pair Set to true when the discriminant is negative.
+   * @return The square root for a nonnegative discriminant, otherwise zero.
    */
-  inline void
-  _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
-
-    for (std::size_t k = 0; k < M; ++k) {
-      // A - mu * I
-      Matrix<T, M, M> A = matrix;
-      T mu = this->_eigen_values[k] + this->small_value;
-      for (std::size_t i = 0; i < M; ++i) {
-        A(i, i) -= mu;
-      }
-
-      // initial eigen vector
-      Vector<T, M> x(this->_eigen_vectors.data[k]);
-
-      // inverse iteration method
-      for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
-        Vector<T, M> x_old = x;
-
-        std::tie(x, this->_gmres_k_rho, this->_gmres_k_rep_num) =
-            Base::Matrix::gmres_k(A, x_old, x, this->gmres_k_decay_rate,
-                                  this->division_min);
-
-        Base::Matrix::vector_normalize(x, this->division_min);
-
-        // conversion check
-        bool converged = true;
-        for (std::size_t i = 0; i < M; ++i) {
-          if (Base::Math::abs(Base::Math::abs(x[i]) -
-                              Base::Math::abs(x_old[i])) > this->division_min) {
-            converged = false;
-            break;
-          }
-        }
-
-        if (converged) {
-          break;
-        }
-      }
-
-      Base::Utility::copy<T, 0, M, 0, M, M>(x.data,
-                                            this->_eigen_vectors.data[k]);
-    }
+  static inline T square_root_scalar(T value, bool &complex_pair) {
+    complex_pair = value < static_cast<T>(0);
+    return square_root(value);
   }
 };
 
 /**
- * @brief EigenSolverComplex is a template class for computing eigenvalues and
- * eigenvectors of complex square matrices.
- *
- * This class provides methods to solve eigenvalues and eigenvectors using the
- * QR algorithm, with optional Hessenberg reduction and Wilkinson shift. It
- * supports both std::vector and std::array storage for eigenvalues.
- *
- * @tparam T Type of the matrix elements (e.g., float, double).
- * @tparam M Size of the square matrix (number of columns and rows).
+ * @brief Supplies complex-valued operations for a trailing-block QR shift.
+ * @tparam T The real floating-point component type.
  */
-template <typename T, std::size_t M> class EigenSolverComplex {
+template <typename T> struct Shift<Complex<T>> {
+  /**
+   * @brief Extracts the real component of a complex scalar.
+   * @param value The complex scalar.
+   * @return The real component.
+   */
+  static inline T real_part(const Complex<T> &value) { return value.real; }
+  /**
+   * @brief Computes a scaled complex square root for shift selection.
+   *
+   * Component scaling avoids directly squaring a large or tiny input. The
+   * returned root has a nonnegative real component; a negative real input
+   * with zero imaginary part selects the root with positive imaginary part.
+   *
+   * @param value The complex discriminant of the scaled trailing block.
+   * @param complex_pair Set to false because this scalar type supports the
+   * complex root.
+   * @return The approximate complex square root, or zero for a zero input.
+   */
+  static inline Complex<T> square_root_scalar(const Complex<T> &value,
+                                              bool &complex_pair) {
+    complex_pair = false;
+    T scale = Numerical::Scalar<Complex<T>>::component_max(value);
+    if (scale == static_cast<T>(0)) {
+      return Complex<T>();
+    }
+    Complex<T> normalized = value / scale;
+    T magnitude = Numerical::Scalar<Complex<T>>::magnitude(normalized);
+    T dominant = square_root((magnitude + Base::Math::abs(normalized.real)) *
+                             static_cast<T>(0.5));
+    T root_scale = square_root(scale);
+    // dominant is nonzero because normalized has a component of magnitude 1.
+    T minor = normalized.imag / (static_cast<T>(2) * dominant);
+    if (normalized.real >= static_cast<T>(0)) {
+      return Complex<T>(root_scale * dominant, root_scale * minor);
+    }
+    T sign = normalized.imag < static_cast<T>(0) ? static_cast<T>(-1)
+                                                 : static_cast<T>(1);
+    return Complex<T>(root_scale * Base::Math::abs(minor),
+                      root_scale * sign * dominant);
+  }
+};
+
+/**
+ * @brief Reduces a real matrix to upper Hessenberg form by similarity updates.
+ *
+ * Householder reflectors are applied directly from both sides without forming
+ * dense reflector matrices. The result may use real or complex storage, but
+ * the input and the reflectors are real.
+ *
+ * @tparam S The scalar type of the Hessenberg matrix.
+ * @tparam T The real floating-point input type.
+ * @tparam M The matrix dimension.
+ * @param input The real square matrix to reduce.
+ * @param result The destination for the Hessenberg approximation.
+ * @param division_min The positive denominator floor for reflector scaling.
+ */
+template <typename S, typename T, std::size_t M>
+inline void hessenberg(const Matrix<T, M, M> &input, Matrix<S, M, M> &result,
+                       T division_min) {
+  for (std::size_t j = 0; j < M; ++j) {
+    for (std::size_t i = 0; i < M; ++i) {
+      result(i, j) = S(input(i, j));
+    }
+  }
+  Vector<T, M> reflector;
+  for (std::size_t k = 0; k < M; ++k) {
+    if (k + 2 < M) {
+      T scale = static_cast<T>(0);
+      for (std::size_t i = 0; i < M; ++i) {
+        if (i > k) {
+          T candidate = Base::Math::abs(Shift<S>::real_part(result(i, k)));
+          if (candidate > scale) {
+            scale = candidate;
+          }
+        }
+      }
+      if (scale > static_cast<T>(0)) {
+        const Detail::RepeatedDivision<T> divide_by_scale(scale);
+        T sum = static_cast<T>(0);
+        for (std::size_t i = 0; i < M; ++i) {
+          reflector[i] = static_cast<T>(0);
+          if (i > k) {
+            reflector[i] =
+                divide_by_scale.apply(Shift<S>::real_part(result(i, k)));
+            sum += reflector[i] * reflector[i];
+          }
+        }
+        T length = Numerical::normalized_sqrt(sum);
+        T sign = reflector[k + 1] < static_cast<T>(0) ? static_cast<T>(-1)
+                                                      : static_cast<T>(1);
+        reflector[k + 1] += sign * length;
+        T square = static_cast<T>(0);
+        for (std::size_t i = 0; i < M; ++i) {
+          square += reflector[i] * reflector[i];
+        }
+        // The scaled reflector has a nonzero leading component.
+        T tau = static_cast<T>(2) /
+                Base::Utility::avoid_zero_divide(square, division_min);
+        for (std::size_t j = 0; j < M; ++j) {
+          S product = S();
+          for (std::size_t i = 0; i < M; ++i) {
+            product += result(i, j) * reflector[i];
+          }
+          for (std::size_t i = 0; i < M; ++i) {
+            if (i > k) {
+              result(i, j) -= product * (tau * reflector[i]);
+            }
+          }
+        }
+        for (std::size_t i = 0; i < M; ++i) {
+          S product = S();
+          for (std::size_t j = 0; j < M; ++j) {
+            product += result(i, j) * reflector[j];
+          }
+          for (std::size_t j = 0; j < M; ++j) {
+            if (j > k) {
+              result(i, j) -= product * (tau * reflector[j]);
+            }
+          }
+        }
+        for (std::size_t i = 0; i < M; ++i) {
+          if (i > k + 1) {
+            result(i, k) = S();
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * @brief Selects a shift from the trailing two-by-two block.
+ *
+ * The block is scaled before evaluating its two eigenvalue candidates. The
+ * candidate nearest its final diagonal entry is selected. With real storage,
+ * a negative discriminant instead yields the pair's real center and sets the
+ * complex-pair flag; that center is not itself an eigenvalue of the block.
+ *
+ * @tparam S The real or complex scalar type.
+ * @tparam M The matrix dimension.
+ * @param matrix The current Hessenberg matrix.
+ * @param end The final block index, which must satisfy 1 <= end < M.
+ * @param complex_pair Receives the unsupported-complex-pair flag for real S.
+ * @return The selected shift, or zero when the trailing block is zero.
+ */
+template <typename S, std::size_t M>
+inline S trailing_shift(const Matrix<S, M, M> &matrix, std::size_t end,
+                        bool &complex_pair) {
+  using T = typename Numerical::Scalar<S>::Real;
+  T scale = static_cast<T>(0);
+  for (std::size_t i = end - 1; i <= end; ++i) {
+    for (std::size_t j = end - 1; j <= end; ++j) {
+      T candidate = Numerical::Scalar<S>::component_max(matrix(i, j));
+      if (candidate > scale) {
+        scale = candidate;
+      }
+    }
+  }
+  if (scale == static_cast<T>(0)) {
+    complex_pair = false;
+    return S();
+  }
+
+  const Detail::RepeatedDivision<T> divide_by_scale(scale);
+  S a = divide_by_scale.apply(matrix(end - 1, end - 1));
+  S b = divide_by_scale.apply(matrix(end - 1, end));
+  S c = divide_by_scale.apply(matrix(end, end - 1));
+  S d = divide_by_scale.apply(matrix(end, end));
+
+  S half_difference = (a - d) * static_cast<T>(0.5);
+  S root = Shift<S>::square_root_scalar(
+      half_difference * half_difference + b * c, complex_pair);
+  S center = (a + d) * static_cast<T>(0.5);
+  S first = center + root;
+  S second = center - root;
+  return (Numerical::Scalar<S>::magnitude(first - d) <
+                  Numerical::Scalar<S>::magnitude(second - d)
+              ? first
+              : second) *
+         scale;
+}
+
+/**
+ * @brief Applies one implicit shifted QR sweep to an active Hessenberg block.
+ *
+ * Givens similarities chase the bulge through the selected block. Each row
+ * and column update includes its coupling to the rest of the matrix.
+ *
+ * @tparam S The real or complex scalar type.
+ * @tparam M The matrix dimension.
+ * @param matrix The Hessenberg matrix updated in place.
+ * @param begin The first active index, with begin < end.
+ * @param end The last active index, which must be less than M.
+ * @param shift The scalar shift used to introduce the first bulge.
+ */
+template <typename S, std::size_t M>
+inline void implicit_qr_sweep(Matrix<S, M, M> &matrix, std::size_t begin,
+                              std::size_t end, const S &shift) {
+  using T = typename Numerical::Scalar<S>::Real;
+  for (std::size_t k = 0; k + 1 < M; ++k) {
+    if (k >= begin && k < end) {
+      S first = k == begin ? matrix(k, k) - shift : matrix(k, k - 1);
+      S second = k == begin ? matrix(k + 1, k) : matrix(k + 1, k - 1);
+      T cosine;
+      S sine;
+      Numerical::givens(first, second, cosine, sine);
+      S sine_conjugate = Numerical::Scalar<S>::conjugate(sine);
+      for (std::size_t j = 0; j < M; ++j) {
+        S upper = matrix(k, j);
+        S lower = matrix(k + 1, j);
+        matrix(k, j) = upper * cosine + sine * lower;
+        matrix(k + 1, j) = -sine_conjugate * upper + lower * cosine;
+      }
+      for (std::size_t i = 0; i < M; ++i) {
+        S left = matrix(i, k);
+        S right = matrix(i, k + 1);
+        matrix(i, k) = left * cosine + right * sine_conjugate;
+        matrix(i, k + 1) = -left * sine + right * cosine;
+      }
+      if (k > begin) {
+        matrix(k + 1, k - 1) = S();
+      }
+    }
+  }
+}
+
+/**
+ * @brief Shares bounded QR and inverse-iteration logic between general solvers.
+ *
+ * Real input is reduced to Hessenberg form, followed by shifted QR sweeps.
+ * Eigenvectors use the stored eigenvalue estimates and bounded inner GMRES
+ * solves. A completed call may remain unconverged; status and residual getters
+ * expose that outcome. Eigenvalues and their vector columns are not sorted.
+ *
+ * @tparam S The real or complex scalar type used for the results.
+ * @tparam T The real floating-point input and tolerance type.
+ * @tparam M The positive matrix dimension.
+ * @tparam InnerK The fixed inner GMRES capacity, satisfying 1 <= InnerK <= M.
+ */
+template <typename S, typename T, std::size_t M, std::size_t InnerK = M>
+class Solver {
 public:
-/* Constructor */
+  static_assert(M > 0, "An eigensolver requires a nonempty matrix.");
+  static_assert(InnerK > 0 && InnerK <= M, "Inner GMRES requires 1 <= K <= M.");
 #ifdef BASE_MATRIX_USE_STD_VECTOR_
+  using EigenValues_Type = std::vector<S>;
+#else
+  using EigenValues_Type = std::array<S, M>;
+#endif
 
-  EigenSolverComplex()
-      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+  /**
+   * @brief Initializes iteration budgets, tolerances, and unsolved state.
+   *
+   * Eigenvalue storage is fixed unless BASE_MATRIX_USE_STD_VECTOR_ is enabled.
+   */
+  inline Solver()
+      : iteration_max(M * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        iteration_max_for_eigen_vector(
+            DEFAULT_ITERATION_MULTIPLIER_EIGEN_VECTOR *
+            DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        gmres_k_dimension(InnerK),
+        gmres_cycles(DEFAULT_GMRES_CYCLES_EIGEN_SOLVER),
+        gmres_orthogonalization_passes(
+            DEFAULT_GMRES_ORTHOGONALIZATION_PASSES_EIGEN_SOLVER),
         division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), House_(), House_comp_(),
-        Hessen_(), _eigen_values(M, static_cast<Complex<T>>(0)),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
-        _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
-
-#else // BASE_MATRIX_USE_STD_VECTOR_
-
-  EigenSolverComplex()
-      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        iteration_max_for_eigen_vector(3 * DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
-        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
-        small_value(static_cast<T>(EIGEN_SMALL_VALUE)),
-        gmres_k_decay_rate(static_cast<T>(0)), House_(), House_comp_(),
-        Hessen_(), _eigen_values(),
-        _eigen_vectors(Matrix<Complex<T>, M, M>::ones()),
-        _gmres_k_rho(static_cast<T>(0)), _gmres_k_rep_num(0) {}
-
-#endif // BASE_MATRIX_USE_STD_VECTOR_
+        small_value(static_cast<T>(DEFAULT_EIGENVECTOR_RELATIVE_SHIFT)),
+        gmres_k_decay_rate(
+            static_cast<T>(DEFAULT_GMRES_DECAY_RATE_EIGEN_SOLVER)),
+        relative_tolerance(
+            static_cast<T>(DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER)),
+        absolute_tolerance(
+            static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
+        eigenvector_tolerance(
+            static_cast<T>(DEFAULT_EIGENVECTOR_RELATIVE_TOLERANCE)),
+        Hessen_(), _eigen_values(), _eigen_vectors(),
+        _status(EigenSolverStatus::not_started), _values_converged(false),
+        _vectors_converged(false), _threshold_adjusted(false),
+        _inner_failed(false), _initialized(false), _vectors_initialized(false),
+        _scale(0), _eigenvector_residual(0), _sweeps(0) {
+#ifdef BASE_MATRIX_USE_STD_VECTOR_
+    this->_eigen_values.resize(M);
+#endif
+  }
 
   /* Copy Constructor */
-  EigenSolverComplex(const EigenSolverComplex<T, M> &other)
-      : iteration_max(other.iteration_max),
-        iteration_max_for_eigen_vector(other.iteration_max_for_eigen_vector),
-        division_min(other.division_min), small_value(other.small_value),
-        gmres_k_decay_rate(other.gmres_k_decay_rate), House_(other.House_),
-        House_comp_(other.House_comp_), Hessen_(other.Hessen_),
-        _eigen_values(other._eigen_values),
-        _eigen_vectors(other._eigen_vectors), _gmres_k_rho(other._gmres_k_rho),
-        _gmres_k_rep_num(other._gmres_k_rep_num) {}
-
-  EigenSolverComplex &operator=(const EigenSolverComplex<T, M> &other) {
-    if (this != &other) {
-      this->iteration_max = other.iteration_max;
-      this->iteration_max_for_eigen_vector =
-          other.iteration_max_for_eigen_vector;
-      this->division_min = other.division_min;
-      this->small_value = other.small_value;
-      this->gmres_k_decay_rate = other.gmres_k_decay_rate;
-      this->House_ = other.House_;
-      this->House_comp_ = other.House_comp_;
-      this->Hessen_ = other.Hessen_;
-      this->_eigen_values = other._eigen_values;
-      this->_eigen_vectors = other._eigen_vectors;
-      this->_gmres_k_rho = other._gmres_k_rho;
-      this->_gmres_k_rep_num = other._gmres_k_rep_num;
-    }
-    return *this;
-  }
+  Solver(const Solver &) = default;
+  Solver &operator=(const Solver &) = default;
 
   /* Move Constructor */
-  EigenSolverComplex(EigenSolverComplex<T, M> &&other) noexcept
-      : iteration_max(std::move(other.iteration_max)),
-        iteration_max_for_eigen_vector(
-            std::move(other.iteration_max_for_eigen_vector)),
-        division_min(std::move(other.division_min)),
-        small_value(std::move(other.small_value)),
-        gmres_k_decay_rate(std::move(other.gmres_k_decay_rate)),
-        House_(std::move(other.House_)),
-        House_comp_(std::move(other.House_comp_)),
-        Hessen_(std::move(other.Hessen_)),
-        _eigen_values(std::move(other._eigen_values)),
-        _eigen_vectors(std::move(other._eigen_vectors)),
-        _gmres_k_rho(std::move(other._gmres_k_rho)),
-        _gmres_k_rep_num(std::move(other._gmres_k_rep_num)) {}
-
-  EigenSolverComplex &operator=(EigenSolverComplex<T, M> &&other) noexcept {
-    if (this != &other) {
-      this->iteration_max = std::move(other.iteration_max);
-      this->iteration_max_for_eigen_vector =
-          std::move(other.iteration_max_for_eigen_vector);
-      this->division_min = std::move(other.division_min);
-      this->small_value = std::move(other.small_value);
-      this->gmres_k_decay_rate = std::move(other.gmres_k_decay_rate);
-      this->House_ = std::move(other.House_);
-      this->House_comp_ = std::move(other.House_comp_);
-      this->Hessen_ = std::move(other.Hessen_);
-      this->_eigen_values = std::move(other._eigen_values);
-      this->_eigen_vectors = std::move(other._eigen_vectors);
-      this->_gmres_k_rho = std::move(other._gmres_k_rho);
-      this->_gmres_k_rep_num = std::move(other._gmres_k_rep_num);
-    }
-    return *this;
-  }
-
-public:
-  /* Function */
+  Solver(Solver &&) = default;
+  Solver &operator=(Solver &&) = default;
 
   /**
-   * @brief Computes the eigenvalues of a complex square matrix using the QR
-   * method.
+   * @brief Starts an eigenvalue solve from a real square matrix.
    *
-   * This function takes a complex square matrix as input and computes its
-   * eigenvalues by internally invoking the QR algorithm. The results are stored
-   * within the class instance.
+   * Rebuilds the Hessenberg matrix, resets the accumulated sweep count and
+   * eigenvector initialization, and runs one iteration_max budget. Use the
+   * convergence flag before interpreting the diagonal estimates as converged
+   * eigenvalues.
    *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input complex square matrix whose eigenvalues are to be
-   * computed.
+   * @param matrix The finite real input matrix.
    */
   inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
-    this->_solve_with_qr_method(matrix);
+    this->_threshold_adjusted = false;
+    this->_validate_threshold();
+    this->_scale = static_cast<T>(0);
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i < M; ++i) {
+        T candidate = Base::Math::abs(matrix(i, j));
+        if (candidate > this->_scale) {
+          this->_scale = candidate;
+        }
+      }
+    }
+    hessenberg(matrix, this->Hessen_, this->division_min);
+    this->_initialized = true;
+    this->_values_converged = false;
+    this->_vectors_converged = false;
+    this->_vectors_initialized = false;
+    this->_status = EigenSolverStatus::not_converged;
+    this->_sweeps = 0;
+    this->continue_solving_eigen_values();
   }
 
   /**
-   * @brief Continues solving eigenvalues using the QR method.
+   * @brief Spends another QR budget on the stored Hessenberg matrix.
    *
-   * This function continues the process of computing eigenvalues using the QR
-   * method, which may have been started previously. It is useful for iterative
-   * refinement of eigenvalue calculations.
+   * Processes iteration_max sweep slots, skipping work after deflation or an
+   * unsupported real complex pair. The current diagonal is then copied to the
+   * eigenvalue estimates. Does nothing before solve_eigen_values initializes
+   * the matrix.
    */
-  inline void continue_solving_eigen_values(void) {
-    this->_continue_solving_values_with_qr_method();
+  inline void continue_solving_eigen_values() {
+    this->_validate_threshold();
+    if (this->_initialized) {
+      for (std::size_t sweep = 0; sweep < this->iteration_max; ++sweep) {
+        std::size_t begin = 0;
+        std::size_t end = 0;
+        bool active = this->_find_active_block(begin, end);
+        if (active && this->_status != EigenSolverStatus::complex_pair) {
+          bool complex_pair = false;
+          S shift = trailing_shift(this->Hessen_, end, complex_pair);
+          if (complex_pair && end == begin + 1) {
+            this->_status = EigenSolverStatus::complex_pair;
+          } else {
+            // A real trailing pair in a larger real block can be complex;
+            // its real part is a valid real shift, but is not an eigenvalue.
+            // A deterministic exceptional shift breaks zero-shift cycles
+            // (for example, a cyclic permutation / companion matrix).
+            if ((this->_sweeps + 1) % EIGEN_EXCEPTIONAL_SHIFT_PERIOD == 0) {
+              T offset =
+                  Numerical::Scalar<S>::magnitude(this->Hessen_(end, end - 1));
+              shift = this->Hessen_(end, end) + offset;
+            }
+            implicit_qr_sweep(this->Hessen_, begin, end, shift);
+            ++this->_sweeps;
+          }
+        }
+      }
+      std::size_t begin = 0;
+      std::size_t end = 0;
+      this->_values_converged = !this->_find_active_block(begin, end);
+      if (this->_values_converged) {
+        this->_status = EigenSolverStatus::converged;
+      }
+      for (std::size_t i = 0; i < M; ++i) {
+        this->_eigen_values[i] = this->Hessen_(i, i);
+      }
+    }
   }
 
   /**
-   * @brief Computes the eigenvectors of a complex square matrix using the
-   * inverse iteration method.
+   * @brief Refines eigenvector columns by bounded shifted inverse iteration.
    *
-   * This function takes a complex square matrix as input and computes its
-   * eigenvectors by internally invoking the inverse iteration method. The
-   * results are stored within the class instance.
+   * Call solve_eigen_values first with the same matrix. Inverse iterations run
+   * only when the eigenvalues have converged. Repeated calls reuse the stored
+   * vector directions. Zero candidates and inner GMRES breakdown are reported
+   * through status flags; a returned direction does not guarantee convergence.
    *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input complex square matrix whose eigenvectors are to be
-   * computed.
+   * @param matrix The real matrix corresponding to the stored eigenvalues.
    */
   inline void solve_eigen_vectors(const Matrix<T, M, M> &matrix) {
-    this->_solve_vectors_with_inverse_iteration_method(matrix);
+    this->_validate_threshold();
+    this->_vectors_converged = this->_values_converged;
+    if (this->_values_converged) {
+      this->_status = EigenSolverStatus::not_converged;
+    }
+    this->_inner_failed = false;
+    this->_eigenvector_residual = static_cast<T>(0);
+    // Residuals are divided by the input scale, not by the eigenvalue alone.
+    T scale =
+        this->_scale > static_cast<T>(0) ? this->_scale : static_cast<T>(1);
+    const Detail::RepeatedDivision<T> divide_by_scale(scale);
+    T perturbation = Base::Math::abs(this->small_value) * scale;
+    if (perturbation < this->division_min) {
+      perturbation = this->division_min;
+    }
+    for (std::size_t k = 0; k < M; ++k) {
+      Matrix<S, M, M> shifted;
+      for (std::size_t j = 0; j < M; ++j) {
+        for (std::size_t i = 0; i < M; ++i) {
+          shifted(i, j) = S(matrix(i, j));
+        }
+        shifted(j, j) -= this->_eigen_values[k] + perturbation;
+      }
+      Vector<S, M> vector;
+      // Distinct deterministic starting vectors avoid a shared zero projection.
+      for (std::size_t i = 0; i < M; ++i) {
+        vector[i] = this->_vectors_initialized ? this->_eigen_vectors(i, k)
+                                               : S(static_cast<T>(1));
+      }
+      if (!this->_vectors_initialized) {
+        vector[k] += static_cast<T>(1);
+      }
+      T length_inverse = Numerical::norm_inv(vector);
+      for (std::size_t i = 0; i < M; ++i) {
+        vector[i] = vector[i] * length_inverse;
+      }
+      GmresSolver<S, M, InnerK> inner;
+      inner.division_min = this->division_min;
+      inner.cycles = this->gmres_cycles;
+      inner.krylov_dimension = this->gmres_k_dimension;
+      inner.orthogonalization_passes = this->gmres_orthogonalization_passes;
+      inner.relative_tolerance =
+          this->gmres_k_decay_rate > static_cast<T>(0)
+              ? this->gmres_k_decay_rate
+              : static_cast<T>(DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE);
+      bool active = this->_values_converged;
+      bool converged = false;
+      for (std::size_t iteration = 0;
+           iteration < this->iteration_max_for_eigen_vector; ++iteration) {
+        if (active) {
+          Vector<S, M> initial;
+          Vector<S, M> candidate = inner.solve(shifted, vector, initial);
+          const T candidate_length = Numerical::norm(candidate);
+          if (candidate_length <= this->division_min) {
+            active = false;
+            this->_status = EigenSolverStatus::zero_vector;
+          } else {
+            const Detail::RepeatedDivision<T> divide_by_length(
+                candidate_length);
+            for (std::size_t i = 0; i < M; ++i) {
+              vector[i] = divide_by_length.apply(candidate[i]);
+            }
+            T residual = divide_by_scale.apply(
+                this->_vector_residual(matrix, vector, this->_eigen_values[k]));
+            converged = residual <= this->eigenvector_tolerance;
+            if (converged) {
+              active = false;
+            }
+            if (inner.has_breakdown() && !inner.is_converged()) {
+              this->_inner_failed = true;
+              // Preserve the computed direction but never report inner success.
+            }
+          }
+        }
+      }
+      T residual = divide_by_scale.apply(
+          this->_vector_residual(matrix, vector, this->_eigen_values[k]));
+      if (residual > this->_eigenvector_residual) {
+        this->_eigenvector_residual = residual;
+      }
+      this->_vectors_converged = this->_vectors_converged && converged;
+      for (std::size_t i = 0; i < M; ++i) {
+        this->_eigen_vectors(i, k) = vector[i];
+      }
+    }
+    this->_vectors_initialized = true;
+    if (this->_inner_failed) {
+      this->_vectors_converged = false;
+      this->_status = EigenSolverStatus::inner_failure;
+    } else if (this->_values_converged &&
+               this->_status != EigenSolverStatus::zero_vector) {
+      this->_status = this->_vectors_converged
+                          ? EigenSolverStatus::converged
+                          : EigenSolverStatus::not_converged;
+    }
   }
 
   /**
-   * @brief Computes both eigenvalues and eigenvectors of a complex square
-   * matrix.
-   *
-   * This function computes the eigenvalues using the QR method and the
-   * eigenvectors using the inverse iteration method, storing the results
-   * within the class instance.
-   *
-   * @tparam T The data type of the matrix elements.
-   * @tparam M The dimension of the square matrix.
-   * @param matrix The input complex square matrix whose eigenvalues and
-   * eigenvectors are to be computed.
+   * @brief Starts the eigenvalue solve and then computes eigenvector estimates.
+   * @param matrix The finite real input matrix for both solve stages.
    */
   inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
-    this->_solve_with_qr_method(matrix);
-    this->_solve_vectors_with_inverse_iteration_method(matrix);
+    this->solve_eigen_values(matrix);
+    this->solve_eigen_vectors(matrix);
   }
 
-#ifdef BASE_MATRIX_USE_STD_VECTOR_
   /**
-   * @brief Retrieves the computed eigenvalues.
-   * This function returns the eigenvalues computed by the QR method as a
-   * vector.
-   * @return std::vector<Complex<T>> A vector containing the eigenvalues.
-   * */
-  inline std::vector<Complex<T>> get_eigen_values(void) {
-    return this->_eigen_values;
-  }
-#else  // BASE_MATRIX_USE_STD_VECTOR_
-  /**
-   * @brief Retrieves the computed eigenvalues.
-   * This function returns the eigenvalues computed by the QR method as an
-   * array.
-   * @return std::array<Complex<T>, M> An array containing the eigenvalues.
-   * */
-  inline std::array<Complex<T>, M> get_eigen_values(void) {
-    return this->_eigen_values;
-  }
-#endif // BASE_MATRIX_USE_STD_VECTOR_
-
-  /**
-   * @brief Retrieves the computed eigenvectors.
-   * This function returns the eigenvectors computed by the inverse iteration
-   * method as a matrix.
-   * @return Matrix<Complex<T>, M, M> A matrix containing the eigenvectors.
+   * @brief Copies the current eigenvalue estimates in their stored order.
+   * @return The diagonal estimates, which may still be unconverged.
    */
-  inline Matrix<Complex<T>, M, M> get_eigen_vectors(void) {
+  inline EigenValues_Type get_eigen_values() const {
+    return this->_eigen_values;
+  }
+  /**
+   * @brief Copies the current eigenvector estimates.
+   * @return A matrix whose columns correspond to the stored eigenvalues.
+   */
+  inline Matrix<S, M, M> get_eigen_vectors() const {
     return this->_eigen_vectors;
   }
-
   /**
-   * @brief Retrieves the Hessenberg form of the matrix.
-   * This function returns the Hessenberg form of the matrix computed during the
-   * QR method.
-   * @return Matrix<Complex<T>, M, M> A matrix in Hessenberg form.
+   * @brief Copies the Hessenberg matrix at the current QR stage.
+   * @return The stored matrix after reduction and any completed sweeps.
    */
-  inline void set_iteration_max(const std::size_t &iteration_max_in) {
-    this->iteration_max = iteration_max_in;
+  inline Matrix<S, M, M> get_hessenberg() const { return this->Hessen_; }
+  /**
+   * @brief Retrieves the status of the latest solve stage.
+   * @return The stored eigenvalue or eigenvector status.
+   */
+  inline EigenSolverStatus get_status() const { return this->_status; }
+  /**
+   * @brief Reports whether all Hessenberg subdiagonals were deflated.
+   * @return True when the latest eigenvalue stage met its deflation criteria.
+   */
+  inline bool eigen_values_converged() const { return this->_values_converged; }
+  /**
+   * @brief Reports whether all eigenvector columns met the solve criteria.
+   * @return True when the eigenvalues and vector residuals passed and no inner
+   * failure was recorded.
+   */
+  inline bool eigen_vectors_converged() const {
+    return this->_vectors_converged;
   }
-
   /**
-   * @brief Sets the maximum number of iterations for eigenvector computation.
-   * This function sets the maximum number of iterations for computing
-   * eigenvectors using the inverse iteration method.
-   * @param iteration_max_for_eigen_vector_in The maximum number of iterations
-   * for eigenvector computation.
+   * @brief Reports correction of a nonpositive denominator threshold.
+   * @return True if a correction occurred since the latest eigenvalue restart.
    */
-  inline void set_iteration_max_for_eigen_vector(
-      const std::size_t &iteration_max_for_eigen_vector_in) {
-    this->iteration_max_for_eigen_vector = iteration_max_for_eigen_vector_in;
+  inline bool threshold_was_adjusted() const {
+    return this->_threshold_adjusted;
   }
-
   /**
-   * @brief Sets the minimum division value for numerical stability.
-   * This function sets the minimum value used to avoid division by zero in
-   * numerical computations.
-   * @param division_min_in The minimum division value.
+   * @brief Reports an unconverged inner GMRES breakdown during vector solving.
+   * @return The failure flag from the latest eigenvector solve.
    */
-  inline void set_division_min(const T &division_min_in) {
-    this->division_min = division_min_in;
+  inline bool inner_solve_failed() const { return this->_inner_failed; }
+  /**
+   * @brief Retrieves the largest scaled residual of the stored vector columns.
+   * @return The largest norm of A*v-lambda*v divided by the input maximum
+   * absolute entry, using scale one for a zero input matrix.
+   */
+  inline T get_eigenvector_residual() const {
+    return this->_eigenvector_residual;
   }
+  /**
+   * @brief Retrieves the number of QR sweeps actually applied.
+   * @return The count accumulated since solve_eigen_values last restarted.
+   */
+  inline std::size_t get_sweep_count() const { return this->_sweeps; }
 
   /**
-   * @brief Sets a small value for numerical stability.
-   * This function sets a small value used to determine convergence in the QR
-   * method.
-   * @param small_value_in The small value for numerical stability.
+   * @brief Sets the QR sweep-slot budget for each start or continuation call.
+   * @param value The maximum number of sweep slots per call, including zero.
    */
-  inline void set_small_value(const T &small_value_in) {
-    this->small_value = small_value_in;
+  inline void set_iteration_max(const std::size_t &value) {
+    this->iteration_max = value;
   }
-
   /**
-   * @brief Sets the decay rate for GMRES k.
-   * This function sets the decay rate for the GMRES k method, which is used in
-   * iterative methods for solving linear systems.
-   * @param gmres_k_decay_rate_in The decay rate for GMRES k.
+   * @brief Sets the inverse-iteration budget for each eigenvector column.
+   * @param value The number of iteration slots per column and call.
    */
-  inline void set_gmres_k_decay_rate(const T &gmres_k_decay_rate_in) {
-    this->gmres_k_decay_rate = gmres_k_decay_rate_in;
+  inline void set_iteration_max_for_eigen_vector(const std::size_t &value) {
+    this->iteration_max_for_eigen_vector = value;
   }
-
   /**
-   * @brief Retrieves the Hessenberg form of the matrix.
-   * This function returns the Hessenberg form of the matrix computed during the
-   * QR method.
-   * @return Matrix<Complex<T>, M, M> A matrix in Hessenberg form.
+   * @brief Stores the denominator-protection and minimum-shift threshold.
+   * @param value The requested threshold; a nonpositive value is replaced by
+   * the default when a solve stage validates its configuration.
    */
-  inline Matrix<Complex<T>, M, M>
-  check_validity(const Matrix<T, M, M> &matrix) {
-    Matrix<Complex<T>, M, M> result =
-        Base::Matrix::convert_matrix_real_to_complex(matrix) *
-            this->_eigen_vectors -
-        this->_eigen_vectors *
-            Base::Matrix::DiagMatrix<Complex<T>, M>(this->_eigen_values);
-
+  inline void set_division_min(const T &value) { this->division_min = value; }
+  /**
+   * @brief Sets the relative perturbation used by shifted inverse iteration.
+   * @param value The shift coefficient; its absolute value is scaled by the
+   * input magnitude and the resulting perturbation is floored by division_min.
+   */
+  inline void set_small_value(const T &value) { this->small_value = value; }
+  /**
+   * @brief Sets the relative residual tolerance for inner GMRES solves.
+   * @param value A positive tolerance, or a nonpositive value to select
+   * DEFAULT_INNER_GMRES_RELATIVE_TOLERANCE.
+   */
+  inline void set_gmres_k_decay_rate(const T &value) {
+    this->gmres_k_decay_rate = value;
+  }
+  /**
+   * @brief Stores the work budget of each inner GMRES solve.
+   * @param dimension The requested Krylov size, clamped by GMRES to
+   * [1, InnerK].
+   * @param cycles The maximum cycle count, including the first cycle.
+   * @param passes The orthogonalization setting: at most one selects one pass,
+   * and larger values select two passes.
+   */
+  inline void set_gmres_budget(std::size_t dimension, std::size_t cycles,
+                               std::size_t passes) {
+    this->gmres_k_dimension = dimension;
+    this->gmres_cycles = cycles;
+    this->gmres_orthogonalization_passes = passes;
+  }
+  /**
+   * @brief Forms the residual matrix for the stored eigenpairs.
+   *
+   * This diagnostic returns A*V-V*D without modifying convergence flags.
+   *
+   * @param matrix The real input matrix associated with the stored estimates.
+   * @return A matrix whose j-th column is A*v_j-lambda_j*v_j.
+   */
+  inline Matrix<S, M, M> check_validity(const Matrix<T, M, M> &matrix) const {
+    Matrix<S, M, M> result;
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i < M; ++i) {
+        for (std::size_t k = 0; k < M; ++k) {
+          result(i, j) += this->_eigen_vectors(k, j) * matrix(i, k);
+        }
+        result(i, j) -= this->_eigen_vectors(i, j) * this->_eigen_values[j];
+      }
+    }
     return result;
   }
 
-public:
-  /* Variable */
   std::size_t iteration_max;
   std::size_t iteration_max_for_eigen_vector;
+  std::size_t gmres_k_dimension;
+  std::size_t gmres_cycles;
+  std::size_t gmres_orthogonalization_passes;
   T division_min;
   T small_value;
   T gmres_k_decay_rate;
+  T relative_tolerance;
+  T absolute_tolerance;
+  T eigenvector_tolerance;
 
 protected:
-  /* Variable */
-  VariableSparseMatrix<T, M, M> House_;
-  VariableSparseMatrix<Complex<T>, M, M> House_comp_;
-  Matrix<Complex<T>, M, M> Hessen_;
-#ifdef BASE_MATRIX_USE_STD_VECTOR_
-  std::vector<Complex<T>> _eigen_values;
-#else  // BASE_MATRIX_USE_STD_VECTOR_
-  std::array<Complex<T>, M> _eigen_values;
-#endif // BASE_MATRIX_USE_STD_VECTOR_
-  Matrix<Complex<T>, M, M> _eigen_vectors;
-  T _gmres_k_rho = static_cast<T>(0);
-  std::size_t _gmres_k_rep_num = static_cast<std::size_t>(0);
-
-protected:
-  /* Function */
+  Matrix<S, M, M> Hessen_;
+  EigenValues_Type _eigen_values;
+  Matrix<S, M, M> _eigen_vectors;
+  EigenSolverStatus _status;
+  bool _values_converged;
+  bool _vectors_converged;
+  bool _threshold_adjusted;
+  bool _inner_failed;
+  bool _initialized;
+  bool _vectors_initialized;
+  T _scale;
+  T _eigenvector_residual;
+  std::size_t _sweeps;
 
   /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A The input square matrix whose eigenvalues are to be computed.
+   * @brief Replaces a nonpositive denominator threshold and records correction.
    */
-  inline void _hessenberg(const Matrix<T, M, M> &A) {
-    Matrix<T, M, M> R = A;
-    std::array<T, M> u;
-
-    for (std::size_t k = 0; k < M - 2; ++k) {
-      T x_abs = static_cast<T>(0);
-      for (std::size_t i = k + 1; i < M; ++i) {
-        x_abs += R(i, k) * R(i, k);
-      }
-      if (Base::Utility::near_zero(x_abs, this->division_min)) {
-        continue;
-      }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
-
-      u[k + 1] = R(k + 1, k) + Base::Utility::sign(R(k + 1, k)) * x_abs;
-      T u_abs = u[k + 1] * u[k + 1];
-      for (std::size_t i = k + 2; i < M; ++i) {
-        u[i] = R(i, k);
-        u_abs += u[i] * u[i];
-      }
-
-      std::fill(this->House_.values.begin(), this->House_.values.end(),
-                static_cast<T>(0));
-      std::fill(this->House_.csr_indices.begin(),
-                this->House_.csr_indices.end(), static_cast<std::size_t>(0));
-      std::fill(this->House_.csr_pointers.begin(),
-                this->House_.csr_pointers.end(), static_cast<std::size_t>(0));
-
-      std::size_t H_value_count = 0;
-      for (std::size_t i = 0; i < k + 1; i++) {
-        this->House_.values[H_value_count] = static_cast<T>(1);
-        this->House_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k + 1; i < M; ++i) {
-        for (std::size_t j = k + 1; j < M; ++j) {
-
-          if (i == j) {
-            this->House_.values[H_value_count] = static_cast<T>(1);
-          }
-
-          this->House_.values[H_value_count] -=
-              static_cast<T>(2) * u[i] * u[j] /
-              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
-
-          this->House_.csr_indices[H_value_count] = j;
-          H_value_count++;
-        }
-        this->House_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      R = this->House_ * R * this->House_;
-    }
-
-    this->Hessen_ = Base::Matrix::convert_matrix_real_to_complex(R);
-  }
-
-  /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A The input square matrix whose eigenvalues are to be computed.
-   */
-  inline void _qr_decomposition(Matrix<Complex<T>, M, M> &Q,
-                                Matrix<Complex<T>, M, M> &R,
-                                const Matrix<Complex<T>, M, M> &A) {
-    R = A;
-    std::array<Complex<T>, M> u;
-
-    for (std::size_t k = 0; k < M - 1; ++k) {
-      T x_abs = static_cast<T>(0);
-      for (std::size_t i = k; i < k + 2; ++i) {
-        x_abs += Base::Matrix::complex_abs_sq(R(i, k));
-      }
-      if (Base::Utility::near_zero(x_abs, this->division_min)) {
-        continue;
-      }
-      x_abs = Base::Math::sqrt<T>(x_abs, this->division_min);
-
-      u[k] = R(k, k) +
-             Base::Matrix::complex_sign(R(k, k), this->division_min) * x_abs;
-      u[k + 1] = R(k + 1, k);
-      T u_abs = Base::Matrix::complex_abs_sq(u[k]) +
-                Base::Matrix::complex_abs_sq(u[k + 1]);
-
-      std::fill(this->House_comp_.values.begin(),
-                this->House_comp_.values.end(), Complex<T>());
-      std::fill(this->House_comp_.csr_indices.begin(),
-                this->House_comp_.csr_indices.end(),
-                static_cast<std::size_t>(0));
-      std::fill(this->House_comp_.csr_pointers.begin(),
-                this->House_comp_.csr_pointers.end(),
-                static_cast<std::size_t>(0));
-
-      std::size_t H_value_count = 0;
-      for (std::size_t i = 0; i < k; i++) {
-        this->House_comp_.values[H_value_count] = static_cast<T>(1);
-        this->House_comp_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_comp_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k; i < k + 2; ++i) {
-        for (std::size_t j = k; j < k + 2; ++j) {
-
-          if (i == j) {
-            this->House_comp_.values[H_value_count] = static_cast<T>(1);
-          }
-
-          this->House_comp_.values[H_value_count] -=
-              static_cast<T>(2) *
-              (u[i] * Base::Matrix::complex_conjugate(u[j])) /
-              Base::Utility::avoid_zero_divide(u_abs, this->division_min);
-
-          this->House_comp_.csr_indices[H_value_count] = j;
-          H_value_count++;
-        }
-        this->House_comp_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      for (std::size_t i = k + 2; i < M; i++) {
-        this->House_comp_.values[H_value_count] = static_cast<T>(1);
-        this->House_comp_.csr_indices[H_value_count] = i;
-        H_value_count++;
-
-        this->House_comp_.csr_pointers[i + 1] = H_value_count;
-      }
-
-      R = this->House_comp_ * R;
-      Q = Q * this->House_comp_;
+  inline void _validate_threshold() {
+    if (this->division_min <= static_cast<T>(0)) {
+      this->division_min = static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER);
+      this->_threshold_adjusted = true;
     }
   }
 
   /**
-   * @brief Computes the Wilkinson shift for the QR method.
-   * This function computes the Wilkinson shift, which is used to improve the
-   * convergence of the QR algorithm for eigenvalue computation.
-   * @param A The input square matrix from which the Wilkinson shift is
-   * computed.
-   * @return Complex<T> The computed Wilkinson shift value.
+   * @brief Deflates small subdiagonals and locates the bottommost active block.
+   *
+   * Deflation uses the configured absolute and relative tolerances. The input
+   * scale is used when the adjacent diagonal magnitudes both vanish.
+   *
+   * @param begin Receives the first active index when a block is found.
+   * @param end Receives the last active index when a block is found.
+   * @return True if a nonzero subdiagonal remains; output indices should only
+   * be used in that case.
    */
-  inline Complex<T> _wilkinson_shift(const Matrix<Complex<T>, M, M> &A) {
-    Complex<T> a11 = A(M - 2, M - 2);
-    Complex<T> a12 = A(M - 2, M - 1);
-    Complex<T> a21 = A(M - 1, M - 2);
-    Complex<T> a22 = A(M - 1, M - 1);
-    Complex<T> c1 = a11 + a22;
-
-    Complex<T> c2_2 = (a11 - a22) * (a11 - a22) + static_cast<T>(4) * a12 * a21;
-    Complex<T> c2 = Base::Matrix::complex_sqrt(c2_2, this->division_min);
-
-    Complex<T> mu1 = static_cast<T>(0.5) * (c1 + c2);
-    Complex<T> mu2 = static_cast<T>(0.5) * (c1 - c2);
-
-    if (Base::Matrix::complex_abs(a22 - mu1) <=
-        Base::Matrix::complex_abs(a22 - mu2)) {
-      return mu1;
-    } else {
-      return mu2;
+  inline bool _find_active_block(std::size_t &begin, std::size_t &end) {
+    T absolute = this->absolute_tolerance > static_cast<T>(0)
+                     ? this->absolute_tolerance
+                     : static_cast<T>(0);
+    T relative = this->relative_tolerance > static_cast<T>(0)
+                     ? this->relative_tolerance
+                     : static_cast<T>(0);
+    for (std::size_t i = 1; i < M; ++i) {
+      T local_scale =
+          Numerical::Scalar<S>::magnitude(this->Hessen_(i - 1, i - 1)) +
+          Numerical::Scalar<S>::magnitude(this->Hessen_(i, i));
+      if (local_scale == static_cast<T>(0)) {
+        local_scale = this->_scale;
+      }
+      if (Numerical::Scalar<S>::magnitude(this->Hessen_(i, i - 1)) <=
+          absolute + relative * local_scale) {
+        this->Hessen_(i, i - 1) = S();
+      }
     }
+    bool found = false;
+    // The last nonzero subdiagonal identifies the bottommost active block.
+    for (std::size_t i = 1; i < M; ++i) {
+      if (Numerical::Scalar<S>::component_max(this->Hessen_(i, i - 1)) >
+          static_cast<T>(0)) {
+        end = i;
+        found = true;
+      }
+    }
+    begin = 0;
+    for (std::size_t i = 1; i < M; ++i) {
+      if (i <= end && Numerical::Scalar<S>::component_max(
+                          this->Hessen_(i, i - 1)) == static_cast<T>(0)) {
+        begin = i;
+      }
+    }
+    return found;
   }
 
   /**
-   * @brief Solves eigenvalues using the QR method.
-   * This function computes the eigenvalues of a square matrix using the QR
-   * algorithm, with optional Hessenberg reduction and Wilkinson shift.
-   * @param A0 The input square matrix whose eigenvalues are to be computed.
+   * @brief Evaluates an eigenpair residual before input-scale normalization.
+   * @param matrix The real matrix whose eigenpair is being checked.
+   * @param vector The eigenvector estimate.
+   * @param value The corresponding eigenvalue estimate.
+   * @return The scaled-norm implementation's estimate of
+   * ||A*vector-value*vector||.
    */
-  inline void _solve_with_qr_method(const Matrix<T, M, M> &A0) {
-    this->_hessenberg(A0);
-
-    this->_continue_solving_values_with_qr_method();
+  inline T _vector_residual(const Matrix<T, M, M> &matrix,
+                            const Vector<S, M> &vector, const S &value) const {
+    Vector<S, M> residual;
+    for (std::size_t i = 0; i < M; ++i) {
+      for (std::size_t j = 0; j < M; ++j) {
+        residual[i] += vector[j] * matrix(i, j);
+      }
+      residual[i] -= vector[i] * value;
+    }
+    return Numerical::norm(residual);
   }
+};
+
+} // namespace EigenOperation
+
+/**
+ * @brief Computes real eigenpairs of a real matrix with bounded QR iteration.
+ *
+ * An isolated complex conjugate pair is reported as complex_pair rather than
+ * represented by real eigenvalues. Use EigenSolverComplex for that spectrum.
+ *
+ * @tparam T The real floating-point input and result type.
+ * @tparam M The positive matrix dimension.
+ * @tparam InnerK The fixed inner GMRES capacity, satisfying 1 <= InnerK <= M.
+ */
+template <typename T, std::size_t M, std::size_t InnerK = M>
+class EigenSolverReal : public EigenOperation::Solver<T, T, M, InnerK> {
+public:
+  EigenSolverReal() = default;
+
+  /* Copy Constructor */
+  EigenSolverReal(const EigenSolverReal &) = default;
+  EigenSolverReal &operator=(const EigenSolverReal &) = default;
+
+  /* Move Constructor */
+  EigenSolverReal(EigenSolverReal &&) = default;
+  EigenSolverReal &operator=(EigenSolverReal &&) = default;
+};
+
+/**
+ * @brief Computes complex eigenpairs of a real matrix with bounded iteration.
+ *
+ * Complex storage represents conjugate eigenvalue pairs and the corresponding
+ * inverse-iteration vector estimates. The input matrix remains real.
+ *
+ * @tparam T The real floating-point input and component type.
+ * @tparam M The positive matrix dimension.
+ * @tparam InnerK The fixed inner GMRES capacity, satisfying 1 <= InnerK <= M.
+ */
+template <typename T, std::size_t M, std::size_t InnerK = M>
+class EigenSolverComplex
+    : public EigenOperation::Solver<Complex<T>, T, M, InnerK> {
+public:
+  EigenSolverComplex() = default;
+
+  /* Copy Constructor */
+  EigenSolverComplex(const EigenSolverComplex &) = default;
+  EigenSolverComplex &operator=(const EigenSolverComplex &) = default;
+
+  /* Move Constructor */
+  EigenSolverComplex(EigenSolverComplex &&) = default;
+  EigenSolverComplex &operator=(EigenSolverComplex &&) = default;
+};
+
+/**
+ * @brief Cyclic Jacobi for caller-guaranteed symmetric input.
+ *
+ * The upper triangle is packed. ComputeVectors=false removes the dense
+ * eigenvector storage, and get_eigen_vectors is only available in the true
+ * mode. Symmetry is a caller precondition and is not checked internally.
+ *
+ * @tparam T The real floating-point element and tolerance type.
+ * @tparam M The positive matrix dimension.
+ * @tparam ComputeVectors Whether to accumulate the Jacobi eigenvector matrix.
+ */
+template <typename T, std::size_t M, bool ComputeVectors = true>
+class EigenSolverSymmetric {
+public:
+  static_assert(M > 0, "An eigensolver requires a nonempty matrix.");
+  /**
+   * @brief Initializes the Jacobi budget, tolerances, and packed workspaces.
+   */
+  inline EigenSolverSymmetric()
+      : iteration_max(DEFAULT_ITERATION_MAX_EIGEN_SOLVER),
+        division_min(static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER)),
+        relative_tolerance(
+            static_cast<T>(DEFAULT_RELATIVE_TOLERANCE_EIGEN_SOLVER)),
+        absolute_tolerance(
+            static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
+        _triangle(), _vectors(), _converged(false), _threshold_adjusted(false),
+        _scale(0) {}
+
+  /* Copy Constructor */
+  EigenSolverSymmetric(const EigenSolverSymmetric &) = default;
+  EigenSolverSymmetric &operator=(const EigenSolverSymmetric &) = default;
+
+  /* Move Constructor */
+  EigenSolverSymmetric(EigenSolverSymmetric &&) = default;
+  EigenSolverSymmetric &operator=(EigenSolverSymmetric &&) = default;
 
   /**
-   * @brief Continues solving eigenvalues using the QR method.
-   * This function continues the process of computing eigenvalues using the QR
-   * method, which may have been started previously. It is useful for iterative
-   * refinement of eigenvalue calculations.
+   * @brief Starts cyclic Jacobi iteration from a symmetric real matrix.
+   *
+   * Loads only the upper triangle, initializes the optional eigenvectors to
+   * identity, and spends one iteration_max sweep budget. Symmetry is assumed;
+   * the lower triangle is not inspected.
+   *
+   * @param matrix The finite symmetric real input matrix.
    */
-  inline void _continue_solving_values_with_qr_method(void) {
-    for (std::size_t k = M; k > 1; --k) {
-      Matrix<Complex<T>, M, M> A = this->Hessen_;
-
-      for (std::size_t iter = 0; iter < this->iteration_max; ++iter) {
-        Complex<T> mu = this->_wilkinson_shift(A);
-        for (std::size_t i = 0; i < k; ++i) {
-          A(i, i) -= mu;
-        }
-
-        Matrix<Complex<T>, M, M> Q = Matrix<Complex<T>, M, M>::identity();
-        Matrix<Complex<T>, M, M> R;
-        this->_qr_decomposition(Q, R, A);
-        A = Base::Matrix::matrix_multiply_Upper_triangular_A_mul_B(R, Q);
-
-        for (std::size_t i = 0; i < k; ++i) {
-          A(i, i) += mu;
-        }
-
-        if (Base::Matrix::complex_abs(A(k - 1, k - 2)) < this->division_min) {
-          break;
+  inline void solve_eigen_values(const Matrix<T, M, M> &matrix) {
+    this->_threshold_adjusted = false;
+    if (this->division_min <= static_cast<T>(0)) {
+      this->division_min = static_cast<T>(DEFAULT_DIVISION_MIN_EIGEN_SOLVER);
+      this->_threshold_adjusted = true;
+    }
+    this->_scale = static_cast<T>(0);
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i <= j; ++i) {
+        this->_at(i, j) = matrix(i, j);
+        T candidate = Base::Math::abs(matrix(i, j));
+        if (candidate > this->_scale) {
+          this->_scale = candidate;
         }
       }
-
-      this->_eigen_values[k - 1] = A(k - 1, k - 1);
-      if (k == 2) {
-        this->_eigen_values[0] = A(0, 0);
-      }
-      this->Hessen_ = A;
     }
-  }
-
-  /**
-   * @brief Solves eigenvectors using the inverse iteration method.
-   * This function computes the eigenvectors of a square matrix using the
-   * inverse iteration method, which is applied to each eigenvalue computed by
-   * the QR method.
-   * @param matrix The input square matrix whose eigenvectors are to be
-   * computed.
-   */
-  inline void
-  _solve_vectors_with_inverse_iteration_method(const Matrix<T, M, M> &matrix) {
-
-    for (std::size_t k = 0; k < M; ++k) {
-      // A - mu * I
-      Matrix<Complex<T>, M, M> A =
-          Base::Matrix::convert_matrix_real_to_complex(matrix);
-
-      Complex<T> mu = this->_eigen_values[k] + this->small_value;
+    for (std::size_t i = 0; i < this->_vectors.size(); ++i) {
+      this->_vectors[i] = static_cast<T>(0);
+    }
+    if (ComputeVectors) {
       for (std::size_t i = 0; i < M; ++i) {
-        A(i, i) -= mu;
+        this->_vectors[i * M + i] = static_cast<T>(1);
+      }
+    }
+    this->continue_solving_eigen_values();
+  }
+
+  /**
+   * @brief Applies another cyclic Jacobi budget to the stored upper triangle.
+   *
+   * Call solve_eigen_values first to load the matrix. Each sweep visits all
+   * index pairs, and rotations already within tolerance do no work. The final
+   * off-diagonal entries determine the convergence flag.
+   */
+  inline void continue_solving_eigen_values() {
+    for (std::size_t sweep = 0; sweep < this->iteration_max; ++sweep) {
+      for (std::size_t p = 0; p < M; ++p) {
+        for (std::size_t q = p + 1; q < M; ++q) {
+          this->_rotate(p, q);
+        }
+      }
+    }
+    this->_converged = true;
+    T tolerance = this->_tolerance();
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i < j; ++i) {
+        if (Base::Math::abs(this->_at(i, j)) > tolerance) {
+          this->_converged = false;
+        }
+      }
+    }
+  }
+
+  /**
+   * @brief Starts the symmetric solve, accumulating vectors when enabled.
+   *
+   * This shares the eigenvalue solve path. ComputeVectors=false still omits
+   * eigenvector storage and updates.
+   *
+   * @param matrix The finite symmetric real input matrix.
+   */
+  inline void solve_eigen_values_and_vectors(const Matrix<T, M, M> &matrix) {
+    this->solve_eigen_values(matrix);
+  }
+  /**
+   * @brief Copies the current unsorted Jacobi eigenvalue estimates.
+   * @return The packed diagonal entries, which may still be unconverged.
+   */
+  inline std::array<T, M> get_eigen_values() const {
+    std::array<T, M> values = {};
+    for (std::size_t i = 0; i < M; ++i) {
+      values[i] = this->_at(i, i);
+    }
+    return values;
+  }
+  /**
+   * @brief Copies the accumulated Jacobi eigenvector estimates.
+   * @tparam Enabled Enables this getter only when vector storage is present.
+   * @return A matrix whose columns correspond to get_eigen_values().
+   */
+  template <bool Enabled = ComputeVectors>
+  inline
+      typename std::enable_if<Enabled && ComputeVectors, Matrix<T, M, M>>::type
+      get_eigen_vectors() const {
+    Matrix<T, M, M> result;
+    for (std::size_t j = 0; j < M; ++j) {
+      for (std::size_t i = 0; i < M; ++i) {
+        result(i, j) = this->_vectors[j * M + i];
+      }
+    }
+    return result;
+  }
+  /**
+   * @brief Reports whether every stored off-diagonal entry is within tolerance.
+   * @return The convergence flag from the latest Jacobi budget.
+   */
+  inline bool eigen_values_converged() const { return this->_converged; }
+  /**
+   * @brief Reports correction of a nonpositive denominator threshold.
+   * @return True if solve_eigen_values replaced the requested threshold.
+   */
+  inline bool threshold_was_adjusted() const {
+    return this->_threshold_adjusted;
+  }
+  /**
+   * @brief Sets the number of cyclic sweep slots per solve or continuation.
+   * @param value The nonnegative sweep budget.
+   */
+  inline void set_iteration_max(const std::size_t &value) {
+    this->iteration_max = value;
+  }
+  /**
+   * @brief Stores the solver's denominator-threshold configuration.
+   *
+   * A nonpositive value is corrected on the next solve_eigen_values call.
+   * Off-diagonal convergence is controlled by the separate absolute and
+   * relative tolerances.
+   *
+   * @param value The requested denominator threshold.
+   */
+  inline void set_division_min(const T &value) { this->division_min = value; }
+
+  std::size_t iteration_max;
+  T division_min;
+  T relative_tolerance;
+  T absolute_tolerance;
+
+protected:
+  std::array<T, M *(M + 1) / 2> _triangle;
+  std::array<T, ComputeVectors ? M * M : 0> _vectors;
+  bool _converged;
+  bool _threshold_adjusted;
+  T _scale;
+
+  /**
+   * @brief Accesses a symmetric entry through its packed upper-triangle slot.
+   * @param i The row index, less than M.
+   * @param j The column index, less than M.
+   * @return A writable reference shared by entries (i, j) and (j, i).
+   */
+  inline T &_at(std::size_t i, std::size_t j) {
+    return i <= j ? this->_triangle[j * (j + 1) / 2 + i]
+                  : this->_triangle[i * (i + 1) / 2 + j];
+  }
+  /**
+   * @brief Reads a symmetric entry from packed upper-triangle storage.
+   * @param i The row index, less than M.
+   * @param j The column index, less than M.
+   * @return A constant reference shared by entries (i, j) and (j, i).
+   */
+  inline const T &_at(std::size_t i, std::size_t j) const {
+    return i <= j ? this->_triangle[j * (j + 1) / 2 + i]
+                  : this->_triangle[i * (i + 1) / 2 + j];
+  }
+
+  /**
+   * @brief Combines the absolute tolerance and input-scaled relative tolerance.
+   * @return The nonnegative off-diagonal threshold; negative settings
+   * contribute zero rather than reducing the other contribution.
+   */
+  inline T _tolerance() const {
+    T absolute = this->absolute_tolerance > static_cast<T>(0)
+                     ? this->absolute_tolerance
+                     : static_cast<T>(0);
+    T relative = this->relative_tolerance > static_cast<T>(0)
+                     ? this->relative_tolerance
+                     : static_cast<T>(0);
+    return absolute + relative * this->_scale;
+  }
+
+  /**
+   * @brief Eliminates one significant off-diagonal entry by a Jacobi rotation.
+   *
+   * Entries already within tolerance are left unchanged. The rotation updates
+   * the packed matrix and, when enabled, the two corresponding vector columns.
+   *
+   * @param p The first index, satisfying p < q.
+   * @param q The second index, less than M.
+   */
+  inline void _rotate(std::size_t p, std::size_t q) {
+    T off_diagonal = this->_at(p, q);
+    T tolerance = this->_tolerance();
+    if (Base::Math::abs(off_diagonal) > tolerance) {
+      T scale = Base::Math::abs(this->_at(p, p));
+      T candidate = Base::Math::abs(this->_at(q, q));
+      if (candidate > scale) {
+        scale = candidate;
+      }
+      candidate = Base::Math::abs(off_diagonal);
+      if (candidate > scale) {
+        scale = candidate;
       }
 
-      // initial eigen vector
-      Vector<Complex<T>, M> x(this->_eigen_vectors.data[k]);
+      const Detail::RepeatedDivision<T> divide_by_scale(scale);
+      T delta = (divide_by_scale.apply(this->_at(q, q)) -
+                 divide_by_scale.apply(this->_at(p, p))) *
+                static_cast<T>(0.5);
+      T off_scaled = divide_by_scale.apply(off_diagonal);
 
-      // inverse iteration method
-      for (std::size_t iter = 0; iter < this->iteration_max_for_eigen_vector;
-           ++iter) {
-        Vector<Complex<T>, M> x_old = x;
-
-        auto gmres_result = Base::Matrix::complex_gmres_k(
-            A, x_old, x, this->gmres_k_decay_rate, this->division_min);
-        x = std::get<0>(gmres_result);
-        this->_gmres_k_rho = std::get<1>(gmres_result);
-        this->_gmres_k_rep_num = std::get<2>(gmres_result);
-
-        Base::Matrix::complex_vector_normalize(x, this->division_min);
-
-        // conversion check
-        bool converged = true;
+      T denominator =
+          Base::Math::abs(delta) +
+          EigenOperation::square_root(delta * delta + off_scaled * off_scaled);
+      T tangent = denominator == static_cast<T>(0) ? static_cast<T>(0)
+                                                   : off_scaled / denominator;
+      if (delta < static_cast<T>(0)) {
+        tangent = -tangent;
+      }
+      T cosine = static_cast<T>(1) / Numerical::normalized_sqrt(
+                                         static_cast<T>(1) + tangent * tangent);
+      T sine = tangent * cosine;
+      T first_diagonal = this->_at(p, p);
+      T second_diagonal = this->_at(q, q);
+      this->_at(p, p) = first_diagonal - tangent * off_diagonal;
+      this->_at(q, q) = second_diagonal + tangent * off_diagonal;
+      this->_at(p, q) = static_cast<T>(0);
+      for (std::size_t i = 0; i < M; ++i) {
+        if (i != p && i != q) {
+          T first = this->_at(i, p);
+          T second = this->_at(i, q);
+          this->_at(i, p) = cosine * first - sine * second;
+          this->_at(i, q) = sine * first + cosine * second;
+        }
+      }
+      if (ComputeVectors) {
         for (std::size_t i = 0; i < M; ++i) {
-          if (Base::Math::abs(Base::Math::abs(x[i].real) -
-                              Base::Math::abs(x_old[i].real)) +
-                  Base::Math::abs(Base::Math::abs(x[i].imag) -
-                                  Base::Math::abs(x_old[i].imag)) >
-              this->division_min) {
-            converged = false;
-            break;
-          }
+          T first = this->_vectors[p * M + i];
+          T second = this->_vectors[q * M + i];
+          this->_vectors[p * M + i] = cosine * first - sine * second;
+          this->_vectors[q * M + i] = sine * first + cosine * second;
         }
-
-        if (converged) {
-          break;
-        }
-      }
-
-      for (std::size_t i = 0; i < M; ++i) {
-        this->_eigen_vectors(i, k) = x[i];
       }
     }
   }

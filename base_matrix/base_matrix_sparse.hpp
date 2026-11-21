@@ -111,11 +111,15 @@ public:
       : values{}, csr_indices{}, csr_pointers{} {
 
     // This may cause runtime error if the size of values is larger than V.
-    std::copy(values.begin(), values.end(), this->values.begin());
-    std::copy(csr_indices.begin(), csr_indices.end(),
-              this->csr_indices.begin());
-    std::copy(csr_pointers.begin(), csr_pointers.end(),
-              this->csr_pointers.begin());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+      this->values[i] = values.begin()[i];
+    }
+    for (std::size_t i = 0; i < csr_indices.size(); ++i) {
+      this->csr_indices[i] = csr_indices.begin()[i];
+    }
+    for (std::size_t i = 0; i < csr_pointers.size(); ++i) {
+      this->csr_pointers[i] = csr_pointers.begin()[i];
+    }
   }
 
   SparseMatrix(const std::array<T, V> &values,
@@ -129,11 +133,15 @@ public:
       : values{}, csr_indices{}, csr_pointers{} {
 
     // This may cause runtime error if the size of values is larger than V.
-    std::copy(values.begin(), values.end(), this->values.begin());
-    std::copy(csr_indices.begin(), csr_indices.end(),
-              this->csr_indices.begin());
-    std::copy(csr_pointers.begin(), csr_pointers.end(),
-              this->csr_pointers.begin());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+      this->values[i] = values[i];
+    }
+    for (std::size_t i = 0; i < csr_indices.size(); ++i) {
+      this->csr_indices[i] = csr_indices[i];
+    }
+    for (std::size_t i = 0; i < csr_pointers.size(); ++i) {
+      this->csr_pointers[i] = csr_pointers[i];
+    }
   }
 
   SparseMatrix(const Matrix<T, M, N> &input)

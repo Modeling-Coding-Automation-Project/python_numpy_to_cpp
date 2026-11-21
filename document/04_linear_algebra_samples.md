@@ -34,7 +34,7 @@ LinalgSolverCholesky_Type<decltype(A)> solver_t = solver;
 auto SA = solver_t.solve(A);
 ```
 
-`sample/cholesky.cpp` では、さらに `ATranspose_mul_B(SA, SA)` で再構成を確認しています。
+`SA` は上三角因子です。`sample/cholesky.cpp` では `ATranspose_mul_B(SA, SA)` で元の行列を再構成します。[コレスキー分解の手順と計算例](./detail/06_cholesky.md)
 
 ---
 

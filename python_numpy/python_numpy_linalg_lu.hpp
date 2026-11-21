@@ -251,6 +251,23 @@ public:
    */
   inline T_ get_det() { return this->LU_decomposer_.get_determinant(); }
 
+  /** P satisfies P * A = L * U. */
+  inline Matrix<DefDense, T_, A_Type::ROWS, A_Type::ROWS> get_P() const {
+    return Matrix<DefDense, T_, A_Type::ROWS, A_Type::ROWS>(
+        this->LU_decomposer_.get_P());
+  }
+
+  inline Base::Matrix::Vector<std::size_t, A_Type::ROWS>
+  get_pivot_indices() const {
+    return this->LU_decomposer_.get_pivot_indices();
+  }
+
+  inline bool is_valid() const { return this->LU_decomposer_.is_valid(); }
+  inline bool is_singular() const { return this->LU_decomposer_.is_singular(); }
+  inline bool threshold_was_adjusted() const {
+    return this->LU_decomposer_.threshold_was_adjusted();
+  }
+
   /* Set */
 
   /**

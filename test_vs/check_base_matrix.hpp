@@ -328,13 +328,15 @@ void CheckBaseMatrix<T>::check_lu_decomposition(void) {
 
     Matrix<T, 3, 3> L = lu.get_L();
 
-    Matrix<T, 3, 3> L_answer({
-        { 1, 0, 0 },
-        { 8, 1, 0 },
-        { 6, 0.818182F, 1 }
-        });
-    tester.expect_near(L.data, L_answer.data, NEAR_LIMIT_STRICT,
-        "check LU Decomposition L.");
+    // Partial pivoting changes the individual factors; PA = LU is invariant.
+    auto permuted_H = lu.get_P() * H;
+    auto reconstructed_H = L * lu.get_U();
+    tester.expect_near(reconstructed_H.data, permuted_H.data, NEAR_LIMIT_STRICT,
+        "check pivoted LU Decomposition PA equals LU.");
+    for (std::size_t i = 0; i < 3; ++i) {
+        tester.expect_near(L(i, i), static_cast<T>(1), NEAR_LIMIT_STRICT,
+            "check LU Decomposition L unit diagonal.");
+    }
 
     Vector<T, 3> xx_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(xx.data, xx_answer.data, NEAR_LIMIT_STRICT,
@@ -383,6 +385,26 @@ void CheckBaseMatrix<T>::check_gmres_k_and_inverse(void) {
     Vector<T, 3> x_gmres_k_answer({ 0.652632F, -0.821053F, 0.221053F });
     tester.expect_near(x_gmres_k.data, x_gmres_k_answer.data, NEAR_LIMIT_STRICT,
         "check GMRES k.");
+    tester.expect_near(rho, Numerical::norm(b - H * x_gmres_k), T(0),
+        "GMRES reports the residual of the returned solution.");
+
+    auto close_rhs = H * b;
+    close_rhs[0] += T(0.5);
+    const auto warm = gmres_k(H, close_rhs, b, T(0.1), T(1.0e-10));
+    tester.expect_near(std::get<0>(warm).data, b.data, T(0),
+        "GMRES retains an initial guess within the relative RHS tolerance.");
+    tester.expect_near(T(std::get<2>(warm)), T(0), T(0),
+        "GMRES skips Arnoldi when the initial residual meets tolerance.");
+
+    // The raw Arnoldi squares are outside the normal float range.
+    for (const T scale : {T(1.0e-24), T(1.0e24)}) {
+        const auto scaled_matrix = H * scale;
+        const auto scaled_rhs = scaled_matrix * b;
+        const auto scaled = gmres_k(scaled_matrix, scaled_rhs, x_gmres_k_0,
+                                    T(0), T(1.0e-30));
+        tester.expect_near(std::get<0>(scaled).data, b.data, NEAR_LIMIT_STRICT,
+            "GMRES handles underflow or overflow in intermediate squares.");
+    }
 
     /* GMRES k rect */
     Vector<T, 4> b_2;

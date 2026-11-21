@@ -23,6 +23,7 @@
 #include "base_matrix_macros.hpp"
 
 #include "base_matrix_matrix.hpp"
+#include "base_matrix_reciprocal.hpp"
 #include "base_matrix_vector.hpp"
 
 #include <array>
@@ -41,6 +42,8 @@ namespace Matrix {
  * diagonal elements. The storage can be either std::vector<T> or std::array<T,
  * M> depending on the
  * BASE_MATRIX_USE_STD_VECTOR_ macro.
+ * With fixed storage, the initializer-list and vector constructors copy as
+ * many entries as fit. Unfilled diagonal entries are value-initialized.
  *
  * @tparam T Type of the matrix elements.
  * @tparam M Size of the matrix (number of columns and rows).
@@ -74,17 +77,17 @@ public:
   DiagMatrix() : data{} {}
 
   DiagMatrix(const std::initializer_list<T> &input) : data{} {
-
-    // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < M && i < input.size(); ++i) {
+      this->data[i] = input.begin()[i];
+    }
   }
 
   DiagMatrix(const std::array<T, M> &input) : data(input) {}
 
   DiagMatrix(const std::vector<T> &input) : data{} {
-
-    // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < M && i < input.size(); ++i) {
+      this->data[i] = input[i];
+    }
   }
 
   DiagMatrix(T input[M]) : data{} {
@@ -1784,16 +1787,14 @@ struct Row {
    * matrix B by the corresponding diagonal element in a diagonal matrix A,
    * storing the result in the provided result matrix.
    *
-   * @param A The diagonal matrix.
    * @param B The dense matrix to divide.
    * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
+   * @param divide_by_diagonal The prepared division for the current row.
    */
-  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
-                      Matrix<T, M, N> &result, const T division_min) {
-    result(J, K) =
-        B(J, K) / Base::Utility::avoid_zero_divide(A[J], division_min);
-    Row<T, M, N, J, K - 1>::compute(A, B, result, division_min);
+  static void compute(const Matrix<T, M, N> &B, Matrix<T, M, N> &result,
+                      const Detail::RepeatedDivision<T> &divide_by_diagonal) {
+    result(J, K) = divide_by_diagonal.apply(B(J, K));
+    Row<T, M, N, J, K - 1>::compute(B, result, divide_by_diagonal);
   }
 };
 
@@ -1801,23 +1802,15 @@ struct Row {
 template <typename T, std::size_t M, std::size_t N, std::size_t J>
 struct Row<T, M, N, J, 0> {
   /**
-   * @brief Computes the element-wise division of the first row of a dense
-   * matrix by a diagonal matrix.
+   * @brief Applies the diagonal inverse to the first element of the row.
    *
-   * This function serves as the base case for the recursive division of each
-   * element in the first row of a dense matrix B by the corresponding
-   * diagonal element in a diagonal matrix A, storing the result in the
-   * provided result matrix.
-   *
-   * @param A The diagonal matrix.
    * @param B The dense matrix to divide.
    * @param result The resulting dense matrix after division.
-   * @param division_min The minimum value to avoid division by zero.
+   * @param divide_by_diagonal The prepared division for the current row.
    */
-  static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
-                      Matrix<T, M, N> &result, const T division_min) {
-    result(J, 0) =
-        B(J, 0) / Base::Utility::avoid_zero_divide(A[J], division_min);
+  static void compute(const Matrix<T, M, N> &B, Matrix<T, M, N> &result,
+                      const Detail::RepeatedDivision<T> &divide_by_diagonal) {
+    result(J, 0) = divide_by_diagonal.apply(B(J, 0));
   }
 };
 
@@ -1839,7 +1832,9 @@ struct Column {
    */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Row<T, M, N, J, N - 1>::compute(A, B, result, division_min);
+    const Detail::RepeatedDivision<T> divide_by_diagonal(
+        Base::Utility::avoid_zero_divide(A[J], division_min));
+    Row<T, M, N, J, N - 1>::compute(B, result, divide_by_diagonal);
     Column<T, M, N, J - 1>::compute(A, B, result, division_min);
   }
 };
@@ -1862,7 +1857,9 @@ template <typename T, std::size_t M, std::size_t N> struct Column<T, M, N, 0> {
    */
   static void compute(const DiagMatrix<T, M> &A, const Matrix<T, M, N> &B,
                       Matrix<T, M, N> &result, const T division_min) {
-    Row<T, M, N, 0, N - 1>::compute(A, B, result, division_min);
+    const Detail::RepeatedDivision<T> divide_by_diagonal(
+        Base::Utility::avoid_zero_divide(A[0], division_min));
+    Row<T, M, N, 0, N - 1>::compute(B, result, divide_by_diagonal);
   }
 };
 
@@ -1909,9 +1906,10 @@ inline Matrix<T, M, N> diag_inv_multiply_dense(const DiagMatrix<T, M> &A,
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
+    const Detail::RepeatedDivision<T> divide_by_diagonal(
+        Base::Utility::avoid_zero_divide(A[j], division_min));
     for (std::size_t k = 0; k < N; ++k) {
-      result(j, k) =
-          B(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
+      result(j, k) = divide_by_diagonal.apply(B(j, k));
     }
   }
 
@@ -1946,9 +1944,10 @@ inline Matrix<T, M, N> diag_inv_multiply_dense_partition(
   Matrix<T, M, N> result;
 
   for (std::size_t j = 0; j < matrix_size; ++j) {
+    const Detail::RepeatedDivision<T> divide_by_diagonal(
+        Base::Utility::avoid_zero_divide(A[j], division_min));
     for (std::size_t k = 0; k < matrix_size; ++k) {
-      result(j, k) =
-          B(j, k) / Base::Utility::avoid_zero_divide(A[j], division_min);
+      result(j, k) = divide_by_diagonal.apply(B(j, k));
     }
   }
 

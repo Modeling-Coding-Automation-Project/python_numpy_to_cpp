@@ -27,7 +27,6 @@
 #include "base_matrix_vector.hpp"
 #include "base_utility.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <initializer_list>
@@ -79,7 +78,9 @@ public:
   Matrix(const std::vector<T> &input)
       : data(N, std::vector<T>(M, static_cast<T>(0))) {
     // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data[0].begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[0][i] = input[i];
+    }
   }
 
   Matrix(T input[][N]) : data(N, std::vector<T>(M, static_cast<T>(0))) {
@@ -113,7 +114,9 @@ public:
 
   Matrix(const std::vector<T> &input) : data{} {
     // This may cause runtime error if the size of values is larger than M.
-    std::copy(input.begin(), input.end(), this->data[0].begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[0][i] = input[i];
+    }
   }
 
   Matrix(const std::array<T, M> &input) : data{} {

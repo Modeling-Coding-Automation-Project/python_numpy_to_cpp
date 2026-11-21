@@ -4,7 +4,9 @@
 #include "MCAP_tester.hpp"
 #include "python_numpy.hpp"
 
+#include <array>
 #include <cstddef>
+#include <initializer_list>
 #include <type_traits>
 #include <vector>
 #include <string>
@@ -1257,7 +1259,37 @@ inline void check_bool_elementwise() {
 
 } // namespace ExtendedKernelTests
 
+#ifndef BASE_MATRIX_USE_STD_VECTOR_
+inline void check_fixed_storage_constructors() {
+  Tester::MCAPTester<double> tester;
+  using Diagonal = DiagMatrix<double, 2>;
+  using Sparse = CompiledSparseMatrix<double, 2, 2, CSRIndices<0, 1>,
+                                      CSRPointers<0, 1, 2>>;
+  using Empty = CompiledSparseMatrix<double, 2, 2, CSRIndices<0>,
+                                      CSRPointers<0, 0, 0>>;
+  const std::initializer_list<double> list = {1.0, 2.0, 3.0};
+  const std::vector<double> vector(list);
+  const std::array<double, 2> filled{{1.0, 2.0}};
+  const std::array<double, 2> partial{{1.0, 0.0}};
+
+  expect_equal(tester, Diagonal(list).data, filled, "Oversized diagonal list");
+  expect_equal(tester, Diagonal(vector).data, filled, "Oversized diagonal vector");
+  expect_equal(tester, Sparse(list).values, filled, "Oversized sparse list");
+  expect_equal(tester, Sparse(vector).values, filled, "Oversized sparse vector");
+  expect_equal(tester, Diagonal{1.0}.data, partial, "Short diagonal list");
+  expect_equal(tester, Sparse{1.0}.values, partial, "Short sparse list");
+  expect_equal(tester, Empty(list).values.size(), std::size_t(0),
+               "List for empty sparse storage");
+  expect_equal(tester, Empty(vector).values.size(), std::size_t(0),
+               "Vector for empty sparse storage");
+  tester.throw_error_if_test_failed();
+}
+#endif // BASE_MATRIX_USE_STD_VECTOR_
+
 inline void run_all() {
+#ifndef BASE_MATRIX_USE_STD_VECTOR_
+  check_fixed_storage_constructors();
+#endif // BASE_MATRIX_USE_STD_VECTOR_
   check_access<double>();
   check_access<float>();
   check_multiply<double>();

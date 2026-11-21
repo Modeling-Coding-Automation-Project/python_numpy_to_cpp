@@ -64,7 +64,9 @@ public:
   Vector(const std::initializer_list<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than N.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input.begin()[i];
+    }
   }
 
   Vector(const std::array<T, N> &input) : data(input) {}
@@ -72,7 +74,9 @@ public:
   Vector(const std::vector<T> &input) : data{} {
 
     // This may cause runtime error if the size of values is larger than N.
-    std::copy(input.begin(), input.end(), this->data.begin());
+    for (std::size_t i = 0; i < input.size(); ++i) {
+      this->data[i] = input[i];
+    }
   }
 
 #endif // BASE_MATRIX_USE_STD_VECTOR_
@@ -1274,8 +1278,7 @@ inline T complex_vector_norm(const Vector<Complex<T>, N> &vec_comp) {
 
 #endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
-  return Base::Math::sqrt<T, Base::Math::SQRT_REPEAT_NUMBER_MOSTLY_ACCURATE>(
-      sum);
+  return Base::Math::sqrt<T>(sum);
 }
 
 /**
