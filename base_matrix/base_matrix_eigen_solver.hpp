@@ -10,9 +10,10 @@
 #ifndef BASE_MATRIX_EIGEN_SOLVER_HPP_
 #define BASE_MATRIX_EIGEN_SOLVER_HPP_
 
+#include "base_matrix_macros.hpp"
+
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_inverse.hpp"
-#include "base_matrix_macros.hpp"
 #include "base_matrix_numerical.hpp"
 #include "base_matrix_reciprocal.hpp"
 
