@@ -8,10 +8,13 @@ namespace Base {
 namespace Matrix {
 namespace Detail {
 
+// Keep direct division when the floating-point denominator or its reciprocal
+// falls outside the normal range.
 constexpr bool BASE_MATRIX_RECIPROCAL_KEEP_PRECISION = false;
 
 // Keep the scalar's division semantics for integer and user-defined types.
-template <typename T, bool = std::is_floating_point<T>::value>
+template <typename T, bool = std::is_floating_point<T>::value,
+          bool KeepPrecision = BASE_MATRIX_RECIPROCAL_KEEP_PRECISION>
 class RepeatedDivision {
 public:
   explicit RepeatedDivision(T denominator) : denominator_(denominator) {}
@@ -20,7 +23,7 @@ public:
   RepeatedDivision(const RepeatedDivision &other)
       : denominator_(other.denominator_) {}
 
-  RepeatedDivision<T, false> &operator=(const RepeatedDivision &other) {
+  RepeatedDivision &operator=(const RepeatedDivision &other) {
     if (this != &other) {
       denominator_ = other.denominator_;
     }
@@ -31,7 +34,7 @@ public:
   RepeatedDivision(RepeatedDivision &&other) noexcept
       : denominator_(other.denominator_) {}
 
-  RepeatedDivision<T, false> &operator=(RepeatedDivision &&other) noexcept {
+  RepeatedDivision &operator=(RepeatedDivision &&other) noexcept {
     if (this != &other) {
       denominator_ = other.denominator_;
     }
@@ -47,7 +50,20 @@ private:
   T denominator_;
 };
 
-template <typename T> class RepeatedDivision<T, true> {
+template <typename T> class RepeatedDivision<T, true, false> {
+public:
+  explicit RepeatedDivision(T denominator)
+      : inverse_(static_cast<T>(1) / denominator) {}
+
+  template <typename U> inline U apply(const U &value) const {
+    return value * inverse_;
+  }
+
+private:
+  T inverse_;
+};
+
+template <typename T> class RepeatedDivision<T, true, true> {
 public:
   explicit RepeatedDivision(T denominator)
       : denominator_(denominator), inverse_(static_cast<T>(0)) {
