@@ -10,12 +10,12 @@
  * inversion. The implementation is generic and works with fixed-size matrices
  * and vectors, supporting both real and complex types.
  *
- * The GMRES wrappers use GmresSolver with K equal to the system dimension and
- * one cycle. decay_rate is a relative tolerance against the right-hand-side
- * norm. rho is the true residual norm for both real and complex arithmetic;
- * rectangular solves report the normal-equation residual norm. Earlier
- * versions used an initial-residual reference and inconsistent complex squared
- * norms. Use GmresSolver directly for restart, orthogonalization and status.
+ * The GMRES wrappers use one cycle with the system dimension as their budget.
+ * BASE_MATRIX_INVERSE_KEEP_PRECISION selects the arithmetic for full dense
+ * real systems of size two and above. decay_rate is relative to the
+ * right-hand-side norm, and rho is the true residual norm. Rectangular solves
+ * report the normal-equation residual norm. Use GmresSolver directly for
+ * restart, orthogonalization and status.
  *
  * @note
  * tparam M is the number of rows in the matrix.
@@ -70,6 +70,9 @@ inline typename std::enable_if<(M > 1),
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
              const T &division_min, const std::size_t &matrix_size) {
+  if (!BASE_MATRIX_INVERSE_KEEP_PRECISION && matrix_size >= M) {
+    return gmres_k_fast(A, b, x_1, decay_rate, division_min);
+  }
   GmresSolver<T, M> solver;
   solver.division_min = division_min;
   solver.relative_tolerance = decay_rate;
@@ -498,6 +501,10 @@ template <typename T, std::size_t M>
 inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
 gmres_k_matrix_inv(const Matrix<T, M, M> &In_A, const T &decay_rate,
                    const T &division_min, const Matrix<T, M, M> &X_1) {
+  if (!BASE_MATRIX_INVERSE_KEEP_PRECISION && M > 1) {
+    const auto identity = DiagMatrix<T, M>::full(static_cast<T>(1));
+    return gmres_k_matrix(In_A, identity, X_1, decay_rate, division_min);
+  }
   Matrix<T, M, M> X;
   std::array<T, M> rho = {};
   std::array<std::size_t, M> rep_num = {};

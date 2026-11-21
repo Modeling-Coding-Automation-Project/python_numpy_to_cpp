@@ -19,10 +19,16 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
+#include <tuple>
 #include <type_traits>
 
 namespace Base {
 namespace Matrix {
+
+// Full dense real solves in the inverse wrappers use the single-cycle fast
+// path by default. Set true for scaled Arnoldi norms and relative breakdown.
+constexpr bool BASE_MATRIX_INVERSE_KEEP_PRECISION = false;
 
 // Default work budget and convergence thresholds for GMRES.
 constexpr std::size_t DEFAULT_CYCLES_GMRES = 1;
@@ -2493,6 +2499,157 @@ gmres_inverse_diagonal(const Matrix<T, N, N> &matrix,
   }
   return inverse;
 }
+
+namespace InverseOperation {
+
+// The dependency's reciprocal square root uses a float initial estimate.
+template <typename T> inline bool fast_rsqrt_in_range(T square) {
+  return square >= static_cast<T>((std::numeric_limits<float>::min)()) &&
+         square <= static_cast<T>((std::numeric_limits<float>::max)());
+}
+
+template <typename T> inline T fast_inverse_sqrt(T square) {
+  const T inverse = Base::Math::rsqrt(square, (std::numeric_limits<T>::min)());
+  // Refine the float-based estimate once for wider real types.
+  if (std::numeric_limits<T>::digits > std::numeric_limits<float>::digits) {
+    return inverse * (T(1.5) - (T(0.5) * square * inverse) * inverse);
+  }
+  return inverse;
+}
+
+template <typename T, std::size_t N>
+inline Vector<T, N> fast_normalize(const Vector<T, N> &value, T norm) {
+  if (norm >= static_cast<T>(NORMALIZATION_RECIPROCAL_MIN_GMRES)) {
+    return value * (static_cast<T>(1) / norm);
+  }
+  Vector<T, N> result;
+  for (std::size_t i = 0; i < N; ++i) {
+    result[i] = value[i] / norm;
+  }
+  return result;
+}
+
+/**
+ * @brief Uses one pass of modified Gram-Schmidt and returns the retained
+ * solution and its true residual norm.
+ */
+template <typename T, std::size_t N>
+inline std::tuple<Vector<T, N>, T, std::size_t>
+gmres_k_fast(const Matrix<T, N, N> &matrix, const Vector<T, N> &rhs,
+             const Vector<T, N> &initial, T relative_tolerance,
+             T division_min) {
+  const T zero = static_cast<T>(0);
+  const T floor = Numerical::positive_threshold(division_min);
+  bool zero_start = true;
+  for (std::size_t i = 0; i < N; ++i) {
+    if (initial[i] != zero) {
+      zero_start = false;
+      break;
+    }
+  }
+  const Vector<T, N> residual = zero_start ? rhs : rhs - matrix * initial;
+  const T initial_norm = Numerical::norm(residual);
+  const T tolerance =
+      relative_tolerance > zero
+          ? relative_tolerance *
+                (zero_start ? initial_norm : Numerical::norm(rhs))
+          : zero;
+  if (initial_norm <= tolerance) {
+    return std::make_tuple(initial, initial_norm, std::size_t(0));
+  }
+
+  std::array<Vector<T, N>, N> basis;
+  std::array<T, N> basis_squared;
+  // Column j holds rows 0 through j of the triangular least-squares factor.
+  std::array<T, N *(N + 1) / 2> triangular;
+  auto triangular_column = [&triangular](std::size_t j) {
+    return triangular.data() + j * (j + 1) / 2;
+  };
+  std::array<T, N> cosine, sine, transformed_rhs;
+  T residual_estimate = initial_norm;
+  basis[0] = fast_normalize(residual, initial_norm);
+  basis_squared[0] = basis[0].dot(basis[0]);
+  std::size_t used = 0;
+  for (std::size_t column = 0; column < N; ++column) {
+    Vector<T, N> work = matrix * basis[column];
+    T *h = triangular_column(column);
+    for (std::size_t j = 0; j <= column; ++j) {
+      h[j] = basis[j].dot(work) / basis_squared[j];
+      for (std::size_t i = 0; i < N; ++i) {
+        work[i] -= h[j] * basis[j][i];
+      }
+    }
+
+    // Use the same reciprocal for the subdiagonal and the next direction.
+    // If the raw sum is out of range, scale the vector before taking its norm.
+    const T work_square = work.dot(work);
+    T subdiagonal;
+    if (fast_rsqrt_in_range(work_square)) {
+      const T inverse = fast_inverse_sqrt(work_square);
+      subdiagonal = work_square * inverse;
+      if (column + 1 < N) {
+        basis[column + 1] = work * inverse;
+      }
+    } else {
+      subdiagonal = Numerical::norm(work);
+      if (column + 1 < N && subdiagonal > zero) {
+        basis[column + 1] = fast_normalize(work, subdiagonal);
+      }
+    }
+    if (column + 1 < N && subdiagonal > zero) {
+      basis_squared[column + 1] = basis[column + 1].dot(basis[column + 1]);
+    }
+
+    for (std::size_t j = 0; j < column; ++j) {
+      const T upper = h[j];
+      const T lower = h[j + 1];
+      h[j] = cosine[j] * upper + sine[j] * lower;
+      h[j + 1] = cosine[j] * lower - sine[j] * upper;
+    }
+    const T diagonal = h[column];
+    const T square = diagonal * diagonal + subdiagonal * subdiagonal;
+    if (subdiagonal != zero && fast_rsqrt_in_range(square)) {
+      const T inverse = fast_inverse_sqrt(square);
+      cosine[column] = diagonal * inverse;
+      sine[column] = subdiagonal * inverse;
+    } else {
+      Numerical::givens(diagonal, subdiagonal, cosine[column], sine[column]);
+    }
+    h[column] = diagonal * cosine[column] + subdiagonal * sine[column];
+    transformed_rhs[column] = cosine[column] * residual_estimate;
+    residual_estimate *= -sine[column];
+    used = column + 1;
+    if (!(subdiagonal > zero) ||
+        Base::Math::abs(residual_estimate) <= tolerance) {
+      break;
+    }
+  }
+
+  for (std::size_t row = used; row-- > 0;) {
+    const T pivot = triangular_column(row)[row];
+    if (Base::Math::abs(pivot) < floor) {
+      return std::make_tuple(initial, initial_norm, used);
+    }
+    for (std::size_t j = row + 1; j < used; ++j) {
+      transformed_rhs[row] -= triangular_column(j)[row] * transformed_rhs[j];
+    }
+    transformed_rhs[row] /= pivot;
+  }
+  Vector<T, N> candidate = initial;
+  for (std::size_t i = 0; i < N; ++i) {
+    T correction = zero;
+    for (std::size_t j = 0; j < used; ++j) {
+      correction += basis[j][i] * transformed_rhs[j];
+    }
+    candidate[i] += correction;
+  }
+  const T candidate_norm = Numerical::norm(rhs - matrix * candidate);
+  return candidate_norm <= initial_norm
+             ? std::make_tuple(candidate, candidate_norm, used)
+             : std::make_tuple(initial, initial_norm, used);
+}
+
+} // namespace InverseOperation
 
 } // namespace Matrix
 } // namespace Base
