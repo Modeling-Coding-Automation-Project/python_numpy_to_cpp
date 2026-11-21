@@ -47,6 +47,57 @@ namespace Matrix {
 namespace InverseOperation {
 
 /**
+ * @brief Selects the dense GMRES core path at compile time.
+ *
+ * @tparam T The data type of the matrix and vector elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam KeepPrecision Whether to use the precision-preserving solver path.
+ */
+template <typename T, std::size_t M, bool KeepPrecision>
+struct GmresKCoreDispatch;
+
+/**
+ * @brief Uses the precision-preserving GMRES solver path.
+ */
+template <typename T, std::size_t M> struct GmresKCoreDispatch<T, M, true> {
+  typedef std::tuple<Vector<T, M>, T, std::size_t> Result;
+
+  static inline Result run(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                           const Vector<T, M> &x_1, const T &decay_rate,
+                           const T &division_min,
+                           const std::size_t &matrix_size) {
+    GmresSolver<T, M> solver;
+    solver.division_min = division_min;
+    solver.relative_tolerance = decay_rate;
+    Vector<T, M> solution = solver.solve(A, b, x_1, matrix_size);
+    return std::make_tuple(solution, solver.get_residual_norm(),
+                           solver.get_iterations());
+  }
+};
+
+/**
+ * @brief Uses the fast solver for a full-size iteration budget.
+ */
+template <typename T, std::size_t M> struct GmresKCoreDispatch<T, M, false> {
+  typedef std::tuple<Vector<T, M>, T, std::size_t> Result;
+
+  static inline Result run(const Matrix<T, M, M> &A, const Vector<T, M> &b,
+                           const Vector<T, M> &x_1, const T &decay_rate,
+                           const T &division_min,
+                           const std::size_t &matrix_size) {
+    if (matrix_size >= M) {
+      return gmres_k_fast(A, b, x_1, decay_rate, division_min);
+    }
+    GmresSolver<T, M> solver;
+    solver.division_min = division_min;
+    solver.relative_tolerance = decay_rate;
+    Vector<T, M> solution = solver.solve(A, b, x_1, matrix_size);
+    return std::make_tuple(solution, solver.get_residual_norm(),
+                           solver.get_iterations());
+  }
+};
+
+/**
  * @brief Core function for GMRES K method for dense matrices.
  *
  * This function implements the GMRES K algorithm to solve the linear system
@@ -70,15 +121,8 @@ inline typename std::enable_if<(M > 1),
 gmres_k_core(const Matrix<T, M, M> &A, const Vector<T, M> &b,
              const Vector<T, M> &x_1, const T &decay_rate,
              const T &division_min, const std::size_t &matrix_size) {
-  if (!BASE_MATRIX_INVERSE_KEEP_PRECISION && matrix_size >= M) {
-    return gmres_k_fast(A, b, x_1, decay_rate, division_min);
-  }
-  GmresSolver<T, M> solver;
-  solver.division_min = division_min;
-  solver.relative_tolerance = decay_rate;
-  Vector<T, M> solution = solver.solve(A, b, x_1, matrix_size);
-  return std::make_tuple(solution, solver.get_residual_norm(),
-                         solver.get_iterations());
+  return GmresKCoreDispatch<T, M, BASE_MATRIX_INVERSE_KEEP_PRECISION>::run(
+      A, b, x_1, decay_rate, division_min, matrix_size);
 }
 
 /**
@@ -482,6 +526,60 @@ gmres_k_rect_matrix(const Matrix<T, M, N> &A, const DiagMatrix<T, M> &B,
 /* GMRES K for matrix inverse */
 
 /**
+ * @brief Selects the matrix-inverse GMRES path at compile time.
+ *
+ * @tparam T The data type of the matrix elements.
+ * @tparam M The size of the square matrix (M x M).
+ * @tparam UseFastPath Whether to solve all identity-matrix columns together.
+ */
+template <typename T, std::size_t M, bool UseFastPath>
+struct GmresKMatrixInverseDispatch;
+
+/**
+ * @brief Computes the inverse using the multiple-right-hand-side fast path.
+ */
+template <typename T, std::size_t M>
+struct GmresKMatrixInverseDispatch<T, M, true> {
+  typedef std::tuple<Matrix<T, M, M>, std::array<T, M>,
+                     std::array<std::size_t, M>>
+      Result;
+
+  static inline Result run(const Matrix<T, M, M> &In_A, const T &decay_rate,
+                           const T &division_min, const Matrix<T, M, M> &X_1) {
+    const auto identity = DiagMatrix<T, M>::full(static_cast<T>(1));
+    return gmres_k_matrix(In_A, identity, X_1, decay_rate, division_min);
+  }
+};
+
+/**
+ * @brief Computes the inverse by solving each identity-matrix column.
+ */
+template <typename T, std::size_t M>
+struct GmresKMatrixInverseDispatch<T, M, false> {
+  typedef std::tuple<Matrix<T, M, M>, std::array<T, M>,
+                     std::array<std::size_t, M>>
+      Result;
+
+  static inline Result run(const Matrix<T, M, M> &In_A, const T &decay_rate,
+                           const T &division_min, const Matrix<T, M, M> &X_1) {
+    Matrix<T, M, M> X;
+    std::array<T, M> rho = {};
+    std::array<std::size_t, M> rep_num = {};
+    GmresSolver<T, M> solver;
+    solver.division_min = division_min;
+    solver.relative_tolerance = decay_rate;
+    for (std::size_t i = 0; i < M; ++i) {
+      Vector<T, M> unit;
+      unit[i] = static_cast<T>(1);
+      X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
+      rho[i] = solver.get_residual_norm();
+      rep_num[i] = solver.get_iterations();
+    }
+    return std::make_tuple(X, rho, rep_num);
+  }
+};
+
+/**
  * @brief GMRES K method for matrix inverse.
  *
  * This function computes the inverse of a square matrix A using the GMRES K
@@ -501,24 +599,11 @@ template <typename T, std::size_t M>
 inline std::tuple<Matrix<T, M, M>, std::array<T, M>, std::array<std::size_t, M>>
 gmres_k_matrix_inv(const Matrix<T, M, M> &In_A, const T &decay_rate,
                    const T &division_min, const Matrix<T, M, M> &X_1) {
-  if (!BASE_MATRIX_INVERSE_KEEP_PRECISION && M > 1) {
-    const auto identity = DiagMatrix<T, M>::full(static_cast<T>(1));
-    return gmres_k_matrix(In_A, identity, X_1, decay_rate, division_min);
-  }
-  Matrix<T, M, M> X;
-  std::array<T, M> rho = {};
-  std::array<std::size_t, M> rep_num = {};
-  GmresSolver<T, M> solver;
-  solver.division_min = division_min;
-  solver.relative_tolerance = decay_rate;
-  for (std::size_t i = 0; i < M; ++i) {
-    Vector<T, M> unit;
-    unit[i] = static_cast<T>(1);
-    X.set_row(i, solver.solve(In_A, unit, X_1.get_row(i)));
-    rho[i] = solver.get_residual_norm();
-    rep_num[i] = solver.get_iterations();
-  }
-  return std::make_tuple(X, rho, rep_num);
+  return GmresKMatrixInverseDispatch<
+      T, M, (!BASE_MATRIX_INVERSE_KEEP_PRECISION && (M > 1))>::run(In_A,
+                                                                   decay_rate,
+                                                                   division_min,
+                                                                   X_1);
 }
 
 /* Sparse GMRES K */
