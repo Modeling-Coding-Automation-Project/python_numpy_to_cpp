@@ -2197,6 +2197,28 @@ private:
   }
 
   /**
+   * @brief Stores a normalized basis vector and returns its squared length.
+   *
+   * The supplied nonzero norm can be approximate. Compute the squared length
+   * from the stored components so every projection uses the same denominator.
+   */
+  inline Real _store_normalized_basis(std::size_t column,
+                                      const Vector<T, N> &vector, Real norm) {
+    const bool reciprocal_safe =
+        norm >= static_cast<Real>(NORMALIZATION_RECIPROCAL_MIN_GMRES);
+    const Real inverse_norm =
+        reciprocal_safe ? static_cast<Real>(1) / norm : static_cast<Real>(0);
+    Real squared_norm = static_cast<Real>(0);
+    for (std::size_t i = 0; i < N; ++i) {
+      T &basis_value = this->basis_[column * N + i];
+      basis_value =
+          reciprocal_safe ? vector[i] * inverse_norm : vector[i] / norm;
+      squared_norm += Numerical::Scalar<T>::squared_abs(basis_value);
+    }
+    return squared_norm;
+  }
+
+  /**
    * @brief Runs bounded right-preconditioned GMRES and
    * updates the solve status.
    *
@@ -2241,12 +2263,13 @@ private:
     const std::size_t passes = this->orthogonalization_passes > 1 ? 2 : 1;
 
     // Convergence threshold: absolute tolerance + relative tolerance * ||b||.
-    const Real relative =
-        this->relative_tolerance > zero ? this->relative_tolerance : zero;
     const Real absolute =
         this->absolute_tolerance > zero ? this->absolute_tolerance : zero;
     const Real tolerance =
-        absolute + relative * Numerical::norm(right_hand_side, active_size);
+        this->relative_tolerance > zero
+            ? absolute + this->relative_tolerance *
+                             Numerical::norm(right_hand_side, active_size)
+            : absolute;
 
     // Initial residual: r = b - A*x. Check for an already converged solution.
     Vector<T, N> solution = initial;
@@ -2268,20 +2291,10 @@ private:
         }
         this->transformed_rhs_[0] = initial_norm;
 
-        // Normalize r to form the first basis vector of this cycle.
-        // initial_norm > tolerance >= 0, so this denominator is nonzero.
-        // Below the reciprocal threshold, retain direct division.
-        const bool initial_reciprocal_safe =
-            initial_norm >=
-            static_cast<Real>(NORMALIZATION_RECIPROCAL_MIN_GMRES);
-        const Real initial_inverse = initial_reciprocal_safe
-                                         ? static_cast<Real>(1) / initial_norm
-                                         : zero;
-        for (std::size_t i = 0; i < N; ++i) {
-          this->basis_[i] = initial_reciprocal_safe
-                                ? residual[i] * initial_inverse
-                                : residual[i] / initial_norm;
-        }
+        // Each entry is set when its basis vector is generated.
+        std::array<Real, K> basis_squared_norms;
+        basis_squared_norms[0] =
+            this->_store_normalized_basis(0, residual, initial_norm);
 
         std::size_t used = 0;
         bool active = true;
@@ -2311,18 +2324,11 @@ private:
             for (std::size_t pass = 0; pass < passes; ++pass) {
               for (std::size_t j = 0; j <= column; ++j) {
                 T projection = T();
-                Real basis_square = zero;
                 for (std::size_t i = 0; i < N; ++i) {
                   const T basis_value = this->basis_[j * N + i];
                   projection += Scalar::conjugate(basis_value) * product[i];
-                  basis_square += Scalar::squared_abs(basis_value);
                 }
-                // A dependency-provided norm may be approximate. Project onto
-                // the actual nonzero basis vector instead of assuming unit
-                // length, which could create a spurious Arnoldi direction.
-                // Stored vectors come from nonzero residuals, so their
-                // squared lengths are positive and this divisor is nonzero.
-                projection = projection / basis_square;
+                projection = projection / basis_squared_norms[j];
                 this->column_[j] += projection;
                 for (std::size_t i = 0; i < N; ++i) {
                   product[i] -= this->basis_[j * N + i] * projection;
@@ -2341,16 +2347,8 @@ private:
             // Normalize the next basis vector only if another step can use it.
             // The last column still needs its subdiagonal and rotation.
             if (!arnoldi_breakdown && column + 1 < dimension) {
-              const bool reciprocal_safe =
-                  next_norm >=
-                  static_cast<Real>(NORMALIZATION_RECIPROCAL_MIN_GMRES);
-              const Real inverse_norm =
-                  reciprocal_safe ? static_cast<Real>(1) / next_norm : zero;
-              for (std::size_t i = 0; i < N; ++i) {
-                this->basis_[(column + 1) * N + i] =
-                    reciprocal_safe ? product[i] * inverse_norm
-                                    : product[i] / next_norm;
-              }
+              basis_squared_norms[column + 1] =
+                  this->_store_normalized_basis(column + 1, product, next_norm);
             }
 
             // Apply previous Givens rotations to the current column of H.
