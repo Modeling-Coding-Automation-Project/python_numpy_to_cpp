@@ -164,7 +164,9 @@ struct Row {
   static inline void compute(const Matrix<T, N, N> &matrix,
                              const Vector<T, N> &input, Vector<T, N> &output,
                              std::size_t active_size) {
-    if (FullSize || (RowIndex < active_size && ColumnIndex < active_size)) {
+    constexpr std::size_t last_index =
+        RowIndex > ColumnIndex ? RowIndex : ColumnIndex;
+    if (FullSize || last_index < active_size) {
       output[RowIndex] += matrix(RowIndex, ColumnIndex) * input[ColumnIndex];
     }
     Row<T, N, ColumnIndex, RowIndex + 1, FullSize>::compute(

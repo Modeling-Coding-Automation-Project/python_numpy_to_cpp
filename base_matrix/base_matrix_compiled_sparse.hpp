@@ -82,6 +82,8 @@ public:
  * a compile-time sparsity pattern, specified by CSRIndices and CSRPointers
  * types. It supports both std::vector and std::array storage for the nonzero
  * values, depending on the compile-time macro.
+ * With fixed storage, the initializer-list and vector constructors copy as
+ * many entries as fit. Unfilled value slots are value-initialized.
  *
  * Key Features:
  * - Efficient storage of only nonzero elements, with access via operator[].
@@ -125,11 +127,13 @@ public:
   CompiledSparseMatrix() : values{} {}
 
   CompiledSparseMatrix(const std::initializer_list<T> &values) : values{} {
-
-    // This may cause runtime error if the size of values is larger than
-    // CSRIndices::size.
-    for (std::size_t i = 0; i < values.size(); ++i) {
-      this->values[i] = values.begin()[i];
+    auto source = values.begin();
+    for (T &value : this->values) {
+      if (source == values.end()) {
+        break;
+      }
+      value = *source;
+      ++source;
     }
   }
 
@@ -137,11 +141,13 @@ public:
       : values(values) {}
 
   CompiledSparseMatrix(const std::vector<T> &values) : values{} {
-
-    // This may cause runtime error if the size of values is larger than
-    // CSRIndices::size.
-    for (std::size_t i = 0; i < values.size(); ++i) {
-      this->values[i] = values[i];
+    auto source = values.begin();
+    for (T &value : this->values) {
+      if (source == values.end()) {
+        break;
+      }
+      value = *source;
+      ++source;
     }
   }
 

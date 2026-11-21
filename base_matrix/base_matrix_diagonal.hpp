@@ -42,6 +42,8 @@ namespace Matrix {
  * diagonal elements. The storage can be either std::vector<T> or std::array<T,
  * M> depending on the
  * BASE_MATRIX_USE_STD_VECTOR_ macro.
+ * With fixed storage, the initializer-list and vector constructors copy as
+ * many entries as fit. Unfilled diagonal entries are value-initialized.
  *
  * @tparam T Type of the matrix elements.
  * @tparam M Size of the matrix (number of columns and rows).
@@ -75,9 +77,7 @@ public:
   DiagMatrix() : data{} {}
 
   DiagMatrix(const std::initializer_list<T> &input) : data{} {
-
-    // This may cause runtime error if the size of values is larger than M.
-    for (std::size_t i = 0; i < input.size(); ++i) {
+    for (std::size_t i = 0; i < M && i < input.size(); ++i) {
       this->data[i] = input.begin()[i];
     }
   }
@@ -85,9 +85,7 @@ public:
   DiagMatrix(const std::array<T, M> &input) : data(input) {}
 
   DiagMatrix(const std::vector<T> &input) : data{} {
-
-    // This may cause runtime error if the size of values is larger than M.
-    for (std::size_t i = 0; i < input.size(); ++i) {
+    for (std::size_t i = 0; i < M && i < input.size(); ++i) {
       this->data[i] = input[i];
     }
   }
