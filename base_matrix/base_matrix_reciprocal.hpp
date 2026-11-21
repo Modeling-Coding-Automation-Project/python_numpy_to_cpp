@@ -8,6 +8,8 @@ namespace Base {
 namespace Matrix {
 namespace Detail {
 
+constexpr bool BASE_MATRIX_RECIPROCAL_KEEP_PRECISION = false;
+
 // Keep the scalar's division semantics for integer and user-defined types.
 template <typename T, bool = std::is_floating_point<T>::value>
 class RepeatedDivision {
@@ -37,7 +39,7 @@ public:
   }
 
   /* Function */
-  template <typename U> U apply(const U &value) const {
+  template <typename U> inline U apply(const U &value) const {
     return value / denominator_;
   }
 
@@ -59,7 +61,7 @@ public:
     }
   }
 
-  template <typename U> U apply(const U &value) const {
+  template <typename U> inline U apply(const U &value) const {
     return inverse_ != static_cast<T>(0) ? value * inverse_
                                          : value / denominator_;
   }
