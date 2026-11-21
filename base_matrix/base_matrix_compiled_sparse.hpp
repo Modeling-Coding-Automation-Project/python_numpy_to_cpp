@@ -42,6 +42,7 @@
 #define BASE_MATRIX_COMPILED_SPARSE_HPP_
 
 #include "base_matrix_macros.hpp"
+#include "base_matrix_reciprocal.hpp"
 
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
@@ -2554,8 +2555,7 @@ namespace DiagonalInverseMultiplySparse {
 
 // Start < End (Core)
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
-          typename CSRPointers_B, std::size_t J, std::size_t K,
-          std::size_t Start, std::size_t End>
+          typename CSRPointers_B, std::size_t Start, std::size_t End>
 struct Loop {
   /**
    * @brief Core loop for diagonal inverse multiplication of a sparse matrix.
@@ -2571,30 +2571,27 @@ struct Loop {
    * matrix B.
    * @tparam CSRPointers_B The type representing row pointers of the sparse
    * matrix B.
-   * @tparam J            Current index in the row indices list of B.
-   * @tparam K            Current index in the row pointers list of B.
    * @tparam Start        Starting index for the current row's non-zero
    * elements.
    * @tparam End          Ending index for the current row's non-zero elements.
+   * @param divide_by_diagonal The prepared division for the current row.
    */
   static void
-  compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
-          const T &division_min,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          const Detail::RepeatedDivision<T> &divide_by_diagonal,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-    result.values[Start] =
-        B.values[Start] / Base::Utility::avoid_zero_divide(A[J], division_min);
+    result.values[Start] = divide_by_diagonal.apply(B.values[Start]);
 
-    Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, Start + 1, End>::compute(
-        A, B, division_min, result);
+    Loop<T, M, N, CSRIndices_B, CSRPointers_B, Start + 1, End>::compute(
+        B, divide_by_diagonal, result);
   }
 };
 
 // Start == End (End of Core Loop)
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
-          typename CSRPointers_B, std::size_t J, std::size_t K, std::size_t End>
-struct Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, End, End> {
+          typename CSRPointers_B, std::size_t End>
+struct Loop<T, M, N, CSRIndices_B, CSRPointers_B, End, End> {
   /**
    * @brief End of the core loop for diagonal inverse multiplication of a sparse
    * matrix.
@@ -2610,18 +2607,15 @@ struct Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, End, End> {
    * matrix B.
    * @tparam CSRPointers_B The type representing row pointers of the sparse
    * matrix B.
-   * @tparam J            Current index in the row indices list of B.
-   * @tparam K            Current index in the row pointers list of B.
+   * @tparam End          Ending index for the current row's non-zero elements.
    */
   static void
-  compute(const DiagMatrix<T, M> &A,
-          const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
-          const T &division_min,
+  compute(const CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &B,
+          const Detail::RepeatedDivision<T> &divide_by_diagonal,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-    static_cast<void>(A);
     static_cast<void>(B);
-    static_cast<void>(division_min);
+    static_cast<void>(divide_by_diagonal);
     static_cast<void>(result);
     // End of loop, do nothing
   }
@@ -2629,7 +2623,7 @@ struct Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, End, End> {
 
 // Pointer loop
 template <typename T, std::size_t M, std::size_t N, typename CSRIndices_B,
-          typename CSRPointers_B, std::size_t J, std::size_t K>
+          typename CSRPointers_B, std::size_t J>
 struct Core {
   /**
    * @brief Core loop for diagonal inverse multiplication of a sparse matrix.
@@ -2645,8 +2639,7 @@ struct Core {
    * matrix B.
    * @tparam CSRPointers_B The type representing row pointers of the sparse
    * matrix B.
-   * @tparam J            Current index in the row indices list of B.
-   * @tparam K            Current index in the row pointers list of B.
+   * @tparam J            Current row of B.
    */
   static void
   compute(const DiagMatrix<T, M> &A,
@@ -2654,8 +2647,14 @@ struct Core {
           const T &division_min,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-    Loop<T, M, N, CSRIndices_B, CSRPointers_B, J, K, CSRPointers_B::list[J],
-         CSRPointers_B::list[J + 1]>::compute(A, B, division_min, result);
+    constexpr std::size_t start = CSRPointers_B::list[J];
+    constexpr std::size_t end = CSRPointers_B::list[J + 1];
+    if (start != end) {
+      const Detail::RepeatedDivision<T> divide_by_diagonal(
+          Base::Utility::avoid_zero_divide(A[J], division_min));
+      Loop<T, M, N, CSRIndices_B, CSRPointers_B, start, end>::compute(
+          B, divide_by_diagonal, result);
+    }
   }
 };
 
@@ -2685,8 +2684,8 @@ struct Column {
           const T &division_min,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-    Core<T, M, N, CSRIndices_B, CSRPointers_B, J, 0>::compute(
-        A, B, division_min, result);
+    Core<T, M, N, CSRIndices_B, CSRPointers_B, J>::compute(A, B, division_min,
+                                                           result);
     Column<T, M, N, CSRIndices_B, CSRPointers_B, J - 1>::compute(
         A, B, division_min, result);
   }
@@ -2718,8 +2717,8 @@ struct Column<T, M, N, CSRIndices_B, CSRPointers_B, 0> {
           const T &division_min,
           CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> &result) {
 
-    Core<T, M, N, CSRIndices_B, CSRPointers_B, 0, 0>::compute(
-        A, B, division_min, result);
+    Core<T, M, N, CSRIndices_B, CSRPointers_B, 0>::compute(A, B, division_min,
+                                                           result);
   }
 };
 
@@ -2789,11 +2788,14 @@ diag_inv_multiply_sparse(
 #ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
 
   for (std::size_t j = 0; j < M; ++j) {
-    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
-         ++k) {
-
-      result.values[k] =
-          B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+    const std::size_t start = CSRPointers_B::list[j];
+    const std::size_t end = CSRPointers_B::list[j + 1];
+    if (start != end) {
+      const Detail::RepeatedDivision<T> divide_by_diagonal(
+          Base::Utility::avoid_zero_divide(A[j], division_min));
+      for (std::size_t k = start; k < end; ++k) {
+        result.values[k] = divide_by_diagonal.apply(B.values[k]);
+      }
     }
   }
 
@@ -2840,13 +2842,15 @@ diag_inv_multiply_sparse_partition(
   CompiledSparseMatrix<T, M, N, CSRIndices_B, CSRPointers_B> result;
 
   for (std::size_t j = 0; j < matrix_size; ++j) {
-    for (std::size_t k = CSRPointers_B::list[j]; k < CSRPointers_B::list[j + 1];
-         ++k) {
-
-      if (CSRIndices_B::list[k] < matrix_size) {
-
-        result.values[k] =
-            B.values[k] / Base::Utility::avoid_zero_divide(A[j], division_min);
+    const std::size_t start = CSRPointers_B::list[j];
+    const std::size_t end = CSRPointers_B::list[j + 1];
+    if (start != end) {
+      const Detail::RepeatedDivision<T> divide_by_diagonal(
+          Base::Utility::avoid_zero_divide(A[j], division_min));
+      for (std::size_t k = start; k < end; ++k) {
+        if (CSRIndices_B::list[k] < matrix_size) {
+          result.values[k] = divide_by_diagonal.apply(B.values[k]);
+        }
       }
     }
   }

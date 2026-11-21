@@ -23,6 +23,7 @@
 #include "base_matrix_compiled_sparse_operation.hpp"
 #include "base_matrix_diagonal.hpp"
 #include "base_matrix_matrix.hpp"
+#include "base_matrix_reciprocal.hpp"
 #include "base_matrix_sparse.hpp"
 #include "base_matrix_vector.hpp"
 
@@ -395,22 +396,23 @@ public:
           this->factors_(row, column) = static_cast<T>(0);
         }
       } else {
+        const Detail::RepeatedDivision<T> divide_by_scale(scale);
         T sum = static_cast<T>(0);
         for (std::size_t row = column; row < M; ++row) {
-          const T value = this->factors_(row, column) / scale;
+          const T value = divide_by_scale.apply(this->factors_(row, column));
           sum += value * value;
         }
         // 1 <= sum <= M: the float-based initial estimate stays in range.
         const T norm = Base::Math::sqrt<T>(
             sum, static_cast<T>(QR_NORMALIZED_ROOT_DIVISION_MIN));
-        const T alpha = this->factors_(column, column) / scale;
+        const T alpha = divide_by_scale.apply(this->factors_(column, column));
         const T beta = alpha >= static_cast<T>(0) ? -norm : norm;
-        const T denominator = alpha - beta;
+        const Detail::RepeatedDivision<T> divide_by_denominator(alpha - beta);
         // beta != 0, and choosing the opposite sign avoids cancellation.
         this->tau_[column] = (beta - alpha) / beta;
         for (std::size_t row = column + 1; row < M; ++row) {
-          this->factors_(row, column) =
-              (this->factors_(row, column) / scale) / denominator;
+          this->factors_(row, column) = divide_by_denominator.apply(
+              divide_by_scale.apply(this->factors_(row, column)));
         }
         this->factors_(column, column) = beta * scale;
 

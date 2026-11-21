@@ -14,6 +14,7 @@
 #include "base_matrix_inverse.hpp"
 #include "base_matrix_macros.hpp"
 #include "base_matrix_numerical.hpp"
+#include "base_matrix_reciprocal.hpp"
 
 #include <array>
 #include <cstddef>
@@ -203,11 +204,13 @@ inline void hessenberg(const Matrix<T, M, M> &input, Matrix<S, M, M> &result,
         }
       }
       if (scale > static_cast<T>(0)) {
+        const Detail::RepeatedDivision<T> divide_by_scale(scale);
         T sum = static_cast<T>(0);
         for (std::size_t i = 0; i < M; ++i) {
           reflector[i] = static_cast<T>(0);
           if (i > k) {
-            reflector[i] = Shift<S>::real_part(result(i, k)) / scale;
+            reflector[i] =
+                divide_by_scale.apply(Shift<S>::real_part(result(i, k)));
             sum += reflector[i] * reflector[i];
           }
         }
@@ -287,12 +290,11 @@ inline S trailing_shift(const Matrix<S, M, M> &matrix, std::size_t end,
     return S();
   }
 
-  T scale_inverse = static_cast<T>(1) / scale;
-
-  S a = matrix(end - 1, end - 1) * scale_inverse;
-  S b = matrix(end - 1, end) * scale_inverse;
-  S c = matrix(end, end - 1) * scale_inverse;
-  S d = matrix(end, end) * scale_inverse;
+  const Detail::RepeatedDivision<T> divide_by_scale(scale);
+  S a = divide_by_scale.apply(matrix(end - 1, end - 1));
+  S b = divide_by_scale.apply(matrix(end - 1, end));
+  S c = divide_by_scale.apply(matrix(end, end - 1));
+  S d = divide_by_scale.apply(matrix(end, end));
 
   S half_difference = (a - d) * static_cast<T>(0.5);
   S root = Shift<S>::square_root_scalar(
@@ -517,6 +519,7 @@ public:
     // Residuals are divided by the input scale, not by the eigenvalue alone.
     T scale =
         this->_scale > static_cast<T>(0) ? this->_scale : static_cast<T>(1);
+    const Detail::RepeatedDivision<T> divide_by_scale(scale);
     T perturbation = Base::Math::abs(this->small_value) * scale;
     if (perturbation < this->division_min) {
       perturbation = this->division_min;
@@ -558,17 +561,18 @@ public:
         if (active) {
           Vector<S, M> initial;
           Vector<S, M> candidate = inner.solve(shifted, vector, initial);
-          T candidate_length = Numerical::norm(candidate);
+          const T candidate_length = Numerical::norm(candidate);
           if (candidate_length <= this->division_min) {
             active = false;
             this->_status = EigenSolverStatus::zero_vector;
           } else {
+            const Detail::RepeatedDivision<T> divide_by_length(
+                candidate_length);
             for (std::size_t i = 0; i < M; ++i) {
-              vector[i] = candidate[i] / candidate_length;
+              vector[i] = divide_by_length.apply(candidate[i]);
             }
-            T residual =
-                this->_vector_residual(matrix, vector, this->_eigen_values[k]) /
-                scale;
+            T residual = divide_by_scale.apply(
+                this->_vector_residual(matrix, vector, this->_eigen_values[k]));
             converged = residual <= this->eigenvector_tolerance;
             if (converged) {
               active = false;
@@ -580,9 +584,8 @@ public:
           }
         }
       }
-      T residual =
-          this->_vector_residual(matrix, vector, this->_eigen_values[k]) /
-          scale;
+      T residual = divide_by_scale.apply(
+          this->_vector_residual(matrix, vector, this->_eigen_values[k]));
       if (residual > this->_eigenvector_residual) {
         this->_eigenvector_residual = residual;
       }
@@ -1139,9 +1142,13 @@ protected:
       if (candidate > scale) {
         scale = candidate;
       }
-      T delta = (this->_at(q, q) / scale - this->_at(p, p) / scale) *
+
+      const Detail::RepeatedDivision<T> divide_by_scale(scale);
+      T delta = (divide_by_scale.apply(this->_at(q, q)) -
+                 divide_by_scale.apply(this->_at(p, p))) *
                 static_cast<T>(0.5);
-      T off_scaled = off_diagonal / scale;
+      T off_scaled = divide_by_scale.apply(off_diagonal);
+
       T denominator =
           Base::Math::abs(delta) +
           EigenOperation::square_root(delta * delta + off_scaled * off_scaled);

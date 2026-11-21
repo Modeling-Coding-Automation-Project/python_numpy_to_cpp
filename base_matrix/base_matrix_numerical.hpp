@@ -14,6 +14,7 @@
 #define BASE_MATRIX_NUMERICAL_HPP_
 
 #include "base_matrix_complex.hpp"
+#include "base_matrix_reciprocal.hpp"
 #include "base_matrix_vector.hpp"
 
 #include <cstddef>
@@ -253,16 +254,17 @@ template <typename T, std::size_t N, std::size_t Index> struct SquaredSumLoop {
    * @brief Adds the current scaled square and visits the remaining components.
    * @param value The vector whose norm is being computed.
    * @param active_size The number of leading components to consider, up to N.
-   * @param scale The positive component scale established by the preceding
-   * scan.
+   * @param divide_by_scale The prepared division by the component scale.
    * @param[in,out] sum The accumulated scaled squared magnitude.
    */
-  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
-                             Real scale, Real &sum) {
+  static inline void
+  compute(const Vector<T, N> &value, std::size_t active_size,
+          const Detail::RepeatedDivision<Real> &divide_by_scale, Real &sum) {
     if (Index < active_size) {
-      sum += Scalar<T>::squared_abs(value[Index] / scale);
+      sum += Scalar<T>::squared_abs(divide_by_scale.apply(value[Index]));
     }
-    SquaredSumLoop<T, N, Index + 1>::compute(value, active_size, scale, sum);
+    SquaredSumLoop<T, N, Index + 1>::compute(value, active_size,
+                                             divide_by_scale, sum);
   }
 };
 
@@ -278,17 +280,68 @@ template <typename T, std::size_t N> struct SquaredSumLoop<T, N, N> {
    * @brief Ends the recursion without changing the accumulated squared sum.
    * @param value The unused input vector.
    * @param active_size The unused active component count.
-   * @param scale The unused component scale.
+   * @param divide_by_scale The unused prepared division.
    * @param sum The completed sum, left unchanged.
    */
-  static inline void compute(const Vector<T, N> &value, std::size_t active_size,
-                             Real scale, Real &sum) {
+  static inline void
+  compute(const Vector<T, N> &value, std::size_t active_size,
+          const Detail::RepeatedDivision<Real> &divide_by_scale, Real &sum) {
     static_cast<void>(value);
     static_cast<void>(active_size);
-    static_cast<void>(scale);
+    static_cast<void>(divide_by_scale);
     static_cast<void>(sum);
   }
 };
+
+template <typename T, std::size_t N>
+inline typename Scalar<T>::Real component_scale(const Vector<T, N> &value,
+                                                std::size_t active_size) {
+  using Real = typename Scalar<T>::Real;
+  Real scale = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < N; ++i) {
+    if (i < active_size) {
+      Real candidate = Scalar<T>::component_max(value[i]);
+      if (candidate > scale) {
+        scale = candidate;
+      }
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  ScaleLoop<T, N, 0>::compute(value, active_size, scale);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return scale;
+}
+
+template <typename T, std::size_t N>
+inline typename Scalar<T>::Real scaled_squared_sum(
+    const Vector<T, N> &value, std::size_t active_size,
+    const Detail::RepeatedDivision<typename Scalar<T>::Real> &divide_by_scale) {
+  using Real = typename Scalar<T>::Real;
+  Real sum = static_cast<Real>(0);
+
+#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  for (std::size_t i = 0; i < N; ++i) {
+    if (i < active_size) {
+      sum += Scalar<T>::squared_abs(divide_by_scale.apply(value[i]));
+    }
+  }
+
+#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  SquaredSumLoop<T, N, 0>::compute(value, active_size, divide_by_scale, sum);
+
+#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
+
+  return sum;
+}
 
 } // namespace VectorNorm
 
@@ -309,44 +362,13 @@ template <typename T, std::size_t N>
 inline typename Scalar<T>::Real norm(const Vector<T, N> &value,
                                      std::size_t active_size = N) {
   using Real = typename Scalar<T>::Real;
-  Real scale = static_cast<Real>(0);
-
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  for (std::size_t i = 0; i < N; ++i) {
-    if (i < active_size) {
-      Real candidate = Scalar<T>::component_max(value[i]);
-      if (candidate > scale) {
-        scale = candidate;
-      }
-    }
-  }
-
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  VectorNorm::ScaleLoop<T, N, 0>::compute(value, active_size, scale);
-
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
+  const Real scale = VectorNorm::component_scale(value, active_size);
   if (scale == static_cast<Real>(0)) {
     return static_cast<Real>(0);
   }
-  Real sum = static_cast<Real>(0);
-
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  for (std::size_t i = 0; i < N; ++i) {
-    if (i < active_size) {
-      sum += Scalar<T>::squared_abs(value[i] / scale);
-    }
-  }
-
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  VectorNorm::SquaredSumLoop<T, N, 0>::compute(value, active_size, scale, sum);
-
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
+  const Detail::RepeatedDivision<Real> divide_by_scale(scale);
+  const Real sum =
+      VectorNorm::scaled_squared_sum(value, active_size, divide_by_scale);
   return scale * normalized_sqrt(sum);
 }
 
@@ -369,47 +391,15 @@ template <typename T, std::size_t N>
 inline typename Scalar<T>::Real norm_inv(const Vector<T, N> &value,
                                          std::size_t active_size = N) {
   using Real = typename Scalar<T>::Real;
-  Real scale = static_cast<Real>(0);
-
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  for (std::size_t i = 0; i < N; ++i) {
-    if (i < active_size) {
-      Real candidate = Scalar<T>::component_max(value[i]);
-      if (candidate > scale) {
-        scale = candidate;
-      }
-    }
-  }
-
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  VectorNorm::ScaleLoop<T, N, 0>::compute(value, active_size, scale);
-
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
+  const Real scale = VectorNorm::component_scale(value, active_size);
   if (scale == static_cast<Real>(0)) {
     return static_cast<Real>(0);
   }
-  Real sum = static_cast<Real>(0);
-
-#ifdef BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  for (std::size_t i = 0; i < N; ++i) {
-    if (i < active_size) {
-      sum += Scalar<T>::squared_abs(value[i] / scale);
-    }
-  }
-
-#else // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  VectorNorm::SquaredSumLoop<T, N, 0>::compute(value, active_size, scale, sum);
-
-#endif // BASE_MATRIX_USE_FOR_LOOP_OPERATION_
-
-  return Base::Math::rsqrt<Real>(
-             sum, static_cast<Real>(NORMALIZED_SQRT_DIVISION_MIN)) /
-         scale;
+  const Detail::RepeatedDivision<Real> divide_by_scale(scale);
+  const Real sum =
+      VectorNorm::scaled_squared_sum(value, active_size, divide_by_scale);
+  return divide_by_scale.apply(Base::Math::rsqrt<Real>(
+      sum, static_cast<Real>(NORMALIZED_SQRT_DIVISION_MIN)));
 }
 
 /**
