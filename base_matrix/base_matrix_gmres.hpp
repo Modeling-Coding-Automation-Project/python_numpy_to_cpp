@@ -2039,6 +2039,16 @@ struct NormalOperator<
  */
 template <typename T, std::size_t N, std::size_t K = N> class GmresSolver {
 public:
+  GmresSolver() = default;
+
+  /* Copy Constructor */
+  GmresSolver(const GmresSolver &) = default;
+  GmresSolver &operator=(const GmresSolver &) = default;
+
+  /* Move Constructor */
+  GmresSolver(GmresSolver &&) = default;
+  GmresSolver &operator=(GmresSolver &&) = default;
+
   using Real = typename Numerical::Scalar<T>::Real;
   static_assert(K > 0 && K <= N, "GMRES requires 1 <= K <= N.");
   static_assert(std::is_floating_point<Real>::value,
@@ -2160,7 +2170,7 @@ public:
   }
 
 private:
-  std::array<T, N * K> basis_ = {};
+  std::array<T, N *K> basis_ = {};
   std::array<T, K *(K + 1) / 2> triangular_ = {};
   std::array<T, K + 1> column_ = {};
   std::array<T, K + 1> transformed_rhs_ = {};

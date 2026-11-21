@@ -57,6 +57,16 @@ namespace CholeskyOperation {
  */
 template <typename T, std::size_t M> class PackedUpper {
 public:
+  PackedUpper() = default;
+
+  /* Copy Constructor */
+  PackedUpper(const PackedUpper &) = default;
+  PackedUpper &operator=(const PackedUpper &) = default;
+
+  /* Move Constructor */
+  PackedUpper(PackedUpper &&) = default;
+  PackedUpper &operator=(PackedUpper &&) = default;
+
   /**
    * @brief Accesses a mutable element in the packed upper triangle.
    * @param row The row index, no greater than column.
@@ -384,6 +394,14 @@ public:
         relative_pivot_min(static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY)),
         valid_(false), threshold_adjusted_(false) {}
 
+  /* Copy Constructor */
+  PackedCholesky(const PackedCholesky &) = default;
+  PackedCholesky &operator=(const PackedCholesky &) = default;
+
+  /* Move Constructor */
+  PackedCholesky(PackedCholesky &&) = default;
+  PackedCholesky &operator=(PackedCholesky &&) = default;
+
   /**
    * @brief Factors the lower triangle of a symmetric dense input.
    *
@@ -547,6 +565,14 @@ public:
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_CHOLESKY)),
         relative_pivot_min(static_cast<T>(DEFAULT_RELATIVE_PIVOT_MIN_CHOLESKY)),
         valid_(false), threshold_adjusted_(false) {}
+
+  /* Copy Constructor */
+  SPDLDLT(const SPDLDLT &) = default;
+  SPDLDLT &operator=(const SPDLDLT &) = default;
+
+  /* Move Constructor */
+  SPDLDLT(SPDLDLT &&) = default;
+  SPDLDLT &operator=(SPDLDLT &&) = default;
 
   /**
    * @brief Computes packed LDLT factors from a symmetric dense input.

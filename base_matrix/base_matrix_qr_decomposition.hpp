@@ -165,6 +165,7 @@ public:
     }
   }
 
+  /* Copy Constructor */
   /** @brief Copies the factors, threshold, and status from another solver. */
   QRDecomposition(const QRDecomposition &) = default;
   /**
@@ -172,6 +173,7 @@ public:
    * @return A reference to this solver.
    */
   QRDecomposition &operator=(const QRDecomposition &) = default;
+  /* Move Constructor */
   /** @brief Moves the factors and preserves their threshold and status. */
   QRDecomposition(QRDecomposition &&) noexcept = default;
   /**
@@ -352,6 +354,16 @@ public:
   QRDecompositionHouseholder()
       : division_min(static_cast<T>(DEFAULT_DIVISION_MIN_QR)), factors_(),
         tau_(), rank_deficient_(false), threshold_corrected_(false) {}
+
+  /* Copy Constructor */
+  QRDecompositionHouseholder(const QRDecompositionHouseholder &) = default;
+  QRDecompositionHouseholder &
+  operator=(const QRDecompositionHouseholder &) = default;
+
+  /* Move Constructor */
+  QRDecompositionHouseholder(QRDecompositionHouseholder &&) = default;
+  QRDecompositionHouseholder &
+  operator=(QRDecompositionHouseholder &&) = default;
 
   /**
    * @brief Factors A without materializing any reflection matrix or Q.
@@ -657,6 +669,14 @@ class QRDecompositionSparse : public QRDecomposition<T, M, N> {
 public:
   /** @brief Initializes the dense factor storage through the base solver. */
   QRDecompositionSparse() : QRDecomposition<T, M, N>() {}
+
+  /* Copy Constructor */
+  QRDecompositionSparse(const QRDecompositionSparse &) = default;
+  QRDecompositionSparse &operator=(const QRDecompositionSparse &) = default;
+
+  /* Move Constructor */
+  QRDecompositionSparse(QRDecompositionSparse &&) = default;
+  QRDecompositionSparse &operator=(QRDecompositionSparse &&) = default;
 
   /**
    * @brief Scatters a sparse input into R and performs full Givens elimination.

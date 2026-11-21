@@ -75,6 +75,17 @@ constexpr std::size_t list_array<Sizes...>::value[list_array<Sizes...>::size];
 
 template <typename Array> class CompiledSparseMatrixList {
 public:
+  CompiledSparseMatrixList() = default;
+
+  /* Copy Constructor */
+  CompiledSparseMatrixList(const CompiledSparseMatrixList &) = default;
+  CompiledSparseMatrixList &
+  operator=(const CompiledSparseMatrixList &) = default;
+
+  /* Move Constructor */
+  CompiledSparseMatrixList(CompiledSparseMatrixList &&) = default;
+  CompiledSparseMatrixList &operator=(CompiledSparseMatrixList &&) = default;
+
   typedef const std::size_t *list_type;
   static constexpr list_type list = Array::value;
   static constexpr std::size_t size = Array::size;
@@ -176,6 +187,19 @@ constexpr bool
  */
 template <typename Array> class CompiledSparseMatrixElementList {
 public:
+  CompiledSparseMatrixElementList() = default;
+
+  /* Copy Constructor */
+  CompiledSparseMatrixElementList(const CompiledSparseMatrixElementList &) =
+      default;
+  CompiledSparseMatrixElementList &
+  operator=(const CompiledSparseMatrixElementList &) = default;
+
+  /* Move Constructor */
+  CompiledSparseMatrixElementList(CompiledSparseMatrixElementList &&) = default;
+  CompiledSparseMatrixElementList &
+  operator=(CompiledSparseMatrixElementList &&) = default;
+
   typedef const bool *list_type;
   static constexpr list_type list = Array::value;
   static constexpr std::size_t size = Array::size;

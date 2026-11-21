@@ -59,7 +59,18 @@
 namespace Base {
 namespace Matrix {
 
-class Is_CompiledSparseMatrix {};
+class Is_CompiledSparseMatrix {
+public:
+  Is_CompiledSparseMatrix() = default;
+
+  /* Copy Constructor */
+  Is_CompiledSparseMatrix(const Is_CompiledSparseMatrix &) = default;
+  Is_CompiledSparseMatrix &operator=(const Is_CompiledSparseMatrix &) = default;
+
+  /* Move Constructor */
+  Is_CompiledSparseMatrix(Is_CompiledSparseMatrix &&) = default;
+  Is_CompiledSparseMatrix &operator=(Is_CompiledSparseMatrix &&) = default;
+};
 
 /*
  * @class CompiledSparseMatrix

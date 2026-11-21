@@ -286,10 +286,14 @@ inline S trailing_shift(const Matrix<S, M, M> &matrix, std::size_t end,
     complex_pair = false;
     return S();
   }
-  S a = matrix(end - 1, end - 1) / scale;
-  S b = matrix(end - 1, end) / scale;
-  S c = matrix(end, end - 1) / scale;
-  S d = matrix(end, end) / scale;
+
+  T scale_inverse = static_cast<T>(1) / scale;
+
+  S a = matrix(end - 1, end - 1) * scale_inverse;
+  S b = matrix(end - 1, end) * scale_inverse;
+  S c = matrix(end, end - 1) * scale_inverse;
+  S d = matrix(end, end) * scale_inverse;
+
   S half_difference = (a - d) * static_cast<T>(0.5);
   S root = Shift<S>::square_root_scalar(
       half_difference * half_difference + b * c, complex_pair);
@@ -404,6 +408,14 @@ public:
     this->_eigen_values.resize(M);
 #endif
   }
+
+  /* Copy Constructor */
+  Solver(const Solver &) = default;
+  Solver &operator=(const Solver &) = default;
+
+  /* Move Constructor */
+  Solver(Solver &&) = default;
+  Solver &operator=(Solver &&) = default;
 
   /**
    * @brief Starts an eigenvalue solve from a real square matrix.
@@ -526,9 +538,9 @@ public:
       if (!this->_vectors_initialized) {
         vector[k] += static_cast<T>(1);
       }
-      T length = Numerical::norm(vector);
+      T length_inverse = static_cast<T>(1) / Numerical::norm(vector);
       for (std::size_t i = 0; i < M; ++i) {
-        vector[i] = vector[i] / length;
+        vector[i] = vector[i] * length_inverse;
       }
       GmresSolver<S, M, InnerK> inner;
       inner.division_min = this->division_min;
@@ -852,7 +864,18 @@ protected:
  * @tparam InnerK The fixed inner GMRES capacity, satisfying 1 <= InnerK <= M.
  */
 template <typename T, std::size_t M, std::size_t InnerK = M>
-class EigenSolverReal : public EigenOperation::Solver<T, T, M, InnerK> {};
+class EigenSolverReal : public EigenOperation::Solver<T, T, M, InnerK> {
+public:
+  EigenSolverReal() = default;
+
+  /* Copy Constructor */
+  EigenSolverReal(const EigenSolverReal &) = default;
+  EigenSolverReal &operator=(const EigenSolverReal &) = default;
+
+  /* Move Constructor */
+  EigenSolverReal(EigenSolverReal &&) = default;
+  EigenSolverReal &operator=(EigenSolverReal &&) = default;
+};
 
 /**
  * @brief Computes complex eigenpairs of a real matrix with bounded iteration.
@@ -866,7 +889,18 @@ class EigenSolverReal : public EigenOperation::Solver<T, T, M, InnerK> {};
  */
 template <typename T, std::size_t M, std::size_t InnerK = M>
 class EigenSolverComplex
-    : public EigenOperation::Solver<Complex<T>, T, M, InnerK> {};
+    : public EigenOperation::Solver<Complex<T>, T, M, InnerK> {
+public:
+  EigenSolverComplex() = default;
+
+  /* Copy Constructor */
+  EigenSolverComplex(const EigenSolverComplex &) = default;
+  EigenSolverComplex &operator=(const EigenSolverComplex &) = default;
+
+  /* Move Constructor */
+  EigenSolverComplex(EigenSolverComplex &&) = default;
+  EigenSolverComplex &operator=(EigenSolverComplex &&) = default;
+};
 
 /**
  * @brief Cyclic Jacobi for caller-guaranteed symmetric input.
@@ -895,6 +929,14 @@ public:
             static_cast<T>(DEFAULT_ABSOLUTE_TOLERANCE_EIGEN_SOLVER)),
         _triangle(), _vectors(), _converged(false), _threshold_adjusted(false),
         _scale(0) {}
+
+  /* Copy Constructor */
+  EigenSolverSymmetric(const EigenSolverSymmetric &) = default;
+  EigenSolverSymmetric &operator=(const EigenSolverSymmetric &) = default;
+
+  /* Move Constructor */
+  EigenSolverSymmetric(EigenSolverSymmetric &&) = default;
+  EigenSolverSymmetric &operator=(EigenSolverSymmetric &&) = default;
 
   /**
    * @brief Starts cyclic Jacobi iteration from a symmetric real matrix.

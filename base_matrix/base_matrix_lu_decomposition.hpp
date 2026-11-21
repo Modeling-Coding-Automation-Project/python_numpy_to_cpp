@@ -93,6 +93,7 @@ public:
   }
 
   /* Copy and move preserve the compact factors and their validity. */
+  /* Copy Constructor */
   /** @brief Copies the factors, permutation, threshold, cache, and status. */
   LUDecomposition(const LUDecomposition &) = default;
   /**
@@ -100,6 +101,7 @@ public:
    * @return A reference to this solver.
    */
   LUDecomposition &operator=(const LUDecomposition &) = default;
+  /* Move Constructor */
   /** @brief Moves the factors and preserves their permutation and status. */
   LUDecomposition(LUDecomposition &&) noexcept = default;
   /**
